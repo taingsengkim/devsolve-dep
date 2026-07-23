@@ -38,7 +38,7 @@ export function KeycloakLoginButton({
       ) : (
         <>
           <LogIn data-icon="inline-start" />
-          Sign in with Keycloak
+          Continue with Keycloak
         </>
       )}
     </Button>

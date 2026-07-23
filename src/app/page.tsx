@@ -1,23 +1,21 @@
-import { KeycloakLoginButton } from "@/components/auth/login-button";
+import Link from "next/link";
+
+import { buttonVariants } from "@/components/ui/button";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
-      <main className="flex flex-col items-center text-center gap-6 w-full max-w-sm">
-        <div className="flex flex-col items-center gap-2">
-          <div className="size-10 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-base">
-            DS
-          </div>
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            DevSolve
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Sign in to continue
-          </p>
+    <main className="min-h-screen bg-background">
+      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+        <span className="text-lg font-semibold tracking-tight text-foreground">DevSolve</span>
+        <div className="flex items-center gap-3">
+          <Link className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" href="/login">
+            Log in
+          </Link>
+          <Link className={buttonVariants()} href="/signup">
+            Sign up
+          </Link>
         </div>
-
-        <KeycloakLoginButton className="w-full" />
-      </main>
-    </div>
+      </nav>
+    </main>
   );
 }
