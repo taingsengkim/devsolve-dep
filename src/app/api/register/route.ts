@@ -5,7 +5,7 @@ const registerSchema = z
     username: z.string().trim().min(1, "Username is required."),
     password: z.string().min(1, "Password is required."),
     confirmPassword: z.string().min(1, "Confirm password is required."),
-    email: z.string().trim().email("Enter a valid email address.").optional().or(z.literal("")),
+    email: z.string().trim().min(1, "Email is required.").email("Enter a valid email address."),
     firstName: z.string().trim().min(1, "First name is required."),
     lastName: z.string().trim().min(1, "Last name is required."),
     phone: z.string().regex(/^\d{9,11}$/, "Phone number must contain 9 to 11 digits."),

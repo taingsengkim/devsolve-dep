@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
 
-import { buttonVariants, Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
@@ -13,7 +13,7 @@ const signupSchema = z
     username: z.string().trim().min(1, "Username is required."),
     password: z.string().min(1, "Password is required."),
     confirmPassword: z.string().min(1, "Please confirm your password."),
-    email: z.string().trim().email("Enter a valid email address.").optional().or(z.literal("")),
+    email: z.string().trim().min(1, "Email is required.").email("Enter a valid email address."),
     firstName: z.string().trim().min(1, "First name is required."),
     lastName: z.string().trim().min(1, "Last name is required."),
     phone: z.string().regex(/^\d{9,11}$/, "Phone number must contain 9 to 11 digits."),
@@ -39,8 +39,8 @@ function getFieldErrors(error: z.ZodError): FieldErrors {
 }
 
 export function SignupForm() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState("");
 
@@ -81,29 +81,13 @@ export function SignupForm() {
         return;
       }
 
-      setSubmitted(true);
+      router.push("/");
     } catch {
       setFormError("Unable to reach the registration service. Please try again.");
     } finally {
       setLoading(false);
     }
   };
-
-  if (submitted) {
-    return (
-      <div className="flex flex-col gap-6 rounded-2xl border bg-background p-6">
-        <div className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold text-foreground">Account created</h2>
-          <p className="text-sm leading-6 text-muted-foreground">
-            Your account is ready. You can now sign in with Keycloak.
-          </p>
-        </div>
-        <Link href="/login" className={buttonVariants({ size: "lg" })}>
-          Log in
-        </Link>
-      </div>
-    );
-  }
 
   return (
     <form className="flex flex-col gap-7" noValidate onSubmit={handleSubmit}>
@@ -115,8 +99,8 @@ export function SignupForm() {
         </Field>
 
         <Field data-invalid={Boolean(fieldErrors.email)}>
-          <FieldLabel htmlFor="email">Email </FieldLabel>
-          <Input id="email" name="email" type="email" autoComplete="email" aria-invalid={Boolean(fieldErrors.email)} placeholder="you@company.com" />
+          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <Input id="email" name="email" type="email" autoComplete="email" aria-invalid={Boolean(fieldErrors.email)} placeholder="you@company.com" required />
           <FieldError>{fieldErrors.email}</FieldError>
         </Field>
 
