@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { KeycloakLoginButton } from "@/components/auth/login-button";
 import { SignupForm } from "@/components/auth/signup-form";
 
 export const metadata: Metadata = {
@@ -29,10 +30,7 @@ export default function SignupPage() {
         </div>
 
         <p className="mt-6 text-center text-sm leading-6 text-muted-foreground">
-          Already have an account?{" "}
-          <Link href="/login" className="font-medium text-foreground underline underline-offset-4">
-            Log in
-          </Link>
+          Already have an account? <Link href="/login" className="text-foreground underline underline-offset-4">Sign in</Link>
         </p>
       </section>
     </main>

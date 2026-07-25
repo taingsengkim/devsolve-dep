@@ -1,46 +1,32 @@
 "use client";
 
-import { signInWithKeycloak } from "@/lib/auth/auth-client";
-import { Button } from "@/components/ui/button";
-import { LogIn } from "lucide-react";
 import { useState } from "react";
 
-interface LoginButtonProps {
+import { Button } from "@/components/ui/button";
+import { signInWithKeycloak } from "@/lib/auth/auth-client";
+
+type LoginButtonProps = {
   callbackURL?: string;
   className?: string;
-}
+  label?: string;
+};
 
-export function KeycloakLoginButton({
-  callbackURL = "/",
-  className,
-}: LoginButtonProps) {
+export function KeycloakLoginButton({ callbackURL = "/", className, label = "Continue with Keycloak" }: LoginButtonProps) {
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleSignIn = async () => {
     setLoading(true);
+
     try {
       await signInWithKeycloak(callbackURL);
-    } catch (err) {
-      console.error("Keycloak login error:", err);
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Button
-      onClick={handleLogin}
-      disabled={loading}
-      size="lg"
-      className={className}
-    >
-      {loading ? (
-        "Connecting…"
-      ) : (
-        <>
-          <LogIn data-icon="inline-start" />
-          Continue with Keycloak
-        </>
-      )}
+    <Button className={className} disabled={loading} onClick={handleSignIn} size="lg" type="button">
+      {loading ? "Redirecting to Keycloak…" : label}
     </Button>
   );
 }
