@@ -1,6 +1,10 @@
+import {Button, buttonVariants} from "@/components/ui/button";
+import Link from "next/link";
 
-export default function Home() {
+export default function Page() {
     return (
-        <h1 className={"font-bold text-lg text-center mt-16"}>Nothing here...</h1>
-    );
+        <div className={"min-h-screen flex items-center justify-center"}>
+            <Link href={"/account-type"}  className={`${buttonVariants({variant: "link"})} font-bold text-lg`}>Create Account</Link>
+        </div>
+    )
 }
