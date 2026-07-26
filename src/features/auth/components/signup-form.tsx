@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Button } from "@/shared/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
+import { useRegisterMutation } from "@/features/auth/api";
 
 const signupSchema = z
   .object({
@@ -40,13 +41,21 @@ function getFieldErrors(error: z.ZodError): FieldErrors {
 
 export function SignupForm() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [formError, setFormError] = useState("");
+  const [register, { isLoading, error: mutationError }] = useRegisterMutation();
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  // Extract a human-readable error message from the RTK Query error.
+  const formError = (() => {
+    if (!mutationError) return "";
+    if ("data" in mutationError) {
+      const data = mutationError.data as { message?: string } | null;
+      return data?.message ?? "We couldn't create your account. Please try again.";
+    }
+    return "Unable to reach the registration service. Please try again.";
+  })();
+
+  const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setFormError("");
     setFieldErrors({});
 
     const formData = new FormData(event.currentTarget);
@@ -59,6 +68,7 @@ export function SignupForm() {
       lastName: String(formData.get("lastName") ?? ""),
       phone: String(formData.get("phone") ?? ""),
     };
+
     const validation = signupSchema.safeParse(values);
 
     if (!validation.success) {
@@ -66,26 +76,12 @@ export function SignupForm() {
       return;
     }
 
-    setLoading(true);
+    const result = await register(validation.data);
 
-    try {
-      const response = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(validation.data),
-      });
-      const payload = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        setFormError(payload?.message ?? "We couldn't create your account. Please try again.");
-        return;
-      }
-
-      router.push("/");
-    } catch {
-      setFormError("Unable to reach the registration service. Please try again.");
-    } finally {
-      setLoading(false);
+    // RTK Query unwrap() would throw on error; checking the discriminated union
+    // here keeps the try/catch-free style consistent with the form pattern.
+    if (!("error" in result)) {
+      router.push("/login");
     }
   };
 
@@ -139,8 +135,8 @@ export function SignupForm() {
 
       {formError ? <p className="text-sm text-destructive" role="alert">{formError}</p> : null}
 
-      <Button type="submit" size="lg" className="w-full" disabled={loading}>
-        {loading ? "Creating account…" : "Create account"}
+      <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
+        {isLoading ? "Creating account…" : "Create account"}
       </Button>
     </form>
   );

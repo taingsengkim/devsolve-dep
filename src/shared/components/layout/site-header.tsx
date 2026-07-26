@@ -6,15 +6,15 @@ import { useState } from "react";
 
 import { KeycloakLoginButton } from "@/features/auth/components/login-button";
 import { Button, buttonVariants } from "@/shared/components/ui/button";
-import { authClient } from "@/features/auth/auth-client";
+import { useAuth } from "@/features/auth/hooks";
 import { useAppDispatch } from "@/shared/lib/redux/hooks";
 import { baseApi } from "@/shared/lib/redux/services/baseApi";
 
 export function SiteHeader() {
-  const { data: session } = authClient.useSession();
+  const { user } = useAuth();
   const dispatch = useAppDispatch();
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const username = session?.user.name || session?.user.email;
+  const username = user?.name || user?.email;
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
