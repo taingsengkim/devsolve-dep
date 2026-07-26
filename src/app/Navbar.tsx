@@ -34,7 +34,23 @@ export default function Navbar() {
 
     const handleSignOut = async () => {
         setOpen(false);
-        await authClient.signOut({ fetchOptions: { onSuccess: () => { window.location.href = "/"; } } });
+
+        // 1. Clear the Better Auth session (Next.js side)
+        await authClient.signOut();
+
+        // 2. Clear the Keycloak SSO session so the browser doesn't stay logged in
+        const issuer = process.env.NEXT_PUBLIC_KEYCLOAK_ISSUER;
+        const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID;
+
+        if (issuer && clientId) {
+            const logoutUrl = new URL(`${issuer}/protocol/openid-connect/logout`);
+            logoutUrl.searchParams.set("client_id", clientId);
+            // Must be registered in Keycloak → Valid post logout redirect URIs
+            logoutUrl.searchParams.set("post_logout_redirect_uri", window.location.origin);
+            window.location.href = logoutUrl.toString();
+        } else {
+            window.location.href = "/";
+        }
     };
 
     const user = session?.user;
