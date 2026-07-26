@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { signInWithKeycloak } from "@/lib/auth/auth-client";
+import { Button } from "@/shared/components/ui/button";
+import { signInWithKeycloak } from "@/features/auth/auth-client";
 
 type LoginButtonProps = {
   callbackURL?: string;

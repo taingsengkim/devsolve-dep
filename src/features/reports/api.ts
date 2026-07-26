@@ -1,6 +1,6 @@
-import type { ReportResponse } from "@/lib/reports/types";
+import type { ReportResponse } from "@/features/reports/types";
 
-import { baseApi } from "./baseApi";
+import { baseApi } from "@/shared/lib/redux/services/baseApi";
 
 type ReportsPayload = ReportResponse[] | { content?: ReportResponse[]; data?: ReportResponse[] };
 

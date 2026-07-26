@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { KeycloakLoginButton } from "@/components/auth/login-button";
-import { SignupForm } from "@/components/auth/signup-form";
+import { KeycloakLoginButton } from "@/features/auth/components/login-button";
+import { SignupForm } from "@/features/auth/components/signup-form";
 
 export const metadata: Metadata = {
   title: "Create account | DevSolve",

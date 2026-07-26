@@ -4,11 +4,11 @@ import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { useState } from "react";
 
-import { KeycloakLoginButton } from "@/components/auth/login-button";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { authClient } from "@/lib/auth/auth-client";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { baseApi } from "@/lib/redux/services/baseApi";
+import { KeycloakLoginButton } from "@/features/auth/components/login-button";
+import { Button, buttonVariants } from "@/shared/components/ui/button";
+import { authClient } from "@/features/auth/auth-client";
+import { useAppDispatch } from "@/shared/lib/redux/hooks";
+import { baseApi } from "@/shared/lib/redux/services/baseApi";
 
 export function SiteHeader() {
   const { data: session } = authClient.useSession();

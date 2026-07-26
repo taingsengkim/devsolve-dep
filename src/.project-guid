@@ -1,0 +1,40 @@
+# DevSolve Frontend — Project Structure GUID
+
+GUID: 7f3a2b91-04e6-4d58-b9c0-6e1d5f82a347
+Date: 2026-07-26
+Description: Feature-first restructure of devsolve-frontend.
+
+## Structure version
+
+src/
+├── app/                        # Next.js App Router pages + API routes
+│   ├── (auth)/login/           # Route group — /login
+│   ├── (auth)/signup/          # Route group — /signup
+│   └── api/
+│       ├── auth/[...all]/      # Better Auth handler
+│       ├── auth/keycloak/logout/
+│       ├── register/
+│       └── reports/mine/
+├── features/                   # Domain feature slices
+│   ├── auth/
+│   │   ├── auth.ts             # Server-side Better Auth config
+│   │   ├── auth-client.ts      # Client-side auth client
+│   │   └── components/
+│   │       ├── login-button.tsx
+│   │       └── signup-form.tsx
+│   └── reports/
+│       ├── types.ts
+│       ├── api.ts              # RTK Query slice
+│       └── components/
+│           └── reports-list.tsx
+└── shared/                     # Cross-feature shared code
+    ├── components/
+    │   ├── ui/                 # Primitive UI components
+    │   └── layout/
+    │       └── site-header.tsx
+    └── lib/
+        ├── utils.ts
+        └── redux/              # Redux store, hooks, StoreProvider
+            └── services/
+                ├── baseApi.ts
+                └── exampleApi.ts

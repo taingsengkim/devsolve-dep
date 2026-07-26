@@ -1,5 +1,5 @@
-import { SiteHeader } from "@/components/layout/site-header";
-import { ReportsList } from "@/components/reports/reports-list";
+import { SiteHeader } from "@/shared/components/layout/site-header";
+import { ReportsList } from "@/features/reports/components/reports-list";
 
 export default function Home() {
   return (

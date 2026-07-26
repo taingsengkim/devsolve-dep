@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 
-import { auth } from "@/lib/auth/auth";
+import { auth } from "@/features/auth/auth";
 
 const reportsApiUrl = `${(process.env.BACKEND_API_URL ?? "http://localhost:8999/api/v1").replace(/\/$/, "")}/reports/mine`;
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { Separator } from "@/components/ui/separator";
-import { useGetMyReportsQuery } from "@/lib/redux/services/reportsApi";
+import { Separator } from "@/shared/components/ui/separator";
+import { useGetMyReportsQuery } from "@/features/reports/api";
 
 export function ReportsList() {
   const { data: reports = [], error, isLoading } = useGetMyReportsQuery();

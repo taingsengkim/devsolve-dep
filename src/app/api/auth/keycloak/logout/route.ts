@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
-import { auth } from "@/lib/auth/auth";
+import { auth } from "@/features/auth/auth";
 
 const keycloakServerUrl = process.env.KEYCLOAK_SERVER_URL || "https://auth.quizzy.it.com/";
 const keycloakRealm = process.env.KEYCLOAK_REALM || "devsolve";

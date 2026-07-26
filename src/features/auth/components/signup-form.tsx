@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
 
-import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/shared/components/ui/button";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/components/ui/field";
+import { Input } from "@/shared/components/ui/input";
 
 const signupSchema = z
   .object({
