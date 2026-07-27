@@ -150,7 +150,7 @@ const MOCK_REPORTS: ReportItem[] = [
     program: "CyberShield Dashboard",
     avatarLetter: "U",
     type: "Bounty",
-    severity: "HIGH",
+    severity: "MEDIUM",
     status: "REJECTED",
     bountyOrRep: "$0.00",
     isBountyDim: true,
@@ -218,7 +218,39 @@ const MOCK_REPORT_DETAIL: ReportDetail = {
       timestamp: "Oct 24, 16:10",
     },
   ],
-  retestHistory: [], // Default empty history to demonstrate Image 1 initially (with toggle in UI for Image 2)
+  retestHistory: [],
+};
+
+export const MOCK_REJECTED_REPORT_DETAIL: ReportDetail = {
+  id: "5",
+  reportId: "RPT-2847",
+  title: "CSRF on Profile Settings",
+  program: "Global Enterprise VDP",
+  avatarLetter: "B",
+  type: "Bounty",
+  severity: "MEDIUM",
+  status: "REJECTED",
+  bountyOrRep: "$0.00",
+  isBountyDim: true,
+  lastActivityDate: "Oct 05, 2023",
+  lastActivityBadge: "CLOSURE",
+  submittedAgo: "Submitted 4 days ago",
+  claimedSeverity: "Medium (5.4)",
+  confirmedSeverity: "Not Applicable",
+  cvssScore: "5.4",
+  rewardStatus: "Status: Rejected",
+  assetType: "REST API",
+  environment: "Production",
+  policyUrl: "#",
+  description:
+    "The '/search' endpoint is vulnerable to Reflected Cross-Site Scripting (XSS) via the 'q' parameter. An attacker can inject malicious JavaScript that executes in the context of the user's session.",
+  impact:
+    "After investigation, the security team determined that this endpoint is behind a legacy firewall that sanitizes all inputs, making this non-exploitable in a production environment.",
+  reproduceSteps: ["Navigate to /search", "Inject <script>alert(document.domain)</script>"],
+  attachments: [],
+  comments: [],
+  updates: [],
+  retestHistory: [],
 };
 
 export const reportsApi = baseApi.injectEndpoints({
@@ -266,6 +298,9 @@ export const reportsApi = baseApi.injectEndpoints({
     getReportById: builder.query<ReportDetail, string>({
       queryFn: (id) => {
         const found = MOCK_REPORTS.find((r) => r.id === id || r.reportId.toLowerCase() === id.toLowerCase());
+        if (found?.status === "REJECTED" || id === "5") {
+          return { data: MOCK_REJECTED_REPORT_DETAIL };
+        }
         if (found) {
           return {
             data: {
