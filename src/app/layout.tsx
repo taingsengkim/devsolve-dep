@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import StoreProvider from "@/lib/redux/StoreProvider";
-import Navbar from "@/app/Navbar";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -23,8 +22,7 @@ export default function RootLayout({
     >
       <body className="">
         <StoreProvider>
-          <Navbar />
-          <main>{children}</main>
+          {children}
         </StoreProvider>
       </body>
     </html>
