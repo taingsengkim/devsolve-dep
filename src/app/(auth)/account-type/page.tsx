@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { authClient } from "@/lib/auth/auth-client";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import {
     ShieldCheck,
     Lock,
@@ -108,7 +109,7 @@ export default function AccountTypeSelectionPage() {
     };
 
     return (
-        <div className="min-h-[100dvh] bg-slate-50/60 relative overflow-hidden flex flex-col justify-between items-center px-4 py-10 sm:px-6 lg:px-8">
+        <div className="min-h-[100dvh] bg-slate-50/60 relative overflow-hidden flex flex-col justify-between items-center px-4 py-8 sm:px-6 lg:px-8">
             {/* Background Ambient Glows */}
             <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 overflow-hidden -z-10">
                 <motion.div
@@ -117,7 +118,7 @@ export default function AccountTypeSelectionPage() {
                     className="absolute -top-32 left-1/4 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl"
                 />
                 <motion.div
-                    animate={{ scale: [1, 1.08, 1], opacity: [0.3, 0.5, 0.3] }}
+                    animate={{ scale: [1, 1.08, 1], opacity: [0.3, 0.5, 0.3] }} 
                     transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 4 }}
                     className="absolute -top-32 right-1/4 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl"
                 />
@@ -169,7 +170,7 @@ export default function AccountTypeSelectionPage() {
                     transition={{ duration: 0.5, delay: 0.05 }}
                     className="text-center mb-10 sm:mb-12 max-w-xl mx-auto"
                 >
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
                         Choose account type
                     </h1>
                 </motion.div>
@@ -187,24 +188,29 @@ export default function AccountTypeSelectionPage() {
                             {/* Top Gradient Highlight */}
                             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                             
+                            {/* Top Right Badge */}
+                            <div className="absolute top-6 right-6 z-10">
+                                <Badge className="bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-50 font-medium text-xs rounded-full px-3 py-1">
+                                    For Researchers
+                                </Badge>
+                            </div>
+
                             <CardContent className="p-6 sm:p-8 flex flex-col justify-between h-full">
                                 <div>
-                                    {/* Badge & Icon Header */}
-                                    <div className="flex items-start justify-between mb-6">
-                                        <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform duration-300 shadow-sm">
-                                            <User className="w-7 h-7 text-blue-600" />
+                                    {/* Prominent Lottie Animation */}
+                                    <div className="w-full flex justify-center items-center my-2 sm:my-4">
+                                        <div className="w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                            <DotLottieReact
+                                                src="/lottie/researcher.lottie"
+                                                loop
+                                                autoplay
+                                            />
                                         </div>
-                                        <Badge className="bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-50 font-medium text-xs rounded-full px-3 py-1">
-                                            For Researchers
-                                        </Badge>
                                     </div>
 
                                     <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight group-hover:text-blue-600 transition-colors">
                                         Security Researcher
                                     </h2>
-                                    <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-                                        Find security flaws, submit vulnerability reports, build your reputation, and earn bounties.
-                                    </p>
 
                                     {/* Divider */}
                                     <div className="h-px w-full bg-slate-100 mb-6" />
@@ -245,24 +251,30 @@ export default function AccountTypeSelectionPage() {
                             {/* Top Gradient Highlight */}
                             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
+                            {/* Top Right Badge */}
+                            <div className="absolute top-6 right-6 z-10">
+                                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-50 font-medium text-xs rounded-full px-3 py-1">
+                                    For Companies
+                                </Badge>
+                            </div>
+
                             <CardContent className="p-6 sm:p-8 flex flex-col justify-between h-full">
                                 <div>
-                                    {/* Badge & Icon Header */}
-                                    <div className="flex items-start justify-between mb-6">
-                                        <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform duration-300 shadow-sm">
-                                            <Building2 className="w-7 h-7 text-emerald-600" />
+                                    {/* Prominent Lottie Animation */}
+                                    <div className="w-full flex justify-center items-center my-2 sm:my-4">
+                                        <div className="w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                            <DotLottieReact
+                                                src="/lottie/company.lottie"
+                                                loop
+                                                autoplay
+                                            />
                                         </div>
-                                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-50 font-medium text-xs rounded-full px-3 py-1">
-                                            For Companies
-                                        </Badge>
                                     </div>
 
                                     <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight group-hover:text-emerald-600 transition-colors">
                                         Organization / Company
                                     </h2>
-                                    <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-                                        Launch bug bounty programs, receive report submissions, triage issues, and secure your products.
-                                    </p>
+        
 
                                     {/* Divider */}
                                     <div className="h-px w-full bg-slate-100 mb-6" />
