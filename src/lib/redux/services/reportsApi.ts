@@ -39,6 +39,16 @@ export interface ActivityUpdate {
   timestamp: string;
 }
 
+export interface RetestItem {
+  id: string;
+  reportIdTitle: string;
+  securityCategory: string;
+  version: string;
+  status: "PASSED" | "FAILED";
+  requestDate: string;
+  bountyBonus?: string;
+}
+
 export interface ReportDetail extends ReportItem {
   submittedAgo: string;
   claimedSeverity: string;
@@ -54,7 +64,28 @@ export interface ReportDetail extends ReportItem {
   attachments: { name: string; size?: string; type: string }[];
   comments: CommentItem[];
   updates: ActivityUpdate[];
+  retestHistory: RetestItem[];
 }
+
+export const MOCK_RETEST_HISTORY: RetestItem[] = [
+  {
+    id: "rt1",
+    reportIdTitle: "RPT-2847: Broken Access Control",
+    securityCategory: "Security Category: A01:2021",
+    version: "v3.1",
+    status: "PASSED",
+    requestDate: "Oct 24, 2023",
+    bountyBonus: "+15% Awarded",
+  },
+  {
+    id: "rt2",
+    reportIdTitle: "RPT-2847: Broken Access Control",
+    securityCategory: "Security Category: A03:2021",
+    version: "v1.2",
+    status: "FAILED",
+    requestDate: "Oct 21, 2023",
+  },
+];
 
 // Initial mock dataset for reports matching the prompt specs
 const MOCK_REPORTS: ReportItem[] = [
@@ -187,6 +218,7 @@ const MOCK_REPORT_DETAIL: ReportDetail = {
       timestamp: "Oct 24, 16:10",
     },
   ],
+  retestHistory: [], // Default empty history to demonstrate Image 1 initially (with toggle in UI for Image 2)
 };
 
 export const reportsApi = baseApi.injectEndpoints({
