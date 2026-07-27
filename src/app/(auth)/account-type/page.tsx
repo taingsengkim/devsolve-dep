@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import AccountTypeButton from "./AccountTypeButton";
+import AccountTypeButton from "../../../components/account-type/AccountTypeButton";
 
 export default function AccountTypeSelectionPage() {
     const [isLoggingIn, setIsLoggingIn] = useState(false);
