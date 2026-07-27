@@ -1,164 +1,155 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Code2, LogOut, User } from "lucide-react";
-import { authClient } from "@/lib/auth/auth-client";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import React, { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Moon, Menu, X, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Button } from '@/components/ui/button';
 
-function getInitials(text: string): string {
-    return text
-        .split(" ")
-        .map((word) => word[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
-}
+const navLinks = [
+    { name: 'Home', href: '/' },
+    { name: 'Program', href: '/' },
+    { name: 'Hacker activity', href: '/' },
+    { name: 'Forum', href: '/' },
+    { name: 'Leader board', href: '/' },
+    { name: 'About', href: '/' },
+];
 
-export default function Navbar() {
-    const { data: session, isPending } = authClient.useSession();
-    const [open, setOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-
-    // Close dropdown when clicking outside
-    useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-                setOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handler);
-        return () => document.removeEventListener("mousedown", handler);
-    }, []);
-
-    const handleSignOut = async () => {
-        setOpen(false);
-
-        // 1. Clear the Better Auth session (Next.js side)
-        await authClient.signOut();
-
-        // 2. Clear the Keycloak SSO session so the browser doesn't stay logged in
-        const issuer = process.env.NEXT_PUBLIC_KEYCLOAK_ISSUER;
-        const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID;
-
-        if (issuer && clientId) {
-            const logoutUrl = new URL(`${issuer}/protocol/openid-connect/logout`);
-            logoutUrl.searchParams.set("client_id", clientId);
-            // Must be registered in Keycloak → Valid post logout redirect URIs
-            logoutUrl.searchParams.set("post_logout_redirect_uri", window.location.origin);
-            window.location.href = logoutUrl.toString();
-        } else {
-            window.location.href = "/";
-        }
-    };
-
-    const user = session?.user;
-    const displayName = user?.name ?? user?.email ?? "User";
+const Navbar = () => {
+    const [hoveredPath, setHoveredPath] = useState<string | null>(null);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const pathname = usePathname();
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="flex h-16 items-center justify-between">
+        <header className="w-full bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-[100] transition-colors duration-200">
+            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-between h-16">
 
-                    {/* ── Logo ── */}
-                    <Link href="/" className="flex items-center gap-2.5 group">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-transform group-hover:scale-105">
-                            <Code2 className="h-4 w-4" />
-                        </div>
-                        <span className="font-bold text-lg tracking-tight">DevSolve</span>
+                    {/* Logo */}
+                    <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
+                        <motion.div
+                            whileHover={{ scale: 1.05, rotate: 3 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                        >
+                            <Image
+                                src="/logo-1.png"
+                                alt="DevSolve Logo"
+                                width={32}
+                                height={32}
+                                className="w-8 h-8 object-contain"
+                                priority
+                            />
+                        </motion.div>
+                        <span className="text-base font-bold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">
+                            DevSolve
+                        </span>
                     </Link>
 
-                    {/* ── Right side ── */}
-                    <div className="flex items-center gap-3">
-
-                        {/* Loading skeleton */}
-                        {isPending && (
-                            <div className="h-9 w-32 rounded-full bg-muted animate-pulse" />
-                        )}
-
-                        {/* Unauthenticated */}
-                        {!isPending && !user && (
-                            <Link
-                                href="/account-type"
-                                className={cn(buttonVariants({ size: "sm" }), "rounded-full px-5")}
-                            >
-                                Create Account
-                            </Link>
-                        )}
-
-                        {/* Authenticated — profile pill + dropdown */}
-                        {!isPending && user && (
-                            <div className="relative" ref={dropdownRef}>
-                                <button
-                                    id="profile-menu-trigger"
-                                    aria-haspopup="true"
-                                    aria-expanded={open}
-                                    onClick={() => setOpen((prev) => !prev)}
-                                    className="flex items-center gap-2.5 rounded-full border border-border bg-background px-2.5 py-1.5 text-sm font-medium transition-all hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    {/* Desktop Nav */}
+                    <nav className="hidden lg:flex items-center gap-1 relative" onMouseLeave={() => setHoveredPath(null)}>
+                        {navLinks.map((link, index) => {
+                            const isActive = pathname === link.href && index === 0;
+                            const isHovered = hoveredPath === link.name;
+                            return (
+                                <Link
+                                    key={link.name}
+                                    href={link.href}
+                                    onMouseEnter={() => setHoveredPath(link.name)}
+                                    className="relative text-sm font-medium text-slate-600 hover:text-slate-900 px-3.5 py-2 rounded-full transition-colors duration-200"
                                 >
-                                    {/* Avatar */}
-                                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold overflow-hidden">
-                                        {user.image ? (
-                                            <img
-                                                src={user.image}
-                                                alt={displayName}
-                                                className="h-full w-full object-cover"
-                                            />
-                                        ) : (
-                                            getInitials(displayName)
-                                        )}
-                                    </span>
-                                    <span className="hidden sm:block max-w-[120px] truncate">{displayName}</span>
-                                    <ChevronDown
-                                        className={cn(
-                                            "h-3.5 w-3.5 text-muted-foreground transition-transform duration-200",
-                                            open && "rotate-180"
-                                        )}
-                                    />
-                                </button>
+                                    {isHovered && (
+                                        <motion.span
+                                            layoutId="navbar-hover"
+                                            className="absolute inset-0 bg-slate-100 rounded-full -z-10"
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                                        />
+                                    )}
+                                    <span className={isActive ? "text-slate-900 font-semibold" : ""}>{link.name}</span>
+                                </Link>
+                            );
+                        })}
+                    </nav>
 
-                                {/* Dropdown panel */}
-                                {open && (
-                                    <div
-                                        role="menu"
-                                        aria-labelledby="profile-menu-trigger"
-                                        className="absolute right-0 mt-2 w-60 rounded-xl border border-border bg-popover shadow-lg shadow-black/5 overflow-hidden"
-                                        style={{ animation: "fadeSlideIn 0.15s ease-out" }}
-                                    >
-                                        {/* User info */}
-                                        <div className="px-4 py-3 border-b border-border">
-                                            <p className="text-sm font-semibold truncate">{user.name}</p>
-                                            <p className="text-xs text-muted-foreground truncate mt-0.5">{user.email}</p>
-                                        </div>
+                    {/* Right Actions */}
+                    <div className="flex items-center gap-2.5">
+                        {/* Dark Mode Toggle */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Toggle theme"
+                            className="w-9 h-9 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                        >
+                            <Moon className="w-4 h-4" />
+                            <span className="sr-only">Toggle theme</span>
+                        </Button>
 
-                                        {/* Actions */}
-                                        <div className="p-1.5 flex flex-col gap-0.5">
-                                            <Link
-                                                href="/profile"
-                                                role="menuitem"
-                                                onClick={() => setOpen(false)}
-                                                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors"
-                                            >
-                                                <User className="h-4 w-4 text-muted-foreground shrink-0" />
-                                                Profile
-                                            </Link>
-                                            <button
-                                                role="menuitem"
-                                                onClick={handleSignOut}
-                                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                                            >
-                                                <LogOut className="h-4 w-4 shrink-0" />
-                                                Sign out
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                        {/* CTA Button */}
+                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                            <Button
+                                render={<Link href="/account-type" />}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-5 h-9 rounded-full font-semibold text-sm tracking-tight shadow-md shadow-blue-500/20 group flex items-center gap-1.5 cursor-pointer"
+                            >
+                                <span>Get started</span>
+                                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                            </Button>
+                        </motion.div>
+
+                        {/* Mobile Menu Toggle Button */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            className="lg:hidden w-9 h-9 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                            aria-label="Toggle mobile menu"
+                        >
+                            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                        </Button>
                     </div>
+
                 </div>
             </div>
+
+            {/* Mobile Nav Menu Drawer */}
+            <AnimatePresence>
+                {mobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                        className="lg:hidden border-t border-slate-100 bg-white/95 backdrop-blur-md overflow-hidden px-4 py-4"
+                    >
+                        <nav className="flex flex-col gap-1.5">
+                            {navLinks.map((link) => (
+                                <Link
+                                    key={link.name}
+                                    href={link.href}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2.5 rounded-xl hover:bg-slate-100 transition-colors"
+                                >
+                                    {link.name}
+                                </Link>
+                            ))}
+                            <div className="pt-2 mt-1 border-t border-slate-100">
+                                <Button
+                                    render={<Link href="/account-type" onClick={() => setMobileMenuOpen(false)} />}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold text-sm h-10 shadow-md shadow-blue-500/20"
+                                >
+                                    Get started
+                                </Button>
+                            </div>
+                        </nav>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </header>
     );
-}
+};
+
+export default Navbar;

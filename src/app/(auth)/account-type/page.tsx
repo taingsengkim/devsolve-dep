@@ -1,5 +1,9 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { motion } from "motion/react";
 import {
     ShieldCheck,
     Lock,
@@ -10,114 +14,249 @@ import {
     BarChart3,
     UserCheck,
     User,
-    Building2
+    Building2,
+    HelpCircle,
+    ArrowRight,
+    Sparkles
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import AccountTypeButton from "./AccountTypeButton";
 
 export default function AccountTypeSelectionPage() {
     const userFeatures = [
-        { icon: ShieldCheck, text: "Discover and report bug bounty programs" },
-        { icon: Lock, text: "Access private and public programs" },
-        { icon: Trophy, text: "Build your reputation and earn rewards" },
-        { icon: Users, text: "Connect with a global security community" },
+        { icon: ShieldCheck, text: "Discover & report bug bounty programs" },
+        { icon: Lock, text: "Access private and public vulnerability programs" },
+        { icon: Trophy, text: "Build security reputation & earn financial rewards" },
+        { icon: Users, text: "Connect with a global security researcher community" },
     ];
 
     const companyFeatures = [
-        { icon: PlusCircle, text: "Create and manage bug bounty programs" },
-        { icon: Inbox, text: "Receive and triage vulnerability reports" },
-        { icon: BarChart3, text: "Track program performance & metrics" },
-        { icon: UserCheck, text: "Manage your team and submissions" },
+        { icon: PlusCircle, text: "Create & manage custom bug bounty programs" },
+        { icon: Inbox, text: "Receive, triage, and manage vulnerability reports" },
+        { icon: BarChart3, text: "Track program performance & security metrics" },
+        { icon: UserCheck, text: "Manage security team access & submissions" },
     ];
 
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.15,
+                delayChildren: 0.1,
+            },
+        },
+    };
+
+    const cardVariants = {
+        hidden: { opacity: 0, y: 24 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.5,
+                ease: [0.16, 1, 0.3, 1],
+            },
+        },
+    };
+
     return (
-        <div className="min-h-screen bg-[#F5F5F5] flex flex-col justify-center items-center px-4 py-12">
-            {/* Header */}
-            <div className="text-center mb-10 max-w-md">
-                <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-                    Choose your account type
-                </h1>
-                <p className="mt-2 text-sm text-slate-500">
-                    Select how you want to use DevSolve and get started
-                </p>
+        <div className="min-h-[100dvh] bg-slate-50/60 relative overflow-hidden flex flex-col justify-between items-center px-4 py-10 sm:px-6 lg:px-8">
+            {/* Background Ambient Glows */}
+            <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 overflow-hidden -z-10">
+                <motion.div
+                    animate={{ scale: [1, 1.08, 1], opacity: [0.3, 0.5, 0.3] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute -top-32 left-1/4 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl"
+                />
+                <motion.div
+                    animate={{ scale: [1, 1.08, 1], opacity: [0.3, 0.5, 0.3] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+                    className="absolute -top-32 right-1/4 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl"
+                />
             </div>
 
-            {/* Cards Container */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full">
-
-                {/* User Card */}
-                <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <CardContent className="p-8 flex flex-col items-center text-center h-full justify-between">
-                        <div className="w-full">
-                            <div className="w-24 h-24 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto mb-6">
-                                <div className="w-16 h-16 rounded-full bg-blue-100/80 flex items-center justify-center">
-                                    <User className="w-8 h-8 text-blue-600" />
-                                </div>
-                            </div>
-
-                            <h2 className="text-2xl font-bold text-blue-600 mb-6">
-                                I&#39;m a User
-                            </h2>
-
-                            <ul className="space-y-4 text-left text-sm text-slate-600 mb-8 w-full max-w-[280px] mx-auto">
-                                {userFeatures.map((item, index) => {
-                                    const Icon = item.icon;
-                                    return (
-                                        <li key={index} className="flex items-start gap-3">
-                                            <Icon className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
-                                            <span>{item.text}</span>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        </div>
-
-                        {/* Injected Client Component */}
-                        <AccountTypeButton label="Continue as User" role="user" theme="blue" />
-                    </CardContent>
-                </Card>
-
-                {/* Company Card */}
-                <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <CardContent className="p-8 flex flex-col items-center text-center h-full justify-between">
-                        <div className="w-full">
-                            <div className="w-24 h-24 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto mb-6">
-                                <div className="w-16 h-16 rounded-full bg-emerald-100/80 flex items-center justify-center">
-                                    <Building2 className="w-8 h-8 text-emerald-600" />
-                                </div>
-                            </div>
-
-                            <h2 className="text-2xl font-bold text-emerald-600 mb-6">
-                                I&#39;m a Company
-                            </h2>
-
-                            <ul className="space-y-4 text-left text-sm text-slate-600 mb-8 w-full max-w-[280px] mx-auto">
-                                {companyFeatures.map((item, index) => {
-                                    const Icon = item.icon;
-                                    return (
-                                        <li key={index} className="flex items-start gap-3">
-                                            <Icon className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                                            <span>{item.text}</span>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        </div>
-
-                        {/* Injected Client Component */}
-                        <AccountTypeButton label="Continue as Company" role="company" theme="emerald" />
-                    </CardContent>
-                </Card>
-
-            </div>
-
-            {/* Footer Link */}
-            <p className="mt-12 text-sm text-slate-500">
-                Not sure which one to choose?{" "}
-                <Link href="" className="text-blue-600 hover:underline font-medium">
-                    Learn more
+            {/* Top Brand Bar */}
+            <motion.div
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="w-full max-w-5xl flex justify-between items-center mb-6 sm:mb-10"
+            >
+                <Link href="/" className="flex items-center gap-2.5 font-bold text-xl tracking-tight text-slate-900 hover:opacity-80 transition-opacity">
+                    <Image
+                        src="/logo-1.png"
+                        alt="DevSolve Logo"
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 object-contain"
+                        priority
+                    />
+                    <span>DevSolve</span>
                 </Link>
-            </p>
+                <div className="text-xs sm:text-sm text-slate-600 font-medium">
+                    Already have an account?{" "}
+                    <Link href="/" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
+                        Sign in
+                    </Link>
+                </div>
+            </motion.div>
+
+            {/* Main Content Container */}
+            <div className="w-full max-w-5xl my-auto flex flex-col items-center">
+                {/* Header */}
+                <motion.div
+                    initial={{ opacity: 0, y: -16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.05 }}
+                    className="text-center mb-10 sm:mb-12 max-w-xl mx-auto"
+                >
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
+                        Choose your account type
+                    </h1>
+                </motion.div>
+
+                {/* Cards Container */}
+                <motion.div
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 w-full max-w-4xl"
+                >
+                    {/* Researcher / User Card */}
+                    <motion.div variants={cardVariants} whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
+                        <Card className="group relative bg-white border border-slate-200/80 rounded-3xl shadow-sm hover:shadow-xl hover:shadow-blue-500/5 hover:border-blue-500/30 transition-all duration-300 flex flex-col justify-between overflow-hidden h-full">
+                            {/* Top Gradient Highlight */}
+                            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            
+                            <CardContent className="p-6 sm:p-8 flex flex-col justify-between h-full">
+                                <div>
+                                    {/* Badge & Icon Header */}
+                                    <div className="flex items-start justify-between mb-6">
+                                        <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform duration-300 shadow-sm">
+                                            <User className="w-7 h-7 text-blue-600" />
+                                        </div>
+                                        <Badge className="bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-50 font-medium text-xs rounded-full px-3 py-1">
+                                            For Researchers
+                                        </Badge>
+                                    </div>
+
+                                    <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight group-hover:text-blue-600 transition-colors">
+                                        Security Researcher
+                                    </h2>
+                                    <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+                                        Find security flaws, submit vulnerability reports, build your reputation, and earn bounties.
+                                    </p>
+
+                                    {/* Divider */}
+                                    <div className="h-px w-full bg-slate-100 mb-6" />
+
+                                    {/* Features List */}
+                                    <ul className="space-y-3.5 mb-8">
+                                        {userFeatures.map((item, index) => {
+                                            const Icon = item.icon;
+                                            return (
+                                                <motion.li
+                                                    key={index}
+                                                    initial={{ opacity: 0, x: -8 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ delay: 0.2 + index * 0.08 }}
+                                                    className="flex items-center gap-3 text-sm text-slate-700"
+                                                >
+                                                    <div className="w-6 h-6 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+                                                        <Icon className="w-3.5 h-3.5 text-blue-600" />
+                                                    </div>
+                                                    <span className="font-medium text-slate-700">{item.text}</span>
+                                                </motion.li>
+                                            );
+                                        })}
+                                    </ul>
+                                </div>
+
+                                {/* Action Button */}
+                                <div className="pt-2">
+                                    <AccountTypeButton label="Continue as Researcher" role="user" theme="blue" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+
+                    {/* Company / Organization Card */}
+                    <motion.div variants={cardVariants} whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
+                        <Card className="group relative bg-white border border-slate-200/80 rounded-3xl shadow-sm hover:shadow-xl hover:shadow-emerald-500/5 hover:border-emerald-500/30 transition-all duration-300 flex flex-col justify-between overflow-hidden h-full">
+                            {/* Top Gradient Highlight */}
+                            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                            <CardContent className="p-6 sm:p-8 flex flex-col justify-between h-full">
+                                <div>
+                                    {/* Badge & Icon Header */}
+                                    <div className="flex items-start justify-between mb-6">
+                                        <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform duration-300 shadow-sm">
+                                            <Building2 className="w-7 h-7 text-emerald-600" />
+                                        </div>
+                                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-50 font-medium text-xs rounded-full px-3 py-1">
+                                            For Companies
+                                        </Badge>
+                                    </div>
+
+                                    <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight group-hover:text-emerald-600 transition-colors">
+                                        Organization / Company
+                                    </h2>
+                                    <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+                                        Launch bug bounty programs, receive report submissions, triage issues, and secure your products.
+                                    </p>
+
+                                    {/* Divider */}
+                                    <div className="h-px w-full bg-slate-100 mb-6" />
+
+                                    {/* Features List */}
+                                    <ul className="space-y-3.5 mb-8">
+                                        {companyFeatures.map((item, index) => {
+                                            const Icon = item.icon;
+                                            return (
+                                                <motion.li
+                                                    key={index}
+                                                    initial={{ opacity: 0, x: -8 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ delay: 0.35 + index * 0.08 }}
+                                                    className="flex items-center gap-3 text-sm text-slate-700"
+                                                >
+                                                    <div className="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+                                                        <Icon className="w-3.5 h-3.5 text-emerald-600" />
+                                                    </div>
+                                                    <span className="font-medium text-slate-700">{item.text}</span>
+                                                </motion.li>
+                                            );
+                                        })}
+                                    </ul>
+                                </div>
+
+                                {/* Action Button */}
+                                <div className="pt-2">
+                                    <AccountTypeButton label="Continue as Organization" role="company" theme="emerald" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+
+                </motion.div>
+            </div>
+
+            {/* Footer Navigation / Support Link */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+                className="mt-8 sm:mt-12 text-center text-xs sm:text-sm text-slate-500 flex items-center gap-2"
+            >
+                <HelpCircle className="w-4 h-4 text-slate-400" />
+                <span>Not sure which account type is right for you?</span>
+                <Link href="#" className="text-blue-600 hover:text-blue-700 hover:underline font-semibold inline-flex items-center gap-0.5">
+                    <span>Read guide</span>
+                    <ArrowRight className="w-3 h-3" />
+                </Link>
+            </motion.div>
         </div>
     );
 }

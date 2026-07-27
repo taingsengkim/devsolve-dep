@@ -1,17 +1,17 @@
 "use client";
 
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {ChevronRight, Loader2} from "lucide-react";
-import {authClient} from "@/lib/auth/auth-client";
-
+import { ChevronRight, Loader2 } from "lucide-react";
+import { authClient } from "@/lib/auth/auth-client";
 
 interface AccountTypeButtonProps {
     label: string;
     theme: "blue" | "emerald";
+    role?: "user" | "company";
 }
 
-export default function AccountTypeButton({ label, theme }: AccountTypeButtonProps) {
+export default function AccountTypeButton({ label, theme, role }: AccountTypeButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSelection = async () => {
@@ -39,26 +39,25 @@ export default function AccountTypeButton({ label, theme }: AccountTypeButtonPro
     };
 
     const themeClasses = theme === "blue"
-        ? "border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
-        : "border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700";
+        ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 active:scale-[0.99]"
+        : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20 active:scale-[0.99]";
 
     return (
         <Button
             onClick={handleSelection}
             disabled={isLoading}
-            className={`w-full sm:w-auto px-8 rounded-full font-medium group transition-colors ${themeClasses}`}
-            variant="outline"
+            className={`w-full h-11 px-8 rounded-full font-semibold group transition-all duration-200 ${themeClasses}`}
         >
             {isLoading ? (
-                <>
-                    Connecting...
-                    <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-                </>
+                <span className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Connecting...</span>
+                </span>
             ) : (
-                <>
-                    {label}
-                    <ChevronRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-0.5" />
-                </>
+                <span className="flex items-center justify-center gap-2">
+                    <span>{label}</span>
+                    <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </span>
             )}
         </Button>
     );
