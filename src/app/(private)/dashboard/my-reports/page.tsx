@@ -269,11 +269,7 @@ export default function MyReportsPage() {
                     {/* Report ID */}
                     <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
                       <Link
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setSelectedReport(report);
-                        }}
+                        href={`/dashboard/my-reports/${report.id}`}
                         className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline decoration-2 underline-offset-2"
                       >
                         {report.reportId}
@@ -289,9 +285,11 @@ export default function MyReportsPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col min-w-0">
-                          <strong className="text-xs sm:text-sm font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
-                            {report.title}
-                          </strong>
+                          <Link href={`/dashboard/my-reports/${report.id}`}>
+                            <strong className="text-xs sm:text-sm font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors block">
+                              {report.title}
+                            </strong>
+                          </Link>
                           <span className="text-xs text-slate-500 truncate">{report.program}</span>
                         </div>
                       </div>
@@ -455,7 +453,10 @@ export default function MyReportsPage() {
                 >
                   Close
                 </Button>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs">
+                <Button
+                  onClick={() => router.push(`/dashboard/my-reports/${selectedReport.id}`)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs cursor-pointer font-semibold"
+                >
                   Full Details
                 </Button>
               </div>

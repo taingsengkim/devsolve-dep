@@ -22,21 +22,55 @@ export interface ReportsFilterParams {
   severity?: string;
 }
 
+export interface CommentItem {
+  id: string;
+  author: string;
+  avatar: string;
+  isAdmin?: boolean;
+  timestamp: string;
+  text: string;
+}
+
+export interface ActivityUpdate {
+  id: string;
+  actor: string;
+  actionText: string;
+  statusBadge?: string;
+  timestamp: string;
+}
+
+export interface ReportDetail extends ReportItem {
+  submittedAgo: string;
+  claimedSeverity: string;
+  confirmedSeverity: string;
+  cvssScore: string;
+  rewardStatus: string;
+  assetType: string;
+  environment: string;
+  policyUrl: string;
+  description: string;
+  impact: string;
+  reproduceSteps: string[];
+  attachments: { name: string; size?: string; type: string }[];
+  comments: CommentItem[];
+  updates: ActivityUpdate[];
+}
+
 // Initial mock dataset for reports matching the prompt specs
 const MOCK_REPORTS: ReportItem[] = [
   {
     id: "1",
     reportId: "RPT-2847",
-    title: "SQL Injection in /api/v1/users",
-    program: "FinStream Bug Bounty",
-    avatarLetter: "U",
+    title: "Broken Access Control on User Profile API",
+    program: "Global Enterprise VDP",
+    avatarLetter: "B",
     type: "Bounty",
-    severity: "CRITICAL",
-    status: "TRIAGING",
+    severity: "HIGH",
+    status: "ACCEPTED",
     bountyOrRep: "$1,500.00",
     isBountyHighlight: true,
     lastActivityDate: "Oct 24, 2023",
-    lastActivityBadge: "NEW COMMENT",
+    lastActivityBadge: "STATUS UPDATE",
   },
   {
     id: "2",
@@ -94,6 +128,67 @@ const MOCK_REPORTS: ReportItem[] = [
   },
 ];
 
+const MOCK_REPORT_DETAIL: ReportDetail = {
+  id: "1",
+  reportId: "RPT-2847",
+  title: "Broken Access Control on User Profile API",
+  program: "Global Enterprise VDP",
+  avatarLetter: "B",
+  type: "Bounty",
+  severity: "HIGH",
+  status: "ACCEPTED",
+  bountyOrRep: "$1,500.00",
+  isBountyHighlight: true,
+  lastActivityDate: "Oct 24, 2023",
+  lastActivityBadge: "STATUS UPDATE",
+  submittedAgo: "Submitted 4 days ago",
+  claimedSeverity: "Critical (9.0)",
+  confirmedSeverity: "High (8.1)",
+  cvssScore: "8.1",
+  rewardStatus: "Status: Pending Transfer",
+  assetType: "REST API",
+  environment: "Production",
+  policyUrl: "#",
+  description:
+    "A vulnerability was discovered in the User Profile API endpoint (/api/v1/profile/[id]) where an authenticated user could access and modify any other user's profile details by simply changing the id parameter. The server fails to validate if the authenticated user owns the resource being requested.",
+  impact:
+    "This is a classic Insecure Direct Object Reference (IDOR). Attackers could harvest private information for the entire user base, including email addresses, phone numbers, and physical addresses.",
+  reproduceSteps: [
+    "Log in as user A.",
+    "Intercept the request to GET /api/v1/profile/12345 (your ID).",
+    "Change the ID to 12346 (user B's ID).",
+    "Observe that the full profile details for user B are returned, including PII.",
+  ],
+  attachments: [{ name: "payload.json", size: "2.4 KB", type: "application/json" }],
+  comments: [
+    {
+      id: "c1",
+      author: "hunter_x_ray",
+      avatar: "H",
+      isAdmin: false,
+      timestamp: "Oct 24, 14:32",
+      text: "I've attached the proof of concept payload. This works even with standard user privileges. Let menu know if you need more info.",
+    },
+    {
+      id: "c2",
+      author: "Alex (SecOps)",
+      avatar: "A",
+      isAdmin: true,
+      timestamp: "Oct 24, 16:15",
+      text: "Thanks for the detailed report. We have validated this and our engineering team is working on a fix. This qualifies for our High severity tier.",
+    },
+  ],
+  updates: [
+    {
+      id: "u1",
+      actor: "DevSolve Team",
+      actionText: 'changed status to "Accepted"',
+      statusBadge: "Accepted",
+      timestamp: "Oct 24, 16:10",
+    },
+  ],
+};
+
 export const reportsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getReports: builder.query<ReportItem[], ReportsFilterParams | void>({
@@ -136,7 +231,42 @@ export const reportsApi = baseApi.injectEndpoints({
       },
       providesTags: ["Report"],
     }),
+    getReportById: builder.query<ReportDetail, string>({
+      queryFn: (id) => {
+        const found = MOCK_REPORTS.find((r) => r.id === id || r.reportId.toLowerCase() === id.toLowerCase());
+        if (found) {
+          return {
+            data: {
+              ...MOCK_REPORT_DETAIL,
+              id: found.id,
+              reportId: found.reportId,
+              title: found.title,
+              program: found.program,
+              severity: found.severity,
+              status: found.status,
+              bountyOrRep: found.bountyOrRep,
+            },
+          };
+        }
+        return { data: MOCK_REPORT_DETAIL };
+      },
+      providesTags: (_result, _error, id) => [{ type: "Report", id }],
+    }),
+    addReportComment: builder.mutation<CommentItem, { reportId: string; text: string }>({
+      queryFn: ({ text }) => {
+        const newComment: CommentItem = {
+          id: `c_${Date.now()}`,
+          author: "hunter_x_ray",
+          avatar: "H",
+          isAdmin: false,
+          timestamp: "Just now",
+          text,
+        };
+        return { data: newComment };
+      },
+      invalidatesTags: (_result, _error, { reportId }) => [{ type: "Report", id: reportId }],
+    }),
   }),
 });
 
-export const { useGetReportsQuery } = reportsApi;
+export const { useGetReportsQuery, useGetReportByIdQuery, useAddReportCommentMutation } = reportsApi;
