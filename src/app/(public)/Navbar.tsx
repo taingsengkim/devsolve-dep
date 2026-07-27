@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Moon, Menu, X, ArrowRight } from 'lucide-react';
+import { Moon, Menu, X, ArrowRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Button } from '@/components/ui/button';
+import { authClient } from '@/lib/auth/auth-client';
 
 const navLinks = [
     { name: 'Home', href: '/' },
@@ -20,7 +21,50 @@ const navLinks = [
 const Navbar = () => {
     const [hoveredPath, setHoveredPath] = useState<string | null>(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
     const pathname = usePathname();
+
+    useEffect(() => {
+        const handleResetLoading = () => {
+            setIsLoggingIn(false);
+        };
+
+        window.addEventListener("pageshow", handleResetLoading);
+        window.addEventListener("focus", handleResetLoading);
+
+        return () => {
+            window.removeEventListener("pageshow", handleResetLoading);
+            window.removeEventListener("focus", handleResetLoading);
+        };
+    }, []);
+
+    const handleLogin = async () => {
+        setIsLoggingIn(true);
+        try {
+            const result = await authClient.signIn.oauth2({
+                providerId: "keycloak",
+                callbackURL: "/",
+                disableRedirect: true,
+            });
+
+            if (result?.error) {
+                console.error("[Auth] Keycloak sign-in failed:", result.error);
+                setIsLoggingIn(false);
+                return;
+            }
+
+            if (result?.data?.url) {
+                console.log("[Auth] Redirecting to Keycloak:", result.data.url);
+                window.location.href = result.data.url;
+            } else {
+                console.error("[Auth] No redirect URL returned:", result);
+                setIsLoggingIn(false);
+            }
+        } catch (error) {
+            console.error("[Auth] Keycloak sign-in error:", error);
+            setIsLoggingIn(false);
+        }
+    };
 
     return (
         <header className="w-full bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-[100] transition-colors duration-200">
@@ -89,9 +133,27 @@ const Navbar = () => {
                             <span className="sr-only">Toggle theme</span>
                         </Button>
 
+                        {/* Log in Button */}
+                        <Button
+                            variant="ghost"
+                            onClick={handleLogin}
+                            disabled={isLoggingIn}
+                            className="text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 px-4 h-9 rounded-full transition-colors cursor-pointer"
+                        >
+                            {isLoggingIn ? (
+                                <span className="flex items-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <span>Connecting...</span>
+                                </span>
+                            ) : (
+                                "Log in"
+                            )}
+                        </Button>
+
                         {/* CTA Button */}
                         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                             <Button
+                                nativeButton={false}
                                 render={<Link href="/account-type" />}
                                 className="bg-blue-600 hover:bg-blue-700 text-white px-5 h-9 rounded-full font-semibold text-sm tracking-tight shadow-md shadow-blue-500/20 group flex items-center gap-1.5 cursor-pointer"
                             >
@@ -136,8 +198,27 @@ const Navbar = () => {
                                     {link.name}
                                 </Link>
                             ))}
-                            <div className="pt-2 mt-1 border-t border-slate-100">
+                            <div className="pt-2 mt-1 border-t border-slate-100 flex flex-col gap-2">
                                 <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        setMobileMenuOpen(false);
+                                        handleLogin();
+                                    }}
+                                    disabled={isLoggingIn}
+                                    className="w-full border-slate-200 text-slate-700 hover:bg-slate-50 rounded-full font-semibold text-sm h-10"
+                                >
+                                    {isLoggingIn ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            <span>Connecting...</span>
+                                        </span>
+                                    ) : (
+                                        "Log in"
+                                    )}
+                                </Button>
+                                <Button
+                                    nativeButton={false}
                                     render={<Link href="/account-type" onClick={() => setMobileMenuOpen(false)} />}
                                     className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold text-sm h-10 shadow-md shadow-blue-500/20"
                                 >

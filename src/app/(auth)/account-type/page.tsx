@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "motion/react";
+import { authClient } from "@/lib/auth/auth-client";
 import {
     ShieldCheck,
     Lock,
@@ -17,13 +18,58 @@ import {
     Building2,
     HelpCircle,
     ArrowRight,
-    Sparkles
+    Sparkles,
+    Loader2
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import AccountTypeButton from "./AccountTypeButton";
 
 export default function AccountTypeSelectionPage() {
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+    useEffect(() => {
+        const handleResetLoading = () => {
+            setIsLoggingIn(false);
+        };
+
+        window.addEventListener("pageshow", handleResetLoading);
+        window.addEventListener("focus", handleResetLoading);
+
+        return () => {
+            window.removeEventListener("pageshow", handleResetLoading);
+            window.removeEventListener("focus", handleResetLoading);
+        };
+    }, []);
+
+    const handleLogin = async () => {
+        setIsLoggingIn(true);
+        try {
+            const result = await authClient.signIn.oauth2({
+                providerId: "keycloak",
+                callbackURL: "/",
+                disableRedirect: true,
+            });
+
+            if (result?.error) {
+                console.error("[Auth] Keycloak sign-in failed:", result.error);
+                setIsLoggingIn(false);
+                return;
+            }
+
+            if (result?.data?.url) {
+                console.log("[Auth] Redirecting to Keycloak:", result.data.url);
+                window.location.href = result.data.url;
+            } else {
+                console.error("[Auth] No redirect URL returned:", result);
+                setIsLoggingIn(false);
+            }
+        } catch (error) {
+            console.error("[Auth] Keycloak sign-in error:", error);
+            setIsLoggingIn(false);
+        }
+    };
+
     const userFeatures = [
         { icon: ShieldCheck, text: "Discover & report bug bounty programs" },
         { icon: Lock, text: "Access private and public vulnerability programs" },
@@ -95,11 +141,22 @@ export default function AccountTypeSelectionPage() {
                     />
                     <span>DevSolve</span>
                 </Link>
-                <div className="text-xs sm:text-sm text-slate-600 font-medium">
-                    Already have an account?{" "}
-                    <Link href="/" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
-                        Sign in
-                    </Link>
+                <div className="text-xs sm:text-sm text-slate-600 font-medium flex items-center gap-1">
+                    <span>Already have an account?</span>{" "}
+                    <button
+                        onClick={handleLogin}
+                        disabled={isLoggingIn}
+                        className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-1"
+                    >
+                        {isLoggingIn ? (
+                            <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span>Connecting...</span>
+                            </>
+                        ) : (
+                            "Login"
+                        )}
+                    </button>
                 </div>
             </motion.div>
 
@@ -113,7 +170,7 @@ export default function AccountTypeSelectionPage() {
                     className="text-center mb-10 sm:mb-12 max-w-xl mx-auto"
                 >
                     <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
-                        Choose your account type
+                        Choose account type
                     </h1>
                 </motion.div>
 
@@ -176,7 +233,7 @@ export default function AccountTypeSelectionPage() {
 
                                 {/* Action Button */}
                                 <div className="pt-2">
-                                    <AccountTypeButton label="Continue as Researcher" role="user" theme="blue" />
+                                    <AccountTypeButton label="Continue as Researcher" role="user" href="/register/user" theme="blue" />
                                 </div>
                             </CardContent>
                         </Card>
@@ -234,7 +291,7 @@ export default function AccountTypeSelectionPage() {
 
                                 {/* Action Button */}
                                 <div className="pt-2">
-                                    <AccountTypeButton label="Continue as Organization" role="company" theme="emerald" />
+                                    <AccountTypeButton label="Continue as Organization" role="company" href="/register/company" theme="emerald" />
                                 </div>
                             </CardContent>
                         </Card>
