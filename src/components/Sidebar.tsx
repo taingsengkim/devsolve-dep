@@ -16,6 +16,7 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +31,7 @@ function getInitials(text: string): string {
 }
 
 const Sidebar = () => {
+  const pathname = usePathname();
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
   const displayName = user?.name ?? user?.email ?? "User";
@@ -50,20 +52,19 @@ const Sidebar = () => {
     }
   };
 
-  // Array to map through navigation items (Keeps JSX clean - DRY Principle)
   const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, active: true },
-    { name: 'Reports', href: '/dashboard', icon: FileText },
-    { name: 'Rewards', href: '/dashboard', icon: CircleDollarSign },
-    { name: 'Leaderboard', href: '/dashboard', icon: Trophy },
-    { name: 'Notification', href: '/dashboard', icon: Bell, badge: 3 },
-    { name: 'Solution', href: '/dashboard', icon: BookOpen },
-    { name: 'Programs', href: '/dashboard', icon: Globe },
-    { name: 'Bookmarks', href: '/dashboard', icon: Bookmark, badge: 3 },
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Reports', href: '/dashboard/my-reports', icon: FileText },
+    { name: 'Rewards', href: '/dashboard/rewards', icon: CircleDollarSign },
+    { name: 'Leaderboard', href: '/dashboard/leaderboard', icon: Trophy },
+    { name: 'Notification', href: '/dashboard/notifications', icon: Bell, badge: 3 },
+    { name: 'Solution', href: '/dashboard/solution', icon: BookOpen },
+    { name: 'Programs', href: '/dashboard/programs', icon: Globe },
+    { name: 'Bookmarks', href: '/dashboard/bookmarks', icon: Bookmark, badge: 3 },
   ];
 
   return (
-    <aside className="flex flex-col w-[260px] h-screen sticky top-0 rounded-r-[20px] border border-blue-600/15 p-5 bg-[linear-gradient(331deg,rgba(255,255,255,0.10)_59.38%,rgba(166,179,209,0.25)_92.74%,rgba(21,56,133,0.50)_132.79%),linear-gradient(154deg,rgba(255,255,255,0.30)_76.51%,rgba(37,99,235,0.30)_132.61%)] shadow-[0_4px_32px_0_rgba(37,99,235,0.10)]">
+    <aside className="flex flex-col w-[260px] shrink-0 h-screen sticky top-0 rounded-r-[20px] border border-blue-600/15 p-5 bg-[linear-gradient(331deg,rgba(255,255,255,0.10)_59.38%,rgba(166,179,209,0.25)_92.74%,rgba(21,56,133,0.50)_132.79%),linear-gradient(154deg,rgba(255,255,255,0.30)_76.51%,rgba(37,99,235,0.30)_132.61%)] shadow-[0_4px_32px_0_rgba(37,99,235,0.10)]">
 
       {/* Logo Section */}
       <Link href="/" className="flex flex-col items-center justify-center mt-2 mb-4 shrink-0">
@@ -113,7 +114,7 @@ const Sidebar = () => {
       <nav className="flex-1 min-h-0 space-y-1 overflow-y-auto pr-1">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = item.active;
+          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
 
           return (
             <Link key={item.name} href={item.href} className="block w-full">
