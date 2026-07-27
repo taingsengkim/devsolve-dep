@@ -1,22 +1,26 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getAuthToken } from "@/lib/auth/cookie-utils";
+import { authClient } from "@/lib/auth/auth-client";
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export const baseApi = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
     baseUrl,
     credentials: "include",
-    prepareHeaders: (headers) => {
-      const token = getAuthToken();
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+    prepareHeaders: async (headers) => {
+      // Get the Keycloak access token from Better Auth (auto-refreshes if expired)
+      const result = await authClient.getAccessToken({
+        providerId: "keycloak",
+      });
+
+      if (result?.data?.accessToken) {
+        headers.set("Authorization", `Bearer ${result.data.accessToken}`);
       }
+
       return headers;
     },
   }),
-  tagTypes: ["User", "Post"],
+  tagTypes: ["User", "Post", "Report"],
   endpoints: () => ({}),
 });
-
