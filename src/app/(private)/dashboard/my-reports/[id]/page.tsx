@@ -95,35 +95,35 @@ export default function ReportDetailPage() {
     switch (severity) {
       case "CRITICAL":
         return (
-          <Badge className="bg-red-600 hover:bg-red-700 text-white font-semibold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
+          <Badge className="bg-red-600 hover:bg-red-700 text-white font-semibold text-sm px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             CRITICAL
           </Badge>
         );
       case "HIGH":
         return (
-          <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
+          <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-white" />
             HIGH
           </Badge>
         );
       case "MEDIUM":
         return (
-          <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
+          <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-white" />
             MEDIUM
           </Badge>
         );
       case "LOW":
         return (
-          <Badge className="bg-slate-500 hover:bg-slate-600 text-white font-semibold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
+          <Badge className="bg-slate-500 hover:bg-slate-600 text-white font-semibold text-sm px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-white" />
             LOW
           </Badge>
         );
       default:
         return (
-          <Badge className="bg-slate-500 text-white font-semibold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
+          <Badge className="bg-slate-500 text-white font-semibold text-sm px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
             {severity}
           </Badge>
         );
@@ -134,42 +134,42 @@ export default function ReportDetailPage() {
     switch (status) {
       case "TRIAGING":
         return (
-          <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <Clock className="w-3 h-3 text-amber-600" />
+          <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <Clock className="w-3.5 h-3.5 text-amber-600" />
             TRIAGING
           </Badge>
         );
       case "RESOLVED":
         return (
-          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
             RESOLVED
           </Badge>
         );
       case "ACCEPTED":
         return (
-          <Badge variant="outline" className="bg-blue-500/10 text-blue-700 border-blue-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <Award className="w-3 h-3 text-blue-600" />
+          <Badge variant="outline" className="bg-blue-500/10 text-blue-700 border-blue-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <Award className="w-3.5 h-3.5 text-blue-600" />
             ACCEPTED
           </Badge>
         );
       case "SUBMITTED":
         return (
-          <Badge variant="outline" className="bg-indigo-500/10 text-indigo-700 border-indigo-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <AlertCircle className="w-3 h-3 text-indigo-600" />
+          <Badge variant="outline" className="bg-indigo-500/10 text-indigo-700 border-indigo-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <AlertCircle className="w-3.5 h-3.5 text-indigo-600" />
             SUBMITTED
           </Badge>
         );
       case "REJECTED":
         return (
-          <Badge variant="outline" className="bg-rose-500/10 text-rose-700 border-rose-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <XCircle className="w-3 h-3 text-rose-600" />
+          <Badge variant="outline" className="bg-rose-500/10 text-rose-700 border-rose-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <XCircle className="w-3.5 h-3.5 text-rose-600" />
             REJECTED
           </Badge>
         );
       default:
         return (
-          <Badge variant="outline" className="bg-slate-100 text-slate-700 border-slate-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+          <Badge variant="outline" className="bg-slate-100 text-slate-700 border-slate-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
             {status}
           </Badge>
         );
@@ -213,7 +213,7 @@ export default function ReportDetailPage() {
               {report.reportId}
             </Badge>
           </div>
-          <p className="text-sm text-slate-500 font-medium">
+          <p className="text-base text-slate-500 font-medium">
             {report.program} &bull; Submitted {report.submittedAgo}
           </p>
         </div>
@@ -270,13 +270,13 @@ export default function ReportDetailPage() {
               <div className="flex items-center gap-2.5 shrink-0">
                 <Button
                   variant="outline"
-                  className="rounded-xl border-slate-200 bg-white text-slate-700 font-semibold px-4 py-2 hover:bg-slate-100 text-xs flex items-center gap-2 cursor-pointer shadow-xs"
+                  className="rounded-xl border-slate-200 bg-white text-slate-700 font-semibold px-4 py-2 hover:bg-slate-100 text-sm flex items-center gap-2 cursor-pointer shadow-xs"
                 >
-                  <Share2 className="w-3.5 h-3.5 text-slate-600" />
+                  <Share2 className="w-4 h-4 text-slate-600" />
                   <span>Share</span>
                 </Button>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl text-xs flex items-center gap-2 cursor-pointer shadow-xs">
-                  <Pencil className="w-3.5 h-3.5" />
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl text-sm flex items-center gap-2 cursor-pointer shadow-xs">
+                  <Pencil className="w-4 h-4" />
                   <span>Request Review</span>
                 </Button>
               </div>
@@ -301,7 +301,7 @@ export default function ReportDetailPage() {
                   <h3 className="text-lg font-bold text-slate-900">
                     This report has been marked as Not Applicable
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                  <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
                     After thorough review, the security team has determined that the reported vulnerability does not pose a functional security risk to the production environment or falls outside the current program scope.
                   </p>
                 </div>
@@ -319,15 +319,15 @@ export default function ReportDetailPage() {
                   <span className="text-xs text-slate-400 font-medium">2 hours ago</span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-slate-600 italic leading-relaxed font-normal">
+                <p className="text-sm sm:text-base text-slate-600 italic leading-relaxed font-normal">
                   &quot;Thank you for your report. After investigation, we have determined that this endpoint is behind a legacy firewall that sanitizes all inputs, making this non-exploitable in a production environment. However, we appreciate the effort and thoroughness of your documentation.&quot;
                 </p>
 
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="bg-slate-100 text-slate-600 text-xs font-semibold px-3 py-1 rounded-full border border-slate-200/80">
+                  <span className="bg-slate-100 text-slate-600 text-sm font-semibold px-3.5 py-1 rounded-full border border-slate-200/80">
                     Non-Exploitable
                   </span>
-                  <span className="bg-slate-100 text-slate-600 text-xs font-semibold px-3 py-1 rounded-full border border-slate-200/80">
+                  <span className="bg-slate-100 text-slate-600 text-sm font-semibold px-3.5 py-1 rounded-full border border-slate-200/80">
                     WAF Protection
                   </span>
                 </div>
@@ -343,20 +343,20 @@ export default function ReportDetailPage() {
 
                 {/* Sub-block 1: DESCRIPTION */}
                 <div className="space-y-1.5">
-                  <h3 className="text-xs font-bold text-slate-900 tracking-wide uppercase">
+                  <h3 className="text-sm font-bold text-slate-900 tracking-wide uppercase">
                     DESCRIPTION
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                    The <code className="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono text-xs border border-slate-200/60">/search</code> endpoint is vulnerable to Reflected Cross-Site Scripting (XSS) via the <code className="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono text-xs border border-slate-200/60">q</code> parameter. An attacker can inject malicious JavaScript that executes in the context of the user&apos;s session.
+                  <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
+                    The <code className="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono text-xs sm:text-sm border border-slate-200/60">/search</code> endpoint is vulnerable to Reflected Cross-Site Scripting (XSS) via the <code className="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono text-xs sm:text-sm">q</code> parameter. An attacker can inject malicious JavaScript that executes in the context of the user&apos;s session.
                   </p>
                 </div>
 
                 {/* Sub-block 2: PAYLOAD */}
                 <div className="space-y-2 pt-2">
-                  <h3 className="text-xs font-bold text-slate-900 tracking-wide uppercase">
+                  <h3 className="text-sm font-bold text-slate-900 tracking-wide uppercase">
                     PAYLOAD
                   </h3>
-                  <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 font-mono text-xs sm:text-sm text-slate-700 flex items-center justify-between gap-3">
+                  <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 font-mono text-sm sm:text-base text-slate-700 flex items-center justify-between gap-3">
                     <code className="break-all">/search?q=%3Cscript%3Ealert(document.domain)%3C/script%3E</code>
                     <Button
                       size="icon"
@@ -379,14 +379,14 @@ export default function ReportDetailPage() {
                 <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-white/5 rounded-full pointer-events-none" />
 
                 <h3 className="text-xl font-bold tracking-tight text-white">What&apos;s Next?</h3>
-                <p className="text-xs sm:text-sm text-blue-100 leading-relaxed font-normal">
+                <p className="text-sm sm:text-base text-blue-100 leading-relaxed font-normal">
                   Don&apos;t let this slow you down. Here are some recommended actions to keep your momentum going.
                 </p>
 
                 <div className="space-y-2.5 pt-1">
                   <a
                     href="#"
-                    className="flex items-center justify-between p-3.5 rounded-xl bg-white/15 hover:bg-white/20 text-xs sm:text-sm font-semibold transition-all border border-white/10 text-white"
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-white/15 hover:bg-white/20 text-sm sm:text-base font-semibold transition-all border border-white/10 text-white"
                   >
                     <span className="flex items-center gap-2.5">
                       <ShieldCheck className="w-4 h-4 text-white" />
@@ -397,7 +397,7 @@ export default function ReportDetailPage() {
 
                   <a
                     href="#"
-                    className="flex items-center justify-between p-3.5 rounded-xl bg-white/15 hover:bg-white/20 text-xs sm:text-sm font-semibold transition-all border border-white/10 text-white"
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-white/15 hover:bg-white/20 text-sm sm:text-base font-semibold transition-all border border-white/10 text-white"
                   >
                     <span className="flex items-center gap-2.5">
                       <Compass className="w-4 h-4 text-white" />
@@ -410,7 +410,7 @@ export default function ReportDetailPage() {
 
               {/* Program Details Card */}
               <div className="bg-white rounded-2xl border border-slate-200/80 p-6 space-y-5 shadow-xs">
-                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
                   PROGRAM DETAILS
                 </h3>
 
@@ -419,12 +419,12 @@ export default function ReportDetailPage() {
                     <Building2 className="w-6 h-6" />
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <strong className="text-sm font-bold text-slate-900 truncate">
+                    <strong className="text-base font-bold text-slate-900 truncate">
                       Global Enterprise VDP
                     </strong>
                     <a
                       href="#"
-                      className="text-xs font-semibold text-blue-600 hover:underline block mt-0.5"
+                      className="text-sm font-semibold text-blue-600 hover:underline block mt-0.5"
                     >
                       View Policy
                     </a>
@@ -433,12 +433,12 @@ export default function ReportDetailPage() {
 
                 <div className="border-t border-slate-100 pt-4 grid grid-cols-2 gap-4">
                   <div>
-                    <span className="text-xs text-slate-500 font-medium block">Asset Type</span>
-                    <span className="text-sm font-bold text-slate-900 block mt-0.5">REST API</span>
+                    <span className="text-xs sm:text-sm text-slate-500 font-medium block">Asset Type</span>
+                    <span className="text-sm sm:text-base font-bold text-slate-900 block mt-0.5">REST API</span>
                   </div>
                   <div>
-                    <span className="text-xs text-slate-500 font-medium block">Environment</span>
-                    <span className="text-sm font-bold text-slate-900 block mt-0.5">Production</span>
+                    <span className="text-xs sm:text-sm text-slate-500 font-medium block">Environment</span>
+                    <span className="text-sm sm:text-base font-bold text-slate-900 block mt-0.5">Production</span>
                   </div>
                 </div>
               </div>
@@ -457,21 +457,21 @@ export default function ReportDetailPage() {
             {/* Status Tracker */}
             <div className="pt-3 flex flex-wrap items-center gap-2 sm:gap-4 border-t border-slate-100">
               {/* Step 1: Submitted */}
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-xs font-bold">
+              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-sm font-bold">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>Submitted</span>
               </div>
               <div className="hidden sm:block w-4 h-0.5 bg-slate-200" />
 
               {/* Step 2: Accepted */}
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200/80 text-xs font-bold">
+              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200/80 text-sm font-bold">
                 <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
                 <span>Accepted</span>
               </div>
               <div className="hidden sm:block w-4 h-0.5 bg-slate-200" />
 
               {/* Step 3: Resolved */}
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500 border border-slate-200 text-xs font-medium">
+              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-500 border border-slate-200 text-sm font-medium">
                 <Circle className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 <span>Resolved</span>
               </div>
@@ -482,7 +482,7 @@ export default function ReportDetailPage() {
           <div className="flex items-center p-1 bg-slate-100/80 rounded-xl gap-1 border border-slate-200/50 w-full sm:w-auto self-start">
             <button
               onClick={() => setActiveTab("summary")}
-              className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
+              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer text-center ${
                 activeTab === "summary"
                   ? "bg-white text-blue-600 shadow-xs"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
@@ -492,7 +492,7 @@ export default function ReportDetailPage() {
             </button>
             <button
               onClick={() => setActiveTab("retest")}
-              className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
+              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer text-center ${
                 activeTab === "retest"
                   ? "bg-white text-blue-600 shadow-xs"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
@@ -510,35 +510,35 @@ export default function ReportDetailPage() {
               <main className="lg:col-span-2 space-y-6">
                 {/* Description Section */}
                 <section className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
-                  <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
+                  <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2">
                     Description
                   </h3>
-                  <p className="text-sm text-slate-700 leading-relaxed font-normal">
+                  <p className="text-base text-slate-700 leading-relaxed font-normal">
                     A vulnerability was discovered in the User Profile API endpoint (
-                    <code className="bg-slate-100 text-blue-700 px-1.5 py-0.5 rounded font-mono text-xs border border-slate-200">
+                    <code className="bg-slate-100 text-blue-700 px-1.5 py-0.5 rounded font-mono text-xs sm:text-sm border border-slate-200">
                       /api/v1/profile/[id]
                     </code>
                     ) where an authenticated user could access and modify any other user&apos;s profile details
-                    by simply changing the <code className="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono text-xs">id</code> parameter. The server fails to validate if the authenticated user owns the resource being requested.
+                    by simply changing the <code className="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono text-xs sm:text-sm">id</code> parameter. The server fails to validate if the authenticated user owns the resource being requested.
                   </p>
                 </section>
 
                 {/* Impact Section */}
                 <section className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
-                  <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
+                  <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2">
                     Impact
                   </h3>
-                  <p className="text-sm text-slate-700 leading-relaxed font-normal">
+                  <p className="text-base text-slate-700 leading-relaxed font-normal">
                     This is a classic Insecure Direct Object Reference (IDOR). Attackers could harvest private information for the entire user base, including email addresses, phone numbers, and physical addresses.
                   </p>
                 </section>
 
                 {/* Steps to Reproduce Section */}
                 <section className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
-                  <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
+                  <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2">
                     Steps to Reproduce
                   </h3>
-                  <ol className="list-decimal list-inside space-y-2 text-sm text-slate-700 leading-relaxed font-medium">
+                  <ol className="list-decimal list-inside space-y-2 text-base text-slate-700 leading-relaxed font-medium">
                     <li>Log in as user A.</li>
                     <li>
                       Intercept the request to{" "}
@@ -586,7 +586,7 @@ export default function ReportDetailPage() {
 
                 {/* Activity Feed Section */}
                 <section className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
-                  <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
+                  <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2">
                     Activity Feed
                   </h3>
 
@@ -600,10 +600,10 @@ export default function ReportDetailPage() {
                       </Avatar>
                       <div className="flex-1 bg-slate-50 p-4 rounded-2xl border border-slate-200/60 space-y-1.5">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-bold text-slate-900">hunter_x_ray</span>
-                          <span className="text-[11px] text-slate-400">Oct 24, 14:32</span>
+                          <span className="text-sm font-bold text-slate-900">hunter_x_ray</span>
+                          <span className="text-xs text-slate-400">Oct 24, 14:32</span>
                         </div>
-                        <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                        <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
                           I&apos;ve attached the proof of concept payload. This works even with standard user privileges. Let me know if you need more info.
                         </p>
                       </div>
@@ -629,12 +629,12 @@ export default function ReportDetailPage() {
                       <div className="flex-1 bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 space-y-1.5">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-bold text-slate-900">Alex (SecOps)</span>
-                            <Badge className="bg-indigo-600 text-white text-[9px] px-1.5 py-0 rounded">Admin</Badge>
+                            <span className="text-sm font-bold text-slate-900">Alex (SecOps)</span>
+                            <Badge className="bg-indigo-600 text-white text-xs px-1.5 py-0 rounded">Admin</Badge>
                           </div>
-                          <span className="text-[11px] text-slate-400">Oct 24, 16:15</span>
+                          <span className="text-xs text-slate-400">Oct 24, 16:15</span>
                         </div>
-                        <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                        <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
                           Thanks for the detailed report. We have validated this and our engineering team is working on a fix. This qualifies for our High severity tier.
                         </p>
                       </div>
@@ -648,25 +648,25 @@ export default function ReportDetailPage() {
                       onChange={(e) => setCommentText(e.target.value)}
                       placeholder="Add a comment or update..."
                       rows={3}
-                      className="w-full p-3.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:bg-white transition-all resize-none"
+                      className="w-full p-3.5 text-sm sm:text-base bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:bg-white transition-all resize-none"
                     />
                     <div className="flex items-center justify-between gap-3">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-semibold gap-1.5 cursor-pointer"
+                        className="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-100 text-sm font-semibold gap-1.5 cursor-pointer"
                       >
-                        <Paperclip className="w-3.5 h-3.5" />
+                        <Paperclip className="w-4 h-4" />
                         <span>Attach file</span>
                       </Button>
                       <Button
                         type="button"
                         onClick={handleSendComment}
                         disabled={isSubmitting || !commentText.trim()}
-                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold px-4 h-9 gap-2 shadow-sm cursor-pointer disabled:opacity-50"
+                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold px-4.5 h-10 gap-2 shadow-sm cursor-pointer disabled:opacity-50"
                       >
-                        <Send className="w-3.5 h-3.5" />
+                        <Send className="w-4 h-4" />
                         <span>Send Message</span>
                       </Button>
                     </div>
@@ -678,11 +678,11 @@ export default function ReportDetailPage() {
               <aside className="space-y-6">
                 {/* Severity Panel */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
                     SEVERITY
                   </h4>
                   <div>{getSeverityBadge(report.severity || "HIGH")}</div>
-                  <div className="space-y-2.5 pt-2 border-t border-slate-100 text-xs">
+                  <div className="space-y-2.5 pt-2 border-t border-slate-100 text-sm">
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">Confirmed Severity</span>
                       <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/80">
@@ -698,16 +698,16 @@ export default function ReportDetailPage() {
 
                 {/* Reward Panel */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
                     REWARD
                   </h4>
                   <div className="text-2xl font-black text-slate-900 bg-emerald-50 text-emerald-700 px-3.5 py-1.5 rounded-xl border border-emerald-200/80 inline-block">
                     $1,500.00
                   </div>
-                  <div className="text-xs font-bold text-slate-500">
+                  <div className="text-sm font-bold text-slate-500">
                     Status: <span className="text-amber-600">Pending Transfer</span>
                   </div>
-                  <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl flex items-start gap-2.5 text-xs text-amber-800">
+                  <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl flex items-start gap-2.5 text-xs sm:text-sm text-amber-800">
                     <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <p className="leading-relaxed">
                       Payment is handled off-platform via corporate payroll. Please ensure your wallet details are up to date.
@@ -717,7 +717,7 @@ export default function ReportDetailPage() {
 
                 {/* Program Details Panel */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
                     PROGRAM DETAILS
                   </h4>
                   <div className="flex items-center gap-3">
@@ -725,19 +725,19 @@ export default function ReportDetailPage() {
                       B
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <strong className="text-sm font-bold text-slate-900 truncate">
+                      <strong className="text-base font-bold text-slate-900 truncate">
                         Global Enterprise VDP
                       </strong>
                       <a
                         href="#"
-                        className="text-xs text-blue-600 hover:underline flex items-center gap-1 font-semibold"
+                        className="text-sm text-blue-600 hover:underline flex items-center gap-1 font-semibold"
                       >
                         <span>View Policy</span>
-                        <ExternalLink className="w-3 h-3" />
+                        <ExternalLink className="w-3.5 h-3.5" />
                       </a>
                     </div>
                   </div>
-                  <div className="space-y-2 pt-3 border-t border-slate-100 text-xs">
+                  <div className="space-y-2 pt-3 border-t border-slate-100 text-sm">
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">Asset Type</span>
                       <span className="font-semibold text-slate-800">REST API</span>
@@ -827,7 +827,7 @@ export default function ReportDetailPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                        <tr className="bg-slate-50/80 border-b border-slate-200/80 text-xs font-bold text-slate-600 uppercase tracking-wider">
                           <th className="py-3.5 px-4 sm:px-6">REPORT ID & TITLE</th>
                           <th className="py-3.5 px-4 sm:px-6">VERSION</th>
                           <th className="py-3.5 px-4 sm:px-6">STATUS</th>

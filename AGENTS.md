@@ -9,6 +9,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 When performing any work related to UI components, layout, styling, theme, animations, or visual design, AI agents MUST:
 1. Read and follow the design specifications in [`design.md`](file:///c:/Users/tolsa/Documents/My%20project/devsolve-frontend/design.md).
 2. Use the `motion` library (`import { motion } from "motion/react"`) for smooth UI animations, layout transitions, and interactive visual feedback.
+3. **Typography & Font Sizes**: Maintain legible, clear typography across all components and pages:
+   - Body & Form Inputs: Use `text-base` (16px) or `text-sm` (14px) for optimal readability. Avoid small fonts like `text-xs` (12px) or `text-[11px]` for main form inputs, primary table content, and body paragraphs.
+   - Headers & Navigation: Use `text-base` / `text-lg` for navigation items and clear visual hierarchy for section titles (`text-lg`, `text-xl`, `text-2xl`).
+   - Form Styling: Ensure input fields use clean white backgrounds (`bg-white`) with clear, defined borders (`border-slate-300`).
 
 # Data Fetching & Mutations
 

@@ -19,6 +19,8 @@ import {
   ChevronRight,
   Filter,
   DollarSign,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 
 import { useGetReportsQuery, ReportItem } from "@/lib/redux/services/reportsApi";
@@ -26,6 +28,89 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+
+const SEVERITY_OPTIONS = [
+  { label: "Severity: All", value: "All" },
+  { label: "Critical", value: "CRITICAL" },
+  { label: "High", value: "HIGH" },
+  { label: "Medium", value: "MEDIUM" },
+  { label: "Low", value: "LOW" },
+];
+
+function SeverityFilterSelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = SEVERITY_OPTIONS.find((o) => o.value === value) || SEVERITY_OPTIONS[0];
+
+  return (
+    <div ref={containerRef} className="relative w-full sm:w-auto">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="h-10.5 px-3.5 w-full sm:w-auto min-w-[165px] text-sm font-semibold bg-white border border-slate-300 hover:border-slate-400 rounded-xl text-slate-800 flex items-center justify-between gap-3 cursor-pointer transition-all shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <Filter className="w-4 h-4 text-slate-500 shrink-0" />
+          <span className="truncate">{selectedOption.label}</span>
+        </div>
+        <ChevronDown className={cn("w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200", isOpen && "rotate-180 text-blue-600")} />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 z-50 mt-1.5 w-full sm:w-48 bg-white border border-slate-200/90 rounded-2xl shadow-xl p-1.5 space-y-0.5"
+          >
+            {SEVERITY_OPTIONS.map((opt) => {
+              const isSelected = value === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value);
+                    setIsOpen(false);
+                  }}
+                  className={cn(
+                    "w-full px-3 py-2 text-sm rounded-xl flex items-center justify-between text-left transition-colors cursor-pointer",
+                    isSelected
+                      ? "bg-blue-50 text-blue-700 font-semibold"
+                      : "hover:bg-slate-50 text-slate-700 font-medium"
+                  )}
+                >
+                  <span className="truncate">{opt.label}</span>
+                  {isSelected && <Check className="w-4 h-4 text-blue-600 shrink-0 ml-2" />}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function MyReportsPage() {
   const router = useRouter();
@@ -60,28 +145,28 @@ export default function MyReportsPage() {
     switch (severity) {
       case "CRITICAL":
         return (
-          <Badge className="bg-red-600 hover:bg-red-700 text-white font-semibold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
+          <Badge className="bg-red-600 hover:bg-red-700 text-white font-semibold text-sm px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             CRITICAL
           </Badge>
         );
       case "HIGH":
         return (
-          <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
+          <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-white" />
             HIGH
           </Badge>
         );
       case "MEDIUM":
         return (
-          <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
+          <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-white" />
             MEDIUM
           </Badge>
         );
       case "LOW":
         return (
-          <Badge className="bg-slate-500 hover:bg-slate-600 text-white font-semibold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
+          <Badge className="bg-slate-500 hover:bg-slate-600 text-white font-semibold text-sm px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-white" />
             LOW
           </Badge>
@@ -93,36 +178,36 @@ export default function MyReportsPage() {
     switch (status) {
       case "TRIAGING":
         return (
-          <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <Clock className="w-3 h-3 text-amber-600" />
+          <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <Clock className="w-3.5 h-3.5 text-amber-600" />
             TRIAGING
           </Badge>
         );
       case "RESOLVED":
         return (
-          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
             RESOLVED
           </Badge>
         );
       case "ACCEPTED":
         return (
-          <Badge variant="outline" className="bg-blue-500/10 text-blue-700 border-blue-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <Award className="w-3 h-3 text-blue-600" />
+          <Badge variant="outline" className="bg-blue-500/10 text-blue-700 border-blue-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <Award className="w-3.5 h-3.5 text-blue-600" />
             ACCEPTED
           </Badge>
         );
       case "SUBMITTED":
         return (
-          <Badge variant="outline" className="bg-indigo-500/10 text-indigo-700 border-indigo-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <AlertCircle className="w-3 h-3 text-indigo-600" />
+          <Badge variant="outline" className="bg-indigo-500/10 text-indigo-700 border-indigo-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <AlertCircle className="w-3.5 h-3.5 text-indigo-600" />
             SUBMITTED
           </Badge>
         );
       case "REJECTED":
         return (
-          <Badge variant="outline" className="bg-rose-500/10 text-rose-700 border-rose-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <XCircle className="w-3 h-3 text-rose-600" />
+          <Badge variant="outline" className="bg-rose-500/10 text-rose-700 border-rose-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <XCircle className="w-3.5 h-3.5 text-rose-600" />
             REJECTED
           </Badge>
         );
@@ -132,24 +217,24 @@ export default function MyReportsPage() {
   const getBountyDisplay = (item: ReportItem) => {
     if (item.isBountyHighlight) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-xs">
-          <DollarSign className="w-3 h-3" />
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-sm font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-xs">
+          <DollarSign className="w-3.5 h-3.5" />
           {item.bountyOrRep}
         </span>
       );
     }
     if (item.isBountyDim) {
-      return <span className="text-xs font-medium text-slate-400 line-through">{item.bountyOrRep}</span>;
+      return <span className="text-sm font-medium text-slate-400 line-through">{item.bountyOrRep}</span>;
     }
     if (item.bountyOrRep === "Reputation") {
       return (
-        <span className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
-          <Award className="w-3 h-3" />
+        <span className="inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded border border-indigo-100">
+          <Award className="w-3.5 h-3.5" />
           Reputation
         </span>
       );
     }
-    return <span className="text-xs font-semibold text-slate-700">{item.bountyOrRep}</span>;
+    return <span className="text-sm font-semibold text-slate-700">{item.bountyOrRep}</span>;
   };
 
   return (
@@ -163,7 +248,7 @@ export default function MyReportsPage() {
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
         <div className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">My Reports</h1>
-          <p className="text-sm text-slate-500 font-medium">
+          <p className="text-base text-slate-500 font-medium">
             12 Active submissions across 5 programs
           </p>
         </div>
@@ -187,7 +272,7 @@ export default function MyReportsPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by ID, program, or title..."
-            className="pl-10 h-10 w-full rounded-xl border-slate-200 bg-slate-50/50 text-sm focus-visible:ring-2 focus-visible:ring-blue-600/30"
+            className="pl-10 h-10.5 w-full rounded-xl border-slate-200 bg-slate-50/50 text-base focus-visible:ring-2 focus-visible:ring-blue-600/30"
           />
         </div>
 
@@ -199,7 +284,7 @@ export default function MyReportsPage() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 sm:flex-initial relative px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
+                className={`flex-1 sm:flex-initial relative px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer text-center ${
                   activeTab === tab
                     ? "bg-white text-blue-600 shadow-xs"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
@@ -210,21 +295,11 @@ export default function MyReportsPage() {
             ))}
           </div>
 
-          {/* Severity Select Dropdown */}
-          <div className="relative w-full sm:w-auto">
-            <select
-              value={severityFilter}
-              onChange={(e) => setSeverityFilter(e.target.value)}
-              className="h-10 pl-3 pr-8 w-full sm:w-auto min-w-[130px] text-xs font-semibold bg-white border border-slate-200 rounded-xl text-slate-700 cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-blue-600/30 shadow-xs"
-            >
-              <option value="All">Severity: All</option>
-              <option value="CRITICAL">Critical</option>
-              <option value="HIGH">High</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="LOW">Low</option>
-            </select>
-            <Filter className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-          </div>
+          {/* Severity Custom Select Dropdown */}
+          <SeverityFilterSelect
+            value={severityFilter}
+            onChange={setSeverityFilter}
+          />
         </div>
       </div>
 
@@ -233,7 +308,7 @@ export default function MyReportsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-xs font-bold text-slate-600 uppercase tracking-wider">
                 <th className="py-3.5 px-4 sm:px-6">REPORT ID</th>
                 <th className="py-3.5 px-4 sm:px-6">VULNERABILITY & PROGRAM</th>
                 <th className="py-3.5 px-4 sm:px-6">TYPE</th>
@@ -270,7 +345,7 @@ export default function MyReportsPage() {
                     <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
                       <Link
                         href={`/dashboard/my-reports/${report.id}`}
-                        className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline decoration-2 underline-offset-2"
+                        className="text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline decoration-2 underline-offset-2"
                       >
                         {report.reportId}
                       </Link>
@@ -286,18 +361,18 @@ export default function MyReportsPage() {
                         </Avatar>
                         <div className="flex flex-col min-w-0">
                           <Link href={`/dashboard/my-reports/${report.id}`}>
-                            <strong className="text-xs sm:text-sm font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors block">
+                            <strong className="text-sm sm:text-base font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors block">
                               {report.title}
                             </strong>
                           </Link>
-                          <span className="text-xs text-slate-500 truncate">{report.program}</span>
+                          <span className="text-xs sm:text-sm text-slate-500 truncate">{report.program}</span>
                         </div>
                       </div>
                     </td>
 
                     {/* Type */}
                     <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
-                      <span className="text-xs font-medium text-slate-600">{report.type}</span>
+                      <span className="text-sm font-medium text-slate-600">{report.type}</span>
                     </td>
 
                     {/* Severity */}
@@ -318,8 +393,8 @@ export default function MyReportsPage() {
                     {/* Last Activity */}
                     <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-xs text-slate-600 font-medium">{report.lastActivityDate}</span>
-                        <span className="text-[10px] font-bold tracking-wide text-blue-600 uppercase">
+                        <span className="text-sm text-slate-600 font-medium">{report.lastActivityDate}</span>
+                        <span className="text-xs font-bold tracking-wide text-blue-600 uppercase">
                           {report.lastActivityBadge}
                         </span>
                       </div>
@@ -346,7 +421,7 @@ export default function MyReportsPage() {
 
         {/* Pagination Footer */}
         <footer className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-slate-200/80 bg-slate-50/50">
-          <span className="text-xs font-medium text-slate-500">
+          <span className="text-sm font-medium text-slate-500">
             Showing {displayedCount} of {totalSubmissions} submissions
           </span>
           <div className="flex items-center gap-1.5">

@@ -146,7 +146,7 @@ const Sidebar = () => {
                     : 'text-slate-600 hover:bg-slate-100/50 hover:text-slate-900 font-medium'
                   }`}
               >
-                <div className="flex items-center gap-3 text-sm">
+                <div className="flex items-center gap-3 text-base">
                   <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
                   <span>{item.name}</span>
                 </div>
@@ -168,7 +168,7 @@ const Sidebar = () => {
       {/* Settings & Logout Buttons (Pinned to bottom) */}
       <div className="mt-auto pt-3 shrink-0 space-y-1.5">
         <Link href="/" onClick={onNavItemClick} className="block w-full">
-          <Button className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-11 flex items-center justify-start px-3 gap-3 shadow-md text-sm font-medium">
+          <Button className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-11 flex items-center justify-start px-3 gap-3 shadow-md text-base font-semibold">
             <Settings className="w-5 h-5" />
             <span>Settings</span>
           </Button>
@@ -180,7 +180,7 @@ const Sidebar = () => {
             if (onNavItemClick) onNavItemClick();
             handleSignOut();
           }}
-          className="w-full cursor-pointer text-rose-600 hover:bg-rose-50 hover:text-rose-700 rounded-xl h-11 flex items-center justify-start px-3 gap-3 text-sm font-medium transition-colors"
+          className="w-full cursor-pointer text-rose-600 hover:bg-rose-50 hover:text-rose-700 rounded-xl h-11 flex items-center justify-start px-3 gap-3 text-base font-semibold transition-colors"
         >
           <LogOut className="w-5 h-5" />
           <span>Logout</span>
@@ -194,7 +194,7 @@ const Sidebar = () => {
     <>
       {/* Mobile Top Header (Visible on < lg screens) */}
       <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 w-full">
-        <Link href="/dashboard" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <Image
             src="/logo-1.png"
             alt="DevSolve Logo"
