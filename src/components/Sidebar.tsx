@@ -67,7 +67,12 @@ const Sidebar = () => {
     { name: 'Bookmarks', href: '/dashboard/bookmarks', icon: Bookmark, badge: 3 },
   ];
 
-  const renderSidebarContent = (onNavItemClick?: () => void) => (
+  interface SidebarContentProps {
+    onNavItemClick?: () => void;
+  }
+
+  function SidebarContent({ onNavItemClick }: SidebarContentProps) {
+    return (
     <>
       {/* Logo Section */}
       <div className="flex items-center justify-between mt-2 mb-4 shrink-0 px-1">
@@ -182,7 +187,8 @@ const Sidebar = () => {
         </Button>
       </div>
     </>
-  );
+    );
+  }
 
   return (
     <>
@@ -232,15 +238,15 @@ const Sidebar = () => {
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
               className="lg:hidden fixed inset-y-0 left-0 z-50 flex flex-col w-[280px] h-full p-5 bg-[linear-gradient(331deg,rgba(255,255,255,0.95)_59.38%,rgba(240,244,255,0.95)_92.74%),linear-gradient(154deg,rgba(255,255,255,0.95)_76.51%,rgba(239,246,255,0.95)_132.61%)] backdrop-blur-xl border-r border-blue-600/15 shadow-2xl"
             >
-              {renderSidebarContent(() => setIsOpen(false))}
+              <SidebarContent onNavItemClick={() => setIsOpen(false)} />
             </motion.aside>
           </>
         )}
       </AnimatePresence>
 
       {/* Desktop Sticky Sidebar (Visible on >= lg screens) */}
-      <aside className="hidden lg:flex flex-col w-[260px] shrink-0 h-screen sticky top-0 rounded-r-[20px] border border-blue-600/15 p-5 bg-[linear-gradient(331deg,rgba(255,255,255,0.10)_59.38%,rgba(166,179,209,0.25)_92.74%,rgba(21,56,133,0.50)_132.79%),linear-gradient(154deg,rgba(255,255,255,0.30)_76.51%,rgba(37,99,235,0.30)_132.61%)] shadow-[0_4px_32px_0_rgba(37,99,235,0.10)]">
-        {renderSidebarContent()}
+      <aside className="hidden lg:flex flex-col w-[260px] shrink-0 min-h-[100dvh] sticky top-0 rounded-r-[20px] border border-blue-600/15 p-5 bg-[linear-gradient(331deg,rgba(255,255,255,0.10)_59.38%,rgba(166,179,209,0.25)_92.74%,rgba(21,56,133,0.50)_132.79%),linear-gradient(154deg,rgba(255,255,255,0.30)_76.51%,rgba(37,99,235,0.30)_132.61%)] shadow-[0_4px_32px_0_rgba(37,99,235,0.10)]">
+        <SidebarContent />
       </aside>
     </>
   );
