@@ -22,9 +22,9 @@ export default function TeamsPage() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="flex flex-col gap-6 pb-12"
+      className="space-y-6 w-full pb-12"
     >
-      <TeamsPageHeader />
+      <TeamsPageHeader counts={counts} />
       <TeamsStatsGrid counts={counts} />
       <TeamsMembersSection
         counts={counts}

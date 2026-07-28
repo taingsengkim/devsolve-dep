@@ -12,14 +12,6 @@ import type {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 function getMemberInitials(name: string) {
@@ -55,106 +47,122 @@ export function TeamsMembersSection({
   setStatusFilter,
 }: TeamsMembersSectionProps) {
   return (
-    <Card className="border border-slate-200/80 bg-white shadow-sm">
-      <CardHeader className="gap-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex flex-col gap-1">
-            <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
-              Members
-              <span className="ml-2 text-slate-400">({counts.total})</span>
-            </CardTitle>
-            <CardDescription className="text-base text-slate-500">
-              Manage your organization access by role and invitation status.
-            </CardDescription>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
+        <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+          Members
+          <span className="ml-2 text-slate-400">({counts.total})</span>
+        </h2>
+        <p className="text-base text-slate-500">
+          Manage organization access by role and invitation status.
+        </p>
+      </div>
+
+      <div className="flex flex-col justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-xs sm:p-4 xl:flex-row xl:items-center">
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-600">
+            Total {counts.total}
+          </Badge>
+          <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+            {counts.active} active
+          </Badge>
+          <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+            {counts.pending} pending
+          </Badge>
+        </div>
+
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="flex items-center gap-1 rounded-xl border border-slate-200/50 bg-slate-100/80 p-1">
+            {ROLE_FILTERS.map((filter) => (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setRoleFilter(filter)}
+                className={cn(
+                  "rounded-lg px-3 py-2 text-sm font-semibold transition-all",
+                  roleFilter === filter
+                    ? "bg-white text-blue-600 shadow-xs"
+                    : "text-slate-600 hover:bg-slate-200/60 hover:text-slate-900"
+                )}
+              >
+                {filter}
+              </button>
+            ))}
           </div>
 
-          <div className="flex flex-col gap-3 lg:items-end">
-            <div className="flex flex-wrap gap-2">
-              {ROLE_FILTERS.map((filter) => (
-                <Button
-                  key={filter}
-                  variant={roleFilter === filter ? "default" : "outline"}
-                  size="sm"
-                  className={cn(
-                    "rounded-full",
-                    roleFilter !== filter && "bg-white text-slate-600"
-                  )}
-                  onClick={() => setRoleFilter(filter)}
-                >
-                  {filter}
-                </Button>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Separator
-                orientation="vertical"
-                className="hidden h-6 bg-slate-200 lg:block"
-              />
-              <div className="flex flex-wrap gap-2">
-                {STATUS_FILTERS.map((filter) => (
-                  <Button
-                    key={filter}
-                    variant={statusFilter === filter ? "secondary" : "outline"}
-                    size="sm"
-                    className={cn(
-                      "rounded-full",
-                      statusFilter !== filter && "bg-white text-slate-600"
-                    )}
-                    onClick={() => setStatusFilter(filter)}
-                  >
-                    {filter}
-                  </Button>
-                ))}
-              </div>
-            </div>
+          <div className="flex items-center gap-1 rounded-xl border border-slate-200/50 bg-slate-100/80 p-1">
+            {STATUS_FILTERS.map((filter) => (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setStatusFilter(filter)}
+                className={cn(
+                  "rounded-lg px-3 py-2 text-sm font-semibold transition-all",
+                  statusFilter === filter
+                    ? "bg-white text-blue-600 shadow-xs"
+                    : "text-slate-600 hover:bg-slate-200/60 hover:text-slate-900"
+                )}
+              >
+                {filter}
+              </button>
+            ))}
           </div>
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="flex flex-col gap-4">
-        <div className="overflow-hidden rounded-3xl border border-slate-200/80">
-          <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse">
-              <thead className="bg-slate-50/80">
-                <tr className="border-b border-slate-200/80 text-left text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  <th className="px-5 py-4">Member</th>
-                  <th className="px-5 py-4">Role</th>
-                  <th className="px-5 py-4">Status</th>
-                  <th className="px-5 py-4">Joined</th>
-                  <th className="px-5 py-4 text-right">Action</th>
+      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-collapse text-left">
+            <thead>
+              <tr className="border-b border-slate-200/80 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-600">
+                <th className="px-4 py-3.5 sm:px-6">Member</th>
+                <th className="px-4 py-3.5 sm:px-6">Role</th>
+                <th className="px-4 py-3.5 sm:px-6">Status</th>
+                <th className="px-4 py-3.5 sm:px-6">Joined</th>
+                <th className="px-4 py-3.5 text-right sm:px-6">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredMembers.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-12 text-center text-sm text-slate-400"
+                  >
+                    No members match your current filters.
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredMembers.map((member, index) => (
+              ) : (
+                filteredMembers.map((member, index) => (
                   <motion.tr
                     key={member.id}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: index * 0.04 }}
-                    className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50/60"
+                    className="group transition-colors hover:bg-slate-50/70"
                   >
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-4 sm:px-6">
                       <div className="flex items-center gap-3">
-                        <Avatar size="lg" className="ring-1 ring-slate-200/80">
-                          <AvatarFallback className="bg-slate-100 font-semibold text-slate-700">
+                        <Avatar size="lg" className="rounded-lg border border-slate-200 bg-slate-100 text-slate-700">
+                          <AvatarFallback className="rounded-lg bg-slate-100 font-semibold text-slate-700">
                             {getMemberInitials(member.name)}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex min-w-0 flex-col gap-0.5">
-                          <span className="truncate text-base font-semibold text-slate-900">
+                        <div className="flex min-w-0 flex-col">
+                          <span className="truncate text-sm font-semibold text-slate-900 sm:text-base">
                             {member.name}
                           </span>
-                          <span className="truncate text-sm text-slate-500">
+                          <span className="truncate text-xs text-slate-500 sm:text-sm">
                             {member.email}
                           </span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-4 whitespace-nowrap sm:px-6">
                       <Badge
                         variant={getRoleBadgeVariant(member.role)}
                         className={cn(
+                          "rounded-full px-2.5 py-1 text-sm font-semibold",
                           member.role === "Manager" &&
                             "bg-blue-600 text-white hover:bg-blue-700",
                           member.role === "Member" &&
@@ -164,47 +172,48 @@ export function TeamsMembersSection({
                         {member.role}
                       </Badge>
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-4 whitespace-nowrap sm:px-6">
                       <Badge
                         variant={member.status === "Active" ? "secondary" : "outline"}
                         className={cn(
+                          "rounded-full px-2.5 py-1 text-sm font-semibold",
                           member.status === "Active"
-                            ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/80"
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                             : "border-amber-200 bg-amber-50 text-amber-700"
                         )}
                       >
                         {member.status}
                       </Badge>
                     </td>
-                    <td className="px-5 py-4 text-sm font-medium text-slate-600">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-600 sm:px-6">
                       {member.joined}
                     </td>
-                    <td className="px-5 py-4 text-right">
+                    <td className="px-4 py-4 text-right whitespace-nowrap sm:px-6">
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        className="rounded-full text-slate-500"
+                        className="rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600"
                         aria-label={`More actions for ${member.name}`}
                       >
                         <MoreHorizontal />
                       </Button>
                     </td>
                   </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
 
-        <div className="flex flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-medium text-slate-500">
+        <footer className="flex flex-col items-center justify-between gap-4 border-t border-slate-200/80 bg-slate-50/50 p-4 sm:flex-row">
+          <span className="text-sm font-medium text-slate-500">
             Showing {filteredMembers.length} of {counts.total} members
-          </p>
-          <p className="text-sm text-slate-400">
+          </span>
+          <span className="text-sm text-slate-400">
             {counts.pending} invitation{counts.pending === 1 ? "" : "s"} pending approval
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+          </span>
+        </footer>
+      </div>
+    </div>
   );
 }

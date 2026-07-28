@@ -19,7 +19,8 @@ import {
   Menu,
   X,
   LucideIcon,
-  UsersRound  
+  UsersRound,  
+  MessageSquareWarning
 } from "lucide-react";
 import { authClient } from "@/lib/auth/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -52,6 +53,8 @@ const navItems: NavItem[] = [
   { name: "Solution", href: "/dashboard/solution", icon: BookOpen },
   { name: "Bookmarks", href: "/dashboard/bookmarks", icon: Bookmark, badge: 3 },
   { name: "Team Management", href: "/dashboard/teams", icon: UsersRound  },
+   { name: "Report Management", href: "/dashboard/report-management", icon: MessageSquareWarning  },
+  
 
 ];
 

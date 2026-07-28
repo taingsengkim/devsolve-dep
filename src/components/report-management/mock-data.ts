@@ -1,0 +1,228 @@
+import type {
+  ManagedReport,
+  MetricCard,
+  ReportManagementDetail,
+} from "@/components/report-management/types";
+
+export const REPORT_METRICS: MetricCard[] = [
+  { title: "Total Report", value: 200 },
+  { title: "Pending", value: 20 },
+  { title: "Under Review", value: 5 },
+  { title: "Approved", value: 78 },
+];
+
+export const MANAGED_REPORTS: ManagedReport[] = [
+  {
+    id: 1,
+    title: "TikTok Security Bug Bounty",
+    author: "Seng Songhuor",
+    authorEmail: "seng@devsolve.io",
+    authorInitials: "SS",
+    type: "Bounty",
+    status: "Open",
+    severity: "Critical",
+    summary:
+      "Find security vulnerabilities across TikTok's web platform, mobile apps, and creator APIs with a focus on authentication, payment, and media upload flows.",
+    assets: ["api.tiktok.com", "Android App"],
+  },
+  {
+    id: 2,
+    title: "TikTok Video Moderation Workflow",
+    author: "Seng Songhuor",
+    authorEmail: "moderation@devsolve.io",
+    authorInitials: "SS",
+    type: "Response",
+    status: "Closed",
+    severity: "High",
+    summary:
+      "Review a vulnerability report tied to internal moderation tooling and evaluate whether the escalation path can be abused outside the trusted staff environment.",
+    assets: ["moderation.tiktok.com", "Internal Dashboard"],
+  },
+  {
+    id: 3,
+    title: "TikTok Creator Commerce APIs",
+    author: "Seng Songhuor",
+    authorEmail: "commerce@devsolve.io",
+    authorInitials: "SS",
+    type: "Response",
+    status: "Open",
+    severity: "Medium",
+    summary:
+      "Assess report triage findings for commerce APIs handling creator shop inventory sync, discount code application, and partner account permissions.",
+    assets: ["commerce-api.tiktok.com", "Partner Portal"],
+  },
+  {
+    id: 4,
+    title: "TikTok Live Stream Session Handling",
+    author: "Seng Songhuor",
+    authorEmail: "live@devsolve.io",
+    authorInitials: "SS",
+    type: "Response",
+    status: "Closed",
+    severity: "Low",
+    summary:
+      "Validate whether stream session reuse findings can reproduce against current production infrastructure after the identity service patch was deployed.",
+    assets: ["live.tiktok.com", "iOS App"],
+  },
+  {
+    id: 5,
+    title: "TikTok Ads Manager Partner Access",
+    author: "Seng Songhuor",
+    authorEmail: "ads@devsolve.io",
+    authorInitials: "SS",
+    type: "Response",
+    status: "Closed",
+    severity: "High",
+    summary:
+      "Investigate a partner-access permission report affecting shared advertiser workspaces, seat management, and billing account role inheritance.",
+    assets: ["ads.tiktok.com", "Billing Console"],
+  },
+  {
+    id: 6,
+    title: "TikTok Mobile App Token Exchange",
+    author: "Seng Songhuor",
+    authorEmail: "mobile@devsolve.io",
+    authorInitials: "SS",
+    type: "Bounty",
+    status: "Open",
+    severity: "Critical",
+    summary:
+      "Prioritize mobile token exchange flaws impacting sign-in refresh flows, device trust signals, and cross-account session persistence on Android.",
+    assets: ["Android App", "auth.tiktok.com"],
+  },
+  {
+    id: 7,
+    title: "TikTok Creator Studio Draft Uploads",
+    author: "Seng Songhuor",
+    authorEmail: "studio@devsolve.io",
+    authorInitials: "SS",
+    type: "Bounty",
+    status: "Open",
+    severity: "Medium",
+    summary:
+      "Investigate whether draft upload endpoints expose unintended asset access through orphaned media references and insufficient ownership checks.",
+    assets: ["studio.tiktok.com", "Media Upload API"],
+  },
+  {
+    id: 8,
+    title: "TikTok Web Session Cookie Scope",
+    author: "Seng Songhuor",
+    authorEmail: "web@devsolve.io",
+    authorInitials: "SS",
+    type: "Response",
+    status: "Closed",
+    severity: "Critical",
+    summary:
+      "Confirm remediation of a cookie scope report affecting session isolation between creator, business, and personal account surfaces on web.",
+    assets: ["www.tiktok.com", "Creator Center"],
+  },
+  {
+    id: 9,
+    title: "TikTok Public API Partner Sandbox",
+    author: "Seng Songhuor",
+    authorEmail: "sandbox@devsolve.io",
+    authorInitials: "SS",
+    type: "Bounty",
+    status: "Open",
+    severity: "High",
+    summary:
+      "Review sandbox escape findings reported through the partner program and verify whether test credentials can pivot into production-linked resources.",
+    assets: ["sandbox-api.tiktok.com", "Partner Sandbox"],
+  },
+  {
+    id: 10,
+    title: "TikTok Business Center Role Sync",
+    author: "Seng Songhuor",
+    authorEmail: "business@devsolve.io",
+    authorInitials: "SS",
+    type: "Response",
+    status: "Closed",
+    severity: "Medium",
+    summary:
+      "Check whether delayed role synchronization could let removed collaborators retain temporary access to finance and campaign administration flows.",
+    assets: ["business.tiktok.com", "Role Sync Worker"],
+  },
+  {
+    id: 11,
+    title: "TikTok Identity Recovery Workflow",
+    author: "Seng Songhuor",
+    authorEmail: "identity@devsolve.io",
+    authorInitials: "SS",
+    type: "Bounty",
+    status: "Open",
+    severity: "Critical",
+    summary:
+      "Examine identity recovery flows involving phone reset, fallback email verification, and MFA downgrade requests for cross-channel abuse.",
+    assets: ["identity.tiktok.com", "Recovery Service"],
+  },
+  {
+    id: 12,
+    title: "TikTok Shop Merchant API Review",
+    author: "Seng Songhuor",
+    authorEmail: "merchant@devsolve.io",
+    authorInitials: "SS",
+    type: "Response",
+    status: "Closed",
+    severity: "High",
+    summary:
+      "Triage a report about merchant API access boundaries across storefront management, order export, and staff invitation endpoints.",
+    assets: ["merchant-api.tiktok.com", "Merchant Portal"],
+  },
+];
+
+export const REPORT_DETAIL: ReportManagementDetail = {
+  id: 1,
+  reportId: "RPT-2026-00123",
+  title: "TikTok Security Bug Bounty",
+  submitter: "Lor Vengroth",
+  submitterInitials: "LV",
+  type: "Bounty",
+  status: "Open",
+  severity: "Critical",
+  cvssScore: "8.1",
+  submittedDate: "Jan 15, 2026",
+  bountyRange: "$500 - $14,900, 15 - 60 pts",
+  summary:
+    "Find security vulnerabilities across TikTok's web platform, mobile apps, and creator APIs. The report focuses on sensitive object access in billing and document retrieval workflows tied to authenticated business accounts.",
+  assets: ["*.tiktok.com", "api.tiktok.com", "Android App"],
+  affectedUrl: "api.example.com/v1/invoices/1337",
+  httpMethod: "GET",
+  parameter: "invoice_id",
+  environment: "Production",
+  environmentNote:
+    "This vulnerability was tested against live production servers. Please verify findings with caution.",
+  vulnerabilityType: "Insecure Direct Object Reference (IDOR)",
+  cweIdentifier: "CWE-639",
+  vectorString: "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
+  assessmentSummary:
+    "The endpoint /api/v1/invoices/{id} does not properly validate whether the authenticated user has permission to access the requested invoice ID. By iterating through the ID parameter, an attacker can download sensitive billing documents belonging to any other company on the platform.",
+  reproductionSteps: [
+    "Login to app.example.com as a standard user.",
+    "Navigate to the Billing section and view your own invoice, such as ID 1337.",
+    "Intercept the request using Burp Suite or a similar testing proxy.",
+    "Modify the id parameter to a value not owned by you, such as 1336.",
+    "Observe that the server returns the full PDF data and metadata for the unrelated invoice.",
+  ],
+};
+
+export function getReportDetailById(id: string): ReportManagementDetail {
+  const matchedReport = MANAGED_REPORTS.find((report) => report.id.toString() === id);
+
+  if (!matchedReport) {
+    return REPORT_DETAIL;
+  }
+
+  return {
+    ...REPORT_DETAIL,
+    id: matchedReport.id,
+    reportId: `RPT-2026-${matchedReport.id.toString().padStart(5, "0")}`,
+    title: matchedReport.title,
+    submitter: matchedReport.author,
+    submitterInitials: matchedReport.authorInitials,
+    type: matchedReport.type,
+    status: matchedReport.status,
+    severity: matchedReport.severity,
+    summary: matchedReport.summary,
+    assets: matchedReport.assets,
+  };
+}
