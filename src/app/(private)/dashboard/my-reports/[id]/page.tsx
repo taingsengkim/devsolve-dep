@@ -29,6 +29,9 @@ import {
   ShieldCheck,
   Compass,
   Building2,
+  Award,
+  AlertCircle,
+  DollarSign,
 } from "lucide-react";
 
 import {
@@ -88,6 +91,91 @@ export default function ReportDetailPage() {
     setTimeout(() => setCopiedPayload(false), 2000);
   };
 
+  const getSeverityBadge = (severity: string) => {
+    switch (severity) {
+      case "CRITICAL":
+        return (
+          <Badge className="bg-red-600 hover:bg-red-700 text-white font-semibold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            CRITICAL
+          </Badge>
+        );
+      case "HIGH":
+        return (
+          <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-white" />
+            HIGH
+          </Badge>
+        );
+      case "MEDIUM":
+        return (
+          <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-white" />
+            MEDIUM
+          </Badge>
+        );
+      case "LOW":
+        return (
+          <Badge className="bg-slate-500 hover:bg-slate-600 text-white font-semibold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-white" />
+            LOW
+          </Badge>
+        );
+      default:
+        return (
+          <Badge className="bg-slate-500 text-white font-semibold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
+            {severity}
+          </Badge>
+        );
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "TRIAGING":
+        return (
+          <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <Clock className="w-3 h-3 text-amber-600" />
+            TRIAGING
+          </Badge>
+        );
+      case "RESOLVED":
+        return (
+          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+            RESOLVED
+          </Badge>
+        );
+      case "ACCEPTED":
+        return (
+          <Badge variant="outline" className="bg-blue-500/10 text-blue-700 border-blue-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <Award className="w-3 h-3 text-blue-600" />
+            ACCEPTED
+          </Badge>
+        );
+      case "SUBMITTED":
+        return (
+          <Badge variant="outline" className="bg-indigo-500/10 text-indigo-700 border-indigo-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <AlertCircle className="w-3 h-3 text-indigo-600" />
+            SUBMITTED
+          </Badge>
+        );
+      case "REJECTED":
+        return (
+          <Badge variant="outline" className="bg-rose-500/10 text-rose-700 border-rose-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <XCircle className="w-3 h-3 text-rose-600" />
+            REJECTED
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline" className="bg-slate-100 text-slate-700 border-slate-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            {status}
+          </Badge>
+        );
+    }
+  };
+
   if (isLoading || !initialReport) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -108,14 +196,39 @@ export default function ReportDetailPage() {
   const report = isRejected ? MOCK_REJECTED_REPORT_DETAIL : initialReport;
 
   return (
-    <motion.div
+    <motion.section
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="space-y-6 w-full pb-16 max-w-7xl mx-auto"
+      className="space-y-6 w-full pb-12"
     >
+      {/* Header Section */}
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+              My Reports
+            </h1>
+            <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200/80 font-bold text-xs px-2.5 py-0.5 rounded-md">
+              {report.reportId}
+            </Badge>
+          </div>
+          <p className="text-sm text-slate-500 font-medium">
+            {report.program} &bull; Submitted {report.submittedAgo}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={handleBack}
+          className="self-start sm:self-auto cursor-pointer rounded-xl border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-all gap-2 px-4 shadow-xs"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back</span>
+        </Button>
+      </header>
+
       {/* Demo View Toggle Bar */}
-      <div className="flex items-center justify-between p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 text-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs text-xs">
         <span className="font-bold text-slate-700 flex items-center gap-1.5">
           <Info className="w-4 h-4 text-blue-600" />
           <span>Report Status Demo View:</span>
@@ -123,20 +236,20 @@ export default function ReportDetailPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsForceRejected(false)}
-            className={`px-3 py-1 rounded-xl font-bold transition-all cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-xl font-semibold text-xs transition-all cursor-pointer ${
               !isRejected
                 ? "bg-blue-600 text-white shadow-xs"
-                : "bg-white text-slate-700 hover:bg-slate-200"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200/70"
             }`}
           >
             Accepted View
           </button>
           <button
             onClick={() => setIsForceRejected(true)}
-            className={`px-3 py-1 rounded-xl font-bold transition-all cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-xl font-semibold text-xs transition-all cursor-pointer ${
               isRejected
                 ? "bg-rose-600 text-white shadow-xs"
-                : "bg-white text-slate-700 hover:bg-slate-200"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200/70"
             }`}
           >
             Rejected View
@@ -145,71 +258,41 @@ export default function ReportDetailPage() {
       </div>
 
       {isRejected ? (
-        /* ================= REJECTED REPORT DETAIL VIEW (PIXEL PERFECT TO SCREENSHOT) ================= */
+        /* ================= REJECTED REPORT DETAIL VIEW ================= */
         <div className="space-y-6">
-          {/* Header Section */}
-          <header className="space-y-3">
-            {/* Top row: Page title & Back link */}
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
-                My Reports
-              </h1>
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 cursor-pointer transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Back</span>
-              </button>
-            </div>
-
-            {/* Sub-row: ID Badge & Date */}
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-              <span className="font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-100/80">
-                {report.reportId}
-              </span>
-              <span>&bull;</span>
-              <span>{report.submittedAgo}</span>
-            </div>
-
-            {/* Title & Action Buttons Row */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+          {/* Report Title & Status Card */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-6 space-y-4 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
                 {report.title}
               </h2>
 
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center gap-2.5 shrink-0">
                 <Button
                   variant="outline"
-                  className="rounded-xl border-slate-300 bg-white text-slate-700 font-semibold px-4 py-2 hover:bg-slate-50 text-sm flex items-center gap-2 cursor-pointer shadow-xs"
+                  className="rounded-xl border-slate-200 bg-white text-slate-700 font-semibold px-4 py-2 hover:bg-slate-100 text-xs flex items-center gap-2 cursor-pointer shadow-xs"
                 >
-                  <Share2 className="w-4 h-4 text-slate-600" />
+                  <Share2 className="w-3.5 h-3.5 text-slate-600" />
                   <span>Share</span>
                 </Button>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl text-sm flex items-center gap-2 cursor-pointer shadow-sm">
-                  <Pencil className="w-4 h-4" />
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl text-xs flex items-center gap-2 cursor-pointer shadow-xs">
+                  <Pencil className="w-3.5 h-3.5" />
                   <span>Request Review</span>
                 </Button>
               </div>
             </div>
 
-            {/* Badges Row */}
-            <div className="flex flex-wrap items-center gap-2.5 pt-1">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-100/80 text-rose-700 border border-rose-200/80">
-                <XCircle className="w-3.5 h-3.5 text-rose-600" />
-                Rejected (Not Applicable)
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                Severity: Medium (5.4)
-              </span>
+            <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
+              {getStatusBadge("REJECTED")}
+              {getSeverityBadge("MEDIUM")}
             </div>
-          </header>
+          </div>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column: Main Content */}
             <main className="lg:col-span-2 space-y-6">
-              {/* Rejection Alert Card with Red Left Accent Border */}
+              {/* Rejection Alert Card */}
               <div className="flex items-start gap-4 p-5 sm:p-6 bg-slate-50/90 border border-slate-200/80 border-l-4 border-l-red-500 rounded-2xl text-slate-900 shadow-2xs">
                 <div className="w-8 h-8 rounded-full bg-red-500 text-white font-bold flex items-center justify-center shrink-0 mt-0.5 text-sm shadow-xs">
                   !
@@ -225,7 +308,7 @@ export default function ReportDetailPage() {
               </div>
 
               {/* Acme Security Team Response Card */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 space-y-4 shadow-2xs">
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 space-y-4 shadow-xs">
                 <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-md bg-[linear-gradient(135deg,#334155,#1e293b)] text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-xs">
@@ -251,7 +334,7 @@ export default function ReportDetailPage() {
               </div>
 
               {/* Description & Payload Card */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 space-y-5 shadow-2xs">
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 space-y-5 shadow-xs">
                 {/* Heading with Document Icon */}
                 <div className="flex items-center gap-2">
                   <FileText className="w-6 h-6 text-blue-600 stroke-[2]" />
@@ -291,9 +374,8 @@ export default function ReportDetailPage() {
 
             {/* Right Column: Contextual Sidebar */}
             <aside className="space-y-6">
-              {/* What's Next Card (Primary Blue Card) */}
+              {/* What's Next Card */}
               <div className="bg-[#0055d4] text-white rounded-2xl p-6 space-y-4 shadow-md relative overflow-hidden">
-                {/* Background decorative watermark */}
                 <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-white/5 rounded-full pointer-events-none" />
 
                 <h3 className="text-xl font-bold tracking-tight text-white">What&apos;s Next?</h3>
@@ -327,7 +409,7 @@ export default function ReportDetailPage() {
               </div>
 
               {/* Program Details Card */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5 shadow-2xs">
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-6 space-y-5 shadow-xs">
                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                   PROGRAM DETAILS
                 </h3>
@@ -366,42 +448,14 @@ export default function ReportDetailPage() {
       ) : (
         /* ================= STANDARD ACCEPTED/TRIAGING REPORT DETAIL VIEW ================= */
         <div className="space-y-6">
-          {/* Report Header */}
-          <header className="space-y-4 pb-4 border-b border-slate-200/80 bg-white p-4 sm:p-6 rounded-2xl shadow-xs border">
-            {/* Header Top */}
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
-                  My Reports
-                </h1>
-                <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-blue-50 text-blue-600 border border-blue-200/80">
-                  {report.reportId}
-                </span>
-              </div>
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                className="cursor-pointer rounded-xl border-slate-200 bg-white text-slate-700 hover:bg-slate-100 transition-all gap-2 px-3.5 shadow-xs text-xs font-semibold"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Back</span>
-              </Button>
-            </div>
-
-            {/* Report Title & Subtitle */}
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                <span className="font-semibold text-slate-700">{report.program}</span>
-                <span>&bull;</span>
-                <span>{report.submittedAgo}</span>
-              </div>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-                {report.title}
-              </h2>
-            </div>
+          {/* Report Title & Status Card */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-6 space-y-4 shadow-xs">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+              {report.title}
+            </h2>
 
             {/* Status Tracker */}
-            <div className="pt-2 flex flex-wrap items-center gap-2 sm:gap-4">
+            <div className="pt-3 flex flex-wrap items-center gap-2 sm:gap-4 border-t border-slate-100">
               {/* Step 1: Submitted */}
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-xs font-bold">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -422,50 +476,38 @@ export default function ReportDetailPage() {
                 <span>Resolved</span>
               </div>
             </div>
-          </header>
+          </div>
 
           {/* Navigation Tabs */}
-          <nav className="flex items-center gap-2 border-b border-slate-200/80 px-1">
+          <div className="flex items-center p-1 bg-slate-100/80 rounded-xl gap-1 border border-slate-200/50 w-full sm:w-auto self-start">
             <button
               onClick={() => setActiveTab("summary")}
-              className={`pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer ${
+              className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
                 activeTab === "summary"
-                  ? "text-blue-600"
-                  : "text-slate-500 hover:text-slate-800"
+                  ? "bg-white text-blue-600 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
               }`}
             >
               Summary
-              {activeTab === "summary" && (
-                <motion.div
-                  layoutId="activeTabUnderline"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
-                />
-              )}
             </button>
             <button
               onClick={() => setActiveTab("retest")}
-              className={`pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer ml-4 ${
+              className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
                 activeTab === "retest"
-                  ? "text-blue-600"
-                  : "text-slate-500 hover:text-slate-800"
+                  ? "bg-white text-blue-600 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
               }`}
             >
               Retest History ({retestHistory.length})
-              {activeTab === "retest" && (
-                <motion.div
-                  layoutId="activeTabUnderline"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
-                />
-              )}
             </button>
-          </nav>
+          </div>
 
           {/* Tab Content Render */}
           {activeTab === "summary" ? (
             /* Main Grid Layout for Summary */
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column: Main Content */}
-              <main className="lg:col-span-2 space-y-6 sm:space-y-8">
+              <main className="lg:col-span-2 space-y-6">
                 {/* Description Section */}
                 <section className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
                   <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
@@ -639,10 +681,7 @@ export default function ReportDetailPage() {
                   <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                     SEVERITY
                   </h4>
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500 text-white font-bold text-xs shadow-xs">
-                    <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                    High (8.1)
-                  </div>
+                  <div>{getSeverityBadge(report.severity || "HIGH")}</div>
                   <div className="space-y-2.5 pt-2 border-t border-slate-100 text-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">Confirmed Severity</span>
@@ -739,7 +778,7 @@ export default function ReportDetailPage() {
               </div>
 
               {retestHistory.length === 0 ? (
-                /* IMAGE 1: Empty State Placeholder */
+                /* Empty State Placeholder */
                 <motion.div
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -778,7 +817,7 @@ export default function ReportDetailPage() {
                   </Button>
                 </motion.div>
               ) : (
-                /* IMAGE 2: Retest History Data Table */
+                /* Retest History Data Table */
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -788,13 +827,13 @@ export default function ReportDetailPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="bg-slate-50/90 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                          <th className="py-4 px-6">REPORT ID & TITLE</th>
-                          <th className="py-4 px-6">VERSION</th>
-                          <th className="py-4 px-6">STATUS</th>
-                          <th className="py-4 px-6">REQUEST DATE</th>
-                          <th className="py-4 px-6">BOUNTY BONUS</th>
-                          <th className="py-4 px-6 text-center">ACTIONS</th>
+                        <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                          <th className="py-3.5 px-4 sm:px-6">REPORT ID & TITLE</th>
+                          <th className="py-3.5 px-4 sm:px-6">VERSION</th>
+                          <th className="py-3.5 px-4 sm:px-6">STATUS</th>
+                          <th className="py-3.5 px-4 sm:px-6">REQUEST DATE</th>
+                          <th className="py-3.5 px-4 sm:px-6">BOUNTY BONUS</th>
+                          <th className="py-3.5 px-4 sm:px-6 text-center">ACTIONS</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
@@ -806,9 +845,9 @@ export default function ReportDetailPage() {
                             transition={{ duration: 0.2, delay: idx * 0.05 }}
                             className="hover:bg-slate-50/70 transition-colors group"
                           >
-                            <td className="py-4 px-6">
+                            <td className="py-4 px-4 sm:px-6">
                               <div className="flex flex-col">
-                                <span className="text-sm sm:text-base font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                <span className="text-xs sm:text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
                                   {item.reportIdTitle}
                                 </span>
                                 <span className="text-xs text-slate-500 font-medium">
@@ -817,51 +856,51 @@ export default function ReportDetailPage() {
                               </div>
                             </td>
 
-                            <td className="py-4 px-6 whitespace-nowrap">
-                              <span className="font-mono text-xs sm:text-sm text-slate-600 font-semibold">
+                            <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
+                              <span className="font-mono text-xs text-slate-600 font-semibold">
                                 {item.version}
                               </span>
                             </td>
 
-                            <td className="py-4 px-6 whitespace-nowrap">
+                            <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
                               {item.status === "PASSED" ? (
-                                <Badge className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5 w-fit border border-emerald-200/60 shadow-2xs">
+                                <Badge className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 border border-emerald-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
                                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
                                   PASSED
                                 </Badge>
                               ) : (
-                                <Badge className="bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5 w-fit border border-rose-200/60 shadow-2xs">
+                                <Badge className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 border border-rose-200 font-semibold text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit shadow-xs">
                                   <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
                                   FAILED
                                 </Badge>
                               )}
                             </td>
 
-                            <td className="py-4 px-6 whitespace-nowrap">
-                              <span className="text-xs sm:text-sm text-slate-600 font-medium">
+                            <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
+                              <span className="text-xs text-slate-600 font-medium">
                                 {item.requestDate}
                               </span>
                             </td>
 
-                            <td className="py-4 px-6 whitespace-nowrap">
+                            <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
                               {item.bountyBonus ? (
-                                <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-extrabold text-emerald-700">
-                                  <Sparkles className="w-4 h-4 text-emerald-600" />
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-xs">
+                                  <Sparkles className="w-3 h-3 text-emerald-600" />
                                   {item.bountyBonus}
                                 </span>
                               ) : (
-                                <span className="text-slate-400 font-medium text-sm">&mdash;</span>
+                                <span className="text-slate-400 font-medium text-xs">&mdash;</span>
                               )}
                             </td>
 
-                            <td className="py-4 px-6 text-center whitespace-nowrap">
+                            <td className="py-4 px-4 sm:px-6 text-center whitespace-nowrap">
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="w-9 h-9 rounded-full text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors cursor-pointer"
+                                className="w-8 h-8 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
                                 aria-label="View Retest Details"
                               >
-                                <Eye className="w-5 h-5" />
+                                <Eye className="w-4 h-4" />
                               </Button>
                             </td>
                           </motion.tr>
@@ -875,6 +914,6 @@ export default function ReportDetailPage() {
           )}
         </div>
       )}
-    </motion.div>
+    </motion.section>
   );
 }
