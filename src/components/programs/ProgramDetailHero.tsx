@@ -92,7 +92,7 @@ export const ProgramDetailHero: React.FC<ProgramDetailHeroProps> = ({ program })
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
             {program.title}
           </h1>
-          <p className="text-slate-600 text-base leading-relaxed max-w-4xl">
+          <p className=" text-base  leading-relaxed max-w-4xl">
             {program.description}
           </p>
         </div>
