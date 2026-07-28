@@ -1,8 +1,6 @@
 import { Search } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 type ReportFiltersBarProps = {
@@ -37,93 +35,64 @@ export function ReportFiltersBar({
   severityCounts,
 }: ReportFiltersBarProps) {
   return (
-    <section className="flex flex-col gap-5 rounded-4xl border border-slate-200/80 bg-white p-5 shadow-sm">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-col gap-1">
-          <p className="text-lg font-semibold text-slate-900">Filter Reports</p>
-          <p className="text-sm text-slate-500">
-            Narrow the queue by report type, severity level, or keyword.
-          </p>
-        </div>
-
-        <div className="relative w-full max-w-xl">
+    <section className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-xl">
           <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-slate-400" />
           <Input
             type="search"
             value={searchTerm}
             onChange={(event) => onSearchTermChange(event.target.value)}
             placeholder="Search by title, author, or asset..."
-            className="border-slate-300 bg-white pl-10 text-base"
+            className="h-11 rounded-xl border-slate-300 bg-white pl-10 text-sm shadow-2xs focus-visible:border-blue-600 focus-visible:ring-blue-600"
           />
         </div>
-      </div>
 
-      <div className="flex flex-col gap-4 rounded-3xl bg-slate-50/70 p-4 ring-1 ring-slate-200/80">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-col gap-2">
-            <span className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
-              Report Type
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { label: "All Types", value: "All Types" as const },
-                { label: `Bounty (${typeCounts.bounty})`, value: "Bounty" as const },
-                { label: `Response (${typeCounts.response})`, value: "Response" as const },
-              ].map((filter) => (
-                <Button
-                  key={filter.label}
-                  variant={typeFilter === filter.value ? "default" : "outline"}
-                  size="sm"
-                  className={cn(
-                    "rounded-full",
-                    typeFilter !== filter.value && "bg-white text-slate-600"
-                  )}
-                  onClick={() => onTypeFilterChange(filter.value)}
-                >
-                  {filter.label}
-                </Button>
-              ))}
-            </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1 shadow-2xs">
+            {[
+              { label: "All", value: "All Types" as const },
+              { label: `Bounty ${typeCounts.bounty}`, value: "Bounty" as const },
+              { label: `Response ${typeCounts.response}`, value: "Response" as const },
+            ].map((filter) => (
+              <button
+                key={filter.label}
+                type="button"
+                onClick={() => onTypeFilterChange(filter.value)}
+                className={cn(
+                  "rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors",
+                  typeFilter === filter.value
+                    ? "bg-blue-600 font-semibold text-white shadow-2xs"
+                    : "text-slate-600 hover:bg-slate-100/60 hover:text-slate-900"
+                )}
+              >
+                {filter.label}
+              </button>
+            ))}
           </div>
 
-          <Separator className="hidden xl:block xl:h-14 xl:w-px xl:self-stretch xl:bg-slate-200" orientation="vertical" />
-
-          <div className="flex flex-col gap-2">
-            <span className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
-              Severity
-            </span>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant={severityFilter === "All" ? "secondary" : "outline"}
-                size="sm"
+          <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1 shadow-2xs overflow-x-auto">
+            {[
+              { label: "All", value: "All" as const },
+              { label: `Critical ${severityCounts.critical}`, value: "Critical" as const },
+              { label: `High ${severityCounts.high}`, value: "High" as const },
+              { label: `Medium ${severityCounts.medium}`, value: "Medium" as const },
+              { label: `Low ${severityCounts.low}`, value: "Low" as const },
+            ].map((filter) => (
+              <button
+                key={filter.label}
+                type="button"
+                onClick={() => onSeverityFilterChange(filter.value)}
                 className={cn(
-                  "rounded-full",
-                  severityFilter !== "All" && "bg-white text-slate-600"
+                  "rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors",
+                  severityFilter === filter.value
+                    ? "bg-slate-900 font-semibold text-white shadow-2xs"
+                    : "text-slate-600 hover:bg-slate-100/60 hover:text-slate-900"
                 )}
-                onClick={() => onSeverityFilterChange("All")}
               >
-                All
-              </Button>
-              {[
-                { label: `Critical (${severityCounts.critical})`, value: "Critical" as const },
-                { label: `High (${severityCounts.high})`, value: "High" as const },
-                { label: `Medium (${severityCounts.medium})`, value: "Medium" as const },
-                { label: `Low (${severityCounts.low})`, value: "Low" as const },
-              ].map((filter) => (
-                <Button
-                  key={filter.label}
-                  variant={severityFilter === filter.value ? "secondary" : "outline"}
-                  size="sm"
-                  className={cn(
-                    "rounded-full",
-                    severityFilter !== filter.value && "bg-white text-slate-600"
-                  )}
-                  onClick={() => onSeverityFilterChange(filter.value)}
-                >
-                  {filter.label}
-                </Button>
-              ))}
-            </div>
+                {filter.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>

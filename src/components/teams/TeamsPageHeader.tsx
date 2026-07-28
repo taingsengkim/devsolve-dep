@@ -12,7 +12,7 @@ type TeamsPageHeaderProps = {
 
 export function TeamsPageHeader({ counts }: TeamsPageHeaderProps) {
   return (
-    <header className="flex flex-col gap-4 border-b border-slate-200/80 pb-2 sm:flex-row sm:items-center sm:justify-between">
+    <header className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="border-slate-200 bg-white text-slate-600">
@@ -28,21 +28,22 @@ export function TeamsPageHeader({ counts }: TeamsPageHeaderProps) {
         </div>
 
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             Organization Members
           </h1>
-          <p className="text-base font-medium text-slate-500">
-            {counts.total} workspace members across manager, member, and viewer access levels.
+          <p className="mt-1.5 max-w-3xl text-base font-normal text-slate-600">
+            Manage teammate access, pending invitations, and workspace roles with a
+            cleaner member directory inspired by the program marketplace layout.
           </p>
         </div>
       </div>
 
-      <div className="flex self-start sm:self-auto">
+      <div className="flex self-start md:self-auto">
         <Link
           href="/dashboard/teams/invite-member"
           className={cn(
             buttonVariants({ variant: "default" }),
-            "rounded-xl px-4 shadow-xs"
+            "h-11 rounded-xl px-4 shadow-xs"
           )}
         >
           <Plus data-icon="inline-start" />

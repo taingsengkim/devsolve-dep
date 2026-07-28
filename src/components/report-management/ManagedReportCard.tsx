@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, CircleDot, Mail, ShieldCheck } from "lucide-react";
+import { ArrowRight, CircleDot, Mail } from "lucide-react";
 
 import type { ManagedReport } from "@/components/report-management/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 function severityBadgeClass(severity: ManagedReport["severity"]) {
@@ -64,62 +63,54 @@ export function ManagedReportCard({ report }: ManagedReportCardProps) {
   return (
     <Card
       className={cn(
-        "overflow-hidden rounded-2xl border border-slate-200/90 border-l-4 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:border-slate-300 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)]",
+        "flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_8px_24px_rgba(37,99,235,0.08)]",
         severityAccent.shell
       )}
     >
-      <CardContent className="p-0">
-        <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-6 lg:p-6">
-          <div className="flex min-w-0 items-start gap-4">
+      <CardContent className="flex h-full flex-col p-6">
+        <div className="flex flex-1 flex-col gap-5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-start gap-4">
             <Avatar size="lg" className={cn("ring-1", severityAccent.avatar)}>
               <AvatarFallback className={cn("font-semibold", severityAccent.avatar)}>
                 {report.authorInitials}
               </AvatarFallback>
             </Avatar>
 
-            <div className="flex min-w-0 flex-1 flex-col gap-3">
-              <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-500">
-                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-600">
+              <div className="flex min-w-0 flex-1 flex-col gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className="border-slate-200 bg-slate-100 text-slate-600"
+                  >
                   Report #{report.id}
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-sm font-medium text-blue-700 ring-1 ring-blue-100/80">
-                  <ShieldCheck className="size-3.5" />
-                  Verified
-                </span>
-              </div>
+                  </Badge>
+                  <Badge variant="outline" className={typeBadgeClass(report.type)}>
+                    {report.type}
+                  </Badge>
+                  <Badge variant="outline" className={statusBadgeClass(report.status)}>
+                    <CircleDot className="size-3" />
+                    {report.status}
+                  </Badge>
+                  <Badge variant="outline" className={severityBadgeClass(report.severity)}>
+                    {report.severity}
+                  </Badge>
+                </div>
 
-              <div className="flex min-w-0 flex-col gap-2">
-                <CardTitle className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-                  {report.title}
-                </CardTitle>
-                <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-                  <span>by {report.author}</span>
-                  <span className="text-slate-300">&bull;</span>
-                  <span className="inline-flex items-center gap-1">
-                    <Mail className="size-3.5" />
-                    {report.authorEmail}
-                  </span>
+                <div>
+                  <CardTitle className="line-clamp-2 text-lg font-bold text-slate-900">
+                    {report.title}
+                  </CardTitle>
+                  <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+                    <span>by {report.author}</span>
+                    <span className="text-slate-300">&bull;</span>
+                    <span className="inline-flex items-center gap-1">
+                      <Mail className="size-3.5" />
+                      {report.authorEmail}
+                    </span>
+                  </p>
                 </div>
               </div>
-
-              <p className="max-w-4xl text-base leading-7 text-slate-600">
-                {report.summary}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3 lg:min-w-[220px] lg:items-end">
-            <div className="flex flex-wrap gap-2 lg:justify-end">
-              <Badge variant="outline" className={typeBadgeClass(report.type)}>
-                {report.type}
-              </Badge>
-              <Badge variant="outline" className={statusBadgeClass(report.status)}>
-                <CircleDot className="size-3" />
-                {report.status}
-              </Badge>
-              <Badge variant="outline" className={severityBadgeClass(report.severity)}>
-                {report.severity}
-              </Badge>
             </div>
 
             <Link
@@ -128,35 +119,31 @@ export function ManagedReportCard({ report }: ManagedReportCardProps) {
                 buttonVariants({ variant: "outline" }),
                 "rounded-full border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50"
               )}
-            >
-              Review details
-              <ArrowRight data-icon="inline-end" />
+              >
+                Review details
+                <ArrowRight data-icon="inline-end" />
             </Link>
           </div>
-        </div>
 
-        <Separator className="bg-slate-100" />
+          <p className="text-sm leading-relaxed text-slate-600 line-clamp-3">
+            {report.summary}
+          </p>
 
-        <div className="flex flex-col gap-3 px-5 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-6">
-          <div className="flex flex-col gap-2">
+          <div>
             <span className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
               In-Scope Assets
             </span>
-            <div className="flex flex-wrap gap-2">
+            <div className="mt-2 flex flex-wrap gap-1.5">
               {report.assets.map((asset) => (
                 <span
                   key={asset}
-                  className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700"
+                  className="inline-flex max-w-[180px] truncate rounded-md border border-slate-200/80 bg-slate-100/90 px-2.5 py-1 text-xs font-medium text-slate-700"
                 >
                   {asset}
                 </span>
               ))}
             </div>
           </div>
-
-          <p className="text-sm text-slate-500 lg:text-right">
-            {report.assets.length} scoped {report.assets.length === 1 ? "asset" : "assets"} in this report
-          </p>
         </div>
       </CardContent>
     </Card>

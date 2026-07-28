@@ -41,7 +41,7 @@ export function ReportManagementPagination({
   const visiblePages = buildVisiblePages(pageNumbers, currentPage, totalPages);
 
   return (
-    <footer className="flex flex-col gap-4 rounded-4xl border border-slate-200/80 bg-white p-5 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+    <footer className="flex flex-col items-center justify-between gap-4 border-t border-slate-200/80 pt-6 sm:flex-row">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
         <label
           htmlFor="rows-per-page"
@@ -56,7 +56,7 @@ export function ReportManagementPagination({
             onRowsPerPageChange(Number(event.target.value));
             onPageChange(1);
           }}
-          className="h-9 rounded-3xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition-[color,box-shadow,border-color] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+          className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition-[color,box-shadow,border-color] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
         >
           {[10, 25, 50].map((option) => (
             <option key={option} value={option}>
@@ -71,14 +71,14 @@ export function ReportManagementPagination({
 
       <nav
         aria-label="Pagination"
-        className="flex flex-wrap items-center gap-2"
+        className="flex flex-wrap items-center gap-1.5"
       >
         <Button
           variant="outline"
           size="sm"
           disabled={currentPage === 1}
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-          className="rounded-full"
+          className="h-9 rounded-xl border-slate-300 text-sm font-medium"
         >
           <ChevronLeft data-icon="inline-start" />
           Previous
@@ -98,8 +98,10 @@ export function ReportManagementPagination({
                 variant={currentPage === pageNumber ? "default" : "outline"}
                 size="sm"
                 className={cn(
-                  "rounded-full",
-                  currentPage !== pageNumber && "bg-white text-slate-600"
+                  "h-9 w-9 rounded-xl p-0 text-sm font-semibold",
+                  currentPage === pageNumber
+                    ? "bg-blue-600 text-white shadow-2xs hover:bg-blue-700"
+                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
                 )}
                 onClick={() => onPageChange(pageNumber)}
               >
@@ -114,7 +116,7 @@ export function ReportManagementPagination({
           size="sm"
           disabled={currentPage === totalPages}
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-          className="rounded-full"
+          className="h-9 rounded-xl border-slate-300 text-sm font-medium"
         >
           Next
           <ChevronRight data-icon="inline-end" />
