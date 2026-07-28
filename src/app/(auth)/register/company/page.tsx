@@ -161,8 +161,8 @@ function CustomSelect({
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          "w-full h-11 px-3.5 bg-slate-50/80 hover:bg-slate-100/90 border rounded-xl text-slate-900 text-sm flex items-center justify-between transition-all cursor-pointer outline-none",
-          error ? "border-red-400 focus:ring-2 focus:ring-red-400" : "border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20",
+          "w-full h-11 px-3.5 bg-white hover:bg-slate-50 border rounded-xl text-slate-900 text-sm flex items-center justify-between transition-all cursor-pointer outline-none",
+          error ? "border-red-400 focus:ring-2 focus:ring-red-400" : "border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20",
           isOpen && "border-blue-500 ring-2 ring-blue-500/20 bg-white"
         )}
       >
@@ -254,7 +254,7 @@ function CustomCountrySelect({
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          "w-full h-11 px-3.5 bg-slate-50/80 hover:bg-slate-100/90 border border-slate-200 focus:border-blue-500 rounded-xl text-slate-900 text-sm flex items-center justify-between transition-all cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/20",
+          "w-full h-11 px-3.5 bg-white hover:bg-slate-50 border border-slate-300 focus:border-blue-500 rounded-xl text-slate-900 text-sm flex items-center justify-between transition-all cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/20",
           isOpen && "border-blue-500 ring-2 ring-blue-500/20 bg-white"
         )}
       >
@@ -298,7 +298,7 @@ function CustomCountrySelect({
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search country..."
               autoFocus
-              className="w-full h-9 pl-9 pr-3 text-xs sm:text-sm bg-slate-50 border border-slate-200/80 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-blue-500"
+              className="w-full h-9 pl-9 pr-3 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
             />
           </div>
 
@@ -582,15 +582,15 @@ export default function CompanyRegisterPage() {
 
             {/* Feature Badges */}
             <div className="flex flex-wrap justify-center gap-2.5 mt-5 relative z-10">
-              <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-xs border border-blue-200/80 px-3 py-1.5 rounded-full shadow-2xs text-xs font-semibold text-slate-800">
+              <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-xs border border-blue-200/80 px-3 py-1.5 rounded-full shadow-2xs text-sm font-semibold text-slate-800">
                 <Building2 className="w-3.5 h-3.5 text-blue-600" />
                 <span>Verified Organizations</span>
               </div>
-              <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-xs border border-indigo-200/80 px-3 py-1.5 rounded-full shadow-2xs text-xs font-semibold text-slate-800">
+              <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-xs border border-indigo-200/80 px-3 py-1.5 rounded-full shadow-2xs text-sm font-semibold text-slate-800">
                 <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
                 <span>Enterprise Bug Bounty</span>
               </div>
-              <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-xs border border-emerald-200/80 px-3 py-1.5 rounded-full shadow-2xs text-xs font-semibold text-slate-800">
+              <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-xs border border-emerald-200/80 px-3 py-1.5 rounded-full shadow-2xs text-sm font-semibold text-slate-800">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Compliance Ready</span>
               </div>
@@ -755,8 +755,8 @@ export default function CompanyRegisterPage() {
                       type="text"
                       placeholder="Tada Battambang"
                       {...register("fullName")}
-                      className={`w-full h-11 pl-10 pr-4 bg-slate-50/80 border ${errors.fullName ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:border-blue-500"
-                        } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 focus:bg-white transition-all`}
+                      className={`w-full h-11 pl-10 pr-4 bg-white border ${errors.fullName ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+                        } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
                     />
                   </div>
                   {errors.fullName && (
@@ -798,8 +798,8 @@ export default function CompanyRegisterPage() {
                       type="email"
                       placeholder="tada@battambang.org"
                       {...register("email")}
-                      className={`w-full h-11 pl-10 pr-4 bg-slate-50/80 border ${errors.email ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:border-blue-500"
-                        } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 focus:bg-white transition-all`}
+                      className={`w-full h-11 pl-10 pr-4 bg-white border ${errors.email ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+                        } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
                     />
                   </div>
                   {errors.email && (
@@ -821,8 +821,8 @@ export default function CompanyRegisterPage() {
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••••••"
                       {...register("password")}
-                      className={`w-full h-11 pl-10 pr-10 bg-slate-50/80 border ${errors.password ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:border-blue-500"
-                        } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 focus:bg-white transition-all`}
+                      className={`w-full h-11 pl-10 pr-10 bg-white border ${errors.password ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+                        } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
                     />
                     <button
                       type="button"
@@ -920,8 +920,8 @@ export default function CompanyRegisterPage() {
                       type="text"
                       placeholder="e.g. Acme Corp"
                       {...register("companyName")}
-                      className={`w-full h-11 pl-10 pr-4 bg-slate-50/80 border ${errors.companyName ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:border-blue-500"
-                        } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 focus:bg-white transition-all`}
+                      className={`w-full h-11 pl-10 pr-4 bg-white border ${errors.companyName ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+                        } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
                     />
                   </div>
                   {errors.companyName && (
@@ -949,8 +949,8 @@ export default function CompanyRegisterPage() {
                       type="url"
                       placeholder="https://readme.org"
                       {...register("companyWebsite")}
-                      className={`w-full h-11 pl-10 pr-4 bg-slate-50/80 border ${errors.companyWebsite ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:border-blue-500"
-                        } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 focus:bg-white transition-all`}
+                      className={`w-full h-11 pl-10 pr-4 bg-white border ${errors.companyWebsite ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+                        } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
                     />
                   </div>
                   <span className="block text-[11px] text-slate-500 mt-1 font-medium">
