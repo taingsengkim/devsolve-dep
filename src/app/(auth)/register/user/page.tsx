@@ -281,21 +281,27 @@ export default function UserRegisterPage() {
     let isMounted = true;
     const fetchCountries = async () => {
       try {
-        const res = await fetch("https://restcountries.com/v3.1/all?fields=name,cca2");
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const res = await fetch("https://restcountries.com/v3.1/all?fields=name,cca2", {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
         if (res.ok) {
           const data = await res.json();
           const formatted: CountryOption[] = data
             .map((item: { name: { common: string }; cca2: string }) => ({
-              name: item.name.common,
-              code: item.cca2.toLowerCase(),
+              name: item.name?.common || "",
+              code: item.cca2 ? item.cca2.toLowerCase() : "",
             }))
+            .filter((item: CountryOption) => Boolean(item.name && item.code))
             .sort((a: CountryOption, b: CountryOption) => a.name.localeCompare(b.name));
           if (formatted.length > 0 && isMounted) {
             setCountriesList(formatted);
           }
         }
-      } catch (e) {
-        console.error("Countries API fetch error:", e);
+      } catch {
+        // Silently fallback to DEFAULT_COUNTRIES without logging error trace
       }
     };
     fetchCountries();
@@ -327,7 +333,12 @@ export default function UserRegisterPage() {
   const detectCountry = React.useCallback(async () => {
     setIsDetectingCountry(true);
     try {
-      const res = await fetch("https://ipapi.co/json/");
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+      const res = await fetch("https://ipapi.co/json/", {
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
       if (res.ok) {
         const data = await res.json();
         if (data.country_name) {
@@ -340,7 +351,7 @@ export default function UserRegisterPage() {
         }
       }
     } catch {
-      // Fallback
+      // Fallback silently if IP API is blocked or offline
     }
 
     try {
@@ -370,7 +381,7 @@ export default function UserRegisterPage() {
         detected = "United Kingdom";
         code = "gb";
       } else {
-        const userLanguage = navigator.language || "en-US";
+        const userLanguage = typeof navigator !== "undefined" ? navigator.language : "en-US";
         const cCode = userLanguage.split("-")[1];
         if (cCode) {
           code = cCode.toLowerCase();
@@ -387,8 +398,8 @@ export default function UserRegisterPage() {
       if (code) {
         setCountryCode(code);
       }
-    } catch (e) {
-      console.error("Auto detect country fallback error:", e);
+    } catch {
+      // Silent fallback
     } finally {
       setIsDetectingCountry(false);
     }
@@ -641,7 +652,7 @@ export default function UserRegisterPage() {
                     <Input
                       id="username"
                       type="text"
-                      placeholder="e.g. h4ck3r_pro"
+                      placeholder="e.g. tada122"
                       {...register("username")}
                       className={`w-full h-11 pl-10 pr-4 bg-slate-50/80 border ${
                         errors.username ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:border-blue-500"
@@ -665,7 +676,7 @@ export default function UserRegisterPage() {
                     <Input
                       id="fullName"
                       type="text"
-                      placeholder="e.g. h4ck3r_pro"
+                      placeholder="e.g. Data Battambang"
                       {...register("fullName")}
                       className={`w-full h-11 pl-10 pr-4 bg-slate-50/80 border ${
                         errors.fullName ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:border-blue-500"
