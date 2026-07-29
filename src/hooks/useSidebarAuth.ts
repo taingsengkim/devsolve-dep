@@ -7,13 +7,14 @@ export interface SidebarUser {
   email?: string | null;
   image?: string | null;
   role?: string | null;
+  roles?: string[];
 }
 
 export function useSidebarAuth() {
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
   const displayName = user?.name ?? user?.email ?? "User";
-  const [tokenRole, setTokenRole] = useState<string | null>(null);
+  const [tokenRoles, setTokenRoles] = useState<string[]>([]);
 
   useEffect(() => {
     if (!session) return;
@@ -25,21 +26,35 @@ export function useSidebarAuth() {
           : res?.data?.accessToken || res?.data?.token || res?.token;
 
       if (rawToken) {
-        const roles = extractRealmRolesFromToken(rawToken);
-        if (roles.includes("ADMIN")) setTokenRole("ADMIN");
-        else if (roles.includes("COMPANY")) setTokenRole("COMPANY");
-        else if (roles.includes("MODERATOR")) setTokenRole("MODERATOR");
-        else setTokenRole("USER");
+        const realmRoles = extractRealmRolesFromToken(rawToken);
+        const appRoles = realmRoles.filter((r) =>
+          ["USER", "COMPANY", "ADMIN", "MODERATOR"].includes(r)
+        );
+        setTokenRoles(appRoles.length > 0 ? Array.from(new Set(appRoles)) : ["USER"]);
       }
     });
   }, [session]);
+
+  const sessionRoles = (user as any)?.role
+    ? String((user as any).role)
+        .split(",")
+        .map((r) => r.trim().toUpperCase())
+    : [];
+
+  const activeRoles =
+    sessionRoles.length > 0
+      ? sessionRoles
+      : tokenRoles.length > 0
+      ? tokenRoles
+      : ["USER"];
 
   const effectiveUser: SidebarUser | undefined = user
     ? {
         name: user.name,
         email: user.email,
         image: user.image,
-        role: (user as any)?.role || tokenRole || "USER",
+        role: activeRoles.join(","),
+        roles: activeRoles,
       }
     : undefined;
 

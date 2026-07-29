@@ -73,19 +73,14 @@ export const auth = betterAuth({
             console.log("[Auth Server Debug] Extracted Keycloak Realm Roles:", realmRoles);
             console.log("=======================================================\n");
 
-            // Map Keycloak Realm Roles to app roles
-            let role = "USER";
+            // Map Keycloak Realm Roles to app roles (supports single or multi-role users)
             const upperRoles = realmRoles.map((r) => String(r).toUpperCase());
+            const appRoles = upperRoles.filter((r) =>
+              ["USER", "COMPANY", "ADMIN", "MODERATOR"].includes(r)
+            );
+            const role = appRoles.length > 0 ? Array.from(new Set(appRoles)).join(",") : "USER";
 
-            if (upperRoles.includes("ADMIN")) {
-              role = "ADMIN";
-            } else if (upperRoles.includes("COMPANY")) {
-              role = "COMPANY";
-            } else if (upperRoles.includes("MODERATOR")) {
-              role = "MODERATOR";
-            }
-
-            console.log("[Auth Server Debug] Final Assigned User Role:", role);
+            console.log("[Auth Server Debug] Final Assigned User Roles:", role);
 
             return {
               id: userInfo.sub || idTokenPayload?.sub || accessTokenPayload?.sub,

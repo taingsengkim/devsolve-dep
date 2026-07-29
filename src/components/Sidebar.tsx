@@ -39,11 +39,14 @@ function SidebarContent({
   onNavItemClick,
   onSignOut,
 }: SidebarContentProps) {
-  const userRole = (user?.role || "USER").toUpperCase();
+  const userRoles = (
+    user?.roles ||
+    (user?.role ? user.role.split(",") : ["USER"])
+  ).map((r) => r.trim().toUpperCase());
 
   const filteredNavItems = NAV_ITEMS.filter((item) => {
     if (!item.roles) return true;
-    return item.roles.map((r) => r.toUpperCase()).includes(userRole);
+    return item.roles.some((reqRole) => userRoles.includes(reqRole.toUpperCase()));
   });
 
   return (
