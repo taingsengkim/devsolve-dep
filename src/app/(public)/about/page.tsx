@@ -1,37 +1,37 @@
-
-// import Hero from "@/components/about/Hero";
-// import About from "@/components/about/About";
-// import Stats from "../../../components/about/State"
-// import Purpose from "@/components/about/Purpose";
-// import Features from "@/components/about/Features";
-// import Team from "@/components/about/Team";
-// import Contact from "@/components/about/Contact";
-
-// export default function AboutPage() {
-//   return (
-//     <main className="bg-white">
-//       <Hero />
-//       <About />
-//       <Stats />
-//       <Purpose />
-//       <Features />
-//       <Team />
-//       <Contact />
-//     </main>
-//   );
-// }
-
-// app/about/page.tsx
-import { SVGProps } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, ShieldCheck, Users, Trophy } from "lucide-react";
+import {
+  ArrowRight,
+  ShieldCheck,
+  Trophy,
+  Moon,
+  Award,
+  Code,
+  MessageSquare,
+  Lock,
+  Sparkles,
+  Target,
+  Globe,
+  CheckCircle2,
+  Bug,
+  Ribbon,
+  Cpu,
+  Server,
+  Database,
+  Box,
+  Layers,
+  Mail,
+  Github,
+  Twitter,
+  Linkedin,
+  GraduationCap,
+} from "lucide-react";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans antialiased">
+    <div className="min-h-screen bg-slate-50/50 text-gray-900 font-sans antialiased">
       <HeroSection />
-      <AboutSection />
+      <EmpoweringSecuritySection />
       <PurposeSection />
       <OfferSection />
       <TechStackSection />
@@ -41,281 +41,94 @@ export default function AboutPage() {
   );
 }
 
-// ============================================================
-// ICONS
-// ============================================================
 
-function ShieldIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-      />
-    </svg>
-  );
-}
-
-function CodeIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-      />
-    </svg>
-  );
-}
-
-function ChatIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
-      />
-    </svg>
-  );
-}
-
-function TrophyIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-      />
-    </svg>
-  );
-}
-
-function GiftIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
-      />
-    </svg>
-  );
-}
-
-function LockIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M15 11V7a3 3 0 00-6 0v4"
-      />
-    </svg>
-  );
-}
-
-function ReactIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...props} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2.5c-4.5 0-8.2 1.8-10.2 4.7-.3.4-.3.9 0 1.3 2 2.9 5.7 4.7 10.2 4.7s8.2-1.8 10.2-4.7c.3-.4.3-.9 0-1.3C20.2 4.3 16.5 2.5 12 2.5zm0 4c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3zm0 10.3c-4.5 0-8.2 1.8-10.2 4.7-.3.4-.3.9 0 1.3 2 2.9 5.7 4.7 10.2 4.7s8.2-1.8 10.2-4.7c.3-.4.3-.9 0-1.3-2-2.9-5.7-4.7-10.2-4.7zM3.5 9.1c.7.5 1.6.9 2.6 1.2-.6.8-1 1.7-1 2.7s.4 1.9 1 2.7c-1 .3-1.9.7-2.6 1.2-.5-.8-.8-1.7-.8-2.7s.3-1.9.8-2.7zm17 0c.5.8.8 1.7.8 2.7s-.3 1.9-.8 2.7c-.7-.5-1.6-.9-2.6-1.2.6-.8 1-1.7 1-2.7s-.4-1.9-1-2.7c1-.3 1.9-.7 2.6-1.2z" />
-    </svg>
-  );
-}
-
-function SpringIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...props} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
-    </svg>
-  );
-}
-
-function PostgresIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...props} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
-    </svg>
-  );
-}
-
-function DockerIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...props} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
-    </svg>
-  );
-}
-
-function KeycloakIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...props} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
-    </svg>
-  );
-}
-
-function TailwindIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...props} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
-    </svg>
-  );
-}
-
-function GlobeIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"
-      />
-    </svg>
-  );
-}
-
-// ============================================================
-// HERO SECTION
-// ============================================================
 function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-white">
-      <div className="absolute inset-0">
-        <div className="absolute left-0 top-0 h-[500px] w-[500px] rounded-full bg-blue-100 blur-3xl opacity-40" />
-        <div className="absolute right-0 top-20 h-[450px] w-[450px] rounded-full bg-cyan-100 blur-3xl opacity-40" />
-      </div>
+    <section className="relative overflow-hidden bg-gradient-to-b from-blue-50/40 to-transparent py-16 md:py-24">
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40 pointer-events-none" />
 
-      <div className="relative mx-auto max-w-7xl px-6 py-24 lg:px-8">
-        <div className="grid items-center gap-20 lg:grid-cols-2">
-          <div>
-            <span className="inline-flex rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600">
-              About DevSolve
-            </span>
-
-            <h1 className="mt-6 text-5xl font-extrabold leading-tight text-gray-900 lg:text-6xl">
+      <div className="relative max-w-7xl mx-auto px-6">
+        <div className="grid lg:grid-cols-12 gap-12 items-center">
+          <div className="lg:col-span-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 tracking-tight leading-[1.15]">
               Building a Safer
               <br />
-              <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                Digital World
-              </span>
+              <span className="text-blue-600">Digital World</span>
               <br />
-              Together
+              <span className="text-emerald-500">Together</span>
             </h1>
 
-            <p className="mt-8 max-w-xl text-lg leading-8 text-gray-600">
+            <p className="mt-6 text-gray-500 text-base leading-relaxed max-w-lg">
               DevSolve connects ethical hackers and organizations to build a
               more secure digital ecosystem. Through bug bounty programs,
               technical challenges, and community collaboration, we make
-              security accessible, rewarding, and transparent for everyone.
+              security research rewarding and transparent for all.
             </p>
 
-            <div className="mt-10 flex flex-wrap gap-4">
+            <div className="mt-8 flex flex-wrap gap-4 items-center">
               <Link
                 href="#"
-                className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-4 font-semibold text-white transition hover:bg-blue-700"
+                className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-6 py-3.5 rounded-full transition shadow-lg shadow-blue-600/25 group"
               >
-                Get Started
-                <ArrowRight className="ml-2 h-5 w-5" />
+                Get started
+                <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Link>
-
               <Link
                 href="#"
-                className="rounded-xl border border-gray-300 px-6 py-4 font-semibold text-gray-700 transition hover:border-blue-500 hover:text-blue-600"
+                className="inline-flex items-center justify-center border border-gray-300 bg-white hover:border-gray-400 text-gray-700 font-medium text-sm px-6 py-3.5 rounded-full transition shadow-sm"
               >
-                Read Our Story
+                Read Our Team
               </Link>
             </div>
 
-            <div className="mt-14 grid grid-cols-3 gap-5">
-              <div className="rounded-2xl border bg-white p-5 shadow-sm">
-                <ShieldCheck className="mb-3 h-7 w-7 text-blue-600" />
-                <h3 className="text-3xl font-bold text-gray-900">150+</h3>
-                <p className="mt-2 text-sm text-gray-500">Active Programs</p>
+            <div className="mt-12 grid grid-cols-3 gap-6 pt-6 border-t border-gray-100">
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-emerald-500 tracking-tight">
+                  150+
+                </h3>
+                <p className="text-xs text-gray-500 mt-1 font-medium">
+                  Security Programs
+                </p>
               </div>
-
-              <div className="rounded-2xl border bg-white p-5 shadow-sm">
-                <Users className="mb-3 h-7 w-7 text-cyan-500" />
-                <h3 className="text-3xl font-bold text-gray-900">2,500+</h3>
-                <p className="mt-2 text-sm text-gray-500">Community Members</p>
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-emerald-500 tracking-tight">
+                  2,500+
+                </h3>
+                <p className="text-xs text-gray-500 mt-1 font-medium">
+                  Community Members
+                </p>
               </div>
-
-              <div className="rounded-2xl border bg-white p-5 shadow-sm">
-                <Trophy className="mb-3 h-7 w-7 text-emerald-500" />
-                <h3 className="text-3xl font-bold text-gray-900">5,000+</h3>
-                <p className="mt-2 text-sm text-gray-500">
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-emerald-500 tracking-tight">
+                  5,000+
+                </h3>
+                <p className="text-xs text-gray-500 mt-1 font-medium">
                   Vulnerabilities Fixed
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="relative">
-            <div className="absolute -left-6 top-10 h-72 w-72 rounded-full bg-blue-200 blur-3xl opacity-40" />
 
-            <div className="relative overflow-hidden rounded-[34px] border border-white bg-white shadow-2xl">
-              <div className="h-[500px] w-full bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center">
-                <ShieldIcon className="w-32 h-32 text-blue-500" />
-              </div>
+<div className="lg:col-span-6 relative">
+            <div className="relative w-full h-[380px] sm:h-[460px] lg:h-[500px] rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-900 flex items-center justify-center">
+              <img
+                src="/hero.jpg"
+                alt="DevSolve Team Collaborating"
+                className="w-full h-full object-cover object-top"
+              />
             </div>
-
-            <div className="absolute -bottom-6 left-10 rounded-2xl bg-white p-5 shadow-xl">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                  <ShieldCheck className="h-6 w-6 text-green-600" />
+         
+            <div className="absolute -bottom-5 left-6 bg-white/95 backdrop-blur rounded-2xl p-3.5 px-5 shadow-xl border border-gray-100 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                <Trophy className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-base font-extrabold text-gray-900 leading-none">
+                  5,000+
                 </div>
-                <div>
-                  <h4 className="font-bold text-gray-900">5,000+</h4>
-                  <p className="text-sm text-gray-500">Bugs Resolved</p>
+                <div className="text-[11px] font-medium text-gray-500 mt-0.5">
+                  Bugs Resolved
                 </div>
               </div>
             </div>
@@ -326,84 +139,112 @@ function HeroSection() {
   );
 }
 
-// ============================================================
-// ABOUT SECTION
-// ============================================================
-function AboutSection() {
+
+function EmpoweringSecuritySection() {
   return (
-    <section className="relative overflow-hidden bg-white py-24">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid items-center gap-20 lg:grid-cols-2">
-          <div>
-            <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600">
+    <section className="py-20 bg-white relative">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid lg:grid-cols-12 gap-12 items-center">
+          <div className="lg:col-span-6">
+            <span className="inline-block rounded-full border border-blue-200 bg-blue-50/60 px-4 py-1.5 text-xs font-semibold text-blue-600 mb-6">
               About DevSolve
             </span>
 
-            <h2 className="mt-6 text-4xl font-bold leading-tight text-gray-900 md:text-5xl">
-              Building a Safer
-              <br />
-              <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                Digital World Together
-              </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-blue-600 leading-tight">
+              Empowering Security
             </h2>
 
-            <p className="mt-8 text-lg leading-8 text-gray-600">
-              Building a Safer Digital World Together is a project aimed at
-              creating a safer digital world by empowering individuals and
-              communities to protect themselves online. The project focuses on
-              enhancing digital literacy, promoting responsible online behavior,
-              and providing support to those who are vulnerable or at risk.
-            </p>
+            <div className="mt-6 space-y-4 text-gray-500 text-sm sm:text-base leading-relaxed">
+              <p>
+                DevSolve is a platform designed to connect organizations with
+                hackers and problem solvers through bug bounty programs and
+                technical challenges. The system enables companies to publish
+                programs while allowing hackers to find, report, and resolve
+                vulnerabilities in a secure environment.
+              </p>
+              <p>
+                In addition, our integrated discussion forum encourages users to
+                exchange ideas, ask questions, and share technical knowledge —
+                fostering an active and collaborative community focused on
+                continuous learning.
+              </p>
+            </div>
 
-            <div className="mt-8 space-y-4">
-              <h3 className="text-xl font-bold text-gray-900">
-                Key Initiatives
-              </h3>
-              <ul className="space-y-3 text-gray-600">
-                <li className="flex items-start gap-3">
-                  <span className="text-blue-500 font-bold">•</span>
-                  <span>
-                    <strong>Digital Literacy Programs:</strong> The project
-                    offers a range of digital literacy programs designed to
-                    equip individuals with the skills and knowledge needed to
-                    navigate the digital world safely and responsibly.
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-blue-500 font-bold">•</span>
-                  <span>
-                    <strong>Online Safety Training:</strong> Participants will
-                    have access to online safety training modules that cover
-                    topics such as cyberbullying, online privacy, and safe
-                    internet practices.
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-blue-500 font-bold">•</span>
-                  <span>
-                    <strong>Support Services:</strong> The project provides
-                    support services to individuals who are experiencing
-                    cyberbullying, online harassment, or other digital safety
-                    concerns.
-                  </span>
-                </li>
-              </ul>
+            <div className="mt-8 p-6 rounded-2xl bg-slate-50 border border-slate-100 grid grid-cols-3 gap-4 text-center">
+              <div>
+                <h4 className="text-xl sm:text-2xl font-bold text-blue-600">
+                  150+
+                </h4>
+                <p className="text-xs text-gray-400 font-medium mt-1">
+                  Security Programs
+                </p>
+              </div>
+              <div>
+                <h4 className="text-xl sm:text-2xl font-bold text-blue-600">
+                  2,500+
+                </h4>
+                <p className="text-xs text-gray-400 font-medium mt-1">
+                  Community Members
+                </p>
+              </div>
+              <div>
+                <h4 className="text-xl sm:text-2xl font-bold text-blue-600">
+                  5,000+
+                </h4>
+                <p className="text-xs text-gray-400 font-medium mt-1">
+                  Vulnerabilities Fixed
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-4 items-center">
+              <Link
+                href="#"
+                className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-6 py-3.5 rounded-full transition shadow-md shadow-blue-600/20 group"
+              >
+                See Mission & Vision
+                <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+              <Link
+                href="#"
+                className="inline-flex items-center justify-center border border-gray-300 bg-white hover:border-gray-400 text-gray-700 font-medium text-sm px-6 py-3.5 rounded-full transition shadow-sm"
+              >
+                Our Story
+              </Link>
             </div>
           </div>
 
-          <div className="relative flex items-center justify-center">
-            <div className="absolute h-96 w-96 rounded-full bg-cyan-100 blur-3xl opacity-50" />
+          <div className="lg:col-span-6 relative flex justify-center py-6">
+            <div className="relative w-full max-w-lg aspect-square">
+              <div className="absolute top-0 right-0 w-2/3 h-2/3 rounded-full overflow-hidden border-4 border-white shadow-xl bg-slate-200">
+                <img
+                  src="/hero2.jpg"
+                  alt="Team discussion"
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
-            <div className="relative h-[430px] w-[430px] overflow-hidden rounded-full border-8 border-white shadow-2xl bg-gradient-to-br from-blue-200 to-cyan-200 flex items-center justify-center">
-              <GlobeIcon className="w-32 h-32 text-blue-500" />
-            </div>
+              <div className="absolute bottom-4 left-0 w-2/3 h-2/3 rounded-[3rem] sm:rounded-full overflow-hidden border-4 border-white shadow-xl bg-slate-200">
+                <img
+                  src="/hero.jpg"
+                  alt="Collaboration"
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
-            <div className="absolute -top-5 right-0 h-40 w-40 overflow-hidden rounded-full border-4 border-white shadow-xl bg-blue-100 flex items-center justify-center">
-              <LockIcon className="w-16 h-16 text-blue-500" />
-            </div>
-
-            <div className="absolute bottom-5 left-0 h-44 w-44 overflow-hidden rounded-full border-4 border-white shadow-xl bg-cyan-100 flex items-center justify-center">
-              <ShieldIcon className="w-20 h-20 text-cyan-500" />
+              <div className="absolute top-1/2 -right-2 transform -translate-y-1/2 bg-white/95 backdrop-blur rounded-2xl p-3 px-4 shadow-xl border border-gray-100 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                  <Award className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-extrabold text-gray-900 leading-none">
+                    Top Rated
+                  </div>
+                  <div className="text-[10px] font-medium text-gray-400 mt-1">
+                    Security Platform
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -412,85 +253,90 @@ function AboutSection() {
   );
 }
 
-// ============================================================
-// PURPOSE SECTION
-// ============================================================
+
 function PurposeSection() {
+  const missionFeatures = [
+    "Structured, secure vulnerability reporting",
+    "Transparent evaluation & merit-based rewards",
+    "Anti-cheating and plagiarism prevention",
+    "Innovation through real-world challenges",
+  ];
+
+  const visionFeatures = [
+    "Globally trusted platform for all stakeholders",
+    "Active, security-first collaborative community",
+    "Scalable infrastructure for enterprise bounties",
+    "Cybersecurity education through practice",
+  ];
+
   return (
     <section className="max-w-7xl mx-auto px-6 py-16 md:py-24">
-      <div className="text-center mb-16">
-        <h2 className="text-sm font-semibold text-blue-600 uppercase tracking-wider">
+      <div className="text-center mb-12">
+        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 text-xs font-semibold tracking-wide border border-blue-100 mb-3">
+          <Sparkles className="w-3.5 h-3.5" />
+          Purpose
+        </span>
+        <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
           What Drives DevSolve
-        </h2>
-        <h1 className="text-4xl md:text-5xl font-bold mt-2 text-gray-900">
-          Empowering Security & Innovation
         </h1>
-        <p className="text-gray-500 text-base max-w-2xl mx-auto mt-4">
-          Empowering Security is a key component of the project, focusing on
-          enhancing cybersecurity awareness and skills among individuals and
-          communities.
-        </p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
-        <div className="bg-gray-50 rounded-2xl p-8 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide">
-              What Drives DevSolve
+        <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6">
+              <Target className="w-6 h-6" />
+            </div>
+            <span className="text-xs font-bold text-blue-600 uppercase tracking-wider block mb-2">
+              Our Mission
             </span>
+            <h2 className="text-2xl font-black text-gray-900 tracking-tight leading-snug mb-4">
+              Responsible Disclosure & Continuous Learning
+            </h2>
+            <p className="text-gray-500 text-sm leading-relaxed mb-6">
+              To empower ethical hackers to identify and report vulnerabilities
+              responsibly, reward meaningful contributions, and cultivate a culture of
+              continuous learning through real-world security challenges that make the
+              digital ecosystem safer for everyone.
+            </p>
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-3">
-            Empowering Security & Continuous Learning
-          </h3>
-          <p className="text-gray-600 text-sm leading-relaxed mb-6">
-            The project is driven by a desire to create a more secure and
-            responsible digital environment. By empowering individuals and
-            communities, the project seeks to reduce the risk of cybercrime and
-            other digital threats.
-          </p>
-          <ul className="space-y-2 text-sm text-gray-700">
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500 font-bold">•</span>
-              <span>Enhancing cybersecurity awareness</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500 font-bold">•</span>
-              <span>Empowering individuals to protect themselves</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500 font-bold">•</span>
-              <span>Reducing cybercrime and digital threats</span>
-            </li>
+
+          <ul className="space-y-3">
+            {missionFeatures.map((item, idx) => (
+              <li key={idx} className="flex items-start gap-3 text-sm text-gray-600 font-medium">
+                <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                <span>{item}</span>
+              </li>
+            ))}
           </ul>
         </div>
 
-        <div className="bg-gray-50 rounded-2xl p-8 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide">
-              Everything in One Place
+        <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6">
+              <Globe className="w-6 h-6" />
+            </div>
+            <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-2">
+              Our Vision
             </span>
+            <h2 className="text-2xl font-black text-gray-900 tracking-tight leading-snug mb-4">
+              A Trusted Global Cybersecurity Community
+            </h2>
+            <p className="text-gray-500 text-sm leading-relaxed mb-6">
+              To become the world's most trusted bridge between organizations and
+              ethical hackers — an ecosystem where cybersecurity awareness grows,
+              talent is recognized globally, and the internet becomes more resilient
+              through collective effort.
+            </p>
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-3">
-            A Connected & Inclusive Digital World
-          </h3>
-          <p className="text-gray-600 text-sm leading-relaxed mb-6">
-            Everything Is One Place is a project that aims to create a more
-            connected and inclusive digital world. The project seeks to break
-            down barriers and promote digital inclusion for all.
-          </p>
-          <ul className="space-y-2 text-sm text-gray-700">
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500 font-bold">•</span>
-              <span>Breaking down digital barriers</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500 font-bold">•</span>
-              <span>Promoting digital inclusion for all</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500 font-bold">•</span>
-              <span>Creating a more connected world</span>
-            </li>
+
+          <ul className="space-y-3">
+            {visionFeatures.map((item, idx) => (
+              <li key={idx} className="flex items-start gap-3 text-sm text-gray-600 font-medium">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                <span>{item}</span>
+              </li>
+            ))}
           </ul>
         </div>
       </div>
@@ -498,63 +344,78 @@ function PurposeSection() {
   );
 }
 
-// ============================================================
-// OFFER SECTION
-// ============================================================
+
 function OfferSection() {
   const offerings = [
     {
-      icon: ShieldIcon,
+      icon: Bug,
       title: "Bug Bounty Programs",
       description:
         "Organizations publish scoped programs with Markdown descriptions. Hackers find, document, and report vulnerabilities through a structured, secure workflow.",
+      accentBg: "bg-red-50",
+      accentText: "text-red-500",
+      borderColor: "border-red-100 hover:border-red-200",
     },
     {
-      icon: CodeIcon,
+      icon: Code,
       title: "Technical Challenges",
       description:
         "A rich library of coding and security challenges with defined evaluation criteria, secure file submission, and confidential judging for complete fairness.",
+      accentBg: "bg-blue-50",
+      accentText: "text-blue-600",
+      borderColor: "border-blue-100 hover:border-blue-200",
     },
     {
-      icon: ChatIcon,
+      icon: MessageSquare,
       title: "Discussion Forum",
       description:
         "An integrated community forum to exchange ideas, ask technical questions, share write-ups, and collaborate beyond individual challenge submissions.",
+      accentBg: "bg-purple-50",
+      accentText: "text-purple-600",
+      borderColor: "border-purple-100 hover:border-purple-200",
     },
     {
-      icon: TrophyIcon,
+      icon: Trophy,
       title: "Global Leaderboards",
       description:
         "Real-time leaderboards ranking hackers by points, reputation, and outcomes. Outstanding contributors earn global recognition and premium badge tiers.",
+      accentBg: "bg-amber-50",
+      accentText: "text-amber-500",
+      borderColor: "border-amber-100 hover:border-amber-200",
     },
     {
-      icon: GiftIcon,
+      icon: Ribbon,
       title: "Reward System",
       description:
-        "Structured reward policies with milestone bonuses, badge tiers, and monetary payouts tied directly to accepted vulnerability reports.",
+        "Structured reward policies with milestone bonuses, badge tiers, and monetary payouts tied directly to accepted vulnerability reports and challenge solutions.",
+      accentBg: "bg-emerald-50",
+      accentText: "text-emerald-500",
+      borderColor: "border-emerald-100 hover:border-emerald-200",
     },
     {
-      icon: LockIcon,
+      icon: Lock,
       title: "Secure Authentication",
       description:
-        "Enterprise-grade authentication, anti-cheating mechanisms, plagiarism prevention, and duplicate submission protection keep the platform trustworthy.",
+        "Enterprise-grade auth, anti-cheating mechanisms, plagiarism prevention, and duplicate submission protection keep the platform trustworthy and fair.",
+      accentBg: "bg-sky-50",
+      accentText: "text-sky-500",
+      borderColor: "border-sky-100 hover:border-sky-200",
     },
   ];
 
   return (
-    <section className="bg-gray-50 py-16 md:py-24">
+    <section className="bg-slate-50/50 py-16 md:py-24 border-y border-gray-100">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-sm font-semibold text-blue-600 uppercase tracking-wider">
+        <div className="text-center mb-12">
+          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-xs font-semibold tracking-wide border border-emerald-100 mb-3">
+            <Sparkles className="w-3.5 h-3.5" />
+            WHAT WE OFFER
+          </span>
+          <h2 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
             Everything in One Place
           </h2>
-          <h1 className="text-4xl md:text-5xl font-bold mt-2 text-gray-900">
-            Built with Modern Technologies
-          </h1>
-          <p className="text-gray-500 text-base max-w-2xl mx-auto mt-4">
-            DevSolve integrates the complete challenge lifecycle — from
-            program creation to reward payout — in a single, cohesive,
-            secure platform.
+          <p className="text-gray-500 text-xs sm:text-sm max-w-xl mx-auto mt-3 leading-relaxed">
+            DevSolve integrates the complete challenge lifecycle — from program creation to reward payout — in a single, cohesive, secure platform.
           </p>
         </div>
 
@@ -564,15 +425,21 @@ function OfferSection() {
             return (
               <div
                 key={index}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition duration-200"
+                className={`bg-white rounded-3xl p-7 border ${item.borderColor} shadow-xs hover:shadow-md transition duration-200 flex flex-col justify-between`}
               >
-                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
-                  <Icon className="w-6 h-6" />
+                <div>
+                  <div
+                    className={`w-11 h-11 rounded-2xl ${item.accentBg} ${item.accentText} flex items-center justify-center mb-6`}
+                  >
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-base font-bold text-gray-900 mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-500 text-xs leading-relaxed">
+                    {item.description}
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">{item.title}</h3>
-                <p className="text-gray-500 text-sm mt-1 leading-relaxed">
-                  {item.description}
-                </p>
               </div>
             );
           })}
@@ -582,96 +449,96 @@ function OfferSection() {
   );
 }
 
-// ============================================================
-// TECHNOLOGY STACK SECTION
-// ============================================================
+
 function TechStackSection() {
   const technologies = [
     {
-      icon: ReactIcon,
+      image: "/react1.png", 
       name: "React",
       description: "Frontend UI",
-      bgColor: "bg-cyan-50",
-      textColor: "text-cyan-600",
+      bgColor: "bg-sky-50",
+      borderColor: "border-sky-100 hover:border-sky-300",
     },
     {
-      icon: SpringIcon,
+      image: "/spring1.png",
       name: "Spring Boot",
       description: "Backend API",
-      bgColor: "bg-green-50",
-      textColor: "text-green-600",
+      bgColor: "bg-emerald-50",
+      borderColor: "border-emerald-100 hover:border-emerald-300",
     },
     {
-      icon: PostgresIcon,
+      image: "/postgrest1.png",
       name: "PostgreSQL",
       description: "Database",
       bgColor: "bg-blue-50",
-      textColor: "text-blue-600",
+      borderColor: "border-blue-100 hover:border-blue-300",
     },
     {
-      icon: DockerIcon,
+      image: "/doker1.png",
       name: "Docker",
       description: "Containers",
-      bgColor: "bg-sky-50",
-      textColor: "text-sky-600",
+      bgColor: "bg-cyan-50",
+      borderColor: "border-cyan-100 hover:border-cyan-300",
     },
     {
-      icon: KeycloakIcon,
+      image: "/keycloak1.png",
       name: "Keycloak",
       description: "Auth & SSO",
-      bgColor: "bg-orange-50",
-      textColor: "text-orange-600",
+      bgColor: "bg-purple-50",
+      borderColor: "border-purple-100 hover:border-purple-300",
     },
     {
-      icon: TailwindIcon,
+      image: "/tailwind1.png",
       name: "Tailwind CSS",
       description: "Styling",
       bgColor: "bg-teal-50",
-      textColor: "text-teal-600",
+      borderColor: "border-teal-100 hover:border-teal-300",
     },
   ];
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-16 md:py-24">
-      <div className="text-center mb-16">
-        <h2 className="text-sm font-semibold text-blue-600 uppercase tracking-wider">
-          Technology Stack
-        </h2>
-        <h1 className="text-4xl md:text-5xl font-bold mt-2 text-gray-900">
+    <section className="max-w-7xl mx-auto px-6 py-16 md:py-20">
+      <div className="text-center mb-12">
+        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-cyan-50 text-cyan-600 text-[10px] font-bold uppercase tracking-widest border border-cyan-100 mb-3">
+          <Sparkles className="w-3 h-3" />
+          TECHNOLOGY STACK
+        </span>
+        <h2 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
           Built with Modern Technologies
-        </h1>
-        <p className="text-gray-500 text-base max-w-2xl mx-auto mt-4">
-          A carefully chosen, battle-tested stack for security, scalability,
-          and developer experience.
+        </h2>
+        <p className="text-gray-500 text-xs sm:text-sm max-w-xl mx-auto mt-3 leading-relaxed">
+          A carefully chosen, battle-tested stack for security, scalability, and
+          developer experience.
         </p>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {technologies.map((tech, index) => {
-          const Icon = tech.icon;
-          return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        {technologies.map((tech, index) => (
+          <div
+            key={index}
+            className={`bg-white rounded-2xl p-6 border ${tech.borderColor} shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-200 flex flex-col items-center text-center group cursor-default`}
+          >
             <div
-              key={index}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition duration-200 text-center"
+              className={`w-20 h-20 rounded-xl ${tech.bgColor} p-2 flex items-center justify-center mb-3 transition-transform duration-200 group-hover:scale-110 overflow-hidden`}
             >
-              <div
-                className={`w-14 h-14 rounded-2xl ${tech.bgColor} ${tech.textColor} flex items-center justify-center mx-auto mb-4`}
-              >
-                <Icon className="w-8 h-8" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900">{tech.name}</h3>
-              <p className="text-gray-500 text-sm mt-1">{tech.description}</p>
+              <img
+                src={tech.image}
+                alt={`${tech.name} logo`}
+                className="w-full h-full object-contain"
+              />
             </div>
-          );
-        })}
+            <h3 className="text-sm font-bold text-gray-900">{tech.name}</h3>
+            <p className="text-gray-400 text-[11px] font-medium mt-0.5">
+              {tech.description}
+            </p>
+          </div>
+        ))}
       </div>
     </section>
   );
 }
 
-// ============================================================
-// TEAM SECTION
-// ============================================================
+
 interface TeamMember {
   name: string;
   subRole?: string;
@@ -710,7 +577,7 @@ const STUDENT_DEVELOPERS: TeamMember[] = [
   {
     name: "Lor VengRoth",
     badge: "SUB LEADER",
-    badgeColor: "blue",
+    badgeColor: "purple",
     subRole: "FULL STACK DEVELOPER",
     quote: '"Architecting the backbone of security."',
     image: "/vengroth.png",
@@ -833,199 +700,188 @@ function MemberCard({ member }: { member: TeamMember }) {
 
 function TeamSection() {
   return (
-    <section className="bg-gray-50/50 py-16 md:py-24">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-sm font-semibold text-blue-600 uppercase tracking-wider">
-            Our Team
-          </h2>
-          <h1 className="text-4xl md:text-5xl font-bold mt-2 text-gray-900">
-            The People Behind DevSolve
-          </h1>
-          <p className="text-gray-500 text-base max-w-2xl mx-auto mt-4">
-            Meet the dedicated team of mentors and developers working together
-            to build a safer digital world.
-          </p>
-        </div>
-
-        <SectionHeader title="Supervisors & Mentors" />
-        <div className="flex flex-wrap justify-center gap-10 my-4">
-          {SUPERVISORS.map((supervisor) => (
-            <MemberCard key={supervisor.name} member={supervisor} />
-          ))}
-        </div>
-
-        <SectionHeader title="Student Developers" />
-        <div className="flex flex-col items-center gap-10 my-4">
-          <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-            {STUDENT_DEVELOPERS.slice(0, 5).map((member) => (
-              <MemberCard key={member.name} member={member} />
-            ))}
-          </div>
-          <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-            {STUDENT_DEVELOPERS.slice(5).map((member) => (
-              <MemberCard key={member.name} member={member} />
-            ))}
-          </div>
-        </div>
+    <section className="max-w-7xl mx-auto px-6 py-16 md:py-24">
+      <div className="text-center mb-12">
+        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-indigo-50 text-indigo-600 text-xs font-semibold tracking-wide border border-indigo-100 mb-3">
+          <Sparkles className="w-3.5 h-3.5" />
+          MEET THE TEAM
+        </span>
+        <h2 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
+          The People Behind DevSolve
+        </h2>
+        <p className="text-gray-500 text-sm max-w-2xl mx-auto mt-4 leading-relaxed">
+          A passionate team of mentors and developers dedicated to building a
+          more secure digital ecosystem through innovation and collaboration.
+        </p>
       </div>
+
+    
+
+      <div className="mb-24 flex flex-col items-center w-full">
+  <SectionHeader title="SUPERVISORS" />
+  <div className="flex flex-wrap justify-center items-center gap-8 mt-6 w-full">
+    {SUPERVISORS.map((member, index) => (
+      <MemberCard key={index} member={member} />
+    ))}
+  </div>
+</div>
+
+      <div className="flex flex-col items-center w-full">
+  <SectionHeader title="STUDENT DEVELOPERS" />
+  <div className="flex flex-wrap justify-center items-center gap-8 mt-6 w-full">
+    {STUDENT_DEVELOPERS.map((member, index) => (
+      <MemberCard key={index} member={member} />
+    ))}
+  </div>
+</div>
     </section>
   );
 }
 
-// ============================================================
-// CONTACT SECTION
-// ============================================================
+
 function ContactSection() {
   return (
-    <section className="bg-gray-50 py-16 md:py-24">
+    <section className="bg-slate-50/50 py-16 md:py-24 border-t border-gray-100">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-12">
-          <h2 className="text-sm font-semibold text-blue-600 uppercase tracking-wider">
+          <h2 className="text-xs font-semibold text-blue-600 uppercase tracking-widest">
             Contact Us
           </h2>
-          <h1 className="text-4xl md:text-5xl font-bold mt-2 text-gray-900">
-            Get in Touch
+          <h1 className="text-3xl md:text-5xl font-extrabold mt-2 text-gray-900">
+            Get In Touch
           </h1>
-          <p className="text-gray-500 text-base max-w-2xl mx-auto mt-4">
+          <p className="text-gray-500 text-sm sm:text-base max-w-2xl mx-auto mt-4">
             Have questions, want to partner, or want to learn more about DevSolve?
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          {/* Left Column - Contact Info */}
-          <div>
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
+        <div className="grid lg:grid-cols-12 gap-8 max-w-6xl mx-auto">
+          <div className="lg:col-span-5 space-y-8">
+            {/* Contact Methods */}
+            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-xs">
+              <h3 className="text-lg font-bold text-gray-900 mb-6">Contact Information</h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</p>
+                    <a href="mailto:contact@devsolve.io" className="text-sm font-medium text-gray-900 hover:text-blue-600 transition">
+                      contact@devsolve.io
+                    </a>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-900">Email</h3>
-                  <a href="mailto:contact@devsolve.io" className="text-gray-600 hover:text-blue-600 transition">
-                    contact@devsolve.io
-                  </a>
-                </div>
-              </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.205 11.387.6.113.82-.26.82-.58 0-.287-.01-1.05-.015-2.06-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.73.083-.73 1.205.085 1.838 1.237 1.838 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.468-2.38 1.235-3.22-.123-.3-.535-1.52.117-3.16 0 0 1.008-.322 3.3 1.23.96-.267 1.98-.4 3-.4s2.04.133 3 .4c2.29-1.552 3.3-1.23 3.3-1.23.653 1.64.24 2.86.118 3.16.768.84 1.233 1.91 1.233 3.22 0 4.61-2.804 5.62-5.476 5.92.43.37.824 1.102.824 2.22 0 1.602-.015 2.894-.015 3.287 0 .322.216.698.83.58 4.765-1.588 8.2-6.086 8.2-11.386 0-6.627-5.373-12-12-12z" />
-                  </svg>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-gray-50 text-gray-600 flex items-center justify-center shrink-0">
+                    {/* <Github className="w-5 h-5" /> */}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">GitHub</p>
+                    <a href="#" className="text-sm font-medium text-gray-900 hover:text-blue-600 transition">
+                      github.com/devsolve-io
+                    </a>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-900">GitHub</h3>
-                  <a href="https://github.com/devsolve-io" className="text-gray-600 hover:text-blue-600 transition">
-                    github.com/devsolve-io
-                  </a>
-                </div>
-              </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center shrink-0">
+                    {/* <Twitter className="w-5 h-5" /> */}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Twitter / X</p>
+                    <a href="#" className="text-sm font-medium text-gray-900 hover:text-blue-600 transition">
+                      @devsolve
+                    </a>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-900">Twitter / X</h3>
-                  <a href="https://twitter.com/devsolve" className="text-gray-600 hover:text-blue-600 transition">
-                    @devsolve
-                  </a>
-                </div>
-              </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-900">LinkedIn</h3>
-                  <a href="#" className="text-gray-600 hover:text-blue-600 transition">
-                    DevSolve Platform
-                  </a>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                    {/* <Linkedin className="w-5 h-5" /> */}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">LinkedIn</p>
+                    <a href="#" className="text-sm font-medium text-gray-900 hover:text-blue-600 transition">
+                      DevSolve Platform
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 p-6 bg-blue-50 rounded-2xl border border-blue-100">
-              <div className="flex items-start gap-3">
-                <span className="text-blue-600 text-lg font-bold">🎓</span>
-                <div>
-                  <h4 className="text-sm font-bold text-gray-900">UNIVERSITY PROJECT</h4>
-                  <p className="text-sm text-gray-600 mt-1 leading-relaxed">
-                    DevSolve is a university final-year project exploring cybersecurity
-                    platform design, ethical hacking workflows, and secure software
-                    engineering. We welcome academic feedback and collaboration.
-                  </p>
-                </div>
+            {/* University Project Card */}
+            <div className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 rounded-3xl p-8 border border-blue-100 shadow-xs">
+              <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center mb-4">
+                <GraduationCap className="w-6 h-6" />
               </div>
+              <h3 className="text-base font-bold text-gray-900 mb-2">University Project</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                DevSolve is a university final-year project exploring cybersecurity 
+                platform design, ethical hacking workflows, and secure software 
+                engineering. We welcome academic feedback and collaboration.
+              </p>
             </div>
           </div>
 
           {/* Right Column - Contact Form */}
-          <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Send a Message</h3>
+          <div className="lg:col-span-7">
+            <div className="bg-white rounded-3xl p-8 shadow-xs border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-900 mb-6">Send a Message</h3>
+              <form className="space-y-5">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Your name"
+                    className="w-full px-4 py-3.5 bg-slate-50/50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
+                  />
+                </div>
 
-            <form className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Your name"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition text-gray-900 placeholder:text-gray-400"
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                    Email                  </label>
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    className="w-full px-4 py-3.5 bg-slate-50/50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition text-gray-900 placeholder:text-gray-400"
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                    Subject
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="How can we help?"
+                    className="w-full px-4 py-3.5 bg-slate-50/50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Subject
-                </label>
-                <select className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition text-gray-900 appearance-none bg-white">
-                  <option>How can we help?</option>
-                  <option>Partnership Inquiry</option>
-                  <option>Academic Collaboration</option>
-                  <option>Bug Report</option>
-                  <option>General Question</option>
-                </select>
-              </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                    Message
+                  </label>
+                  <textarea
+                    rows={4}
+                    placeholder="Tell us more..."
+                    className="w-full px-4 py-3.5 bg-slate-50/50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm resize-none"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Message
-                </label>
-                <textarea
-                  rows={4}
-                  placeholder="Tell us more..."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition text-gray-900 placeholder:text-gray-400 resize-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-blue-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition duration-200"
-              >
-                Send Message
-              </button>
-            </form>
+                <button
+                  type="button"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm py-4 rounded-xl transition shadow-md shadow-blue-600/20"
+                >
+                  Send Message
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
