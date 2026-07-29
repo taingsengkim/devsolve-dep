@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { ProgramItem } from "@/lib/types/programs/types";
@@ -35,7 +36,8 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
                 alt={program.companyName}
                 width={80}
                 height={80}
-                className="w-20 h-20 rounded-2xl object-contain shrink-0 bg-white p-1"
+                unoptimized
+                className="w-15 h-15 rounded-2xl object-contain shrink-0 bg-white p-1"
               />
             ) : (
               <div
@@ -53,11 +55,21 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
               </h2>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
                 {/* Type Badge in Gray */}
-                <Badge
+                {/* <Badge
                   variant="outline"
                   className="bg-slate-100 text-slate-600 border-slate-200 font-medium text-xs"
                 >
                   {program.type}
+                </Badge> */}
+                <Badge
+                variant="outline"
+                className={`font-medium text-xs ${
+                  program.type === "Bounty"
+                    ? "bg-blue-100 text-blue-700 border-blue-200"
+                    : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                }`}
+              >
+                {program.type}
                 </Badge>
 
                 {/* Status indicator in Gray */}
@@ -117,13 +129,21 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
           </p>
         </div>
 
-        <Button
+        <Link
+          href={`/programs/${program.id}`}
+          // className="rounded-lg border border-slate-200 bg-white px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+          className="rounded-xl cursor-pointer border-slate-300 text-slate-700 hover:bg-slate-900 hover:text-white transition-all text-sm font-semibold h-9 px-4"
+        >
+          See Details
+        </Link>
+
+        {/* <Button
           onClick={() => onSeeDetails(program)}
           variant="outline"
           className="rounded-xl cursor-pointer border-slate-300 text-slate-700 hover:bg-slate-900 hover:text-white transition-all text-sm font-semibold h-9 px-4"
         >
           See Details
-        </Button>
+        </Button> */}
       </div>
     </motion.article>
   );

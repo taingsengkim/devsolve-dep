@@ -2,6 +2,11 @@ export type ProgramType = "Bounty" | "Response";
 export type ProgramStatus = "Open" | "Done" | "Archived";
 export type AssetCategory = "Web" | "API" | "Mobile" | "Network";
 
+export interface BountyTier {
+  severity: "Critical" | "High" | "Medium" | "Low";
+  payoutRange: string;
+}
+
 export interface ProgramItem {
   id: string;
   companyName: string;
@@ -24,6 +29,21 @@ export interface ProgramItem {
     avgPayout?: string;
     responseTime?: string;
   };
+
+
+// Extended fields for detail page
+  startDate?: string;
+  endDate?: string;
+  activeResearchers?: number;
+  pocRequirements?: string[];
+  inScopeTargets?: string[];
+  outOfScopeTargets?: string[];
+  bountyMatrix?: BountyTier[];
+  rulesOfEngagement?: string[];
+  exclusions?: string[];
+  
+
+
 }
 
 export interface ProgramsFilterParams {
