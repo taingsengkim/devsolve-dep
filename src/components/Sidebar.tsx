@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -54,25 +54,32 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["USER", "COMPANY", "ADMIN", "MODERATOR"] },
+  // Common / Multi-role items
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["USER", "COMPANY", "ADMIN"] },
+  { name: "Programs", href: "/dashboard/programs", icon: Globe, roles: ["USER", "COMPANY"] },
+
+  // USER Role items
   { name: "Reports", href: "/dashboard/my-reports", icon: FileText, roles: ["USER"] },
   { name: "Rewards", href: "/dashboard/rewards", icon: CircleDollarSign, roles: ["USER"] },
   { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy, roles: ["USER"] },
-  { name: "Notification", href: "/dashboard/notifications", icon: Bell, badge: 3, roles: ["USER", "COMPANY", "ADMIN", "MODERATOR"] },
+  { name: "Notification", href: "/dashboard/notifications", icon: Bell, badge: 3, roles: ["USER"] },
   { name: "Solution", href: "/dashboard/solution", icon: BookOpen, roles: ["USER"] },
-  { name: "Programs", href: "/dashboard/programs", icon: Globe, roles: ["USER", "COMPANY", "ADMIN", "MODERATOR"] },
   { name: "Bookmarks", href: "/dashboard/bookmarks", icon: Bookmark, badge: 3, roles: ["USER"] },
-  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3, roles: ["COMPANY", "ADMIN"] },
-  { name: "Create Program", href: "/dashboard/create-program", icon: PlusCircle, roles: ["COMPANY", "ADMIN"] },
-  { name: "Report Management", href: "/dashboard/report-management", icon: ClipboardList, roles: ["COMPANY", "ADMIN"] },
-  { name: "Team Management", href: "/dashboard/team-management", icon: Users, roles: ["COMPANY", "ADMIN"] },
-  { name: "Org Settings", href: "/dashboard/org-settings", icon: Building2, roles: ["COMPANY", "ADMIN"] },
+
+  // COMPANY Role items
+  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3, roles: ["COMPANY"] },
+  { name: "Create Program", href: "/dashboard/create-program", icon: PlusCircle, roles: ["COMPANY"] },
+  { name: "Report Management", href: "/dashboard/report-management", icon: ClipboardList, roles: ["COMPANY"] },
+  { name: "Team Management", href: "/dashboard/team-management", icon: Users, roles: ["COMPANY"] },
+  { name: "Org Settings", href: "/dashboard/org-settings", icon: Building2, roles: ["COMPANY"] },
+
+  // ADMIN Role items
   { name: "Company Verification", href: "/dashboard/company-verification", icon: ShieldCheck, roles: ["ADMIN"] },
-  { name: "Report Confirmation", href: "/dashboard/report-confirmation", icon: FileCheck, roles: ["COMPANY", "ADMIN"] },
-  { name: "Community Moderation", href: "/dashboard/community-moderation", icon: MessageSquareCode, roles: ["MODERATOR", "ADMIN"] },
-  { name: "Review Report", href: "/dashboard/review-report", icon: FileSearch, roles: ["MODERATOR", "ADMIN"] },
+  { name: "Report Confirmation", href: "/dashboard/report-confirmation", icon: FileCheck, roles: ["ADMIN"] },
+  { name: "Community Moderation", href: "/dashboard/community-moderation", icon: MessageSquareCode, roles: ["ADMIN"] },
+  { name: "Review Report", href: "/dashboard/review-report", icon: FileSearch, roles: ["ADMIN"] },
   { name: "Users", href: "/dashboard/users", icon: UserCheck, roles: ["ADMIN"] },
-  { name: "Content Moderation", href: "/dashboard/content-moderation", icon: ShieldAlert, roles: ["MODERATOR", "ADMIN"] },
+  { name: "Content Moderation", href: "/dashboard/content-moderation", icon: ShieldAlert, roles: ["ADMIN"] },
 ];
 
 interface SidebarContentProps {
@@ -229,6 +236,55 @@ const Sidebar = () => {
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
   const displayName = user?.name ?? user?.email ?? "User";
+  const [tokenRole, setTokenRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (session) {
+      console.log("[Auth Client Debug] Session User Object:", session.user);
+      authClient.getAccessToken({ providerId: "keycloak" }).then((res: any) => {
+        console.log("[Auth Client Debug] getAccessToken raw res:", res);
+        const rawToken =
+          typeof res?.data === "string"
+            ? res.data
+            : res?.data?.accessToken || res?.data?.token || res?.token;
+
+        if (rawToken && typeof rawToken === "string") {
+          console.log("[Auth Client Debug] Extracted Keycloak Access Token:", rawToken);
+          try {
+            const base64Url = rawToken.split(".")[1];
+            if (base64Url) {
+              const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+              const jsonPayload = decodeURIComponent(
+                atob(base64)
+                  .split("")
+                  .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+                  .join("")
+              );
+              const payload = JSON.parse(jsonPayload);
+              const realmRoles: string[] = payload?.realm_access?.roles || [];
+              const upper = realmRoles.map((r) => String(r).toUpperCase());
+              console.log("[Auth Client Debug] Parsed Token Realm Roles:", upper);
+
+              if (upper.includes("ADMIN")) setTokenRole("ADMIN");
+              else if (upper.includes("COMPANY")) setTokenRole("COMPANY");
+              else if (upper.includes("MODERATOR")) setTokenRole("MODERATOR");
+              else setTokenRole("USER");
+            }
+          } catch (e) {
+            console.error("[Auth Client Debug] Error parsing access token:", e);
+          }
+        }
+      });
+    }
+  }, [session]);
+
+
+  const effectiveUser = user
+    ? { ...user, role: (user as any)?.role || tokenRole || "USER" }
+    : undefined;
+
+
+
 
   const handleSignOut = async () => {
     await authClient.signOut();
@@ -296,7 +352,7 @@ const Sidebar = () => {
             >
               <SidebarContent
                 pathname={pathname}
-                user={user}
+                user={effectiveUser}
                 isPending={isPending}
                 displayName={displayName}
                 onNavItemClick={() => setIsOpen(false)}
@@ -311,12 +367,13 @@ const Sidebar = () => {
       <aside className="hidden lg:flex flex-col w-[260px] shrink-0 h-[100dvh] sticky top-0 p-4 rounded-r-[20px] border border-blue-600/15 bg-[linear-gradient(331deg,rgba(255,255,255,0.10)_59.38%,rgba(166,179,209,0.25)_92.74%,rgba(21,56,133,0.50)_132.79%),linear-gradient(154deg,rgba(255,255,255,0.30)_76.51%,rgba(37,99,235,0.30)_132.61%)] shadow-[0_4px_32px_0_rgba(37,99,235,0.10)] overflow-hidden">
         <SidebarContent
           pathname={pathname}
-          user={user}
+          user={effectiveUser}
           isPending={isPending}
           displayName={displayName}
           onSignOut={handleSignOut}
         />
       </aside>
+
     </>
   );
 };
