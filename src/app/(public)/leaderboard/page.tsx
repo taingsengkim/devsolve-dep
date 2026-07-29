@@ -7,13 +7,7 @@ import StatsCards from '@/components/ui/StatsCards';
 import LeaderboardTable from '@/components/shared/LeaderboardTable';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
 
 function LeaderboardContent() {
   const {
@@ -88,58 +82,81 @@ function LeaderboardContent() {
       </div>
 
      
+      <div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-155 mb-2">
+          <div className="flex justify-baseline gap-5 items-center mb-2">
+            <h2 className="text-lg font-semibold text-gray-900">Global Leaderboard</h2>
+            <p className="text-sm text-gray-500">update daily</p>
+          </div>
+          
+        <div className="flex justify-start gap-4 items-center mb-2">
+           {/* Reputation - Click to filter */}
+          <div>
+              <button
+                onClick={() => {
+                  // Toggle reputation filter
+                  setBadgeFilter(filters.badge === 'reputation' ? null : 'reputation');
+                }}
+                className={`w-full px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                  filters.badge === 'reputation'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {filters.badge === 'reputation' ? '✓ Reputation' : 'Reputation'}
+              </button>
+          </div>
 
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Accepted - Click to filter */}
+          <div>
+            <button
+              onClick={() => {
+                // Toggle accepted filter
+                setBadgeFilter(filters.badge === 'accepted' ? null : 'accepted');
+              }}
+              className={`w-full px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                filters.badge === 'accepted'
+                  ? 'bg-green-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {filters.badge === 'accepted' ? '✓ Accepted' : 'Accepted'}
+            </button>
+          </div>
 
+            {/* Critical - Click to filter */}
+          <div>
+            <button
+              onClick={() => {
+                // Toggle critical filter
+                setBadgeFilter(filters.badge === 'critical' ? null : 'critical');
+              }}
+              className={`w-full px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                filters.badge === 'critical'
+                  ? 'bg-red-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {filters.badge === 'critical' ? '✓ Critical' : 'Critical'}
+            </button>
+          </div>
+
+        </div>
+        </div>
         <div className="md:col-span-2">
           <SearchBar
             value={localSearch}
             onChange={handleSearch}
-            placeholder="Search researchers by name, handle, or country..."
-          />
-        </div>
-        <div>
-          <Select
-            value={filters.badge || ''}
-            onValueChange={(value: string) => setBadgeFilter(value || null)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by badge" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Badges</SelectItem>
-              {badges.map((badge) => (
-                <SelectItem key={badge} value={badge}>
-                  {badge}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Select
-            value={filters.country || ''}
-            onValueChange={(value: string) => setCountryFilter(value || null)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by country" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Countries</SelectItem>
-              {countries.map((country) => (
-                <SelectItem key={country} value={country}>
-                  {country}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+            placeholder="Search researchers ..."
+              />
+        </div>         
+    </div>
+
 
       <div className="flex justify-start mt-6">
         <StatsCards  stats={stats} />
       </div>
-      
+
       <Card className="mt-6 overflow-hidden">
         <LeaderboardTable researchers={researchers} loading={loading} />
       </Card>
