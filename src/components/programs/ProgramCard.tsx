@@ -131,19 +131,17 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
 
         <Link
           href={`/programs/${program.id}`}
-          // className="rounded-lg border border-slate-200 bg-white px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-          className="rounded-xl cursor-pointer border-slate-300 text-slate-700 hover:bg-slate-900 hover:text-white transition-all text-sm font-semibold h-9 px-4"
         >
-          See Details
-        </Link>
-
-        {/* <Button
-          onClick={() => onSeeDetails(program)}
+          {/* See Details */}
+           <Button
           variant="outline"
           className="rounded-xl cursor-pointer border-slate-300 text-slate-700 hover:bg-slate-900 hover:text-white transition-all text-sm font-semibold h-9 px-4"
         >
           See Details
-        </Button> */}
+        </Button>
+        </Link>
+
+       
       </div>
     </motion.article>
   );
