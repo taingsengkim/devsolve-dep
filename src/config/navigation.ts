@@ -27,33 +27,34 @@ export interface NavItem {
   icon: LucideIcon;
   badge?: number;
   roles?: string[];
+  category?: "Overview" | "Researcher" | "Organization" | "Administration";
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  // Common / Multi-role items
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["USER", "COMPANY", "ADMIN"] },
-  { name: "Programs", href: "/dashboard/programs", icon: Globe, roles: ["USER", "COMPANY"] },
+  // Overview items
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
+  { name: "Programs", href: "/dashboard/programs", icon: Globe, roles: ["USER", "COMPANY"], category: "Overview" },
 
   // USER Role items
-  { name: "Reports", href: "/dashboard/my-reports", icon: FileText, roles: ["USER"] },
-  { name: "Rewards", href: "/dashboard/rewards", icon: CircleDollarSign, roles: ["USER"] },
-  { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy, roles: ["USER"] },
-  { name: "Notification", href: "/dashboard/notifications", icon: Bell, badge: 3, roles: ["USER"] },
-  { name: "Solution", href: "/dashboard/solution", icon: BookOpen, roles: ["USER"] },
-  { name: "Bookmarks", href: "/dashboard/bookmarks", icon: Bookmark, badge: 3, roles: ["USER"] },
+  { name: "Reports", href: "/dashboard/my-reports", icon: FileText, roles: ["USER"], category: "Researcher" },
+  { name: "Rewards", href: "/dashboard/rewards", icon: CircleDollarSign, roles: ["USER"], category: "Researcher" },
+  { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy, roles: ["USER"], category: "Researcher" },
+  { name: "Notification", href: "/dashboard/notifications", icon: Bell, badge: 3, roles: ["USER"], category: "Researcher" },
+  { name: "Solution", href: "/dashboard/solution", icon: BookOpen, roles: ["USER"], category: "Researcher" },
+  { name: "Bookmarks", href: "/dashboard/bookmarks", icon: Bookmark, badge: 3, roles: ["USER"], category: "Researcher" },
 
   // COMPANY Role items
-  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3, roles: ["COMPANY"] },
-  { name: "Create Program", href: "/dashboard/create-program", icon: PlusCircle, roles: ["COMPANY"] },
-  { name: "Report Management", href: "/dashboard/report-management", icon: ClipboardList, roles: ["COMPANY"] },
-  { name: "Team Management", href: "/dashboard/team-management", icon: Users, roles: ["COMPANY"] },
-  { name: "Org Settings", href: "/dashboard/org-settings", icon: Building2, roles: ["COMPANY"] },
+  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3, roles: ["COMPANY"], category: "Organization" },
+  { name: "Create Program", href: "/dashboard/create-program", icon: PlusCircle, roles: ["COMPANY"], category: "Organization" },
+  { name: "Report Management", href: "/dashboard/report-management", icon: ClipboardList, roles: ["COMPANY"], category: "Organization" },
+  { name: "Team Management", href: "/dashboard/team-management", icon: Users, roles: ["COMPANY"], category: "Organization" },
+  { name: "Org Settings", href: "/dashboard/org-settings", icon: Building2, roles: ["COMPANY"], category: "Organization" },
 
   // ADMIN Role items
-  { name: "Company Verification", href: "/dashboard/company-verification", icon: ShieldCheck, roles: ["ADMIN"] },
-  { name: "Report Confirmation", href: "/dashboard/report-confirmation", icon: FileCheck, roles: ["ADMIN"] },
-  { name: "Community Moderation", href: "/dashboard/community-moderation", icon: MessageSquareCode, roles: ["ADMIN"] },
-  { name: "Review Report", href: "/dashboard/review-report", icon: FileSearch, roles: ["ADMIN"] },
-  { name: "Users", href: "/dashboard/users", icon: UserCheck, roles: ["ADMIN"] },
-  { name: "Content Moderation", href: "/dashboard/content-moderation", icon: ShieldAlert, roles: ["ADMIN"] },
+  { name: "Company Verification", href: "/dashboard/company-verification", icon: ShieldCheck, roles: ["ADMIN"], category: "Administration" },
+  { name: "Report Confirmation", href: "/dashboard/report-confirmation", icon: FileCheck, roles: ["ADMIN"], category: "Administration" },
+  { name: "Community Moderation", href: "/dashboard/community-moderation", icon: MessageSquareCode, roles: ["ADMIN"], category: "Administration" },
+  { name: "Review Report", href: "/dashboard/review-report", icon: FileSearch, roles: ["ADMIN"], category: "Administration" },
+  { name: "Users", href: "/dashboard/users", icon: UserCheck, roles: ["ADMIN"], category: "Administration" },
+  { name: "Content Moderation", href: "/dashboard/content-moderation", icon: ShieldAlert, roles: ["ADMIN"], category: "Administration" },
 ];

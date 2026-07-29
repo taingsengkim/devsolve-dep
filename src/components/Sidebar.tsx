@@ -12,6 +12,7 @@ import { useSidebarAuth, SidebarUser } from "@/hooks/useSidebarAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 function getInitials(text: string): string {
   return text
@@ -48,6 +49,10 @@ function SidebarContent({
     if (!item.roles) return true;
     return item.roles.some((reqRole) => userRoles.includes(reqRole.toUpperCase()));
   });
+
+  const categories = Array.from(
+    new Set(filteredNavItems.map((item) => item.category || "Overview"))
+  );
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -113,42 +118,59 @@ function SidebarContent({
         )}
       </div>
 
-      {/* Navigation List */}
-      <nav className="flex-1 min-h-0 space-y-1 overflow-y-auto pr-1">
-        {filteredNavItems.map((item) => {
-          const Icon = item.icon;
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/dashboard" && pathname.startsWith(item.href));
+      {/* Navigation List grouped by Category with Separator */}
+      <nav className="flex-1 min-h-0 space-y-3 overflow-y-auto pr-1">
+        {categories.map((category, catIndex) => {
+          const categoryItems = filteredNavItems.filter(
+            (item) => (item.category || "Overview") === category
+          );
 
           return (
-            <Link key={item.name} href={item.href} onClick={onNavItemClick} className="block w-full">
-              <Button
-                variant="ghost"
-                className={`w-full cursor-pointer justify-between h-10 px-3 rounded-xl ${
-                  isActive
-                    ? "bg-blue-50/60 text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-semibold"
-                    : "text-slate-600 hover:bg-slate-100/50 hover:text-slate-900 font-medium"
-                }`}
-              >
-                <div className="flex items-center gap-3 text-sm font-semibold">
-                  <Icon className={`w-4 h-4 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
-                  <span>{item.name}</span>
-                </div>
+            <div key={category} className="space-y-1">
+              {catIndex > 0 && <Separator className="my-2.5 bg-slate-200/60" />}
 
-                {item.badge && (
-                  <Badge className="rounded-full w-5 h-5 flex items-center justify-center p-0 text-xs bg-blue-600 hover:bg-blue-700 text-white">
-                    {item.badge}
-                  </Badge>
-                )}
-              </Button>
-            </Link>
+              <div className="px-3 pt-1 pb-1 text-[11px] font-bold tracking-wider text-slate-400 uppercase select-none">
+                {category}
+              </div>
+
+              {categoryItems.map((item) => {
+                const Icon = item.icon;
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/dashboard" && pathname.startsWith(item.href));
+
+                return (
+                  <Link key={item.name} href={item.href} onClick={onNavItemClick} className="block w-full">
+                    <Button
+                      variant="ghost"
+                      className={`w-full cursor-pointer justify-between h-10 px-3 rounded-xl ${
+                        isActive
+                          ? "bg-blue-50/60 text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-semibold"
+                          : "text-slate-600 hover:bg-slate-100/50 hover:text-slate-900 font-medium"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 text-sm font-semibold">
+                        <Icon className={`w-4 h-4 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
+                        <span>{item.name}</span>
+                      </div>
+
+                      {item.badge && (
+                        <Badge className="rounded-full w-5 h-5 flex items-center justify-center p-0 text-xs bg-blue-600 hover:bg-blue-700 text-white">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </Button>
+                  </Link>
+                );
+              })}
+            </div>
           );
         })}
       </nav>
 
       {/* Settings & Logout Buttons (Pinned to bottom) */}
-      <div className="mt-auto pt-3 shrink-0 space-y-1.5 border-t border-slate-200/50">
+      <div className="mt-auto pt-2 shrink-0 space-y-1.5">
+        <Separator className="mb-2.5 bg-slate-200/60" />
         <Link href="/" onClick={onNavItemClick} className="block w-full">
           <Button className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 flex items-center justify-start px-3 gap-3 shadow-2xs text-sm font-semibold">
             <Settings className="w-4 h-4" />
