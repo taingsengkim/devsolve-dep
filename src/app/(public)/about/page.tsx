@@ -21,9 +21,9 @@ import {
   Box,
   Layers,
   Mail,
-  Github,
-  Twitter,
-  Linkedin,
+  // Github,
+  // Twitter,
+  // Linkedin,
   GraduationCap,
 } from "lucide-react";
 
