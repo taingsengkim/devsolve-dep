@@ -64,3 +64,26 @@ export interface ReportDetail extends ReportItem {
   updates: ActivityUpdate[];
   retestHistory: RetestItem[];
 }
+
+export interface SubmitReportPayload {
+  programId: string;
+  programName: string;
+  targetAsset: string;
+  category: string;
+  severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO";
+  title: string;
+  summaryPoC: string;
+  impact?: string;
+  remediation?: string;
+  attachments?: { name: string; size: string; type: string }[];
+  agreeTerms: boolean;
+}
+
+export interface SubmitReportResponse {
+  success: boolean;
+  reportId: string;
+  id: string;
+  message: string;
+  status: "TRIAGING";
+  createdAt: string;
+}

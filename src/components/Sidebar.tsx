@@ -14,6 +14,17 @@ import {
   BookOpen,
   Globe,
   Bookmark,
+  BarChart3,
+  PlusCircle,
+  ClipboardList,
+  Users,
+  Building2,
+  ShieldCheck,
+  FileCheck,
+  MessageSquareCode,
+  FileSearch,
+  UserCheck,
+  ShieldAlert,
   Settings,
   LogOut,
   Menu,
@@ -39,22 +50,34 @@ interface NavItem {
   href: string;
   icon: LucideIcon;
   badge?: number;
+  roles?: string[];
 }
 
 const navItems: NavItem[] = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Programs", href: "/dashboard/programs", icon: Globe },
-  { name: "Reports", href: "/dashboard/my-reports", icon: FileText },
-  { name: "Rewards", href: "/dashboard/rewards", icon: CircleDollarSign },
-  { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy },
-  { name: "Notification", href: "/dashboard/notifications", icon: Bell, badge: 3 },
-  { name: "Solution", href: "/dashboard/solution", icon: BookOpen },
-  { name: "Bookmarks", href: "/dashboard/bookmarks", icon: Bookmark, badge: 3 },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["USER", "COMPANY", "ADMIN", "MODERATOR"] },
+  { name: "Reports", href: "/dashboard/my-reports", icon: FileText, roles: ["USER"] },
+  { name: "Rewards", href: "/dashboard/rewards", icon: CircleDollarSign, roles: ["USER"] },
+  { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy, roles: ["USER"] },
+  { name: "Notification", href: "/dashboard/notifications", icon: Bell, badge: 3, roles: ["USER", "COMPANY", "ADMIN", "MODERATOR"] },
+  { name: "Solution", href: "/dashboard/solution", icon: BookOpen, roles: ["USER"] },
+  { name: "Programs", href: "/dashboard/programs", icon: Globe, roles: ["USER", "COMPANY", "ADMIN", "MODERATOR"] },
+  { name: "Bookmarks", href: "/dashboard/bookmarks", icon: Bookmark, badge: 3, roles: ["USER"] },
+  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3, roles: ["COMPANY", "ADMIN"] },
+  { name: "Create Program", href: "/dashboard/create-program", icon: PlusCircle, roles: ["COMPANY", "ADMIN"] },
+  { name: "Report Management", href: "/dashboard/report-management", icon: ClipboardList, roles: ["COMPANY", "ADMIN"] },
+  { name: "Team Management", href: "/dashboard/team-management", icon: Users, roles: ["COMPANY", "ADMIN"] },
+  { name: "Org Settings", href: "/dashboard/org-settings", icon: Building2, roles: ["COMPANY", "ADMIN"] },
+  { name: "Company Verification", href: "/dashboard/company-verification", icon: ShieldCheck, roles: ["ADMIN"] },
+  { name: "Report Confirmation", href: "/dashboard/report-confirmation", icon: FileCheck, roles: ["COMPANY", "ADMIN"] },
+  { name: "Community Moderation", href: "/dashboard/community-moderation", icon: MessageSquareCode, roles: ["MODERATOR", "ADMIN"] },
+  { name: "Review Report", href: "/dashboard/review-report", icon: FileSearch, roles: ["MODERATOR", "ADMIN"] },
+  { name: "Users", href: "/dashboard/users", icon: UserCheck, roles: ["ADMIN"] },
+  { name: "Content Moderation", href: "/dashboard/content-moderation", icon: ShieldAlert, roles: ["MODERATOR", "ADMIN"] },
 ];
 
 interface SidebarContentProps {
   pathname: string;
-  user?: { name?: string | null; email?: string | null; image?: string | null };
+  user?: { name?: string | null; email?: string | null; image?: string | null; role?: string | null };
   isPending: boolean;
   displayName: string;
   onNavItemClick?: () => void;
@@ -69,6 +92,13 @@ function SidebarContent({
   onNavItemClick,
   onSignOut,
 }: SidebarContentProps) {
+  const rawRole = (user as any)?.role || "USER";
+  const userRole = typeof rawRole === "string" ? rawRole.toUpperCase() : "USER";
+
+  const filteredNavItems = navItems.filter((item) => {
+    if (!item.roles) return true;
+    return item.roles.map((r) => r.toUpperCase()).includes(userRole);
+  });
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Logo Section */}
@@ -135,7 +165,7 @@ function SidebarContent({
 
       {/* Navigation List */}
       <nav className="flex-1 min-h-0 space-y-1 overflow-y-auto pr-1">
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const Icon = item.icon;
           const isActive =
             pathname === item.href ||

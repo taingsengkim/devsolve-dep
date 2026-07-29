@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Bookmark } from "lucide-react";
+import { ArrowLeft, Bookmark, Send } from "lucide-react";
 import { ProgramItem } from "@/lib/types/programs/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -72,19 +72,28 @@ export const ProgramDetailHero: React.FC<ProgramDetailHeroProps> = ({ program })
             </div>
           </div>
 
-          {/* Save / Bookmark Button */}
-          <Button
-            variant="outline"
-            onClick={() => setIsSaved(!isSaved)}
-            className={`rounded-xl h-10 px-4 font-semibold text-sm cursor-pointer transition-all gap-2 ${
-              isSaved
-                ? "bg-blue-50 text-blue-600 border-blue-300"
-                : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
-            }`}
-          >
-            <Bookmark className={`w-4 h-4 ${isSaved ? "fill-blue-600 text-blue-600" : ""}`} />
-            {isSaved ? "Saved" : "Save"}
-          </Button>
+          {/* Actions: Save & Submit Report */}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setIsSaved(!isSaved)}
+              className={`rounded-xl h-10 px-4 font-semibold text-sm cursor-pointer transition-all gap-2 ${
+                isSaved
+                  ? "bg-blue-50 text-blue-600 border-blue-300"
+                  : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+              }`}
+            >
+              <Bookmark className={`w-4 h-4 ${isSaved ? "fill-blue-600 text-blue-600" : ""}`} />
+              {isSaved ? "Saved" : "Save"}
+            </Button>
+
+            <Link href={`/dashboard/submit-report?programId=${program.id}`}>
+              <Button className="rounded-xl h-10 px-5 font-semibold text-sm bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transition-all gap-2 shadow-xs">
+                <Send className="w-4 h-4" />
+                <span>Submit Report</span>
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Title & Description */}

@@ -50,7 +50,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           </Button>
         </Link>
 
-        <Link href="/dashboard/my-reports">
+        <Link href="/dashboard/submit-report">
           <Button
             size="sm"
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-xs rounded-lg transition-colors cursor-pointer"
