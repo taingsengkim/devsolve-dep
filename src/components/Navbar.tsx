@@ -15,7 +15,7 @@ const navLinks = [
     { name: 'Hacker activity', href: '/' },
     { name: 'Forum', href: '/' },
     { name: 'Leader board', href: '/' },
-    { name: 'About', href: '/' },
+    { name: 'About', href: '/about' },
 ];
 
 const Navbar = () => {
