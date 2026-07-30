@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,7 +11,6 @@ import {
   ArrowLeft,
   User,
   Mail,
-  Lock,
   Key,
   MapPin,
   Eye,
@@ -305,7 +303,7 @@ function CustomCountrySelect({
           <div className="overflow-y-auto space-y-0.5 max-h-52 pr-1">
             {filteredCountries.length === 0 ? (
               <div className="py-4 text-center text-xs text-slate-400 font-medium">
-                No country matching "{searchQuery}"
+                No country matching &quot;{searchQuery}&quot;
               </div>
             ) : (
               filteredCountries.map((c) => {
@@ -347,7 +345,6 @@ function CustomCountrySelect({
 }
 
 export default function CompanyRegisterPage() {
-  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [showPassword, setShowPassword] = useState(false);
   const [isDetectingCountry, setIsDetectingCountry] = useState(false);
@@ -1114,7 +1111,7 @@ export default function CompanyRegisterPage() {
                     Your account is pending review
                   </h1>
                   <p className="text-slate-600 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
-                    Our team is verifying your company. This usually takes less than 24 hours. We'll email you once approved.
+                    Our team is verifying your company. This usually takes less than 24 hours. We&apos;ll email you once approved.
                   </p>
                 </div>
 

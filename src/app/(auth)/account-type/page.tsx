@@ -15,11 +15,8 @@ import {
     Inbox,
     BarChart3,
     UserCheck,
-    User,
-    Building2,
     HelpCircle,
     ArrowRight,
-    Sparkles,
     Loader2
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";

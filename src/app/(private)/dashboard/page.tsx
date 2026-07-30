@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 export default function Page() {
   return (
     <div className="space-y-6">
@@ -6,3 +8,4 @@ export default function Page() {
     </div>
   );
 }
+

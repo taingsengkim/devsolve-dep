@@ -12,7 +12,6 @@ import {
   ArrowLeft,
   User,
   Mail,
-  Lock,
   Key,
   MapPin,
   Eye,
@@ -223,7 +222,7 @@ function CustomCountrySelect({
           <div className="overflow-y-auto space-y-0.5 max-h-52 pr-1">
             {filteredCountries.length === 0 ? (
               <div className="py-4 text-center text-xs text-slate-400 font-medium">
-                No country matching "{searchQuery}"
+                No country matching &quot;{searchQuery}&quot;
               </div>
             ) : (
               filteredCountries.map((c) => {
@@ -804,7 +803,7 @@ export default function UserRegisterPage() {
                     className="mt-0.5 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
                   />
                   <span className="text-xs text-slate-600 leading-snug">
-                    I agree to DevSolve's{" "}
+                    I agree to DevSolve&apos;s{" "}
                     <Link href="#" className="text-blue-600 hover:text-blue-700 font-bold hover:underline">
                       Terms of Service
                     </Link>{" "}

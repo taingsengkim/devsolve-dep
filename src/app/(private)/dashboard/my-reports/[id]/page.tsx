@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import {
@@ -31,7 +30,6 @@ import {
   Building2,
   Award,
   AlertCircle,
-  DollarSign,
 } from "lucide-react";
 
 import {

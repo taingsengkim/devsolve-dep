@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Sidebar from "@/components/Sidebar";
 
 export default function DashboardLayout({
@@ -14,3 +16,4 @@ export default function DashboardLayout({
     </div>
   );
 }
+
