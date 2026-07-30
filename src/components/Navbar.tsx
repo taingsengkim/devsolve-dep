@@ -12,7 +12,7 @@ import { authClient } from '@/lib/auth/auth-client';
 const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Program', href: '/' },
-    { name: 'Hacker activity', href: '/' },
+    { name: 'Activity', href: '/' },
     { name: 'Forum', href: '/' },
     { name: 'Leader board', href: '/' },
     { name: 'About', href: '/' },
@@ -87,7 +87,7 @@ const Navbar = () => {
                                 priority
                             />
                         </motion.div>
-                        <span className="text-base font-bold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">
+                        <span className="text-lg font-bold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">
                             DevSolve
                         </span>
                     </Link>
@@ -102,7 +102,7 @@ const Navbar = () => {
                                     key={link.name}
                                     href={link.href}
                                     onMouseEnter={() => setHoveredPath(link.name)}
-                                    className="relative text-sm font-medium text-slate-600 hover:text-slate-900 px-3.5 py-2 rounded-full transition-colors duration-200"
+                                    className="relative text-base font-medium text-slate-600 hover:text-slate-900 px-3.5 py-2 rounded-full transition-colors duration-200"
                                 >
                                     {isHovered && (
                                         <motion.span
@@ -138,7 +138,7 @@ const Navbar = () => {
                             variant="ghost"
                             onClick={handleLogin}
                             disabled={isLoggingIn}
-                            className="text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 px-4 h-9 rounded-full transition-colors cursor-pointer"
+                            className="text-base font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 px-4 h-9 sm:h-10 rounded-full transition-colors cursor-pointer"
                         >
                             {isLoggingIn ? (
                                 <span className="flex items-center gap-2">
@@ -155,7 +155,7 @@ const Navbar = () => {
                             <Button
                                 nativeButton={false}
                                 render={<Link href="/account-type" />}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-5 h-9 rounded-full font-semibold text-sm tracking-tight shadow-md shadow-blue-500/20 group flex items-center gap-1.5 cursor-pointer"
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-5 h-9 sm:h-10 rounded-full font-semibold text-base tracking-tight shadow-md shadow-blue-500/20 group flex items-center gap-1.5 cursor-pointer"
                             >
                                 <span>Get started</span>
                                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
@@ -193,7 +193,7 @@ const Navbar = () => {
                                     key={link.name}
                                     href={link.href}
                                     onClick={() => setMobileMenuOpen(false)}
-                                    className="text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2.5 rounded-xl hover:bg-slate-100 transition-colors"
+                                    className="text-base font-medium text-slate-700 hover:text-slate-900 px-3 py-2.5 rounded-xl hover:bg-slate-100 transition-colors"
                                 >
                                     {link.name}
                                 </Link>
@@ -206,7 +206,7 @@ const Navbar = () => {
                                         handleLogin();
                                     }}
                                     disabled={isLoggingIn}
-                                    className="w-full border-slate-200 text-slate-700 hover:bg-slate-50 rounded-full font-semibold text-sm h-10"
+                                    className="w-full border-slate-200 text-slate-700 hover:bg-slate-50 rounded-full font-semibold text-base h-10"
                                 >
                                     {isLoggingIn ? (
                                         <span className="flex items-center justify-center gap-2">
@@ -220,7 +220,7 @@ const Navbar = () => {
                                 <Button
                                     nativeButton={false}
                                     render={<Link href="/account-type" onClick={() => setMobileMenuOpen(false)} />}
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold text-sm h-10 shadow-md shadow-blue-500/20"
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold text-base h-10 shadow-md shadow-blue-500/20"
                                 >
                                     Get started
                                 </Button>

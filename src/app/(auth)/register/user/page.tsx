@@ -168,7 +168,7 @@ function CustomCountrySelect({
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          "w-full h-11 px-3.5 bg-slate-50/80 hover:bg-slate-100/90 border border-slate-200 focus:border-blue-500 rounded-xl text-slate-900 text-sm flex items-center justify-between transition-all cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/20",
+          "w-full h-11 px-3.5 bg-white hover:bg-slate-50 border border-slate-300 focus:border-blue-500 rounded-xl text-slate-900 text-sm flex items-center justify-between transition-all cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/20",
           isOpen && "border-blue-500 ring-2 ring-blue-500/20 bg-white"
         )}
       >
@@ -214,7 +214,7 @@ function CustomCountrySelect({
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search country..."
               autoFocus
-              className="w-full h-9 pl-9 pr-3 text-xs sm:text-sm bg-slate-50 border border-slate-200/80 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-blue-500"
+              className="w-full h-9 pl-9 pr-3 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
             />
           </div>
 
@@ -501,15 +501,15 @@ export default function UserRegisterPage() {
 
             {/* Feature Badges under illustration */}
             <div className="flex flex-wrap justify-center gap-2.5 mt-5 relative z-10">
-              <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-xs border border-blue-200/80 px-3 py-1.5 rounded-full shadow-2xs text-xs font-semibold text-slate-800">
+              <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-xs border border-blue-200/80 px-3 py-1.5 rounded-full shadow-2xs text-sm font-semibold text-slate-800">
                 <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
                 <span>Discover Programs</span>
               </div>
-              <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-xs border border-emerald-200/80 px-3 py-1.5 rounded-full shadow-2xs text-xs font-semibold text-slate-800">
+              <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-xs border border-emerald-200/80 px-3 py-1.5 rounded-full shadow-2xs text-sm font-semibold text-slate-800">
                 <Zap className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Build Reputation</span>
               </div>
-              <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-xs border border-indigo-200/80 px-3 py-1.5 rounded-full shadow-2xs text-xs font-semibold text-slate-800">
+              <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-xs border border-indigo-200/80 px-3 py-1.5 rounded-full shadow-2xs text-sm font-semibold text-slate-800">
                 <Users className="w-3.5 h-3.5 text-indigo-600" />
                 <span>Strong Community</span>
               </div>
@@ -524,7 +524,7 @@ export default function UserRegisterPage() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-2xl sm:text-3xl xl:text-4xl font-extrabold tracking-tight text-blue-600 mb-2"
             >
-              Join thousands of User
+              Join thousands of user
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 10 }}
@@ -565,7 +565,7 @@ export default function UserRegisterPage() {
               variant="outline"
               onClick={() => handleSocialSignIn("google")}
               disabled={socialLoading !== null}
-              className="w-full h-11 sm:h-12 bg-slate-50 hover:bg-slate-100 active:bg-slate-200/80 border border-slate-200/90 rounded-xl text-slate-800 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+              className="w-full h-11 sm:h-12 bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-300 rounded-xl text-slate-800 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
             >
               {socialLoading === "google" ? (
                 <Loader2 className="w-4 h-4 animate-spin text-slate-600" />
@@ -598,7 +598,7 @@ export default function UserRegisterPage() {
               variant="outline"
               onClick={() => handleSocialSignIn("github")}
               disabled={socialLoading !== null}
-              className="w-full h-11 sm:h-12 bg-slate-50 hover:bg-slate-100 active:bg-slate-200/80 border border-slate-200/90 rounded-xl text-slate-800 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+              className="w-full h-11 sm:h-12 bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-300 rounded-xl text-slate-800 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
             >
               {socialLoading === "github" ? (
                 <Loader2 className="w-4 h-4 animate-spin text-slate-600" />
@@ -653,9 +653,9 @@ export default function UserRegisterPage() {
                       type="text"
                       placeholder="e.g. tada122"
                       {...register("username")}
-                      className={`w-full h-11 pl-10 pr-4 bg-slate-50/80 border ${
-                        errors.username ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:border-blue-500"
-                      } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 focus:bg-white transition-all`}
+                      className={`w-full h-11 pl-10 pr-4 bg-white border ${
+                        errors.username ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+                      } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
                     />
                   </div>
                   {errors.username && (
@@ -677,9 +677,9 @@ export default function UserRegisterPage() {
                       type="text"
                       placeholder="e.g. Data Battambang"
                       {...register("fullName")}
-                      className={`w-full h-11 pl-10 pr-4 bg-slate-50/80 border ${
-                        errors.fullName ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:border-blue-500"
-                      } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 focus:bg-white transition-all`}
+                      className={`w-full h-11 pl-10 pr-4 bg-white border ${
+                        errors.fullName ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+                      } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
                     />
                   </div>
                   {errors.fullName && (
@@ -702,9 +702,9 @@ export default function UserRegisterPage() {
                     type="email"
                     placeholder="you@gmail.com"
                     {...register("email")}
-                    className={`w-full h-11 pl-10 pr-4 bg-slate-50/80 border ${
-                      errors.email ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:border-blue-500"
-                    } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 focus:bg-white transition-all`}
+                    className={`w-full h-11 pl-10 pr-4 bg-white border ${
+                      errors.email ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+                    } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
                   />
                 </div>
                 {errors.email && (
@@ -728,9 +728,9 @@ export default function UserRegisterPage() {
                       type={showPassword ? "text" : "password"}
                       placeholder="Create a password"
                       {...register("password")}
-                      className={`w-full h-11 pl-10 pr-10 bg-slate-50/80 border ${
-                        errors.password ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:border-blue-500"
-                      } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 focus:bg-white transition-all`}
+                      className={`w-full h-11 pl-10 pr-10 bg-white border ${
+                        errors.password ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+                      } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
                     />
                     <button
                       type="button"
@@ -759,9 +759,9 @@ export default function UserRegisterPage() {
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="Repeat password"
                       {...register("confirmPassword")}
-                      className={`w-full h-11 pl-10 pr-10 bg-slate-50/80 border ${
-                        errors.confirmPassword ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:border-blue-500"
-                      } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 focus:bg-white transition-all`}
+                      className={`w-full h-11 pl-10 pr-10 bg-white border ${
+                        errors.confirmPassword ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+                      } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
                     />
                     <button
                       type="button"

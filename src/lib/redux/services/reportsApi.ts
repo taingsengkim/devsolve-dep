@@ -4,6 +4,8 @@ import {
   ReportsFilterParams,
   ReportDetail,
   CommentItem,
+  SubmitReportPayload,
+  SubmitReportResponse,
 } from "@/lib/types/reports/types";
 import {
   MOCK_REPORTS,
@@ -56,6 +58,7 @@ export const reportsApi = baseApi.injectEndpoints({
       },
       providesTags: ["Report"],
     }),
+
     getReportById: builder.query<ReportDetail, string>({
       queryFn: (id) => {
         const found = MOCK_REPORTS.find((r) => r.id === id || r.reportId.toLowerCase() === id.toLowerCase());
@@ -80,6 +83,7 @@ export const reportsApi = baseApi.injectEndpoints({
       },
       providesTags: (_result, _error, id) => [{ type: "Report", id }],
     }),
+
     addReportComment: builder.mutation<CommentItem, { reportId: string; text: string }>({
       queryFn: ({ text }) => {
         const newComment: CommentItem = {
@@ -94,7 +98,49 @@ export const reportsApi = baseApi.injectEndpoints({
       },
       invalidatesTags: (_result, _error, { reportId }) => [{ type: "Report", id: reportId }],
     }),
+
+    submitReport: builder.mutation<SubmitReportResponse, SubmitReportPayload>({
+      queryFn: (payload) => {
+        const numId = MOCK_REPORTS.length + 101;
+        const reportId = `#DS-2026-${numId}`;
+        const newId = String(Date.now());
+
+        const newReportItem: ReportItem = {
+          id: newId,
+          reportId: reportId,
+          title: payload.title,
+          program: payload.programName,
+          avatarLetter: payload.programName.slice(0, 1).toUpperCase(),
+          type: "Bounty",
+          severity: (payload.severity === "INFO" ? "LOW" : payload.severity) as ReportItem["severity"],
+          status: "TRIAGING",
+          bountyOrRep: "Pending Triage",
+          isBountyHighlight: false,
+          lastActivityDate: "Just now",
+          lastActivityBadge: "Report Submitted",
+        };
+
+        MOCK_REPORTS.unshift(newReportItem);
+
+        return {
+          data: {
+            success: true,
+            reportId,
+            id: newId,
+            message: "Vulnerability report submitted successfully.",
+            status: "TRIAGING",
+            createdAt: new Date().toISOString(),
+          },
+        };
+      },
+      invalidatesTags: ["Report"],
+    }),
   }),
 });
 
-export const { useGetReportsQuery, useGetReportByIdQuery, useAddReportCommentMutation } = reportsApi;
+export const {
+  useGetReportsQuery,
+  useGetReportByIdQuery,
+  useAddReportCommentMutation,
+  useSubmitReportMutation,
+} = reportsApi;

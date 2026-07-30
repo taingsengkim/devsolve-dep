@@ -9,6 +9,14 @@ This version has breaking changes — APIs, conventions, and file structure may 
 When performing any work related to UI components, layout, styling, theme, animations, or visual design, AI agents MUST:
 1. Read and follow the design specifications in [`design.md`](file:///c:/Users/tolsa/Documents/My%20project/devsolve-frontend/design.md).
 2. Use the `motion` library (`import { motion } from "motion/react"`) for smooth UI animations, layout transitions, and interactive visual feedback.
+3. **Typography & Font Sizes**: Maintain legible, clear typography across all components and pages:
+   - Body & Form Inputs: Use `text-base` (16px) or `text-sm` (14px) for optimal readability. Avoid small fonts like `text-xs` (12px) or `text-[11px]` for main form inputs, primary table content, and body paragraphs.
+   - Headers & Navigation: Use `text-base` / `text-lg` for navigation items and clear visual hierarchy for section titles (`text-lg`, `text-xl`, `text-2xl`).
+   - Form Styling: Ensure input fields use clean white backgrounds (`bg-white`) with clear, defined borders (`border-slate-300`).
+4. **Dashboard Page Layout Standard**:
+   - All page components under `/dashboard/*` MUST be wrapped in a `<motion.div>` with standard entrance animation parameters (`initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: "easeOut" }}`) and container layout (`className="space-y-6 w-full pb-12"`).
+   - Use the consistent page header pattern (`<header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">`) with breadcrumb navigation, a prominent `<h1>` title (`text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100`), and a descriptive subtext.
+   - Ensure loading states use structured skeleton pulse containers (`animate-pulse`) matching the page structure instead of simple unstyled spinners.
 
 # Data Fetching & Mutations
 

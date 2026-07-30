@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import AccountTypeButton from "../../../components/account-type/AccountTypeButton";
+import AccountTypeButton from "@/components/account-type/AccountTypeButton";
 
 export default function AccountTypeSelectionPage() {
     const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -192,11 +192,11 @@ export default function AccountTypeSelectionPage() {
                                 </Badge>
                             </div>
 
-                            <CardContent className="p-6 sm:p-8 flex flex-col justify-between h-full">
+                            <CardContent className="flex flex-col justify-between h-full">
                                 <div>
                                     {/* Prominent Lottie Animation */}
-                                    <div className="w-full flex justify-center items-center my-2 sm:my-4">
-                                        <div className="w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                    <div className="w-full flex justify-center items-center ">
+                                        <div className="w-48 h-48 sm:w-72 sm:h-72 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                                             <DotLottieReact
                                                 src="/lottie/researcher.lottie"
                                                 loop
@@ -255,11 +255,11 @@ export default function AccountTypeSelectionPage() {
                                 </Badge>
                             </div>
 
-                            <CardContent className="p-6 sm:p-8 flex flex-col justify-between h-full">
+                            <CardContent className="flex flex-col justify-between h-full">
                                 <div>
                                     {/* Prominent Lottie Animation */}
-                                    <div className="w-full flex justify-center items-center my-2 sm:my-4">
-                                        <div className="w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                    <div className="w-full flex justify-center items-center ">
+                                        <div className="w-48 h-48 sm:w-72 sm:h-72 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                                             <DotLottieReact
                                                 src="/lottie/company.lottie"
                                                 loop
@@ -309,7 +309,7 @@ export default function AccountTypeSelectionPage() {
                 </motion.div>
             </div>
 
-            {/* Footer Navigation / Support Link */}
+            {/* Footer Navigation / Support Link
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -322,7 +322,7 @@ export default function AccountTypeSelectionPage() {
                     <span>Read guide</span>
                     <ArrowRight className="w-3 h-3" />
                 </Link>
-            </motion.div>
+            </motion.div> */}
         </div>
     );
 }
