@@ -48,7 +48,7 @@ const navItems: NavItem[] = [
   { name: "Rewards", href: "/dashboard/rewards", icon: CircleDollarSign },
   { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy },
   { name: "Notification", href: "/dashboard/notifications", icon: Bell, badge: 3 },
-  { name: "Solution", href: "/dashboard/solution", icon: BookOpen },
+  { name: "Solution", href: "/dashboard/discussions", icon: BookOpen },
   { name: "Bookmarks", href: "/dashboard/bookmarks", icon: Bookmark, badge: 3 },
 ];
 
