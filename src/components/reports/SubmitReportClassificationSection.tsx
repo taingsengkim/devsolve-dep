@@ -5,6 +5,13 @@ import { UseFormRegister, FieldErrors, UseFormSetValue, UseFormWatch } from "rea
 import { Shield, AlertTriangle } from "lucide-react";
 import { SubmitReportFormValues, VULNERABILITY_CATEGORIES } from "@/lib/validations/report";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface SubmitReportClassificationSectionProps {
   register: UseFormRegister<SubmitReportFormValues>;
@@ -74,17 +81,17 @@ export function SubmitReportClassificationSection({
   }, [selectedCategory, setValue]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Section Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+      <div className="flex items-center gap-3 pb-2">
+        <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 shadow-xs">
           <Shield className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
             Vulnerability Classification
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Accurate classification speeds up triage and bounty determination
           </p>
         </div>
@@ -94,7 +101,7 @@ export function SubmitReportClassificationSection({
       <div className="space-y-5">
         {/* Report Title */}
         <div className="space-y-1.5">
-          <label htmlFor="title" className="text-xs font-bold text-slate-900 dark:text-slate-100">
+          <label htmlFor="title" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Report Title <span className="text-red-500">*</span>
           </label>
           <Input
@@ -103,7 +110,7 @@ export function SubmitReportClassificationSection({
             {...register("title")}
             className="bg-white dark:bg-slate-900 h-11 text-sm border-slate-300 dark:border-slate-700"
           />
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
             Include vulnerability type, affected component, and impact in one clear sentence.
           </p>
           {errors.title && (
@@ -113,21 +120,36 @@ export function SubmitReportClassificationSection({
 
         {/* Vulnerability Type / Category */}
         <div className="space-y-1.5">
-          <label htmlFor="category" className="text-xs font-bold text-slate-900 dark:text-slate-100">
+          <label htmlFor="category" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Vulnerability Type <span className="text-red-500">*</span>
           </label>
-          <select
-            id="category"
-            {...register("category")}
-            className="w-full h-11 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer"
+          <Select
+            value={selectedCategory || ""}
+            onValueChange={(val) =>
+              setValue("category", val as SubmitReportFormValues["category"], {
+                shouldValidate: true,
+                shouldDirty: true,
+              })
+            }
           >
-            <option value="">Select vulnerability type...</option>
-            {VULNERABILITY_CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger
+              id="category"
+              className="w-full h-11 px-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-2xs cursor-pointer"
+            >
+              <SelectValue placeholder="Select vulnerability type..." />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-lg p-1.5 max-h-72">
+              {VULNERABILITY_CATEGORIES.map((cat) => (
+                <SelectItem
+                  key={cat}
+                  value={cat}
+                  className="rounded-xl cursor-pointer py-2.5 px-3 text-sm font-semibold text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-slate-100 dark:focus:bg-slate-800 data-[highlighted]:bg-slate-100 dark:data-[highlighted]:bg-slate-800 transition-colors"
+                >
+                  {cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {errors.category && (
             <p className="text-xs text-red-500 font-medium">{errors.category.message}</p>
           )}
@@ -135,11 +157,11 @@ export function SubmitReportClassificationSection({
 
         {/* Severity Selector */}
         <div className="space-y-3">
-          <label className="text-xs font-bold text-slate-900 dark:text-slate-100">
+          <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Severity <span className="text-red-500">*</span>
           </label>
 
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-5 gap-2.5">
             {SEVERITY_OPTIONS.map((sev) => {
               const isSelected = selectedSeverity === sev.id;
 
@@ -148,7 +170,7 @@ export function SubmitReportClassificationSection({
                   key={sev.id}
                   type="button"
                   onClick={() => setValue("severity", sev.id as SubmitReportFormValues["severity"])}
-                  className={`h-11 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                  className={`h-11 rounded-xl text-sm font-bold transition-all cursor-pointer ${
                     isSelected
                       ? sev.id === "CRITICAL"
                         ? "bg-red-600 text-white shadow-xs"
@@ -159,7 +181,7 @@ export function SubmitReportClassificationSection({
                         : sev.id === "LOW"
                         ? "bg-blue-600 text-white shadow-xs"
                         : "bg-slate-700 text-white shadow-xs"
-                      : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700"
                   }`}
                 >
                   {sev.label}
@@ -169,22 +191,22 @@ export function SubmitReportClassificationSection({
           </div>
 
           {/* Detailed Severity Breakdown Box */}
-          <div className="p-4 rounded-xl bg-red-50/70 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 space-y-1.5">
+          <div className="p-4 rounded-xl bg-red-50/80 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 space-y-1.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
-                <span className="text-xs font-bold text-red-600 dark:text-red-400">
-                  Critical
+                <span className="text-sm font-bold text-red-600 dark:text-red-400">
+                  Critical Impact
                 </span>
               </div>
-              <span className="text-xs font-bold text-red-600 dark:text-red-400">
+              <span className="text-xs font-bold text-red-600 dark:text-red-400 bg-white/80 dark:bg-black/30 px-2 py-0.5 rounded-md border border-red-200">
                 CVSS 9.0–10.0
               </span>
             </div>
-            <p className="text-xs text-slate-700 dark:text-slate-300">
+            <p className="text-sm text-slate-700 dark:text-slate-300 font-medium">
               Full system compromise, data breach, or catastrophic impact
             </p>
-            <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+            <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">
               Typically $3,000–$10,000+
             </div>
           </div>
@@ -194,10 +216,10 @@ export function SubmitReportClassificationSection({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label htmlFor="cweIdentifier" className="text-xs font-bold text-slate-900 dark:text-slate-100">
+              <label htmlFor="cweIdentifier" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 CWE Identifier
               </label>
-              <span className="text-xs text-slate-400">auto-suggested</span>
+              <span className="text-xs text-slate-500 font-medium">auto-suggested</span>
             </div>
             <Input
               id="cweIdentifier"
@@ -209,10 +231,10 @@ export function SubmitReportClassificationSection({
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label htmlFor="cvssScore" className="text-xs font-bold text-slate-900 dark:text-slate-100">
+              <label htmlFor="cvssScore" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 CVSS Score (0.0–10.0)
               </label>
-              <span className="text-xs text-slate-400">optional</span>
+              <span className="text-xs text-slate-500 font-medium">optional</span>
             </div>
             <Input
               id="cvssScore"
@@ -226,19 +248,20 @@ export function SubmitReportClassificationSection({
         {/* CVSS Vector String */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label htmlFor="cvssVector" className="text-xs font-bold text-slate-900 dark:text-slate-100">
+            <label htmlFor="cvssVector" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
               CVSS Vector String
             </label>
-            <span className="text-xs text-slate-400">optional</span>
+            <span className="text-xs text-slate-500 font-medium">optional</span>
           </div>
           <Input
             id="cvssVector"
             placeholder="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
             {...register("cvssVector")}
-            className="bg-white dark:bg-slate-900 h-11 text-sm font-mono border-slate-300 dark:border-slate-700 text-xs"
+            className="bg-white dark:bg-slate-900 h-11 text-sm font-mono border-slate-300 dark:border-slate-700"
           />
         </div>
       </div>
     </div>
   );
 }
+

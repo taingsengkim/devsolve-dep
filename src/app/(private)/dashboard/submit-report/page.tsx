@@ -60,18 +60,37 @@ function SubmitReportContent() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="space-y-8 w-full pb-12"
+      className="space-y-8 w-full pb-12 font-sans"
     >
-      {/* Back to Programs Navigation */}
-      <nav aria-label="Back Navigation">
-        <Link
-          href="/dashboard/programs"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Programs</span>
-        </Link>
-      </nav>
+      {/* Back Navigation & Page Header */}
+      <div className="space-y-4">
+        <nav aria-label="Back Navigation">
+          <Link
+            href="/dashboard/programs"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Programs</span>
+          </Link>
+        </nav>
+
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                Submit Vulnerability Report
+              </h1>
+            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-2xl font-medium">
+              Submit structured findings, technical evidence, and reproduction steps directly to the security triage team.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 text-xs font-bold text-blue-600 dark:text-blue-400 shrink-0 self-start sm:self-center">
+            <span>5-Step Wizard</span>
+          </div>
+        </div>
+      </div>
 
       {/* Main 2-Column Responsive Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">

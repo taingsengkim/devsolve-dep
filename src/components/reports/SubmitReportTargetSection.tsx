@@ -6,6 +6,13 @@ import { Target, CheckCircle2, XCircle, Lock, AlertTriangle } from "lucide-react
 import { SubmitReportFormValues, HTTP_METHODS, ENVIRONMENTS } from "@/lib/validations/report";
 import { ProgramItem } from "@/lib/redux/services/programsApi";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface SubmitReportTargetSectionProps {
   register: UseFormRegister<SubmitReportFormValues>;
@@ -16,6 +23,16 @@ interface SubmitReportTargetSectionProps {
   isLoading: boolean;
 }
 
+const HTTP_METHOD_STYLES: Record<string, { badge: string }> = {
+  GET: { badge: "bg-emerald-50 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-200/90 dark:border-emerald-800/80" },
+  POST: { badge: "bg-blue-50 dark:bg-blue-950/70 text-blue-800 dark:text-blue-300 border border-blue-200/90 dark:border-blue-800/80" },
+  PUT: { badge: "bg-amber-50 dark:bg-amber-950/70 text-amber-900 dark:text-amber-300 border border-amber-200/90 dark:border-amber-800/80" },
+  DELETE: { badge: "bg-rose-50 dark:bg-rose-950/70 text-rose-800 dark:text-rose-300 border border-rose-200/90 dark:border-rose-800/80" },
+  PATCH: { badge: "bg-purple-50 dark:bg-purple-950/70 text-purple-800 dark:text-purple-300 border border-purple-200/90 dark:border-purple-800/80" },
+  OPTIONS: { badge: "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/90 dark:border-slate-700" },
+  HEAD: { badge: "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/90 dark:border-slate-700" },
+};
+
 export function SubmitReportTargetSection({
   register,
   errors,
@@ -25,47 +42,48 @@ export function SubmitReportTargetSection({
   isLoading,
 }: SubmitReportTargetSectionProps) {
   const selectedEnvironment = watch("environment") || "Production";
+  const selectedHttpMethod = watch("httpMethod") || "GET";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Section Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+      <div className="flex items-center gap-3 pb-2">
+        <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 shadow-xs">
           <Target className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
             Target & Scope
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Identify the exact affected asset within this program's scope
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Identify the exact affected asset within this program's authorized scope
           </p>
         </div>
       </div>
 
       {/* Program Header Banner */}
-      <div className="bg-slate-50/80 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+      <div className="bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-base shrink-0 shadow-xs">
             CV
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 CloudVault Security Program
               </h3>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300">
+              <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                 Private
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
               CloudVault Inc. · Max $10,000 · Avg response 2 days
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-xs font-semibold text-emerald-700 dark:text-emerald-300 shrink-0">
-          <Lock className="w-3.5 h-3.5" />
+          <Lock className="w-4 h-4" />
           <span>Program locked</span>
         </div>
       </div>
@@ -76,7 +94,7 @@ export function SubmitReportTargetSection({
           <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
             In-Scope Targets
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
             You are authorized to test these assets only.
           </p>
         </div>
@@ -90,7 +108,7 @@ export function SubmitReportTargetSection({
           ].map((target) => (
             <div
               key={target}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-200 text-sm font-medium"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-200 text-sm font-semibold"
             >
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>{target}</span>
@@ -105,7 +123,7 @@ export function SubmitReportTargetSection({
           <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
             Out-of-Scope Targets
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
             Do not test these assets under any circumstances.
           </p>
         </div>
@@ -119,7 +137,7 @@ export function SubmitReportTargetSection({
           ].map((target) => (
             <div
               key={target}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/80 dark:border-rose-900/40 text-rose-900 dark:text-rose-200 text-sm font-medium"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 text-rose-900 dark:text-rose-200 text-sm font-semibold"
             >
               <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
               <span>{target}</span>
@@ -129,14 +147,14 @@ export function SubmitReportTargetSection({
       </div>
 
       {/* Inputs Form Section */}
-      <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+      <div className="space-y-5 pt-4 border-t border-slate-200 dark:border-slate-800">
         {/* Affected URL / Endpoint */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label htmlFor="targetAsset" className="text-xs font-bold text-slate-900 dark:text-slate-100">
+            <label htmlFor="targetAsset" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
               Affected URL / Endpoint <span className="text-red-500">*</span>
             </label>
-            <span className="text-xs text-slate-400">full URL including path and query</span>
+            <span className="text-xs text-slate-500 font-medium">full URL including path and query</span>
           </div>
           <Input
             id="targetAsset"
@@ -152,28 +170,59 @@ export function SubmitReportTargetSection({
         {/* HTTP Method & Vulnerable Parameter */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label htmlFor="httpMethod" className="text-xs font-bold text-slate-900 dark:text-slate-100">
+            <label htmlFor="httpMethod" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
               HTTP Method
             </label>
-            <select
-              id="httpMethod"
-              {...register("httpMethod")}
-              className="w-full h-11 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer"
+            <Select
+              value={selectedHttpMethod}
+              onValueChange={(val) =>
+                setValue("httpMethod", val as SubmitReportFormValues["httpMethod"], {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                })
+              }
             >
-              {HTTP_METHODS.map((method) => (
-                <option key={method} value={method}>
-                  {method}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger
+                id="httpMethod"
+                className="w-full h-11 px-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-2xs cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`px-2.5 py-0.5 rounded-md text-xs font-bold border ${
+                      HTTP_METHOD_STYLES[selectedHttpMethod]?.badge ||
+                      HTTP_METHOD_STYLES.GET.badge
+                    }`}
+                  >
+                    {selectedHttpMethod}
+                  </span>
+                </div>
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-lg p-1.5 min-w-[140px]">
+                {HTTP_METHODS.map((method) => (
+                  <SelectItem
+                    key={method}
+                    value={method}
+                    className="rounded-xl cursor-pointer py-2 px-3 text-sm font-semibold"
+                  >
+                    <span
+                      className={`px-2.5 py-0.5 rounded-md text-xs font-bold border ${
+                        HTTP_METHOD_STYLES[method]?.badge || HTTP_METHOD_STYLES.GET.badge
+                      }`}
+                    >
+                      {method}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label htmlFor="vulnerableParameter" className="text-xs font-bold text-slate-900 dark:text-slate-100">
+              <label htmlFor="vulnerableParameter" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 Vulnerable Parameter
               </label>
-              <span className="text-xs text-slate-400">optional</span>
+              <span className="text-xs text-slate-500 font-medium">optional</span>
             </div>
             <Input
               id="vulnerableParameter"
@@ -185,8 +234,8 @@ export function SubmitReportTargetSection({
         </div>
 
         {/* Environment Selection */}
-        <div className="space-y-2 pt-2">
-          <label className="text-xs font-bold text-slate-900 dark:text-slate-100">
+        <div className="space-y-2 pt-1">
+          <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Environment <span className="text-red-500">*</span>
           </label>
 
@@ -200,12 +249,12 @@ export function SubmitReportTargetSection({
                   key={env}
                   type="button"
                   onClick={() => setValue("environment", env as "Production" | "Staging" | "Development")}
-                  className={`h-11 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                  className={`h-11 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                     isSelected
                       ? isProduction
                         ? "bg-red-600 text-white shadow-xs"
                         : "bg-blue-600 text-white shadow-xs"
-                      : "bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700"
                   }`}
                 >
                   {env}
@@ -217,8 +266,8 @@ export function SubmitReportTargetSection({
 
         {/* Production Warning Callout */}
         {selectedEnvironment === "Production" && (
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/90 dark:border-amber-900/60 text-xs font-medium text-amber-900 dark:text-amber-300 leading-relaxed">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-sm font-medium text-amber-900 dark:text-amber-300 leading-relaxed">
+            <AlertTriangle className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
             <div>
               <span className="font-bold">Production selected.</span> Confirm testing was non-destructive and did not access or retain real user data beyond the minimum needed to demonstrate impact.
             </div>
@@ -228,3 +277,4 @@ export function SubmitReportTargetSection({
     </div>
   );
 }
+

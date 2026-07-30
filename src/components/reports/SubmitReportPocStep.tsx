@@ -31,25 +31,25 @@ export function SubmitReportPocStep({
   onUpdateExternalLink,
 }: SubmitReportPocStepProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Section Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+      <div className="flex items-center gap-3 pb-2">
+        <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 shadow-xs">
           <Terminal className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
             Proof of Concept
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Minimum evidence to confirm the vulnerability is real and exploitable
           </p>
         </div>
       </div>
 
       {/* Responsible PoC Yellow Callout Banner */}
-      <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/90 dark:border-amber-900/60 text-xs font-medium text-amber-900 dark:text-amber-300 leading-relaxed">
-        <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+      <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-sm font-medium text-amber-900 dark:text-amber-300 leading-relaxed">
+        <AlertTriangle className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
         <div>
           <span className="font-bold">Handle PoC responsibly.</span> Include only the minimum evidence needed. Do not attach real user PII, exfiltrated data, or destructive payloads.
         </div>
@@ -58,10 +58,10 @@ export function SubmitReportPocStep({
       {/* PoC Payload / Code */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <label htmlFor="pocPayload" className="text-xs font-bold text-slate-900 dark:text-slate-100">
+          <label htmlFor="pocPayload" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             PoC Payload / Code
           </label>
-          <span className="text-xs text-slate-400">payload, curl command, Burp request, or script</span>
+          <span className="text-xs text-slate-500 font-medium">payload, curl command, Burp request, or script</span>
         </div>
         <textarea
           id="pocPayload"
@@ -75,14 +75,14 @@ Authorization: Bearer <your_token>
 # Expected: 403 Forbidden
 # Actual: 200 OK with victim billing data`}
           {...register("pocPayload")}
-          className="w-full p-4 rounded-xl bg-slate-900 text-slate-100 border border-slate-800 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-600 leading-relaxed"
+          className="w-full p-4 rounded-xl bg-slate-950 text-slate-100 border border-slate-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-600 leading-relaxed"
         />
       </div>
 
       {/* 2-Column Row: Expected Result vs Actual Result */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <label htmlFor="expectedResult" className="text-xs font-bold text-slate-900 dark:text-slate-100">
+          <label htmlFor="expectedResult" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Expected Result
           </label>
           <textarea
@@ -90,12 +90,12 @@ Authorization: Bearer <your_token>
             rows={3}
             placeholder="Server returns 403 Forbidden for invoice IDs belonging to other users."
             {...register("expectedResult")}
-            className="w-full p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 leading-relaxed"
+            className="w-full p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 leading-relaxed"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="actualResult" className="text-xs font-bold text-slate-900 dark:text-slate-100">
+          <label htmlFor="actualResult" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Actual Result
           </label>
           <textarea
@@ -103,7 +103,7 @@ Authorization: Bearer <your_token>
             rows={3}
             placeholder="Server returns 200 OK with full billing data of the victim user."
             {...register("actualResult")}
-            className="w-full p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 leading-relaxed"
+            className="w-full p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 leading-relaxed"
           />
         </div>
       </div>
@@ -111,10 +111,10 @@ Authorization: Bearer <your_token>
       {/* Attachments Section */}
       <div className="space-y-2 pt-2">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-slate-900 dark:text-slate-100">
+          <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Attachments
           </label>
-          <span className="text-xs text-slate-400">screenshots, Burp exports, video (max 50 MB each)</span>
+          <span className="text-xs text-slate-500 font-medium">screenshots, Burp exports, video (max 50 MB each)</span>
         </div>
 
         <FileUploadDropzone
@@ -127,13 +127,13 @@ Authorization: Bearer <your_token>
       {/* External Links Section */}
       <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-slate-900 dark:text-slate-100">
+          <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             External Links
           </label>
-          <span className="text-xs text-slate-400">Loom, Google Drive, video demo</span>
+          <span className="text-xs text-slate-500 font-medium">Loom, Google Drive, video demo</span>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {externalLinks.map((link, idx) => (
             <div key={idx} className="flex items-center gap-2">
               <Input
@@ -141,13 +141,13 @@ Authorization: Bearer <your_token>
                 value={link}
                 onChange={(e) => onUpdateExternalLink(idx, e.target.value)}
                 placeholder="https://loom.com/share/..."
-                className="bg-white dark:bg-slate-900 h-10 text-xs border-slate-300 dark:border-slate-700 flex-1"
+                className="bg-white dark:bg-slate-900 h-11 text-sm border-slate-300 dark:border-slate-700 flex-1"
               />
               {externalLinks.length > 1 && (
                 <button
                   type="button"
                   onClick={() => onRemoveExternalLink(idx)}
-                  className="w-9 h-9 rounded-xl text-slate-400 hover:text-red-500 flex items-center justify-center shrink-0"
+                  className="w-10 h-10 rounded-xl text-slate-400 hover:text-red-600 flex items-center justify-center shrink-0 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -159,12 +159,13 @@ Authorization: Bearer <your_token>
         <button
           type="button"
           onClick={onAddExternalLink}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-4 h-4" />
           <span>Add link</span>
         </button>
       </div>
     </div>
   );
 }
+

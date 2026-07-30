@@ -32,16 +32,16 @@ export const SubmitReportProgressNav: React.FC<SubmitReportProgressNavProps> = (
   const progressPercentage = (currentStep / 5) * 100;
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] space-y-4 font-sans">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-4 font-sans">
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          <span>Progress</span>
+        <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <span>Submission Progress</span>
           <span className="text-blue-600 dark:text-blue-400 font-bold">
             Step {currentStep} of 5
           </span>
         </div>
         {/* Progress Bar Container */}
-        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden">
+        <div className="h-2 w-full bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-blue-600 dark:bg-blue-500 rounded-full"
             initial={{ width: "20%" }}
@@ -52,7 +52,7 @@ export const SubmitReportProgressNav: React.FC<SubmitReportProgressNavProps> = (
       </div>
 
       {/* Step List Items */}
-      <div className="space-y-1.5 pt-1">
+      <div className="space-y-2 pt-1">
         {STEPS.map((step) => {
           const IconComponent = step.icon;
           const isActive = currentStep === step.id;
@@ -67,17 +67,17 @@ export const SubmitReportProgressNav: React.FC<SubmitReportProgressNavProps> = (
               onClick={() => isClickable && onSelectStep(step.id)}
               whileHover={isClickable ? { x: 2 } : {}}
               whileTap={isClickable ? { scale: 0.99 } : {}}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all text-left ${
+              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all text-left ${
                 isActive
                   ? "bg-blue-600 text-white shadow-xs"
                   : isCompleted
-                  ? "bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80"
+                  ? "bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
                   : "text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-70"
               }`}
             >
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
                     isActive
                       ? "bg-white/20 text-white"
                       : isCompleted
@@ -86,9 +86,9 @@ export const SubmitReportProgressNav: React.FC<SubmitReportProgressNavProps> = (
                   }`}
                 >
                   {isCompleted ? (
-                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <Check className="w-4 h-4 stroke-[2.5]" />
                   ) : (
-                    <IconComponent className="w-3.5 h-3.5" />
+                    <IconComponent className="w-4 h-4" />
                   )}
                 </div>
                 <span className="tracking-tight">{step.label}</span>
@@ -102,3 +102,4 @@ export const SubmitReportProgressNav: React.FC<SubmitReportProgressNavProps> = (
     </div>
   );
 };
+

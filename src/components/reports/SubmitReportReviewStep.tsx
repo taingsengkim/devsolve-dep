@@ -5,6 +5,8 @@ import { UseFormRegister, UseFormWatch } from "react-hook-form";
 import { Send, Lock, AlertTriangle, Check, CheckCircle2, BookmarkCheck } from "lucide-react";
 import { SubmitReportFormValues } from "@/lib/validations/report";
 import { AttachedFile } from "@/components/reports/FileUploadDropzone";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface SubmitReportReviewStepProps {
   register: UseFormRegister<SubmitReportFormValues>;
@@ -41,56 +43,57 @@ export function SubmitReportReviewStep({
     values.checklistAgreeTerms;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Section Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+      <div className="flex items-center gap-3 pb-2">
+        <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 shadow-xs">
           <Send className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
             Review & Submit
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Verify every section before sending — reports cannot be edited after submission
           </p>
         </div>
       </div>
 
       {/* Main Review Overview Container Card */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-5">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-5">
         {/* Program Header inside Review Box */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-xs shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-xs">
               CV
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 CloudVault Security Program
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">CloudVault Inc.</p>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">CloudVault Inc.</p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-            <Lock className="w-3 h-3" />
+          <Badge variant="outline" className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900 text-xs font-semibold gap-1.5 px-3 py-1 rounded-xl">
+            <Lock className="w-3.5 h-3.5" />
             <span>Program locked</span>
-          </div>
+          </Badge>
         </div>
 
         {/* 1. REPORT TITLE CARD */}
         <div className="space-y-2 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               REPORT TITLE
             </span>
-            <button
+            <Button
               type="button"
+              variant="link"
               onClick={() => onGoToStep(2)}
-              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-sm font-semibold text-blue-600 dark:text-blue-400 h-auto p-0 hover:underline"
             >
               Edit
-            </button>
+            </Button>
           </div>
 
           <div className="text-sm font-bold text-slate-900 dark:text-slate-100">
@@ -102,13 +105,13 @@ export function SubmitReportReviewStep({
           </div>
 
           <div className="flex items-center gap-2 pt-1">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300">
+            <Badge variant="outline" className="bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border-red-200 text-xs font-bold rounded-md px-2.5 py-0.5">
               {values.severity || "Critical"}
-            </span>
+            </Badge>
             {values.category && (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+              <Badge variant="outline" className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 text-xs font-semibold rounded-md px-2.5 py-0.5">
                 {values.category}
-              </span>
+              </Badge>
             )}
           </div>
         </div>
@@ -116,19 +119,20 @@ export function SubmitReportReviewStep({
         {/* 2. TARGET CARD */}
         <div className="space-y-2 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               TARGET
             </span>
-            <button
+            <Button
               type="button"
+              variant="link"
               onClick={() => onGoToStep(1)}
-              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-sm font-semibold text-blue-600 dark:text-blue-400 h-auto p-0 hover:underline"
             >
               Edit
-            </button>
+            </Button>
           </div>
 
-          <div className="text-sm font-medium font-mono text-slate-900 dark:text-slate-100">
+          <div className="text-sm font-semibold font-mono text-slate-900 dark:text-slate-100">
             {values.targetAsset ? (
               values.targetAsset
             ) : (
@@ -137,31 +141,32 @@ export function SubmitReportReviewStep({
           </div>
 
           <div className="flex items-center gap-2 pt-1">
-            <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+            <Badge variant="outline" className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 text-xs font-bold rounded-md px-2.5 py-0.5">
               {values.httpMethod || "GET"}
-            </span>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300">
+            </Badge>
+            <Badge variant="outline" className="bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border-red-200 text-xs font-semibold rounded-md px-2.5 py-0.5">
               {values.environment || "Production"}
-            </span>
+            </Badge>
           </div>
         </div>
 
         {/* 3. REPORT CARD */}
         <div className="space-y-2 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              REPORT
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              REPORT DETAILS
             </span>
-            <button
+            <Button
               type="button"
+              variant="link"
               onClick={() => onGoToStep(3)}
-              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-sm font-semibold text-blue-600 dark:text-blue-400 h-auto p-0 hover:underline"
             >
               Edit
-            </button>
+            </Button>
           </div>
 
-          <div className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">
+          <div className="text-sm text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed">
             {values.summaryPoC ? (
               values.summaryPoC
             ) : (
@@ -169,12 +174,12 @@ export function SubmitReportReviewStep({
             )}
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 pt-1">
+          <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-500 dark:text-slate-400 pt-1 font-medium">
             <span>{reproduceStepsList.length} repro steps</span>
             <span>·</span>
             {values.impact ? (
-              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5" />
+              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <CheckCircle2 className="w-4 h-4" />
                 Impact included
               </span>
             ) : (
@@ -186,20 +191,21 @@ export function SubmitReportReviewStep({
         {/* 4. PROOF OF CONCEPT CARD */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               PROOF OF CONCEPT
             </span>
-            <button
+            <Button
               type="button"
+              variant="link"
               onClick={() => onGoToStep(4)}
-              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-sm font-semibold text-blue-600 dark:text-blue-400 h-auto p-0 hover:underline"
             >
               Edit
-            </button>
+            </Button>
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-            <span className="text-amber-600 dark:text-amber-400 font-medium">
+          <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
+            <span className="text-amber-700 dark:text-amber-400 font-semibold">
               {values.pocPayload ? "Payload included" : "No payload — recommended"}
             </span>
             <span>·</span>
@@ -209,19 +215,19 @@ export function SubmitReportReviewStep({
       </div>
 
       {/* Submission Checklist */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+      <div className="space-y-3 pt-2">
+        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
           Submission Checklist
         </h3>
 
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           <label className="flex items-center gap-3 cursor-pointer group">
             <input
               type="checkbox"
               {...register("checklistInScope")}
-              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700 cursor-pointer"
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700 cursor-pointer shrink-0"
             />
-            <span className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium group-hover:text-slate-900 dark:group-hover:text-slate-100">
+            <span className="text-sm text-slate-800 dark:text-slate-200 font-medium group-hover:text-slate-900 dark:group-hover:text-slate-100">
               The affected asset is listed in this program's in-scope targets
             </span>
           </label>
@@ -230,9 +236,9 @@ export function SubmitReportReviewStep({
             <input
               type="checkbox"
               {...register("checklistNotDuplicate")}
-              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700 cursor-pointer"
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700 cursor-pointer shrink-0"
             />
-            <span className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium group-hover:text-slate-900 dark:group-hover:text-slate-100">
+            <span className="text-sm text-slate-800 dark:text-slate-200 font-medium group-hover:text-slate-900 dark:group-hover:text-slate-100">
               I searched for existing reports and believe this is not a duplicate
             </span>
           </label>
@@ -241,9 +247,9 @@ export function SubmitReportReviewStep({
             <input
               type="checkbox"
               {...register("checklistReproducible")}
-              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700 cursor-pointer"
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700 cursor-pointer shrink-0"
             />
-            <span className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium group-hover:text-slate-900 dark:group-hover:text-slate-100">
+            <span className="text-sm text-slate-800 dark:text-slate-200 font-medium group-hover:text-slate-900 dark:group-hover:text-slate-100">
               My steps to reproduce are clear and I can reproduce this myself
             </span>
           </label>
@@ -252,9 +258,9 @@ export function SubmitReportReviewStep({
             <input
               type="checkbox"
               {...register("checklistNoPii")}
-              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700 cursor-pointer"
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700 cursor-pointer shrink-0"
             />
-            <span className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium group-hover:text-slate-900 dark:group-hover:text-slate-100">
+            <span className="text-sm text-slate-800 dark:text-slate-200 font-medium group-hover:text-slate-900 dark:group-hover:text-slate-100">
               I have not included real user PII or exfiltrated data in this report
             </span>
           </label>
@@ -263,9 +269,9 @@ export function SubmitReportReviewStep({
             <input
               type="checkbox"
               {...register("checklistAgreeTerms")}
-              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700 cursor-pointer"
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700 cursor-pointer shrink-0"
             />
-            <span className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium group-hover:text-slate-900 dark:group-hover:text-slate-100">
+            <span className="text-sm text-slate-800 dark:text-slate-200 font-medium group-hover:text-slate-900 dark:group-hover:text-slate-100">
               I have read and agree to the program's disclosure policy and rules
             </span>
           </label>
@@ -273,8 +279,8 @@ export function SubmitReportReviewStep({
 
         {/* Warning callout banner if checklist incomplete */}
         {!isChecklistComplete && (
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/90 dark:border-amber-900/60 text-xs font-medium text-amber-900 dark:text-amber-300 leading-relaxed">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-sm font-medium text-amber-900 dark:text-amber-300 leading-relaxed mt-2">
+            <AlertTriangle className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
             <div>
               Complete all checklist items to enable submission. This maintains report quality and speeds up triage.
             </div>
@@ -284,7 +290,7 @@ export function SubmitReportReviewStep({
 
       {/* Error Alert */}
       {submitError && (
-        <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-xs font-semibold text-red-600 dark:text-red-400">
+        <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-sm font-semibold text-red-600 dark:text-red-400">
           {submitError}
         </div>
       )}
@@ -292,10 +298,11 @@ export function SubmitReportReviewStep({
       {/* Action Buttons Row */}
       <div className="space-y-3 pt-2">
         <div className="flex items-center gap-3">
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={onSaveDraft}
-            className="flex-1 h-11 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors inline-flex items-center justify-center gap-2"
+            className="flex-1 h-11 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-700 dark:text-slate-300 gap-2 cursor-pointer shadow-2xs"
           >
             {isDraftSaved ? (
               <>
@@ -308,27 +315,24 @@ export function SubmitReportReviewStep({
                 <span>Save as Draft</span>
               </>
             )}
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             disabled={!isChecklistComplete || isSubmitting}
             onClick={onSubmitReport}
-            className={`flex-1 h-11 rounded-full text-xs sm:text-sm font-semibold text-white transition-all inline-flex items-center justify-center gap-2 ${
-              isChecklistComplete && !isSubmitting
-                ? "bg-blue-600 hover:bg-blue-700 active:scale-[0.98] shadow-xs cursor-pointer"
-                : "bg-blue-300 dark:bg-blue-900/40 text-white/70 cursor-not-allowed"
-            }`}
+            className="flex-1 h-11 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 gap-2 cursor-pointer shadow-xs"
           >
             <Send className="w-4 h-4" />
             <span>{isSubmitting ? "Submitting Report..." : "Submit Solution"}</span>
-          </button>
+          </Button>
         </div>
 
-        <p className="text-center text-[11px] text-slate-500 dark:text-slate-400">
+        <p className="text-center text-xs text-slate-500 dark:text-slate-400 font-medium">
           By submitting, you agree to responsible disclosure and the program's rules. Expected first response: 2 days.
         </p>
       </div>
     </div>
   );
 }
+
