@@ -1,0 +1,418 @@
+import { baseApi } from "./baseApi";
+import {
+  AdminDashboardOverviewResponse,
+  CompanyVerificationItem,
+  ReportConfirmationItem,
+  AdminUserItem,
+  ModerationItem,
+} from "@/lib/types/admin/types";
+
+export * from "@/lib/types/admin/types";
+
+export const MOCK_ADMIN_OVERVIEW: AdminDashboardOverviewResponse = {
+  stats: [
+    {
+      id: "stat_orgs",
+      title: "Organizations",
+      value: "214",
+      subtext: "12 pending KYC",
+      type: "organizations",
+    },
+    {
+      id: "stat_programs",
+      title: "Programs",
+      value: "389",
+      subtext: "34 active bounties",
+      type: "programs",
+    },
+    {
+      id: "stat_reports",
+      title: "Total Reports",
+      value: "1,847",
+      subtext: "128 awaiting review",
+      type: "total_reports",
+    },
+    {
+      id: "stat_users",
+      title: "Users",
+      value: "5,203",
+      subtext: "1,204 active this week",
+      type: "users",
+    },
+    {
+      id: "stat_posts",
+      title: "Community Posts",
+      value: "3,612",
+      subtext: "4 pending approval",
+      type: "community_posts",
+    },
+    {
+      id: "stat_disputes",
+      title: "Open Disputes",
+      value: "23",
+      subtext: "3 unresolved > 7d",
+      type: "disputes",
+    },
+  ],
+  activityChart: [
+    { month: "Jan", reports: 42, communityPosts: 42, disputes: 40 },
+    { month: "Feb", reports: 58, communityPosts: 58, disputes: 58 },
+    { month: "Mar", reports: 50, communityPosts: 50, disputes: 50 },
+    { month: "Apr", reports: 72, communityPosts: 72, disputes: 70 },
+    { month: "May", reports: 88, communityPosts: 88, disputes: 86 },
+    { month: "Jun", reports: 96, communityPosts: 96, disputes: 96 },
+    { month: "Jul", reports: 116, communityPosts: 116, disputes: 114 },
+  ],
+  reportStatusBreakdown: {
+    confirmed: 341,
+    pending: 128,
+    rejected: 87,
+    inReview: 54,
+    total: 610,
+  },
+  actionQueue: {
+    totalCount: 26,
+    items: [
+      {
+        id: "aq_admin_1",
+        title: "Company Verifications Pending",
+        subtitle: "KYB & Domain Audit",
+        count: 12,
+        status: "urgent",
+        linkHref: "/dashboard/company-verification",
+        type: "verification",
+      },
+      {
+        id: "aq_admin_2",
+        title: "Critical Reports for Admin Review",
+        subtitle: "Pre-company Triage Validation",
+        count: 8,
+        status: "urgent",
+        linkHref: "/dashboard/report-confirmation",
+        type: "report_confirmation",
+      },
+      {
+        id: "aq_admin_3",
+        title: "Community Moderation Queue",
+        subtitle: "Flagged Posts & Discussions",
+        count: 4,
+        status: "pending",
+        linkHref: "/dashboard/community-moderation",
+        type: "moderation",
+      },
+      {
+        id: "aq_admin_4",
+        title: "Pending User Access Requests",
+        subtitle: "Role Elevation Reviews",
+        count: 2,
+        status: "normal",
+        linkHref: "/dashboard/users",
+        type: "user_review",
+      },
+    ],
+  },
+  recentActivity: [
+    {
+      id: "act_1",
+      title: "Company 'CyberArmor Inc.' verification document approved",
+      actor: "Admin Alex",
+      timestamp: "10m ago",
+      type: "verification",
+      badgeText: "Approved",
+    },
+    {
+      id: "act_2",
+      title: "Report #1042 (Critical RCE) confirmed and routed to PayTech",
+      actor: "Admin Sarah",
+      timestamp: "45m ago",
+      type: "user_action",
+      badgeText: "Report Confirmed",
+    },
+    {
+      id: "act_3",
+      title: "$12,500 bounty payout approved for ACME Corp VDP",
+      actor: "Admin System",
+      timestamp: "2h ago",
+      type: "bounty",
+      badgeText: "Payout Sent",
+    },
+    {
+      id: "act_4",
+      title: "Flagged community post #892 removed for policy breach",
+      actor: "Mod Dave",
+      timestamp: "3h ago",
+      type: "system",
+      badgeText: "Moderated",
+    },
+  ],
+};
+
+export const MOCK_COMPANY_VERIFICATIONS: CompanyVerificationItem[] = [
+  {
+    id: "comp_1",
+    companyName: "Nexus Financial Solutions",
+    email: "security@nexusfin.com",
+    domain: "nexusfin.com",
+    taxId: "TAX-9948201",
+    businessType: "FinTech Platform",
+    registrationDate: "2026-07-28",
+    status: "PENDING",
+    documentsCount: 3,
+    notes: "Submitted Certificate of Incorporation & Tax Certificate.",
+  },
+  {
+    id: "comp_2",
+    companyName: "CloudPulse Systems",
+    email: "admin@cloudpulse.io",
+    domain: "cloudpulse.io",
+    taxId: "TAX-4481923",
+    businessType: "Cloud Infrastructure",
+    registrationDate: "2026-07-27",
+    status: "PENDING",
+    documentsCount: 2,
+    notes: "Requires DNS TXT verification check.",
+  },
+  {
+    id: "comp_3",
+    companyName: "BioHealth Global Tech",
+    email: "compliance@biohealth.org",
+    domain: "biohealth.org",
+    taxId: "TAX-1129481",
+    businessType: "Healthcare Tech",
+    registrationDate: "2026-07-25",
+    status: "APPROVED",
+    documentsCount: 4,
+    notes: "Fully verified KYB and active VDP host.",
+  },
+  {
+    id: "comp_4",
+    companyName: "Shadow Crypto Protocol",
+    email: "contact@shadowcrypto.fake",
+    domain: "shadowcrypto.fake",
+    taxId: "TAX-0000000",
+    businessType: "DeFi",
+    registrationDate: "2026-07-24",
+    status: "REJECTED",
+    documentsCount: 1,
+    notes: "Invalid business registration document.",
+  },
+];
+
+export const MOCK_REPORT_CONFIRMATIONS: ReportConfirmationItem[] = [
+  {
+    id: "rep_conf_1",
+    title: "SQL Injection in Authentication API Endpoint",
+    researcherName: "alex_sec",
+    companyName: "Nexus Financial",
+    severity: "Critical",
+    status: "PENDING",
+    submittedAt: "1h ago",
+    rewardEstimate: "$3,500 - $5,000",
+    category: "Web Vulnerability",
+  },
+  {
+    id: "rep_conf_2",
+    title: "Unauthenticated Remote Code Execution in Image Processor",
+    researcherName: "bug_hunter_pro",
+    companyName: "CloudPulse Systems",
+    severity: "Critical",
+    status: "PENDING",
+    submittedAt: "3h ago",
+    rewardEstimate: "$7,500 - $10,000",
+    category: "Infrastructure",
+  },
+  {
+    id: "rep_conf_3",
+    title: "IDOR allowing unauthorized user profile access",
+    researcherName: "byte_wizard",
+    companyName: "BioHealth Global",
+    severity: "High",
+    status: "CONFIRMED",
+    submittedAt: "1d ago",
+    rewardEstimate: "$1,200",
+    category: "Access Control",
+  },
+  {
+    id: "rep_conf_4",
+    title: "Reflected XSS on search query parameter",
+    researcherName: "shadow_coder",
+    companyName: "ACME Corp",
+    severity: "Medium",
+    status: "PENDING",
+    submittedAt: "5h ago",
+    rewardEstimate: "$400",
+    category: "XSS",
+  },
+];
+
+export const MOCK_ADMIN_USERS: AdminUserItem[] = [
+  {
+    id: "usr_1",
+    name: "Alex Rivera",
+    email: "alex.rivera@devsolve.com",
+    role: "ADMIN",
+    status: "ACTIVE",
+    joinedDate: "2025-01-10",
+  },
+  {
+    id: "usr_2",
+    name: "Sarah Chen",
+    email: "sarah@nexusfin.com",
+    role: "COMPANY",
+    status: "ACTIVE",
+    joinedDate: "2026-02-14",
+    programsManaged: 3,
+  },
+  {
+    id: "usr_3",
+    name: "Marcus Vance",
+    email: "marcus_vance@sec.io",
+    role: "USER",
+    status: "ACTIVE",
+    joinedDate: "2026-03-01",
+    reportsSubmitted: 28,
+  },
+  {
+    id: "usr_4",
+    name: "Spammy Bot account",
+    email: "bot99281@tempmail.org",
+    role: "USER",
+    status: "SUSPENDED",
+    joinedDate: "2026-07-20",
+    reportsSubmitted: 0,
+  },
+  {
+    id: "usr_5",
+    name: "David Kim",
+    email: "david.kim@devsolve.com",
+    role: "MODERATOR",
+    status: "ACTIVE",
+    joinedDate: "2025-06-15",
+  },
+];
+
+export const MOCK_MODERATION_ITEMS: ModerationItem[] = [
+  {
+    id: "mod_1",
+    contentType: "DISCUSSION",
+    title: "Leaked zero-day exploit disclosure without verification",
+    authorName: "dark_coder_99",
+    reason: "Policy Violation",
+    reportedAt: "2h ago",
+    status: "PENDING",
+    details: "Post contains unverified zero-day exploit code targeting active member VDP.",
+  },
+  {
+    id: "mod_2",
+    contentType: "COMMENT",
+    title: "Abusive language in report feedback section",
+    authorName: "angry_user_44",
+    reason: "Harassment",
+    reportedAt: "5h ago",
+    status: "PENDING",
+    details: "User engaged in toxic comments towards company triage engineer.",
+  },
+  {
+    id: "mod_3",
+    contentType: "SHOWCASE",
+    title: "Promotional spam link insertion in security article",
+    authorName: "seo_spammer",
+    reason: "Spam",
+    reportedAt: "1d ago",
+    status: "PENDING",
+    details: "Article contains automated affiliate links to unverified crypto wallet.",
+  },
+];
+
+export const adminApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getAdminOverview: builder.query<AdminDashboardOverviewResponse, void>({
+      queryFn: () => {
+        return { data: MOCK_ADMIN_OVERVIEW };
+      },
+      providesTags: ["Report", "Program"],
+    }),
+    getCompanyVerifications: builder.query<CompanyVerificationItem[], void>({
+      queryFn: () => {
+        return { data: MOCK_COMPANY_VERIFICATIONS };
+      },
+    }),
+    updateCompanyVerificationStatus: builder.mutation<
+      CompanyVerificationItem,
+      { id: string; status: "APPROVED" | "REJECTED"; notes?: string }
+    >({
+      queryFn: ({ id, status, notes }) => {
+        const item = MOCK_COMPANY_VERIFICATIONS.find((c) => c.id === id);
+        if (item) {
+          item.status = status;
+          if (notes) item.notes = notes;
+        }
+        return { data: item || MOCK_COMPANY_VERIFICATIONS[0] };
+      },
+    }),
+    getReportConfirmations: builder.query<ReportConfirmationItem[], void>({
+      queryFn: () => {
+        return { data: MOCK_REPORT_CONFIRMATIONS };
+      },
+    }),
+    updateConfirmReport: builder.mutation<
+      ReportConfirmationItem,
+      { id: string; status: "CONFIRMED" | "REJECTED" | "ESCALATED" }
+    >({
+      queryFn: ({ id, status }) => {
+        const item = MOCK_REPORT_CONFIRMATIONS.find((r) => r.id === id);
+        if (item) {
+          item.status = status;
+        }
+        return { data: item || MOCK_REPORT_CONFIRMATIONS[0] };
+      },
+    }),
+    getAdminUsers: builder.query<AdminUserItem[], void>({
+      queryFn: () => {
+        return { data: MOCK_ADMIN_USERS };
+      },
+    }),
+    updateAdminUserStatus: builder.mutation<
+      AdminUserItem,
+      { id: string; status: "ACTIVE" | "SUSPENDED"; role?: "USER" | "COMPANY" | "ADMIN" | "MODERATOR" }
+    >({
+      queryFn: ({ id, status, role }) => {
+        const item = MOCK_ADMIN_USERS.find((u) => u.id === id);
+        if (item) {
+          item.status = status;
+          if (role) item.role = role;
+        }
+        return { data: item || MOCK_ADMIN_USERS[0] };
+      },
+    }),
+    getModerationItems: builder.query<ModerationItem[], void>({
+      queryFn: () => {
+        return { data: MOCK_MODERATION_ITEMS };
+      },
+    }),
+    updateModerationItem: builder.mutation<
+      ModerationItem,
+      { id: string; status: "RESOLVED" | "DISMISSED" }
+    >({
+      queryFn: ({ id, status }) => {
+        const item = MOCK_MODERATION_ITEMS.find((m) => m.id === id);
+        if (item) {
+          item.status = status;
+        }
+        return { data: item || MOCK_MODERATION_ITEMS[0] };
+      },
+    }),
+  }),
+});
+
+export const {
+  useGetAdminOverviewQuery,
+  useGetCompanyVerificationsQuery,
+  useUpdateCompanyVerificationStatusMutation,
+  useGetReportConfirmationsQuery,
+  useUpdateConfirmReportMutation,
+  useGetAdminUsersQuery,
+  useUpdateAdminUserStatusMutation,
+  useGetModerationItemsQuery,
+  useUpdateModerationItemMutation,
+} = adminApi;
