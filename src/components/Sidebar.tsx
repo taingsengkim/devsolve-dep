@@ -40,6 +40,11 @@ function SidebarContent({
   onNavItemClick,
   onSignOut,
 }: SidebarContentProps) {
+  // Derive a profile slug from the signed-in user — swap this for `user.username`
+  // once the session/auth provider exposes a real username directly.
+  const profileSlug = (user?.name || user?.email?.split("@")[0] || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
   const userRoles = (
     user?.roles ||
     (user?.role ? user.role.split(",") : ["USER"])
@@ -83,40 +88,46 @@ function SidebarContent({
         )}
       </div>
 
-      {/* User Profile Card */}
-      <div className="flex items-center gap-3 p-3 mb-3 bg-white/40 rounded-xl border border-white/30 shadow-2xs shrink-0">
-        {isPending ? (
-          <div className="flex items-center gap-3 w-full animate-pulse">
-            <div className="w-10 h-10 rounded-full bg-slate-300/60" />
-            <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-              <div className="h-3.5 w-20 rounded bg-slate-300/60" />
-              <div className="h-2.5 w-28 rounded bg-slate-300/60" />
+      {/* User Profile Card — links to the user's own public profile */}
+      <Link
+        href={profileSlug ? `/dashboard/profile/${profileSlug}` : "#"}
+        onClick={onNavItemClick}
+        className="block"
+      >
+        <div className="flex items-center gap-3 p-3 mb-3 bg-white/40 rounded-xl border border-white/30 shadow-2xs shrink-0 transition hover:bg-white/60 cursor-pointer">
+          {isPending ? (
+            <div className="flex items-center gap-3 w-full animate-pulse">
+              <div className="w-10 h-10 rounded-full bg-slate-300/60" />
+              <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                <div className="h-3.5 w-20 rounded bg-slate-300/60" />
+                <div className="h-2.5 w-28 rounded bg-slate-300/60" />
+              </div>
             </div>
-          </div>
-        ) : (
-          <>
-            <Avatar className="w-10 h-10 border-2 border-orange-400 shrink-0">
-              {user?.image && <AvatarImage src={user.image} alt={displayName} />}
-              <AvatarFallback className="bg-orange-400 text-white font-bold">
-                {getInitials(displayName)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col min-w-0">
-              <span
-                className="text-sm sm:text-base font-bold text-slate-800 truncate"
-                title={displayName}
-              >
-                {displayName}
-              </span>
-              {user?.email && (
-                <span className="text-xs text-slate-500 truncate" title={user.email}>
-                  {user.email}
+          ) : (
+            <>
+              <Avatar className="w-10 h-10 border-2 border-orange-400 shrink-0">
+                {user?.image && <AvatarImage src={user.image} alt={displayName} />}
+                <AvatarFallback className="bg-orange-400 text-white font-bold">
+                  {getInitials(displayName)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col min-w-0">
+                <span
+                  className="text-sm sm:text-base font-bold text-slate-800 truncate"
+                  title={displayName}
+                >
+                  {displayName}
                 </span>
-              )}
-            </div>
-          </>
-        )}
-      </div>
+                {user?.email && (
+                  <span className="text-xs text-slate-500 truncate" title={user.email}>
+                    {user.email}
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </Link>
 
       {/* Navigation List grouped by Category with Separator */}
       <nav className="flex-1 min-h-0 space-y-3 overflow-y-auto pr-1">
@@ -169,9 +180,8 @@ function SidebarContent({
       </nav>
 
       {/* Settings & Logout Buttons (Pinned to bottom) */}
-      <div className="mt-auto pt-2 shrink-0 space-y-1.5">
-        <Separator className="mb-2.5 bg-slate-200/60" />
-        <Link href="/" onClick={onNavItemClick} className="block w-full">
+      <div className="mt-auto pt-3 shrink-0 space-y-1.5 border-t border-slate-200/50">
+        <Link href="/dashboard/profile/settings" onClick={onNavItemClick} className="block w-full">
           <Button className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 flex items-center justify-start px-3 gap-3 shadow-2xs text-sm font-semibold">
             <Settings className="w-4 h-4" />
             <span>Settings</span>
