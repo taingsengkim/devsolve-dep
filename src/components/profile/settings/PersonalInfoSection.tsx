@@ -1,5 +1,5 @@
 import { EditProfileFormData } from "@/lib/types/profile/types";
-import { inputBase } from "./styles";
+import { Input } from "@/components/ui/input";
 
 interface PersonalInfoSectionProps {
   data: Pick<EditProfileFormData, "fullName" | "username" | "email">;
@@ -13,12 +13,12 @@ export default function PersonalInfoSection({ data, onChange }: PersonalInfoSect
         <label htmlFor="fullName" className="text-xs font-semibold uppercase tracking-wider text-slate-500">
           Full Name <span className="text-red-500">*</span>
         </label>
-        <input
+        <Input
           id="fullName"
           value={data.fullName}
           onChange={(e) => onChange("fullName", e.target.value)}
           placeholder="Enter your full name"
-          className={inputBase}
+          className="h-10.5 rounded-xl border-slate-300 bg-white text-slate-800 shadow-2xs focus-visible:ring-2 focus-visible:ring-blue-600/30"
         />
       </div>
 
@@ -26,13 +26,13 @@ export default function PersonalInfoSection({ data, onChange }: PersonalInfoSect
         <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-slate-500">
           Email <span className="text-red-500">*</span>
         </label>
-        <input
+        <Input
           id="email"
           type="email"
           value={data.email}
           onChange={(e) => onChange("email", e.target.value)}
           placeholder="you@example.com"
-          className={inputBase}
+          className="h-10.5 rounded-xl border-slate-300 bg-white text-slate-800 shadow-2xs focus-visible:ring-2 focus-visible:ring-blue-600/30"
         />
       </div>
 
@@ -40,12 +40,12 @@ export default function PersonalInfoSection({ data, onChange }: PersonalInfoSect
         <label htmlFor="username" className="text-xs font-semibold uppercase tracking-wider text-slate-500">
           Username <span className="text-red-500">*</span>
         </label>
-        <input
+        <Input
           id="username"
           value={data.username}
           onChange={(e) => onChange("username", e.target.value)}
           placeholder="your-username"
-          className={inputBase}
+          className="h-10.5 rounded-xl border-slate-300 bg-white text-slate-800 shadow-2xs focus-visible:ring-2 focus-visible:ring-blue-600/30"
         />
       </div>
     </div>

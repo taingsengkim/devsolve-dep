@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Camera, Trash2, Upload } from "lucide-react";
-import { buttonOutline } from "./styles";
+import { Button } from "@/components/ui/button";
 
 interface PhotoUploadProps {
   avatarInitials: string;
@@ -18,7 +18,7 @@ export default function PhotoUpload({ avatarUrl = "/justin.png", onUpload, onRem
   };
 
   return (
-    <div className="flex items-center gap-4 pb-5 border-b border-slate-100">
+    <div className="flex items-center gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
       <div className="relative flex-shrink-0">
         <div className="h-16 w-16 rounded-full border border-slate-200 shadow-2xs overflow-hidden relative bg-slate-100">
           <Image
@@ -38,15 +38,17 @@ export default function PhotoUpload({ avatarUrl = "/justin.png", onUpload, onRem
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <label htmlFor="avatar-upload" className={`${buttonOutline} py-1.5 px-3 text-xs cursor-pointer`}>
-          <Upload size={14} />
-          Change photo
+        <label htmlFor="avatar-upload">
+          <Button variant="outline" size="sm" type="button" className="py-1.5 px-3 text-xs cursor-pointer rounded-xl border-slate-300 gap-1.5 pointer-events-none">
+            <Upload size={14} />
+            Change photo
+          </Button>
         </label>
         {onRemove && (
-          <button type="button" onClick={onRemove} className={`${buttonOutline} py-1.5 px-3 text-xs text-slate-500 hover:text-red-600`}>
+          <Button variant="outline" size="sm" type="button" onClick={onRemove} className="py-1.5 px-3 text-xs text-slate-500 hover:text-red-600 cursor-pointer rounded-xl border-slate-300 gap-1.5">
             <Trash2 size={14} />
             Remove
-          </button>
+          </Button>
         )}
         <span className="text-xs text-slate-400">JPG, GIF or PNG. Max size 5MB.</span>
       </div>

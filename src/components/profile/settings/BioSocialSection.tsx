@@ -1,5 +1,5 @@
 import { SocialLinksForm } from "@/lib/types/profile/types";
-import { inputBase } from "./styles";
+import { Input } from "@/components/ui/input";
 
 const MAX_BIO = 500;
 
@@ -40,7 +40,7 @@ export default function BioSocialSection({
           onChange={(e) => onBioChange(e.target.value)}
           placeholder="Tell the community about yourself, your skills, and your interests..."
           rows={4}
-          className={`${inputBase} resize-none`}
+          className="w-full rounded-xl border border-slate-300 bg-white p-3 text-base md:text-sm text-slate-800 placeholder:text-slate-400 outline-none transition focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 shadow-2xs resize-none"
         />
         <div className="flex items-center justify-between text-xs font-medium text-slate-400">
           <span>Max {MAX_BIO} characters.</span>
@@ -54,7 +54,13 @@ export default function BioSocialSection({
         <label htmlFor="location" className="text-sm font-semibold text-slate-700">
           Location
         </label>
-        <input id="location" value={location} onChange={(e) => onLocationChange(e.target.value)} placeholder="City, Country" className={inputBase} />
+        <Input
+          id="location"
+          value={location}
+          onChange={(e) => onLocationChange(e.target.value)}
+          placeholder="City, Country"
+          className="h-10.5 rounded-xl border-slate-300 bg-white text-slate-800 shadow-2xs focus-visible:ring-2 focus-visible:ring-blue-600/30"
+        />
       </div>
 
       <div className="space-y-3">
@@ -66,11 +72,11 @@ export default function BioSocialSection({
           {SOCIAL_FIELDS.map((field) => (
             <div key={field.key} className="space-y-1">
               <label className="text-xs font-medium text-slate-500">{field.label}</label>
-              <input
+              <Input
                 value={socialLinks[field.key]}
                 onChange={(e) => onSocialLinkChange(field.key, e.target.value)}
                 placeholder={field.placeholder}
-                className={inputBase}
+                className="h-10.5 rounded-xl border-slate-300 bg-white text-slate-800 shadow-2xs focus-visible:ring-2 focus-visible:ring-blue-600/30"
               />
             </div>
           ))}
@@ -78,4 +84,4 @@ export default function BioSocialSection({
       </div>
     </div>
   );
-}
+}

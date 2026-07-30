@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { inputBase } from "./styles";
+import { Input } from "@/components/ui/input";
 
 export interface PasswordFormState {
   currentPassword: string;
@@ -36,18 +36,18 @@ function PasswordField({
         {label}
       </label>
       <div className="relative">
-        <input
+        <Input
           id={id}
           type={visible ? "text" : "password"}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className={`${inputBase} pr-9 text-sm`}
+          className="h-10.5 rounded-xl border-slate-300 bg-white pr-9 text-slate-800 shadow-2xs focus-visible:ring-2 focus-visible:ring-blue-600/30"
         />
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition cursor-pointer"
           aria-label={visible ? "Hide password" : "Show password"}
         >
           {visible ? <EyeOff size={14} /> : <Eye size={14} />}
