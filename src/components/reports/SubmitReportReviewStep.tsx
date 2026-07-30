@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { UseFormRegister, UseFormWatch } from "react-hook-form";
 import { Send, Lock, AlertTriangle, Check, CheckCircle2, BookmarkCheck } from "lucide-react";
 import { SubmitReportFormValues } from "@/lib/validations/report";
@@ -72,9 +73,20 @@ export function SubmitReportReviewStep({
         {/* Dynamic Program Header inside Review Box */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl ${selectedProgram?.logoBgColor || "bg-blue-600"} flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-xs`}>
-              {companyInitials}
-            </div>
+            {selectedProgram?.logoUrl ? (
+              <Image
+                src={selectedProgram.logoUrl}
+                alt={selectedProgram.companyName || "Company logo"}
+                width={40}
+                height={40}
+                unoptimized
+                className="w-10 h-10 rounded-xl object-contain shrink-0 bg-white p-1 shadow-xs border border-slate-200 dark:border-slate-800"
+              />
+            ) : (
+              <div className={`w-10 h-10 rounded-xl ${selectedProgram?.logoBgColor || "bg-blue-600"} flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-xs`}>
+                {companyInitials}
+              </div>
+            )}
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 {selectedProgram?.title || "Security Program"}
