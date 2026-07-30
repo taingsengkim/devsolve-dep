@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -36,7 +37,8 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
                 alt={program.companyName}
                 width={80}
                 height={80}
-                className="w-20 h-20 rounded-2xl object-contain shrink-0 bg-white p-1"
+                unoptimized
+                className="w-15 h-15 rounded-2xl object-contain shrink-0 bg-white p-1"
               />
             ) : (
               <div
@@ -56,11 +58,21 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
               </Link>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
                 {/* Type Badge in Gray */}
-                <Badge
+                {/* <Badge
                   variant="outline"
                   className="bg-slate-100 text-slate-600 border-slate-200 font-medium text-xs"
                 >
                   {program.type}
+                </Badge> */}
+                <Badge
+                variant="outline"
+                className={`font-medium text-xs ${
+                  program.type === "Bounty"
+                    ? "bg-blue-100 text-blue-700 border-blue-200"
+                    : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                }`}
+              >
+                {program.type}
                 </Badge>
 
                 {/* Status indicator in Gray */}
