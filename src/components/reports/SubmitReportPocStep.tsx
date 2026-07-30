@@ -1,14 +1,16 @@
 "use client";
 
 import React from "react";
-import { UseFormRegister, FieldErrors } from "react-hook-form";
+import { UseFormRegister, FieldErrors, Control, Controller } from "react-hook-form";
 import { Terminal, AlertTriangle, Plus, X } from "lucide-react";
 import { SubmitReportFormValues } from "@/lib/validations/report";
 import { FileUploadDropzone, AttachedFile } from "@/components/reports/FileUploadDropzone";
 import { Input } from "@/components/ui/input";
+import { PocCodeEditor } from "@/components/reports/PocCodeEditor";
 
 interface SubmitReportPocStepProps {
   register: UseFormRegister<SubmitReportFormValues>;
+  control: Control<SubmitReportFormValues>;
   errors: FieldErrors<SubmitReportFormValues>;
   attachedFiles: AttachedFile[];
   externalLinks: string[];
@@ -21,6 +23,7 @@ interface SubmitReportPocStepProps {
 
 export function SubmitReportPocStep({
   register,
+  control,
   errors,
   attachedFiles,
   externalLinks,
@@ -63,19 +66,16 @@ export function SubmitReportPocStep({
           </label>
           <span className="text-xs text-slate-500 font-medium">payload, curl command, Burp request, or script</span>
         </div>
-        <textarea
-          id="pocPayload"
-          rows={6}
-          placeholder={`# Example — HTTP request demonstrating the vulnerability
-GET /api/v1/invoices/1337 HTTP/1.1
-Host: api.example.com
-Authorization: Bearer <your_token>
-
-# Replace 1337 with another user's invoice ID
-# Expected: 403 Forbidden
-# Actual: 200 OK with victim billing data`}
-          {...register("pocPayload")}
-          className="w-full p-4 rounded-xl bg-slate-950 text-slate-100 border border-slate-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-600 leading-relaxed"
+        <Controller
+          name="pocPayload"
+          control={control}
+          render={({ field }) => (
+            <PocCodeEditor
+              value={field.value || ""}
+              onChange={(val) => field.onChange(val || "")}
+              error={!!errors.pocPayload}
+            />
+          )}
         />
       </div>
 

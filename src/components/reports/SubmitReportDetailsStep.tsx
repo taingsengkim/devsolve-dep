@@ -1,13 +1,15 @@
 "use client";
 
 import React from "react";
-import { UseFormRegister, FieldErrors } from "react-hook-form";
+import { UseFormRegister, FieldErrors, Control, Controller } from "react-hook-form";
 import { FileText, Plus, Trash2 } from "lucide-react";
 import { SubmitReportFormValues } from "@/lib/validations/report";
 import { PocTemplateToolbar } from "@/components/reports/PocTemplateToolbar";
+import { MarkdownEditor } from "@/components/reports/MarkdownEditor";
 
 interface SubmitReportDetailsStepProps {
   register: UseFormRegister<SubmitReportFormValues>;
+  control: Control<SubmitReportFormValues>;
   errors: FieldErrors<SubmitReportFormValues>;
   reproduceStepsList: string[];
   onAddReproduceStep: () => void;
@@ -18,6 +20,7 @@ interface SubmitReportDetailsStepProps {
 
 export function SubmitReportDetailsStep({
   register,
+  control,
   errors,
   reproduceStepsList,
   onAddReproduceStep,
@@ -52,12 +55,16 @@ export function SubmitReportDetailsStep({
 
         <PocTemplateToolbar onInsertTemplate={onInsertTemplate} />
 
-        <textarea
-          id="summaryPoC"
-          rows={5}
-          placeholder="Describe the root cause, affected parameters, and overall architecture vulnerability..."
-          {...register("summaryPoC")}
-          className="w-full p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 leading-relaxed font-mono"
+        <Controller
+          name="summaryPoC"
+          control={control}
+          render={({ field }) => (
+            <MarkdownEditor
+              value={field.value || ""}
+              onChange={(val) => field.onChange(val || "")}
+              error={!!errors.summaryPoC}
+            />
+          )}
         />
         {errors.summaryPoC && (
           <p className="text-xs text-red-500 font-medium">{errors.summaryPoC.message}</p>

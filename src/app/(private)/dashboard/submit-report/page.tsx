@@ -25,6 +25,7 @@ function SubmitReportContent() {
     handleSubmit,
     setValue,
     watch,
+    control,
     errors,
     currentStep,
     completedSteps,
@@ -132,6 +133,7 @@ function SubmitReportContent() {
                 {currentStep === 3 && (
                   <SubmitReportDetailsStep
                     register={register}
+                    control={control}
                     errors={errors}
                     reproduceStepsList={reproduceStepsList}
                     onAddReproduceStep={handleAddReproduceStep}
@@ -145,6 +147,7 @@ function SubmitReportContent() {
                 {currentStep === 4 && (
                   <SubmitReportPocStep
                     register={register}
+                    control={control}
                     errors={errors}
                     attachedFiles={attachedFiles}
                     externalLinks={externalLinks}
