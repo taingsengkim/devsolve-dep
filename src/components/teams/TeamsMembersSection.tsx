@@ -9,7 +9,7 @@ import type {
   TeamCounts,
   TeamMember,
 } from "@/components/teams/types";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -66,7 +66,7 @@ export function TeamsMembersSection({
           <Badge variant="outline" className="border-emerald-200 bg-white text-emerald-700">
             {counts.active} active
           </Badge>
-          <Badge variant="outline" className="border-amber-200 bg-white text-amber-700">
+          <Badge variant="outline" className="border-blue-200 bg-white text-blue-700">
             {counts.pending} pending
           </Badge>
         </div>
@@ -99,7 +99,7 @@ export function TeamsMembersSection({
                 className={cn(
                   "rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors",
                   statusFilter === filter
-                    ? "bg-slate-900 font-semibold text-white shadow-2xs"
+                    ? "bg-slate-800 font-semibold text-white shadow-2xs"
                     : "text-slate-600 hover:bg-slate-100/60 hover:text-slate-900"
                 )}
               >
@@ -139,12 +139,18 @@ export function TeamsMembersSection({
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: index * 0.04 }}
-                    className="group transition-colors hover:bg-slate-50/70"
+                    whileHover={{ y: -1 }}
+                    className="group transition-all duration-300 hover:bg-[radial-gradient(circle_at_center,rgba(15,23,42,0.02)_1px,transparent_1px)] hover:bg-[length:4px_4px]"
                   >
                     <td className="px-4 py-4 sm:px-6">
                       <div className="flex items-center gap-3">
-                        <Avatar size="lg" className="rounded-xl border border-slate-200 bg-slate-100 text-slate-700">
-                          <AvatarFallback className="rounded-xl bg-slate-100 font-semibold text-slate-700">
+                        <Avatar size="lg" className="rounded-xl border border-slate-200 bg-slate-100 text-slate-700 transition-colors duration-300 group-hover:border-slate-300 group-hover:bg-white">
+                          <AvatarImage
+                            src={member.avatar}
+                            alt={member.name}
+                            className="rounded-xl"
+                          />
+                          <AvatarFallback className="rounded-xl bg-slate-100 font-semibold text-slate-700 transition-colors duration-300 group-hover:bg-white">
                             {getMemberInitials(member.name)}
                           </AvatarFallback>
                         </Avatar>
@@ -166,7 +172,7 @@ export function TeamsMembersSection({
                           member.role === "Manager" &&
                             "bg-blue-600 text-white hover:bg-blue-700",
                           member.role === "Member" &&
-                            "bg-slate-900 text-white hover:bg-slate-800"
+                            "bg-slate-800 text-white hover:bg-slate-900"
                         )}
                       >
                         {member.role}
@@ -179,7 +185,7 @@ export function TeamsMembersSection({
                           "rounded-lg px-2.5 py-1 text-sm font-semibold",
                           member.status === "Active"
                             ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                            : "border-amber-200 bg-amber-50 text-amber-700"
+                            : "border-blue-200 bg-blue-50 text-blue-700"
                         )}
                       >
                         {member.status}
@@ -192,7 +198,7 @@ export function TeamsMembersSection({
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        className="rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600"
+                        className="rounded-lg text-slate-500 transition-all duration-300 hover:bg-blue-50 hover:text-blue-600 group-hover:border group-hover:border-slate-200 group-hover:bg-white"
                         aria-label={`More actions for ${member.name}`}
                       >
                         <MoreHorizontal />

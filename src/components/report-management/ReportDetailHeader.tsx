@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import type { ReportManagementDetail } from "@/components/report-management/types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -63,14 +64,30 @@ export function ReportDetailHeader({ detail }: ReportDetailHeaderProps) {
               </Badge>
             </div>
 
-            <div className="flex flex-col gap-1">
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-                {detail.title}
-              </h1>
-              <p className="max-w-3xl text-base text-slate-500">
-                Full vulnerability submission detail, target context, and internal
-                assessment notes for Report #{detail.reportId}.
-              </p>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-3">
+                <Avatar
+                  size="lg"
+                  className="border border-slate-200 bg-white text-slate-700 shadow-xs"
+                >
+                  {detail.programLogo ? (
+                    <AvatarImage src={detail.programLogo} alt={`${detail.title} logo`} />
+                  ) : null}
+                  <AvatarFallback className="bg-slate-100 text-sm font-semibold text-slate-700">
+                    TT
+                  </AvatarFallback>
+                </Avatar>
+
+                <div className="flex flex-col gap-1">
+                  <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                    {detail.title}
+                  </h1>
+                  <p className="max-w-3xl text-base text-slate-500">
+                    Full vulnerability submission detail, target context, and internal
+                    assessment notes for Report #{detail.reportId}.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 

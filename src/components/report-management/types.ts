@@ -5,12 +5,14 @@ export type ReportSeverity = "Critical" | "High" | "Medium" | "Low";
 export type ManagedReport = {
   id: number;
   title: string;
+  programLogo?: string;
   author: string;
   authorEmail: string;
   authorInitials: string;
   type: ReportType;
   status: ReportStatus;
   severity: ReportSeverity;
+  submittedAt: string;
   summary: string;
   assets: string[];
 };
@@ -19,6 +21,7 @@ export type ReportManagementDetail = {
   id: number;
   reportId: string;
   title: string;
+  programLogo?: string;
   submitter: string;
   submitterInitials: string;
   type: ReportType;

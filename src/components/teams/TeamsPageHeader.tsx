@@ -22,7 +22,7 @@ export function TeamsPageHeader({ counts }: TeamsPageHeaderProps) {
           <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
             {counts.active} active
           </Badge>
-          <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+          <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
             {counts.pending} pending
           </Badge>
         </div>
@@ -43,7 +43,7 @@ export function TeamsPageHeader({ counts }: TeamsPageHeaderProps) {
           href="/dashboard/teams/invite-member"
           className={cn(
             buttonVariants({ variant: "default" }),
-            "h-11 rounded-xl px-4 shadow-xs"
+            "h-11 rounded-xl bg-blue-600 px-4 text-white shadow-xs hover:bg-blue-700"
           )}
         >
           <Plus data-icon="inline-start" />
