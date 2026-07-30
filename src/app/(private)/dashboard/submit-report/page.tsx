@@ -1,34 +1,56 @@
 "use client";
 
 import React, { Suspense } from "react";
-import { Controller } from "react-hook-form";
-import { motion } from "motion/react";
-import { AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "motion/react";
+import { ArrowLeft } from "lucide-react";
 
-import { SubmitReportHeader } from "@/components/reports/SubmitReportHeader";
-import { SeveritySelector, SeverityValue } from "@/components/reports/SeveritySelector";
-import { ReportSuccessModal } from "@/components/reports/ReportSuccessModal";
-import { SubmitReportTargetSection } from "@/components/reports/SubmitReportTargetSection";
-import { SubmitReportDetailsSection } from "@/components/reports/SubmitReportDetailsSection";
-import { SubmitReportAttachmentsSection } from "@/components/reports/SubmitReportAttachmentsSection";
-import { SubmitReportActions } from "@/components/reports/SubmitReportActions";
 import { useSubmitReportForm } from "@/components/reports/hooks/useSubmitReportForm";
+import { SubmitReportProgressNav } from "@/components/reports/SubmitReportProgressNav";
+import { SubmitReportProgramCard } from "@/components/reports/SubmitReportProgramCard";
+import { SubmitReportSeverityCard } from "@/components/reports/SubmitReportSeverityCard";
+import { SubmitReportQuickTips } from "@/components/reports/SubmitReportQuickTips";
+import { SubmitReportFooterNav } from "@/components/reports/SubmitReportFooterNav";
+
+import { SubmitReportTargetSection } from "@/components/reports/SubmitReportTargetSection";
+import { SubmitReportClassificationSection } from "@/components/reports/SubmitReportClassificationSection";
+import { SubmitReportDetailsStep } from "@/components/reports/SubmitReportDetailsStep";
+import { SubmitReportPocStep } from "@/components/reports/SubmitReportPocStep";
+import { SubmitReportReviewStep } from "@/components/reports/SubmitReportReviewStep";
+import { ReportSuccessModal } from "@/components/reports/ReportSuccessModal";
 
 function SubmitReportContent() {
   const {
     register,
     handleSubmit,
-    control,
-    formState: { errors },
+    setValue,
+    watch,
+    errors,
+    currentStep,
+    completedSteps,
+    selectedSeverity,
     programs,
     isProgramsLoading,
     isSubmitting,
     attachedFiles,
+    externalLinks,
+    reproduceStepsList,
     submitError,
+    isDraftSaved,
     successModalData,
+    nextStep,
+    prevStep,
+    goToStep,
     handleAddFiles,
     handleRemoveFile,
+    handleAddExternalLink,
+    handleRemoveExternalLink,
+    handleUpdateExternalLink,
+    handleAddReproduceStep,
+    handleRemoveReproduceStep,
+    handleUpdateReproduceStep,
     handleInsertTemplate,
+    handleSaveDraft,
     handleResetForm,
     onSubmit,
   } = useSubmitReportForm();
@@ -38,66 +60,133 @@ function SubmitReportContent() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="space-y-6 w-full max-w-5xl mx-auto pb-16"
+      className="space-y-8 w-full pb-12"
     >
-      {/* Header */}
-      <SubmitReportHeader />
+      {/* Back to Programs Navigation */}
+      <nav aria-label="Back Navigation">
+        <Link
+          href="/dashboard/programs"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Programs</span>
+        </Link>
+      </nav>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        {/* SECTION 1: TARGET PROGRAM & SCOPE */}
-        <SubmitReportTargetSection
-          register={register}
-          errors={errors}
-          programs={programs}
-          isLoading={isProgramsLoading}
-        />
+      {/* Main 2-Column Responsive Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        {/* Left Column (2/3 width - Step Content Area) */}
+        <div className="lg:col-span-2 space-y-8">
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentStep}
+                initial={{ opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -12 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-xs"
+              >
+                {/* STEP 1: TARGET & SCOPE */}
+                {currentStep === 1 && (
+                  <SubmitReportTargetSection
+                    register={register}
+                    errors={errors}
+                    setValue={setValue}
+                    watch={watch}
+                    programs={programs}
+                    isLoading={isProgramsLoading}
+                  />
+                )}
 
-        {/* SECTION 2: SEVERITY SELECTION */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <AlertTriangle className="w-5 h-5 text-amber-500" />
-            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-              2. Vulnerability Severity Rating
-            </h2>
-          </div>
+                {/* STEP 2: VULNERABILITY CLASSIFICATION */}
+                {currentStep === 2 && (
+                  <SubmitReportClassificationSection
+                    register={register}
+                    errors={errors}
+                    setValue={setValue}
+                    watch={watch}
+                  />
+                )}
 
-          <Controller
-            name="severity"
-            control={control}
-            render={({ field }) => (
-              <SeveritySelector
-                value={field.value as SeverityValue}
-                onChange={(val) => field.onChange(val)}
-              />
-            )}
-          />
+                {/* STEP 3: REPORT DETAILS */}
+                {currentStep === 3 && (
+                  <SubmitReportDetailsStep
+                    register={register}
+                    errors={errors}
+                    reproduceStepsList={reproduceStepsList}
+                    onAddReproduceStep={handleAddReproduceStep}
+                    onRemoveReproduceStep={handleRemoveReproduceStep}
+                    onUpdateReproduceStep={handleUpdateReproduceStep}
+                    onInsertTemplate={handleInsertTemplate}
+                  />
+                )}
+
+                {/* STEP 4: PROOF OF CONCEPT */}
+                {currentStep === 4 && (
+                  <SubmitReportPocStep
+                    register={register}
+                    errors={errors}
+                    attachedFiles={attachedFiles}
+                    externalLinks={externalLinks}
+                    onAddFiles={handleAddFiles}
+                    onRemoveFile={handleRemoveFile}
+                    onAddExternalLink={handleAddExternalLink}
+                    onRemoveExternalLink={handleRemoveExternalLink}
+                    onUpdateExternalLink={handleUpdateExternalLink}
+                  />
+                )}
+
+                {/* STEP 5: REVIEW & SUBMIT */}
+                {currentStep === 5 && (
+                  <SubmitReportReviewStep
+                    register={register}
+                    watch={watch}
+                    attachedFiles={attachedFiles}
+                    reproduceStepsList={reproduceStepsList}
+                    isSubmitting={isSubmitting}
+                    submitError={submitError}
+                    isDraftSaved={isDraftSaved}
+                    onGoToStep={goToStep}
+                    onSaveDraft={handleSaveDraft}
+                    onSubmitReport={handleSubmit(onSubmit)}
+                  />
+                )}
+
+                {/* Step Bottom Footer Navigation Bar (For Steps 1-4) */}
+                {currentStep < 5 && (
+                  <SubmitReportFooterNav
+                    currentStep={currentStep}
+                    onPrevStep={prevStep}
+                    onNextStep={nextStep}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </form>
         </div>
 
-        {/* SECTION 3: REPORT DETAILS & POC */}
-        <SubmitReportDetailsSection
-          register={register}
-          errors={errors}
-          onInsertTemplate={handleInsertTemplate}
-        />
+        {/* Right Column (1/3 width - Sticky Sidebar) */}
+        <div className="space-y-6 lg:sticky lg:top-8">
+          {/* 1. Progress Step Tracker */}
+          <SubmitReportProgressNav
+            currentStep={currentStep}
+            completedSteps={completedSteps}
+            onSelectStep={goToStep}
+          />
 
-        {/* SECTION 4: FILE ATTACHMENTS & COMPLIANCE */}
-        <SubmitReportAttachmentsSection
-          register={register}
-          errors={errors}
-          attachedFiles={attachedFiles}
-          onAddFiles={handleAddFiles}
-          onRemoveFile={handleRemoveFile}
-        />
+          {/* 2. Program Details Card */}
+          <SubmitReportProgramCard />
 
-        {/* FORM ACTIONS */}
-        <SubmitReportActions
-          isSubmitting={isSubmitting}
-          submitError={submitError}
-          onReset={handleResetForm}
-        />
-      </form>
+          {/* 3. Dynamic Severity Breakdown Card */}
+          <SubmitReportSeverityCard severity={selectedSeverity as "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO"} />
 
-      {/* Success Modal Dialog */}
+          {/* 4. Quick Tips Card */}
+          <SubmitReportQuickTips />
+        </div>
+      </div>
+
+      {/* Success Modal */}
       <ReportSuccessModal
         isOpen={successModalData.isOpen}
         reportId={successModalData.reportId}
@@ -113,8 +202,8 @@ export default function SubmitReportPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-8 text-center text-slate-500 animate-pulse">
-          Loading submit report form...
+        <div className="p-12 text-center text-slate-500 animate-pulse font-medium">
+          Loading vulnerability submission wizard...
         </div>
       }
     >

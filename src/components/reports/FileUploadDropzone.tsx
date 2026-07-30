@@ -12,16 +12,19 @@ export interface AttachedFile {
 }
 
 interface FileUploadDropzoneProps {
-  files: AttachedFile[];
+  files?: AttachedFile[];
+  attachedFiles?: AttachedFile[];
   onAddFiles: (newFiles: AttachedFile[]) => void;
   onRemoveFile: (fileId: string) => void;
 }
 
 export const FileUploadDropzone: React.FC<FileUploadDropzoneProps> = ({
   files,
+  attachedFiles,
   onAddFiles,
   onRemoveFile,
 }) => {
+  const activeFiles = files || attachedFiles || [];
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,13 +99,13 @@ export const FileUploadDropzone: React.FC<FileUploadDropzoneProps> = ({
       </div>
 
       {/* Uploaded File List */}
-      {files.length > 0 && (
+      {activeFiles.length > 0 && (
         <div className="space-y-2 mt-3">
           <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-            Attached Files ({files.length})
+            Attached Files ({activeFiles.length})
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {files.map((file) => (
+            {activeFiles.map((file) => (
               <div
                 key={file.id}
                 className="flex items-center justify-between p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300"

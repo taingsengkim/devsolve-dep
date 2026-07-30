@@ -31,15 +31,15 @@ export function SubmitReportAttachmentsSection({
         <label className="flex items-start gap-3 cursor-pointer group select-none">
           <input
             type="checkbox"
-            {...register("agreeTerms")}
+            {...register("checklistAgreeTerms")}
             className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
           />
           <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-normal">
             I declare that this security report is submitted in good faith following the target program policy, without destructive testing, unauthorized data retention, or public disclosure prior to resolution.
           </span>
         </label>
-        {errors.agreeTerms && (
-          <p className="text-xs text-red-500 font-medium pl-7">{errors.agreeTerms.message}</p>
+        {errors.checklistAgreeTerms && (
+          <p className="text-xs text-red-500 font-medium pl-7">{errors.checklistAgreeTerms.message}</p>
         )}
       </div>
     </div>
