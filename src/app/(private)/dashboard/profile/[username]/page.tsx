@@ -1,7 +1,5 @@
 import { Suspense } from "react";
 import { headers } from "next/headers";
-import ProfileHeader from "@/components/profile/ProfileHeader";
-import ProfileBio from "@/components/profile/ProfileBio";
 import ProfileTabsContainer from "@/components/profile/ProfileTabsContainer";
 import { auth } from "@/lib/auth/auth";
 import {
@@ -61,24 +59,16 @@ export default async function ProfilePage(_props: ProfilePageProps) {
   const { profile, stats, severity, badges, hacktivity, communityPosts, thanks } = await getProfileData();
 
   return (
-    <div>
-      <div className="rounded-2xl bg-white shadow-sm">
-        <ProfileHeader profile={profile} />
-        <div className="px-1 pb-5">
-          <ProfileBio profile={profile} />
-        </div>
-      </div>
-
-      <Suspense fallback={null}>
-        <ProfileTabsContainer
-          stats={stats}
-          severity={severity}
-          badges={badges}
-          hacktivity={hacktivity}
-          communityPosts={communityPosts}
-          thanks={thanks}
-        />
-      </Suspense>
-    </div>
+    <Suspense fallback={null}>
+      <ProfileTabsContainer
+        profile={profile}
+        stats={stats}
+        severity={severity}
+        badges={badges}
+        hacktivity={hacktivity}
+        communityPosts={communityPosts}
+        thanks={thanks}
+      />
+    </Suspense>
   );
 }

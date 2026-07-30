@@ -1,15 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Settings2, ShieldCheck, User2 } from "lucide-react";
-import {
-  EditProfileFormData,
-  NotificationChannelPrefs,
-  NotificationKey,
-  AccountStatus,
-  SocialLinksForm,
-} from "@/lib/types/profile/types";
+import { motion } from "motion/react";
+import { User2, Globe, Lock, Bell } from "lucide-react";
+import { EditProfileFormData, AccountStatus } from "@/lib/types/profile/types";
+import { useEditProfileForm } from "@/hooks/profile/useEditProfileForm";
+import SettingsNav from "./SettingsNav";
 import PhotoUpload from "./PhotoUpload";
 import PersonalInfoSection from "./PersonalInfoSection";
 import BioSocialSection from "./BioSocialSection";
@@ -18,109 +14,87 @@ import TwoFactorSection from "./TwoFactorSection";
 import NotificationPreferencesSection from "./NotificationPreferencesSection";
 import SettingsSectionCard from "./SettingsSectionCard";
 import FormActions from "./FormActions";
-import ProfilePreviewCard from "./sidebar/ProfilePreviewCard";
-import AccountStatusCard from "./sidebar/AccountStatusCard";
-import SecurityTipsCard from "./sidebar/SecurityTipsCard";
-import QuickLinksCard from "./sidebar/QuickLinksCard";
-import KeepItUpBanner from "./sidebar/KeepItUpBanner";
-import { card } from "./styles";
 
 interface EditProfileFormProps {
   initialData: EditProfileFormData;
   accountStatus: AccountStatus;
-  // TODO: replace with real mutation, e.g. useUpdateProfileMutation() from profileApi
   onSave?: (data: EditProfileFormData & { passwords: PasswordFormState }) => Promise<void> | void;
 }
 
 export default function EditProfileForm({ initialData, accountStatus, onSave }: EditProfileFormProps) {
-  const router = useRouter();
-  const [form, setForm] = useState<EditProfileFormData>(initialData);
-  const [passwords, setPasswords] = useState<PasswordFormState>({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-  const [isSaving, setIsSaving] = useState(false);
-
-  const updateField = (field: "fullName" | "username" | "email", value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const updateSocialLink = (key: keyof SocialLinksForm, value: string) => {
-    setForm((prev) => ({ ...prev, socialLinks: { ...prev.socialLinks, [key]: value } }));
-  };
-
-  const updateNotification = (key: NotificationKey, channel: keyof NotificationChannelPrefs, value: boolean) => {
-    setForm((prev) => ({
-      ...prev,
-      notifications: {
-        ...prev.notifications,
-        [key]: { ...prev.notifications[key], [channel]: value },
-      },
-    }));
-  };
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      await onSave?.({ ...form, passwords });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleCancel = () => router.back();
-  const handlePreview = () => router.push(`/dashboard/profile/${form.username}`);
+  const [activeSection, setActiveSection] = useState("personal-info");
+  const {
+    form,
+    setForm,
+    passwords,
+    setPasswords,
+    isSaving,
+    updateField,
+    updateSocialLink,
+    updateNotification,
+    handleSave,
+    handleCancel,
+    handlePreview,
+  } = useEditProfileForm({ initialData, onSave });
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-      <div className="space-y-6">
-        <div className={`${card} p-6`}>
-          <PhotoUpload avatarInitials={form.avatarInitials} />
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="flex flex-col md:flex-row gap-8 items-start"
+    >
+      <div className="md:sticky md:top-24 self-start">
+        <SettingsNav activeId={activeSection} onSelect={setActiveSection} />
+      </div>
+
+      <div className="flex-1 space-y-6 w-full min-w-0">
+        <div id="personal-info">
+          <SettingsSectionCard icon={<User2 size={18} className="text-slate-500" />} title="Personal Information">
+            <PhotoUpload avatarInitials={form.avatarInitials} avatarUrl="/justin.png" />
+            <PersonalInfoSection
+              data={{ fullName: form.fullName, username: form.username, email: form.email }}
+              onChange={updateField}
+            />
+          </SettingsSectionCard>
         </div>
 
-        <SettingsSectionCard icon={<User2 size={18} className="text-[#4d4d4d]" />} title="Personal information">
-          <PersonalInfoSection
-            data={{ fullName: form.fullName, username: form.username, email: form.email, accountType: form.accountType }}
-            onChange={updateField}
-          />
-        </SettingsSectionCard>
+        <div id="bio-social">
+          <SettingsSectionCard icon={<Globe size={18} className="text-slate-500" />} title="Bio & Social Links">
+            <BioSocialSection
+              bio={form.bio}
+              location={form.location}
+              socialLinks={form.socialLinks}
+              onBioChange={(v) => setForm((prev) => ({ ...prev, bio: v }))}
+              onLocationChange={(v) => setForm((prev) => ({ ...prev, location: v }))}
+              onSocialLinkChange={updateSocialLink}
+            />
+          </SettingsSectionCard>
+        </div>
 
-        <SettingsSectionCard icon={<Settings2 size={18} className="text-[#4d4d4d]" />} title="Bio & social links">
-          <BioSocialSection
-            bio={form.bio}
-            location={form.location}
-            socialLinks={form.socialLinks}
-            onBioChange={(v) => setForm((prev) => ({ ...prev, bio: v }))}
-            onLocationChange={(v) => setForm((prev) => ({ ...prev, location: v }))}
-            onSocialLinkChange={updateSocialLink}
-          />
-        </SettingsSectionCard>
-
-        <SettingsSectionCard icon={<ShieldCheck size={18} className="text-[#4d4d4d]" />} title="Security & preferences">
-          <div className="space-y-8">
+        <div id="password">
+          <SettingsSectionCard icon={<Lock size={18} className="text-slate-500" />} title="Change Password">
             <PasswordSection
               value={passwords}
               onChange={(field, value) => setPasswords((prev) => ({ ...prev, [field]: value }))}
             />
-            <TwoFactorSection
-              enabled={form.twoFactorEnabled}
-              onToggle={(enabled) => setForm((prev) => ({ ...prev, twoFactorEnabled: enabled }))}
-            />
-            <NotificationPreferencesSection preferences={form.notifications} onChange={updateNotification} />
-          </div>
-        </SettingsSectionCard>
+          </SettingsSectionCard>
+        </div>
+
+        <div id="preferences">
+          <SettingsSectionCard icon={<Bell size={18} className="text-slate-500" />} title="Preferences & Security">
+            <div className="space-y-8">
+              <TwoFactorSection
+                enabled={form.twoFactorEnabled}
+                onToggle={(enabled) => setForm((prev) => ({ ...prev, twoFactorEnabled: enabled }))}
+              />
+              <NotificationPreferencesSection preferences={form.notifications} onChange={updateNotification} />
+            </div>
+          </SettingsSectionCard>
+        </div>
 
         <FormActions onCancel={handleCancel} onPreview={handlePreview} onSave={handleSave} isSaving={isSaving} />
       </div>
-
-      <div className="space-y-6">
-        <ProfilePreviewCard data={form} />
-        <AccountStatusCard status={accountStatus} />
-        <SecurityTipsCard />
-        <QuickLinksCard username={form.username} />
-        <KeepItUpBanner percentile={12} />
-      </div>
-    </div>
+    </motion.div>
   );
 }

@@ -12,11 +12,11 @@ interface BioSocialSectionProps {
   onSocialLinkChange: (key: keyof SocialLinksForm, value: string) => void;
 }
 
-const SOCIAL_FIELDS: { key: keyof SocialLinksForm; placeholder: string }[] = [
-  { key: "github", placeholder: "https://github.com/username" },
-  { key: "twitter", placeholder: "https://twitter.com/username" },
-  { key: "linkedin", placeholder: "https://linkedin.com/in/username" },
-  { key: "website", placeholder: "https://yoursite.dev" },
+const SOCIAL_FIELDS: { key: keyof SocialLinksForm; placeholder: string; label: string }[] = [
+  { key: "github", placeholder: "https://github.com/username", label: "GitHub" },
+  { key: "twitter", placeholder: "https://twitter.com/username", label: "X (Twitter)" },
+  { key: "linkedin", placeholder: "https://linkedin.com/in/username", label: "LinkedIn" },
+  { key: "website", placeholder: "https://yoursite.dev", label: "Website" },
 ];
 
 export default function BioSocialSection({
@@ -30,7 +30,7 @@ export default function BioSocialSection({
   return (
     <div className="space-y-5">
       <div className="space-y-1.5">
-        <label htmlFor="bio" className="text-sm font-medium text-[#171717]">
+        <label htmlFor="bio" className="text-sm font-semibold text-slate-700">
           Bio
         </label>
         <textarea
@@ -42,7 +42,7 @@ export default function BioSocialSection({
           rows={4}
           className={`${inputBase} resize-none`}
         />
-        <div className="flex items-center justify-between text-sm text-[#4d4d4d]">
+        <div className="flex items-center justify-between text-xs font-medium text-slate-400">
           <span>Max {MAX_BIO} characters.</span>
           <span>
             {bio.length}/{MAX_BIO}
@@ -51,26 +51,28 @@ export default function BioSocialSection({
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor="location" className="text-sm font-medium text-[#171717]">
+        <label htmlFor="location" className="text-sm font-semibold text-slate-700">
           Location
         </label>
         <input id="location" value={location} onChange={(e) => onLocationChange(e.target.value)} placeholder="City, Country" className={inputBase} />
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         <div>
-          <span className="text-sm font-medium text-[#171717]">Social links</span>
-          <p className="text-sm text-[#4d4d4d]">Connect your social accounts to build your community presence.</p>
+          <span className="text-sm font-semibold text-slate-700">Social links</span>
+          <p className="text-xs font-medium text-slate-500">Connect your social accounts to build your community presence.</p>
         </div>
-        <div className="space-y-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {SOCIAL_FIELDS.map((field) => (
-            <input
-              key={field.key}
-              value={socialLinks[field.key]}
-              onChange={(e) => onSocialLinkChange(field.key, e.target.value)}
-              placeholder={field.placeholder}
-              className={inputBase}
-            />
+            <div key={field.key} className="space-y-1">
+              <label className="text-xs font-medium text-slate-500">{field.label}</label>
+              <input
+                value={socialLinks[field.key]}
+                onChange={(e) => onSocialLinkChange(field.key, e.target.value)}
+                placeholder={field.placeholder}
+                className={inputBase}
+              />
+            </div>
           ))}
         </div>
       </div>

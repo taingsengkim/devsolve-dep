@@ -182,9 +182,6 @@ function SidebarContent({
       {/* Settings & Logout Buttons (Pinned to bottom) */}
       <div className="mt-auto pt-3 shrink-0 space-y-1.5 border-t border-slate-200/50">
         <Link href="/dashboard/profile/settings" onClick={onNavItemClick} className="block w-full">
-      <div className="mt-auto pt-2 shrink-0 space-y-1.5">
-        <Separator className="mb-2.5 bg-slate-200/60" />
-        <Link href="/" onClick={onNavItemClick} className="block w-full">
           <Button className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 flex items-center justify-start px-3 gap-3 shadow-2xs text-sm font-semibold">
             <Settings className="w-4 h-4" />
             <span>Settings</span>

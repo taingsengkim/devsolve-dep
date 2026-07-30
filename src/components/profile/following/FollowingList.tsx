@@ -16,7 +16,7 @@ export default function FollowingList({ counts, hackers }: FollowingListProps) {
   const [filter, setFilter] = useState<FilterId>("hackers");
 
   const pills: { id: FilterId; label: string; count: number; icon: typeof User }[] = [
-    { id: "hackers", label: "hackers", count: counts.hackers, icon: User },
+    { id: "hackers", label: "users", count: counts.hackers, icon: User },
     { id: "orgs", label: "orgs", count: counts.orgs, icon: Building2 },
     { id: "topics", label: "topics", count: counts.topics, icon: Hash },
   ];
@@ -26,7 +26,7 @@ export default function FollowingList({ counts, hackers }: FollowingListProps) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Following</h2>
-          <p className="mt-1 text-sm text-slate-500">Hackers, organizations, and security topics you follow on DevSolve.</p>
+          <p className="mt-1 text-sm text-slate-500">Users, organizations, and security topics you follow on DevSolve.</p>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -37,14 +37,15 @@ export default function FollowingList({ counts, hackers }: FollowingListProps) {
               <button
                 key={pill.id}
                 onClick={() => setFilter(pill.id)}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition ${
-                  isActive
-                    ? "border-blue-600 bg-blue-600 text-white"
-                    : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                  isActive ? "bg-blue-600 text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                 }`}
               >
                 <Icon size={14} />
-                {pill.count} {pill.label}
+                <span className="capitalize">{pill.label}</span>
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"}`}>
+                  {pill.count}
+                </span>
               </button>
             );
           })}
@@ -57,7 +58,7 @@ export default function FollowingList({ counts, hackers }: FollowingListProps) {
             hackers.map((hacker) => <FollowingItem key={hacker.id} hacker={hacker} />)
           ) : (
             <p className="rounded-xl border border-dashed border-slate-200 bg-white p-10 text-center text-sm text-slate-400">
-              Not following any hackers yet.
+              Not following any users yet.
             </p>
           )
         ) : (

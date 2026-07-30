@@ -14,7 +14,7 @@ const ROWS: { key: NotificationKey; label: string }[] = [
   { key: "newPrograms", label: "New programs (from followed organizations)" },
   { key: "retestInvites", label: "Retest invites" },
   { key: "communityActivity", label: "Community activity (new solutions, comments)" },
-  { key: "followActivity", label: "Follow activity (followed hackers' achievements)" },
+  { key: "followActivity", label: "Follow activity (followed users' achievements)" },
 ];
 
 function Column({

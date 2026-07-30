@@ -19,7 +19,7 @@ export const mockProfile: Profile = {
   avatarInitials: "NR",
   isVerified: true,
   rankBadgeLabel: "Top 10",
-  verifiedBadgeLabel: "Verified Hacker",
+  verifiedBadgeLabel: "Verified User",
   bio: "Full-stack security researcher specializing in API abuse, server-side vulnerabilities, and OAuth misconfigurations. I enjoy finding critical bugs in authentication flows and payment systems. Open to private program invitations.",
   location: "Phnom Penh, Cambodia",
   memberSince: "March 2023",
@@ -140,7 +140,7 @@ export const mockEditProfileFormData: EditProfileFormData = {
   fullName: "Narong Seu",
   username: "narongseu",
   email: "narong.seu@example.com",
-  accountType: "Hacker",
+  accountType: "User",
   bio: mockProfile.bio,
   location: "Phnom Penh, Cambodia",
   socialLinks: {

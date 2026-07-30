@@ -1,8 +1,13 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
 interface BreadcrumbProps {
-  items: { label: string; href?: string }[];
+  items: BreadcrumbItem[];
 }
 
 export default function Breadcrumb({ items }: BreadcrumbProps) {
@@ -13,13 +18,13 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
         return (
           <span key={item.label} className="flex items-center gap-1.5">
             {item.href && !isLast ? (
-              <Link href={item.href} className="text-[#4d4d4d] transition hover:text-[#171717]">
+              <Link href={item.href} className="text-slate-600 transition hover:text-slate-900">
                 {item.label}
               </Link>
             ) : (
-              <span className={isLast ? "text-[#2563EB]" : "text-[#4d4d4d]"}>{item.label}</span>
+              <span className={isLast ? "text-blue-600 font-semibold" : "text-slate-600"}>{item.label}</span>
             )}
-            {!isLast && <ChevronRight size={14} className="text-neutral-300" />}
+            {!isLast && <ChevronRight className="size-3.5 text-slate-300" />}
           </span>
         );
       })}
