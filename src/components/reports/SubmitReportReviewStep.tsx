@@ -8,6 +8,8 @@ import { AttachedFile } from "@/components/reports/FileUploadDropzone";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+import { ProgramItem } from "@/lib/types/programs/types";
+
 interface SubmitReportReviewStepProps {
   register: UseFormRegister<SubmitReportFormValues>;
   watch: UseFormWatch<SubmitReportFormValues>;
@@ -19,6 +21,7 @@ interface SubmitReportReviewStepProps {
   onGoToStep: (step: number) => void;
   onSaveDraft: () => void;
   onSubmitReport: () => void;
+  selectedProgram?: ProgramItem | null;
 }
 
 export function SubmitReportReviewStep({
@@ -32,6 +35,7 @@ export function SubmitReportReviewStep({
   onGoToStep,
   onSaveDraft,
   onSubmitReport,
+  selectedProgram,
 }: SubmitReportReviewStepProps) {
   const values = watch();
 
@@ -41,6 +45,10 @@ export function SubmitReportReviewStep({
     values.checklistReproducible &&
     values.checklistNoPii &&
     values.checklistAgreeTerms;
+
+  const companyInitials = selectedProgram?.companyName
+    ? selectedProgram.companyName.substring(0, 2).toUpperCase()
+    : "CV";
 
   return (
     <div className="space-y-6 font-sans">
@@ -61,22 +69,24 @@ export function SubmitReportReviewStep({
 
       {/* Main Review Overview Container Card */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-5">
-        {/* Program Header inside Review Box */}
+        {/* Dynamic Program Header inside Review Box */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-xs">
-              CV
+            <div className={`w-10 h-10 rounded-xl ${selectedProgram?.logoBgColor || "bg-blue-600"} flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-xs`}>
+              {companyInitials}
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                CloudVault Security Program
+                {selectedProgram?.title || "Security Program"}
               </h3>
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">CloudVault Inc.</p>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                {selectedProgram?.companyName || "Company"}
+              </p>
             </div>
           </div>
           <Badge variant="outline" className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900 text-xs font-semibold gap-1.5 px-3 py-1 rounded-xl">
             <Lock className="w-3.5 h-3.5" />
-            <span>Program locked</span>
+            <span>Scope verified</span>
           </Badge>
         </div>
 

@@ -5,7 +5,10 @@ import Link from "next/link";
 import { ExternalLink, Award, Clock, Target } from "lucide-react";
 import { motion } from "motion/react";
 
+import { ProgramItem } from "@/lib/types/programs/types";
+
 interface SubmitReportProgramCardProps {
+  program?: ProgramItem | null;
   programName?: string;
   companyName?: string;
   maxBounty?: string;
@@ -14,12 +17,25 @@ interface SubmitReportProgramCardProps {
 }
 
 export const SubmitReportProgramCard: React.FC<SubmitReportProgramCardProps> = ({
-  programName = "CloudVault Security Program",
-  companyName = "CloudVault Inc.",
-  maxBounty = "$10,000",
-  avgResponse = "2 days",
-  scopeItemsCount = 3,
+  program,
+  programName,
+  companyName,
+  maxBounty,
+  avgResponse,
+  scopeItemsCount,
 }) => {
+  const displayTitle = program?.title || programName || "CloudVault Security Program";
+  const displayCompany = program?.companyName || companyName || "CloudVault Inc.";
+  const displayMaxBounty = program?.maxReward || program?.rewardRange || maxBounty || "$10,000";
+  const displayAvgResponse = program?.stats?.responseTime || avgResponse || "2 days";
+  const displayScopeCount = program?.inScopeAssets?.length ?? (scopeItemsCount || 3);
+  const logoBgColor = program?.logoBgColor || "bg-blue-600";
+  const initials = program?.companyName
+    ? program.companyName.substring(0, 2).toUpperCase()
+    : "CV";
+
+  const programLink = program?.id ? `/dashboard/programs/${program.id}` : "/dashboard/programs";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -29,14 +45,14 @@ export const SubmitReportProgramCard: React.FC<SubmitReportProgramCardProps> = (
     >
       {/* Program Header */}
       <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-base shrink-0 shadow-xs">
-          CV
+        <div className={`w-11 h-11 rounded-xl ${logoBgColor} flex items-center justify-center text-white font-bold text-base shrink-0 shadow-xs`}>
+          {initials}
         </div>
         <div className="min-w-0">
           <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate tracking-tight">
-            {programName}
+            {displayTitle}
           </h3>
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate">{companyName}</p>
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate">{displayCompany}</p>
         </div>
       </div>
 
@@ -46,7 +62,7 @@ export const SubmitReportProgramCard: React.FC<SubmitReportProgramCardProps> = (
             <Award className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
             Max Bounty
           </span>
-          <span className="font-bold text-slate-900 dark:text-slate-100">{maxBounty}</span>
+          <span className="font-bold text-slate-900 dark:text-slate-100">{displayMaxBounty}</span>
         </div>
 
         <div className="flex items-center justify-between py-1">
@@ -54,7 +70,7 @@ export const SubmitReportProgramCard: React.FC<SubmitReportProgramCardProps> = (
             <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
             Avg Response
           </span>
-          <span className="font-semibold text-slate-800 dark:text-slate-200">{avgResponse}</span>
+          <span className="font-semibold text-slate-800 dark:text-slate-200">{displayAvgResponse}</span>
         </div>
 
         <div className="flex items-center justify-between py-1">
@@ -63,14 +79,14 @@ export const SubmitReportProgramCard: React.FC<SubmitReportProgramCardProps> = (
             Scope Items
           </span>
           <span className="font-semibold text-slate-800 dark:text-slate-200">
-            {scopeItemsCount} targets
+            {displayScopeCount} targets
           </span>
         </div>
       </div>
 
       <div className="pt-2 text-center border-t border-slate-100 dark:border-slate-800/80">
         <Link
-          href="/dashboard/programs"
+          href={programLink}
           className="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
         >
           <span>View program details & rules</span>

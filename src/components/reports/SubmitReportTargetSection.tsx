@@ -6,6 +6,7 @@ import { Target, CheckCircle2, XCircle, Lock, AlertTriangle } from "lucide-react
 import { SubmitReportFormValues, HTTP_METHODS, ENVIRONMENTS } from "@/lib/validations/report";
 import { ProgramItem } from "@/lib/redux/services/programsApi";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -21,6 +22,7 @@ interface SubmitReportTargetSectionProps {
   watch: UseFormWatch<SubmitReportFormValues>;
   programs: ProgramItem[];
   isLoading: boolean;
+  selectedProgram?: ProgramItem | null;
 }
 
 const HTTP_METHOD_STYLES: Record<string, { badge: string }> = {
@@ -40,9 +42,33 @@ export function SubmitReportTargetSection({
   watch,
   programs,
   isLoading,
+  selectedProgram,
 }: SubmitReportTargetSectionProps) {
   const selectedEnvironment = watch("environment") || "Production";
   const selectedHttpMethod = watch("httpMethod") || "GET";
+  const selectedProgramId = watch("programId");
+
+  const companyInitials = selectedProgram?.companyName
+    ? selectedProgram.companyName.substring(0, 2).toUpperCase()
+    : "CV";
+
+  const inScopeList = selectedProgram?.inScopeAssets && selectedProgram.inScopeAssets.length > 0
+    ? selectedProgram.inScopeAssets
+    : [
+        "api.nexacloud.com",
+        "dashboard.nexacloud.com",
+        "auth.nexacloud.com",
+        "*.nexacloud.com (excluding out-of-scope)",
+      ];
+
+  const outOfScopeList = selectedProgram?.rulesExclusions && selectedProgram.rulesExclusions.length > 0
+    ? selectedProgram.rulesExclusions
+    : [
+        "cdn.nexacloud.com",
+        "status.nexacloud.com",
+        "Third-party integrations",
+        "Production customer databases",
+      ];
 
   return (
     <div className="space-y-6 font-sans">
@@ -61,87 +87,67 @@ export function SubmitReportTargetSection({
         </div>
       </div>
 
-      {/* Program Header Banner */}
+
+      {/* Dynamic Program Header Banner */}
       <div className="bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-base shrink-0 shadow-xs">
-            CV
+          <div
+            className={`w-11 h-11 rounded-xl ${
+              selectedProgram?.logoBgColor || "bg-blue-600"
+            } flex items-center justify-center text-white font-bold text-base shrink-0 shadow-xs`}
+          >
+            {companyInitials}
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                CloudVault Security Program
+                {selectedProgram?.title || "Security Program"}
               </h3>
               <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                Private
+                {selectedProgram?.isPrivate ? "Private" : "Public"}
+              </span>
+              <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                {selectedProgram?.type || "Bounty"}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-              CloudVault Inc. · Max $10,000 · Avg response 2 days
+              {selectedProgram?.companyName || "Company"} · Max {selectedProgram?.maxReward || selectedProgram?.rewardRange || "$10,000"} · Avg response {selectedProgram?.stats?.responseTime || "2 days"}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-xs font-semibold text-emerald-700 dark:text-emerald-300 shrink-0">
           <Lock className="w-4 h-4" />
-          <span>Program locked</span>
+          <span>Scope verified</span>
         </div>
       </div>
 
-      {/* In-Scope Targets Section */}
+      {/* Dynamic In-Scope Targets Section */}
       <div className="space-y-3">
-        <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-            In-Scope Targets
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            You are authorized to test these assets only.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-2.5">
-          {[
-            "api.nexacloud.com",
-            "dashboard.nexacloud.com",
-            "auth.nexacloud.com",
-            "*.nexacloud.com (excluding out-of-scope)",
-          ].map((target) => (
-            <div
-              key={target}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-200 text-sm font-semibold"
-            >
+        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+          In-Scope Targets ({inScopeList.length})
+        </h3>
+        <div className="flex flex-wrap gap-3 py-1">
+          {inScopeList.map((target) => (
+            <Badge key={target} variant="outline" className="px-4 py-4 text-sm font-mono font-medium gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>{target}</span>
-            </div>
+            </Badge>
           ))}
         </div>
       </div>
 
-      {/* Out-of-Scope Targets Section */}
+      {/* Dynamic Out-of-Scope Targets / Exclusions Section */}
       <div className="space-y-3 pt-2">
-        <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-            Out-of-Scope Targets
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Do not test these assets under any circumstances.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-2.5">
-          {[
-            "cdn.nexacloud.com",
-            "status.nexacloud.com",
-            "Third-party integrations",
-            "Production customer databases",
-          ].map((target) => (
-            <div
-              key={target}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 text-rose-900 dark:text-rose-200 text-sm font-semibold"
-            >
-              <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+          Out-of-Scope Rules & Exclusions
+        </h3>
+        <div className="flex flex-wrap gap-3 py-1">
+          {outOfScopeList.map((target) => (
+            <Badge key={target} variant="secondary" className="px-4 py-4 text-sm font-mono font-medium gap-2.5 opacity-90">
+              <XCircle className="w-4 h-4 text-rose-500 dark:text-rose-400 shrink-0" />
               <span>{target}</span>
-            </div>
+            </Badge>
           ))}
         </div>
       </div>

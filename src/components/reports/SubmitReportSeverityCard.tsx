@@ -4,8 +4,11 @@ import React from "react";
 import { AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
+import { ProgramItem } from "@/lib/types/programs/types";
+
 interface SubmitReportSeverityCardProps {
   severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO";
+  program?: ProgramItem | null;
 }
 
 const SEVERITY_CONFIG = {
@@ -51,13 +54,23 @@ const SEVERITY_CONFIG = {
   },
 };
 
-export const SubmitReportSeverityCard: React.FC<SubmitReportSeverityCardProps> = ({ severity }) => {
+export const SubmitReportSeverityCard: React.FC<SubmitReportSeverityCardProps> = ({
+  severity,
+  program,
+}) => {
   const config = SEVERITY_CONFIG[severity] || SEVERITY_CONFIG.CRITICAL;
+
+  const matrixMatch = program?.bountyMatrix?.find(
+    (m) => m.severity.toUpperCase() === severity.toUpperCase()
+  );
+  const displayBounty = matrixMatch
+    ? `Typically ${matrixMatch.range}`
+    : config.typicalBounty;
 
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        key={severity}
+        key={`${severity}-${program?.id || "default"}`}
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.98 }}
@@ -85,7 +98,7 @@ export const SubmitReportSeverityCard: React.FC<SubmitReportSeverityCardProps> =
         </p>
 
         <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800/80 text-xs font-semibold text-slate-600 dark:text-slate-400">
-          {config.typicalBounty}
+          {displayBounty}
         </div>
       </motion.div>
     </AnimatePresence>

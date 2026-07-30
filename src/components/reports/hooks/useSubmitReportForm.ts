@@ -79,6 +79,8 @@ export function useSubmitReportForm() {
   const selectedProgramId = watch("programId");
   const selectedSeverity = watch("severity");
 
+  const selectedProgram = programs.find((p) => p.id === selectedProgramId) || programs[0] || null;
+
   // Synchronize preselected program ID when programs arrive asynchronously
   useEffect(() => {
     if (preselectedProgramId && programs.length > 0) {
@@ -90,6 +92,17 @@ export function useSubmitReportForm() {
       setValue("programId", programs[0].id);
     }
   }, [preselectedProgramId, programs, setValue, selectedProgramId]);
+
+  // Sync default target asset when selected program changes if using placeholder
+  useEffect(() => {
+    if (selectedProgram && selectedProgram.inScopeAssets && selectedProgram.inScopeAssets.length > 0) {
+      const currentAsset = watch("targetAsset");
+      const defaultDomain = selectedProgram.inScopeAssets[0].replace("*.", "api.");
+      if (!currentAsset || currentAsset === "https://api.nexacloud.com/v1/invoices/1337") {
+        setValue("targetAsset", `https://${defaultDomain}/v1/endpoint`);
+      }
+    }
+  }, [selectedProgram?.id, setValue, watch]);
 
   // Handle Step Navigation & Validation
   const validateCurrentStep = async (): Promise<boolean> => {
@@ -248,6 +261,7 @@ export function useSubmitReportForm() {
     currentStep,
     completedSteps,
     selectedSeverity,
+    selectedProgram,
     programs,
     isProgramsLoading,
     isSubmitting,

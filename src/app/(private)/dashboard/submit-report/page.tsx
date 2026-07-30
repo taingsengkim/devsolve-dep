@@ -30,6 +30,7 @@ function SubmitReportContent() {
     currentStep,
     completedSteps,
     selectedSeverity,
+    selectedProgram,
     programs,
     isProgramsLoading,
     isSubmitting,
@@ -116,6 +117,7 @@ function SubmitReportContent() {
                     watch={watch}
                     programs={programs}
                     isLoading={isProgramsLoading}
+                    selectedProgram={selectedProgram}
                   />
                 )}
 
@@ -172,6 +174,7 @@ function SubmitReportContent() {
                     onGoToStep={goToStep}
                     onSaveDraft={handleSaveDraft}
                     onSubmitReport={handleSubmit(onSubmit)}
+                    selectedProgram={selectedProgram}
                   />
                 )}
 
@@ -198,10 +201,13 @@ function SubmitReportContent() {
           />
 
           {/* 2. Program Details Card */}
-          <SubmitReportProgramCard />
+          <SubmitReportProgramCard program={selectedProgram} />
 
           {/* 3. Dynamic Severity Breakdown Card */}
-          <SubmitReportSeverityCard severity={selectedSeverity as "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO"} />
+          <SubmitReportSeverityCard
+            severity={selectedSeverity as "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO"}
+            program={selectedProgram}
+          />
 
           {/* 4. Quick Tips Card */}
           <SubmitReportQuickTips />
