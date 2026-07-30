@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ArrowLeft, Bookmark, Send } from "lucide-react";
 import { ProgramItem } from "@/lib/types/programs/types";
 import { Button } from "@/components/ui/button";
@@ -14,13 +15,18 @@ interface ProgramDetailHeroProps {
 
 export const ProgramDetailHero: React.FC<ProgramDetailHeroProps> = ({ program }) => {
   const [isSaved, setIsSaved] = useState(false);
+  const pathname = usePathname();
+
+  const backUrl = pathname?.startsWith("/dashboard")
+    ? "/dashboard/programs"
+    : "/programs";
 
   return (
     <div className="space-y-6">
       {/* Back to Programs Navigation */}
       <nav aria-label="Back Navigation">
         <Link
-          href="/dashboard/programs"
+          href={backUrl}
           className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />

@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { ProgramItem } from "@/lib/types/programs/types";
 import { Button } from "@/components/ui/button";
@@ -11,14 +11,24 @@ import { Badge } from "@/components/ui/badge";
 
 interface ProgramCardProps {
   program: ProgramItem;
+  hrefPrefix?: string;
   onSeeDetails?: (program: ProgramItem) => void;
 }
 
 export const ProgramCard: React.FC<ProgramCardProps> = ({
   program,
+  hrefPrefix,
   onSeeDetails,
 }) => {
+  const pathname = usePathname();
   const isBounty = program.type === "Bounty";
+
+  // Determine detail link target based on current path or explicit prop
+  const defaultPrefix = pathname?.startsWith("/dashboard")
+    ? "/dashboard/programs"
+    : "/programs";
+  const targetPrefix = hrefPrefix ?? defaultPrefix;
+  const detailUrl = `${targetPrefix}/${program.id}`;
 
   return (
     <motion.article
@@ -51,31 +61,24 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
             )}
 
             <div className="min-w-0">
-              <Link href={`/dashboard/programs/${program.id}`}>
+              <Link href={detailUrl}>
                 <h2 className="text-lg font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
                   {program.companyName}
                 </h2>
               </Link>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
-                {/* Type Badge in Gray */}
-                {/* <Badge
+                <Badge
                   variant="outline"
-                  className="bg-slate-100 text-slate-600 border-slate-200 font-medium text-xs"
+                  className={`font-medium text-xs ${
+                    program.type === "Bounty"
+                      ? "bg-blue-100 text-blue-700 border-blue-200"
+                      : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                  }`}
                 >
                   {program.type}
-                </Badge> */}
-                <Badge
-                variant="outline"
-                className={`font-medium text-xs ${
-                  program.type === "Bounty"
-                    ? "bg-blue-100 text-blue-700 border-blue-200"
-                    : "bg-emerald-100 text-emerald-700 border-emerald-200"
-                }`}
-              >
-                {program.type}
                 </Badge>
 
-                {/* Status indicator in Gray */}
+                {/* Status indicator */}
                 <span className="text-xs text-slate-500 font-medium flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                   {program.status}
@@ -87,7 +90,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
 
         {/* Program Title & Description */}
         <div>
-          <Link href={`/dashboard/programs/${program.id}`}>
+          <Link href={detailUrl}>
             <h3 className="text-base font-bold text-slate-900 line-clamp-1 mb-1.5 group-hover:text-blue-600 transition-colors">
               {program.title}
             </h3>
@@ -134,7 +137,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
           </p>
         </div>
 
-        <Link href={`/dashboard/programs/${program.id}`}>
+        <Link href={detailUrl}>
           <Button
             onClick={() => onSeeDetails?.(program)}
             variant="outline"
