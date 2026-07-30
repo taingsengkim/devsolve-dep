@@ -65,7 +65,8 @@ export function useSidebarAuth() {
     const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID;
 
     if (issuer && clientId) {
-      const logoutUrl = new URL(`${issuer}/protocol/openid-connect/logout`);
+      const cleanIssuer = issuer.replace(/\/+$/, "");
+      const logoutUrl = new URL(`${cleanIssuer}/protocol/openid-connect/logout`);
       logoutUrl.searchParams.set("client_id", clientId);
       logoutUrl.searchParams.set("post_logout_redirect_uri", window.location.origin);
       window.location.href = logoutUrl.toString();
