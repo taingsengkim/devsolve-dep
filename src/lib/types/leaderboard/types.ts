@@ -1,47 +1,25 @@
+export type LeaderboardBadgeLabel = "Top 10" | "Bug Slayer" | "Speed Hacker" | "First Blood" | "Retest Pro";
+
+export type ResearcherAvatarUrl = string;
+
 export interface Researcher {
   id: string;
   rank: number;
-  name: string;
-  handle: string;
+  handle: string; // e.g. "darkp4tch"
+  realName: string; // e.g. "Amara Diallo"
+  countryCode: string; // e.g. "sn"
+  avatarInitials: string;
+  avatarUrl?: ResearcherAvatarUrl;
   reputation: number;
-  reputationDisplay: string;
   accepted: number;
   critical: number;
-  badges: string[];
-  country?: string;
-  avatar?: string;
-  joinedDate?: string;
-  email?: string;
-  bio?: string;
-  socialLinks?: {
-    github?: string;
-    twitter?: string;
-    linkedin?: string;
-  };
+  badges: LeaderboardBadgeLabel[];
 }
 
 export interface LeaderboardStats {
-  totalResearchers: number;
-  totalReports: number;
-  totalPrograms: number;
-  topResearcher: string;
-  averageReputation: number;
-  totalBadges: number;
-  activeToday: number;
+  activeResearchers: number;
+  validReports: number;
+  programsLive: number;
 }
 
-export interface LeaderboardFilters {
-  search: string;
-  badge: string | null;
-  country: string | null;
-  minReputation: number | null;
-  maxReputation: number | null;
-}
-
-export interface LeaderboardResponse {
-  researchers: Researcher[];
-  stats: LeaderboardStats;
-  total: number;
-  page: number;
-  limit: number;
-}
+export type LeaderboardSortMetric = "reputation" | "accepted" | "critical";

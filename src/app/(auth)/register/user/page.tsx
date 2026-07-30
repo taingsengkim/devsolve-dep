@@ -177,7 +177,8 @@ function CustomCountrySelect({
           {countryCode ? (
             <img
               src={`https://flagcdn.com/w40/${countryCode.toLowerCase()}.png`}
-              alt="Country flag"
+              alt={value ? `${value} flag` : "Country flag"}
+              title={value || "Country flag"}
               className="w-5 h-3.5 object-cover rounded-2xs border border-slate-200/80 shadow-2xs shrink-0"
             />
           ) : (
