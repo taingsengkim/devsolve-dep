@@ -18,14 +18,20 @@ export function useKeycloakLogin() {
   const handleLogin = async (callbackURL: string = "/") => {
     setIsLoggingIn(true);
     try {
+      const targetUrl = callbackURL || "/";
       const result = await authClient.signIn.oauth2({
         providerId: "keycloak",
-        callbackURL,
+        callbackURL: targetUrl,
         disableRedirect: true,
       });
 
       if (result?.error) {
-        console.error("[Auth] Keycloak sign-in failed:", result.error);
+        const err = result.error as any;
+        const errorMsg =
+          err?.message ||
+          err?.statusText ||
+          (typeof err === "object" ? JSON.stringify(err) : String(err));
+        console.error("[Auth] Keycloak sign-in failed:", errorMsg, err);
         setIsLoggingIn(false);
         return;
       }
@@ -45,3 +51,4 @@ export function useKeycloakLogin() {
 
   return { isLoggingIn, handleLogin };
 }
+
