@@ -10,11 +10,23 @@ import {
   ListOrdered,
   Code2,
   Network,
-  Video,
   Bookmark,
   Flag,
   Send,
+  CornerDownRight,
 } from "lucide-react";
+
+// Local Interface for Nested Comments
+interface CommentNode {
+  id: string;
+  author: {
+    name: string;
+    avatarUrl: string;
+  };
+  content: string;
+  createdAt: string;
+  replies?: CommentNode[];
+}
 
 interface SolutionCardProps {
   solution: SolutionItem;
@@ -28,8 +40,12 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) =
     "explanation"
   );
   const [isExpanded, setIsExpanded] = useState(solution.type === "rich");
-  const [comments, setComments] = useState(solution.comments);
-  const [newComment, setNewComment] = useState("");
+
+  // State for threaded comments
+  const [comments, setComments] = useState<CommentNode[]>(solution.comments || []);
+  const [newTopComment, setNewTopComment] = useState("");
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState("");
 
   const handleVote = () => {
     if (hasVoted) {
@@ -41,22 +57,142 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) =
     }
   };
 
-  const handleAddComment = (e: React.FormEvent) => {
+  // Add top-level comment
+  const handleAddTopComment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
-    setComments([
-      ...comments,
-      {
-        id: `c-${Date.now()}`,
-        author: {
-          name: "Jame",
-          avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Jame",
-        },
-        content: newComment,
-        createdAt: "Just now",
+    if (!newTopComment.trim()) return;
+
+    const newComment: CommentNode = {
+      id: `c-${Date.now()}`,
+      author: {
+        name: "Jame",
+        avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Jame",
       },
-    ]);
-    setNewComment("");
+      content: newTopComment.trim(),
+      createdAt: "Just now",
+      replies: [],
+    };
+
+    setComments([...comments, newComment]);
+    setNewTopComment("");
+  };
+
+  // Recursive Helper to insert reply deep inside comment tree
+  const addReplyToTree = (
+    list: CommentNode[],
+    parentId: string,
+    reply: CommentNode
+  ): CommentNode[] => {
+    return list.map((item) => {
+      if (item.id === parentId) {
+        return {
+          ...item,
+          replies: [...(item.replies || []), reply],
+        };
+      }
+      if (item.replies && item.replies.length > 0) {
+        return {
+          ...item,
+          replies: addReplyToTree(item.replies, parentId, reply),
+        };
+      }
+      return item;
+    });
+  };
+
+  // Add sub-reply
+  const handleSendReply = (parentId: string) => {
+    if (!replyContent.trim()) return;
+
+    const newReply: CommentNode = {
+      id: `r-${Date.now()}`,
+      author: {
+        name: "Jame",
+        avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Jame",
+      },
+      content: replyContent.trim(),
+      createdAt: "Just now",
+      replies: [],
+    };
+
+    setComments(addReplyToTree(comments, parentId, newReply));
+    setReplyContent("");
+    setActiveReplyId(null);
+  };
+
+  // Recursive Comment Renderer
+  const RenderCommentItem = ({
+    comment,
+    depth = 0,
+  }: {
+    comment: CommentNode;
+    depth?: number;
+  }) => {
+    const isReplying = activeReplyId === comment.id;
+
+    return (
+      <div className={`space-y-2 ${depth > 0 ? "ml-5 border-l border-slate-200 pl-3" : ""}`}>
+        {/* Main Comment Box */}
+        <div className="group flex items-start justify-between rounded-lg bg-slate-50 p-2 text-xs text-slate-600">
+          <div className="flex items-start space-x-2 flex-1 min-w-0 pr-2">
+            <img
+              src={comment.author.avatarUrl}
+              alt={comment.author.name}
+              className="h-4 w-4 rounded-full mt-0.5 shrink-0"
+            />
+            <div className="leading-snug break-words">
+              <span className="font-bold text-slate-800 mr-1.5">{comment.author.name}:</span>
+              <span>{comment.content}</span>
+              <span className="text-[10px] text-slate-400 ml-2">{comment.createdAt}</span>
+            </div>
+          </div>
+
+          {/* Reply Action Trigger */}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveReplyId(isReplying ? null : comment.id);
+              setReplyContent("");
+            }}
+            className="text-[11px] font-medium text-blue-600 hover:underline shrink-0"
+          >
+            Reply
+          </button>
+        </div>
+
+        {/* Inline Sub-reply Form */}
+        {isReplying && (
+          <div className="flex items-center space-x-2 pt-1 pl-2">
+            <CornerDownRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+            <input
+              type="text"
+              value={replyContent}
+              onChange={(e) => setReplyContent(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSendReply(comment.id)}
+              placeholder={`Replying to ${comment.author.name}...`}
+              className="flex-1 rounded-lg border border-blue-300 bg-white px-3 py-1 text-xs focus:border-blue-500 focus:outline-none"
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={() => handleSendReply(comment.id)}
+              className="rounded-lg bg-blue-600 p-1 text-white hover:bg-blue-700 transition-colors"
+            >
+              <Send className="h-3 w-3" />
+            </button>
+          </div>
+        )}
+
+        {/* Child Replies */}
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="space-y-2 pt-1">
+            {comment.replies.map((child) => (
+              <RenderCommentItem key={child.id} comment={child} depth={depth + 1} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -267,27 +403,17 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) =
 
             {/* Threaded Comments Section */}
             <div className="mt-4 border-t border-slate-100 pt-3 space-y-2">
+              {/* Nested Comments Render */}
               {comments.map((comment) => (
-                <div key={comment.id} className="text-xs text-slate-600 flex items-start space-x-2 bg-slate-50 p-2 rounded-lg">
-                  <img
-                    src={comment.author.avatarUrl}
-                    alt={comment.author.name}
-                    className="h-4 w-4 rounded-full mt-0.5"
-                  />
-                  <div>
-                    <span className="font-bold text-slate-800 mr-2">{comment.author.name}:</span>
-                    <span>{comment.content}</span>
-                    <span className="text-[10px] text-slate-400 ml-2">{comment.createdAt}</span>
-                  </div>
-                </div>
+                <RenderCommentItem key={comment.id} comment={comment} />
               ))}
 
-              {/* Add Comment Input */}
-              <form onSubmit={handleAddComment} className="flex items-center space-x-2 pt-1">
+              {/* Add Top-level Comment Input */}
+              <form onSubmit={handleAddTopComment} className="flex items-center space-x-2 pt-1">
                 <input
                   type="text"
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
+                  value={newTopComment}
+                  onChange={(e) => setNewTopComment(e.target.value)}
                   placeholder="Add a comment..."
                   className="flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs focus:border-blue-500 focus:outline-none"
                 />
