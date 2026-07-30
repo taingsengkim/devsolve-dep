@@ -1,16 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "motion/react";
 import { Globe } from "lucide-react";
 import { useGetProgramsQuery } from "@/lib/redux/services/programsApi";
-import { ProgramItem } from "@/lib/types/programs/types";
 import { useProgramFilters } from "@/hooks/useProgramFilters";
 import { ProgramHeader } from "@/components/programs/ProgramHeader";
 import { ProgramQuickStats } from "@/components/programs/ProgramQuickStats";
 import { ProgramFiltersBar } from "@/components/programs/ProgramFiltersBar";
 import { ProgramCard } from "@/components/programs/ProgramCard";
-import { ProgramDetailsModal } from "@/components/programs/ProgramDetailsModal";
 import { ProgramPagination } from "@/components/programs/ProgramPagination";
 import { Button } from "@/components/ui/button";
 
@@ -38,8 +36,6 @@ export default function ProgramsPage() {
     isFilterActive,
     queryProps,
   } = useProgramFilters();
-
-  const [activeModalProgram, setActiveModalProgram] = useState<ProgramItem | null>(null);
 
   const { data: responseData, isLoading, isFetching } = useGetProgramsQuery(queryProps);
 
@@ -145,11 +141,7 @@ export default function ProgramsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {programs.map((prog) => (
-              <ProgramCard
-                key={prog.id}
-                program={prog}
-                onSeeDetails={(p) => setActiveModalProgram(p)}
-              />
+              <ProgramCard key={prog.id} program={prog} />
             ))}
           </div>
         )}
@@ -167,12 +159,6 @@ export default function ProgramsPage() {
           setCurrentPage(1);
         }}
         onPageChange={setCurrentPage}
-      />
-
-      {/* DETAILS MODAL */}
-      <ProgramDetailsModal
-        program={activeModalProgram}
-        onClose={() => setActiveModalProgram(null)}
       />
     </motion.div>
   );
