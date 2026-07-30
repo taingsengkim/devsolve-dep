@@ -19,6 +19,14 @@ export interface ProgramItem {
   rewardRange: string;
   rewardType: "bounty" | "points";
   totalBountyPaid?: string;
+  maxReward?: string;
+  researchersCount?: number;
+  startDate?: string;
+  endDate?: string;
+  aboutSummary?: string;
+  pocRequirements?: string[];
+  rulesExclusions?: string[];
+  bountyMatrix?: { severity: string; range: string; description: string }[];
   stats?: {
     reportsSubmitted?: number;
     avgPayout?: string;

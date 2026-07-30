@@ -5,25 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  LayoutDashboard,
-  FileText,
-  CircleDollarSign,
-  Trophy,
-  Bell,
-  BookOpen,
-  Globe,
-  Bookmark,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-  LucideIcon,
-} from "lucide-react";
-import { authClient } from "@/lib/auth/auth-client";
+import { Settings, LogOut, Menu, X } from "lucide-react";
+
+import { NAV_ITEMS } from "@/config/navigation";
+import { useSidebarAuth, SidebarUser } from "@/hooks/useSidebarAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 function getInitials(text: string): string {
   return text
@@ -34,27 +23,9 @@ function getInitials(text: string): string {
     .slice(0, 2);
 }
 
-interface NavItem {
-  name: string;
-  href: string;
-  icon: LucideIcon;
-  badge?: number;
-}
-
-const navItems: NavItem[] = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Programs", href: "/dashboard/programs", icon: Globe },
-  { name: "Reports", href: "/dashboard/my-reports", icon: FileText },
-  { name: "Rewards", href: "/dashboard/rewards", icon: CircleDollarSign },
-  { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy },
-  { name: "Notification", href: "/dashboard/notifications", icon: Bell, badge: 3 },
-  { name: "Solution", href: "/dashboard/solution", icon: BookOpen },
-  { name: "Bookmarks", href: "/dashboard/bookmarks", icon: Bookmark, badge: 3 },
-];
-
 interface SidebarContentProps {
   pathname: string;
-  user?: { name?: string | null; email?: string | null; image?: string | null };
+  user?: SidebarUser;
   isPending: boolean;
   displayName: string;
   onNavItemClick?: () => void;
@@ -74,6 +45,19 @@ function SidebarContent({
   const profileSlug = (user?.name || user?.email?.split("@")[0] || "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "");
+  const userRoles = (
+    user?.roles ||
+    (user?.role ? user.role.split(",") : ["USER"])
+  ).map((r) => r.trim().toUpperCase());
+
+  const filteredNavItems = NAV_ITEMS.filter((item) => {
+    if (!item.roles) return true;
+    return item.roles.some((reqRole) => userRoles.includes(reqRole.toUpperCase()));
+  });
+
+  const categories = Array.from(
+    new Set(filteredNavItems.map((item) => item.category || "Overview"))
+  );
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -145,37 +129,52 @@ function SidebarContent({
         </div>
       </Link>
 
-      {/* Navigation List */}
-      <nav className="flex-1 min-h-0 space-y-1 overflow-y-auto pr-1">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/dashboard" && pathname.startsWith(item.href));
+      {/* Navigation List grouped by Category with Separator */}
+      <nav className="flex-1 min-h-0 space-y-3 overflow-y-auto pr-1">
+        {categories.map((category, catIndex) => {
+          const categoryItems = filteredNavItems.filter(
+            (item) => (item.category || "Overview") === category
+          );
 
           return (
-            <Link key={item.name} href={item.href} onClick={onNavItemClick} className="block w-full">
-              <Button
-                variant="ghost"
-                className={`w-full cursor-pointer justify-between h-10 px-3 rounded-xl ${
-                  isActive
-                    ? "bg-blue-50/60 text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-semibold"
-                    : "text-slate-600 hover:bg-slate-100/50 hover:text-slate-900 font-medium"
-                }`}
-              >
-                <div className="flex items-center gap-3 text-sm font-semibold">
-                  <Icon className={`w-4 h-4 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
-                  <span>{item.name}</span>
-                </div>
+            <div key={category} className="space-y-1">
+              {catIndex > 0 && <Separator className="my-2.5 bg-slate-200/60" />}
 
-                {/* Badges for Notifications/Bookmarks */}
-                {item.badge && (
-                  <Badge className="rounded-full w-5 h-5 flex items-center justify-center p-0 text-xs bg-blue-600 hover:bg-blue-700 text-white">
-                    {item.badge}
-                  </Badge>
-                )}
-              </Button>
-            </Link>
+              <div className="px-3 pt-1 pb-1 text-[11px] font-bold tracking-wider text-slate-400 uppercase select-none">
+                {category}
+              </div>
+
+              {categoryItems.map((item) => {
+                const Icon = item.icon;
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/dashboard" && pathname.startsWith(item.href));
+
+                return (
+                  <Link key={item.name} href={item.href} onClick={onNavItemClick} className="block w-full">
+                    <Button
+                      variant="ghost"
+                      className={`w-full cursor-pointer justify-between h-10 px-3 rounded-xl ${
+                        isActive
+                          ? "bg-blue-50/60 text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-semibold"
+                          : "text-slate-600 hover:bg-slate-100/50 hover:text-slate-900 font-medium"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 text-sm font-semibold">
+                        <Icon className={`w-4 h-4 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
+                        <span>{item.name}</span>
+                      </div>
+
+                      {item.badge && (
+                        <Badge className="rounded-full w-5 h-5 flex items-center justify-center p-0 text-xs bg-blue-600 hover:bg-blue-700 text-white">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </Button>
+                  </Link>
+                );
+              })}
+            </div>
           );
         })}
       </nav>
@@ -183,6 +182,9 @@ function SidebarContent({
       {/* Settings & Logout Buttons (Pinned to bottom) */}
       <div className="mt-auto pt-3 shrink-0 space-y-1.5 border-t border-slate-200/50">
         <Link href="/dashboard/profile/settings" onClick={onNavItemClick} className="block w-full">
+      <div className="mt-auto pt-2 shrink-0 space-y-1.5">
+        <Separator className="mb-2.5 bg-slate-200/60" />
+        <Link href="/" onClick={onNavItemClick} className="block w-full">
           <Button className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 flex items-center justify-start px-3 gap-3 shadow-2xs text-sm font-semibold">
             <Settings className="w-4 h-4" />
             <span>Settings</span>
@@ -208,25 +210,7 @@ function SidebarContent({
 const Sidebar = () => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const { data: session, isPending } = authClient.useSession();
-  const user = session?.user;
-  const displayName = user?.name ?? user?.email ?? "User";
-
-  const handleSignOut = async () => {
-    await authClient.signOut();
-
-    const issuer = process.env.NEXT_PUBLIC_KEYCLOAK_ISSUER;
-    const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID;
-
-    if (issuer && clientId) {
-      const logoutUrl = new URL(`${issuer}/protocol/openid-connect/logout`);
-      logoutUrl.searchParams.set("client_id", clientId);
-      logoutUrl.searchParams.set("post_logout_redirect_uri", window.location.origin);
-      window.location.href = logoutUrl.toString();
-    } else {
-      window.location.href = "/";
-    }
-  };
+  const { user, isPending, displayName, handleSignOut } = useSidebarAuth();
 
   return (
     <>
@@ -289,7 +273,7 @@ const Sidebar = () => {
         )}
       </AnimatePresence>
 
-      {/* Desktop Sticky Sidebar (Fixed height h-[100dvh], sticky top-0, no window overflow) */}
+      {/* Desktop Sticky Sidebar */}
       <aside className="hidden lg:flex flex-col w-[260px] shrink-0 h-[100dvh] sticky top-0 p-4 rounded-r-[20px] border border-blue-600/15 bg-[linear-gradient(331deg,rgba(255,255,255,0.10)_59.38%,rgba(166,179,209,0.25)_92.74%,rgba(21,56,133,0.50)_132.79%),linear-gradient(154deg,rgba(255,255,255,0.30)_76.51%,rgba(37,99,235,0.30)_132.61%)] shadow-[0_4px_32px_0_rgba(37,99,235,0.10)] overflow-hidden">
         <SidebarContent
           pathname={pathname}
