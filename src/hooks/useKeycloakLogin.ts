@@ -15,12 +15,12 @@ export function useKeycloakLogin() {
     };
   }, []);
 
-  const handleLogin = async () => {
+  const handleLogin = async (callbackURL: string = "/") => {
     setIsLoggingIn(true);
     try {
       const result = await authClient.signIn.oauth2({
         providerId: "keycloak",
-        callbackURL: "/",
+        callbackURL,
         disableRedirect: true,
       });
 
