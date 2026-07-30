@@ -1,19 +1,22 @@
+
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import {
   FiGithub,
   FiMail,
   FiMapPin,
   FiPhone,
-  FiTwitter,
   FiLinkedin,
   FiYoutube,
   FiSend,
 } from "react-icons/fi";
 import { FaXTwitter } from "react-icons/fa6";
-import Image from "next/image";
-import Link from "next/link";
+
+import { mockFooterData } from "@/lib/types/footer/mock-data";
+import type { NavLinkItem, SocialLinkItem } from "@/lib/types/footer/type";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -25,6 +28,21 @@ export default function Footer() {
     setEmail("");
   };
 
+  const renderSocialIcon = (platform: SocialLinkItem["platform"]) => {
+    switch (platform) {
+      case "github":
+        return <FiGithub className="w-4 h-4" />;
+      case "twitter":
+        return <FaXTwitter className="w-3.5 h-3.5" />;
+      case "linkedin":
+        return <FiLinkedin className="w-4 h-4" />;
+      case "youtube":
+        return <FiYoutube className="w-4 h-4" />;
+      case "email":
+        return <FiMail className="w-4 h-4" />;
+    }
+  };
+
   return (
     <footer className="w-full bg-white text-gray-600 pt-16 pb-4 border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-6">
@@ -34,7 +52,7 @@ export default function Footer() {
               <div className="relative w-10 h-10 flex-shrink-0">
                 <Image
                   src="/devsolve.png"
-                  alt="DevSolve Logo"
+                  alt={`${mockFooterData.brandName} Logo`}
                   fill
                   className="object-contain"
                 />
@@ -45,9 +63,7 @@ export default function Footer() {
             </Link>
 
             <p className="text-sm text-gray-500 leading-relaxed pr-2">
-              DevSolve is a bug bounty platform that connects organizations with
-              ethical hackers to identify and resolve security vulnerabilities
-              through responsible disclosure, collaboration, and rewards.
+              {mockFooterData.description}
             </p>
 
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest pt-2">
@@ -55,37 +71,40 @@ export default function Footer() {
             </p>
 
             <div className="flex items-center gap-2.5">
-              <SocialLink href="#" icon={<FiGithub className="w-4 h-4" />} label="GitHub" />
-              <SocialLink href="#" icon={<FaXTwitter className="w-3.5 h-3.5" />} label="Twitter" />
-              <SocialLink href="#" icon={<FiLinkedin className="w-4 h-4" />} label="LinkedIn" />
-              <SocialLink href="#" icon={<FiYoutube className="w-4 h-4" />} label="YouTube" />
-              <SocialLink href="#" icon={<FiMail className="w-4 h-4" />} label="Email" />
+              {mockFooterData.socials.map((social) => (
+                <a
+                  key={social.id}
+                  href={social.href}
+                  aria-label={social.label}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full border border-gray-300 bg-white flex items-center justify-center text-gray-600 hover:text-blue-600 hover:border-blue-600 hover:bg-blue-50 transition-all duration-200"
+                >
+                  {renderSocialIcon(social.platform)}
+                </a>
+              ))}
             </div>
           </div>
 
           <div>
             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">
-              Platform
+              {mockFooterData.platformNav.title}
             </h3>
             <ul className="space-y-2.5 text-sm">
-              <FooterLink href="/">Home</FooterLink>
-              <FooterLink href="/programs">Programs</FooterLink>
-              <FooterLink href="/activity">Hacker Activity</FooterLink>
-              <FooterLink href="/leaderboard">Leaderboard</FooterLink>
+              {mockFooterData.platformNav.links.map((link) => (
+                <FooterLink key={link.id} item={link} />
+              ))}
             </ul>
           </div>
 
           <div>
             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">
-              Resources
+              {mockFooterData.resourcesNav.title}
             </h3>
             <ul className="space-y-2.5 text-sm">
-              <FooterLink href="/support">Support Center</FooterLink>
-              <FooterLink href="/docs">Documentation</FooterLink>
-              <FooterLink href="/about">About</FooterLink>
-              <FooterLink href="/contact">Contact</FooterLink>
-              <FooterLink href="/privacy">Privacy Policy</FooterLink>
-              <FooterLink href="/terms">Terms of Service</FooterLink>
+              {mockFooterData.resourcesNav.links.map((link) => (
+                <FooterLink key={link.id} item={link} />
+              ))}
             </ul>
           </div>
 
@@ -96,27 +115,27 @@ export default function Footer() {
 
             <ul className="space-y-3 text-sm mb-6">
               <li className="flex items-start gap-3">
-                <FiMapPin className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                <FiMapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                 <span className="text-xs leading-relaxed text-gray-600">
-                  #40, Street 273, Sangkat Boeung Kak Ti Mouy,<br />Khan Toul Kork, Phnom Penh
+                  {mockFooterData.contact.address}
                 </span>
               </li>
               <li className="flex items-center gap-3">
-                <FiPhone className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                <FiPhone className="w-5 h-5 text-blue-600 flex-shrink-0" />
                 <a
-                  href="tel:+85515338826"
+                  href={`tel:${mockFooterData.contact.phone.replace(/\s+/g, "")}`}
                   className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
                 >
-                  +855 15 33 88 26
+                  {mockFooterData.contact.phone}
                 </a>
               </li>
               <li className="flex items-center gap-3">
-                <FiMail className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                <FiMail className="w-5 h-5 text-blue-600 flex-shrink-0" />
                 <a
-                  href="mailto:ipos.istad@gmail.com"
+                  href={`mailto:${mockFooterData.contact.email}`}
                   className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
                 >
-                  ipos.istad@gmail.com
+                  {mockFooterData.contact.email}
                 </a>
               </li>
             </ul>
@@ -146,51 +165,41 @@ export default function Footer() {
         </div>
 
         <div className="py-10 text-center border-t border-gray-200">
-          <p className="text-xs font-bold text-gray-00 uppercase tracking-widest mb-8">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-8">
             SUPPORTED BY
           </p>
 
           <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex flex-col items-center justify-center w-full md:w-auto gap-2">
-              <img
-                src="/istad.png"
-                alt="ISTAD Logo"
-                className="h-12 sm:h-14 w-auto object-contain hover:scale-105 transition-transform duration-200"
-              />
-            </div>
-
-            <div className="flex flex-col items-center justify-center w-full md:w-auto gap-2">
-              <img
-                src="/Logo_MPTC.png"
-                alt="MPTC Logo"
-                className="h-12 sm:h-14 w-auto object-contain hover:scale-105 transition-transform duration-200"
-              />
-            </div>
-
-            <div className="flex flex-col items-center justify-center w-full md:w-auto gap-2">
-              <img
-                src="/CBRD-Logo-Final.png"
-                alt="CBRD Logo"
-                className="h-12 sm:h-14 w-auto object-contain hover:scale-105 transition-transform duration-200"
-              />
-            </div>
+            {mockFooterData.sponsors.map((sponsor) => (
+              <a
+                key={sponsor.id}
+                href={sponsor.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center justify-center w-full md:w-auto gap-2"
+              >
+                <img
+                  src={sponsor.logoSrc}
+                  alt={`${sponsor.name} Logo`}
+                  className="h-12 sm:h-14 w-auto object-contain hover:scale-105 transition-transform duration-200"
+                />
+              </a>
+            ))}
           </div>
-
-         
         </div>
 
         <div className="pt-6 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4">
-          <p>© {currentYear} DevSolve. All rights reserved.</p>
+          <p>© {currentYear} {mockFooterData.brandName}. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <a href="/privacy" className="hover:text-blue-600 transition-colors">
-              Privacy Policy
-            </a>
-            <a href="/terms" className="hover:text-blue-600 transition-colors">
-              Terms of Service
-            </a>
-            <a href="#" className="hover:text-blue-600 transition-colors">
-              Cookies
-            </a>
+            {mockFooterData.legalNav.map((link) => (
+              <Link
+                key={link.id}
+                href={link.href}
+                className="hover:text-blue-600 transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>
@@ -198,36 +207,27 @@ export default function Footer() {
   );
 }
 
-
-function SocialLink({
-  href,
-  icon,
-  label,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <a
-      href={href}
-      aria-label={label}
-      className="w-9 h-9 rounded-full border border-gray-300 bg-white flex items-center justify-center text-gray-600 hover:text-blue-600 hover:border-blue-600 hover:bg-blue-50 transition-all duration-200"
-    >
-      {icon}
-    </a>
-  );
-}
-
-function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
+function FooterLink({ item }: { item: NavLinkItem }) {
   return (
     <li>
-      <a
-        href={href}
+      <Link
+        href={item.href}
         className="text-gray-500 hover:text-blue-600 transition-colors duration-200"
       >
-        {children}
-      </a>
+        {item.label}
+      </Link>
     </li>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
