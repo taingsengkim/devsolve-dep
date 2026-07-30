@@ -1,41 +1,6 @@
 "use client";
 
-<<<<<<< HEAD
-import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  Circle,
-  FileJson,
-  Download,
-  Info,
-  Paperclip,
-  Send,
-  ExternalLink,
-  RotateCw,
-  SquareCheck,
-  Clock,
-  Sparkles,
-  Eye,
-  Share2,
-  Pencil,
-  XCircle,
-  FileText,
-  Copy,
-  Check,
-  ChevronRight,
-  ShieldCheck,
-  Compass,
-  Building2,
-  Award,
-  AlertCircle,
-} from "lucide-react";
-=======
-import React from "react";
-import { motion } from "motion/react";
->>>>>>> eb0c6095e47b33a2355ab7d3f587115926564969
 
 import { useReportDetail } from "@/components/reports/hooks/useReportDetail";
 import { ReportDetailHeader } from "@/components/reports/ReportDetailHeader";
