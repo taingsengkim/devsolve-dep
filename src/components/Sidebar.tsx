@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { useNotification } from "@/components/notifications/NotificationContext";
 
 function getInitials(text: string): string {
   return text
@@ -40,6 +41,7 @@ function SidebarContent({
   onNavItemClick,
   onSignOut,
 }: SidebarContentProps) {
+  const { openNotification } = useNotification();
   // Derive a profile slug from the signed-in user — swap this for `user.username`
   // once the session/auth provider exposes a real username directly.
   const profileSlug = (user?.name || user?.email?.split("@")[0] || "")
@@ -151,7 +153,18 @@ function SidebarContent({
                   (item.href !== "/dashboard" && pathname.startsWith(item.href));
 
                 return (
-                  <Link key={item.name} href={item.href} onClick={onNavItemClick} className="block w-full">
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={(e) => {
+                      if (item.name === "Notification") {
+                        e.preventDefault();
+                        openNotification();
+                      }
+                      if (onNavItemClick) onNavItemClick();
+                    }}
+                    className="block w-full"
+                  >
                     <Button
                       variant="ghost"
                       className={`w-full cursor-pointer justify-between h-10 px-3 rounded-xl ${
