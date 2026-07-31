@@ -57,16 +57,9 @@ export default function OrganizationVerificationPage() {
       {/* PAGE HEADER */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            Admin / KYC &amp; KYB
-          </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             Organization Verification
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Review and audit company identity documents before granting VDP program access.
-          </p>
         </div>
 
         {/* Pending badge call-to-action */}
