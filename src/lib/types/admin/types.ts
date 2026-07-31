@@ -35,15 +35,30 @@ export interface ReportStatusBreakdown {
 
 export interface CompanyVerificationItem {
   id: string;
+  orgCode?: string;
   companyName: string;
   email: string;
   domain: string;
   taxId: string;
   businessType: string;
   registrationDate: string;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  submittedAt?: string;
+  status: "PENDING" | "APPROVED" | "REJECTED" | "UNDER_REVIEW";
   documentsCount: number;
   notes?: string;
+  contactName?: string;
+  jobTitle?: string;
+  phone?: string;
+  website?: string;
+  country?: string;
+  industry?: string;
+  description?: string;
+  logoUrl?: string;
+  riskIndicators?: {
+    domainMatchesEmail: boolean;
+    noFailedDocs: boolean;
+    descriptionProvided: boolean;
+  };
 }
 
 export interface ReportConfirmationItem {

@@ -50,7 +50,7 @@ export const NAV_ITEMS: NavItem[] = [
   { name: "Org Settings", href: "/dashboard/org-settings", icon: Building2, roles: ["COMPANY"], category: "Organization" },
 
   // ADMIN Role items
-  { name: "Company Verification", href: "/dashboard/company-verification", icon: ShieldCheck, roles: ["ADMIN"], category: "Administration" },
+  { name: "Organization Verification", href: "/dashboard/company-verification", icon: ShieldCheck, roles: ["ADMIN"], category: "Administration" },
   { name: "Report Confirmation", href: "/dashboard/report-confirmation", icon: FileCheck, roles: ["ADMIN"], category: "Administration" },
   { name: "Community Moderation", href: "/dashboard/community-moderation", icon: MessageSquareCode, roles: ["ADMIN"], category: "Administration" },
   { name: "Review Report", href: "/dashboard/review-report", icon: FileSearch, roles: ["ADMIN"], category: "Administration" },
