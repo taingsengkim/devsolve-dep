@@ -2,8 +2,6 @@
 
 import { useGetProfileByUsernameQuery } from "@/lib/redux/services/profileApi";
 import { useParams } from "next/navigation";
-import ProfileHeader from "@/components/profile/ProfileHeader";
-import ProfileBio from "@/components/profile/ProfileBio";
 import ProfileTabsContainer from "@/components/profile/ProfileTabsContainer";
 
 export default function ProfilePage() {
@@ -22,15 +20,16 @@ export default function ProfilePage() {
   const { profile, stats, severity, badges } = data;
 
   return (
-    <div>
-      <div className="rounded-2xl bg-white shadow-sm">
-        <ProfileHeader profile={profile} />
-        <div className="px-1 pb-5">
-          <ProfileBio profile={profile} />
-        </div>
-      </div>
-
-      <ProfileTabsContainer stats={stats} severity={severity} badges={badges} username={username} />
-    </div>
+    <Suspense fallback={null}>
+      <ProfileTabsContainer
+        profile={profile}
+        stats={stats}
+        severity={severity}
+        badges={badges}
+        hacktivity={hacktivity}
+        communityPosts={communityPosts}
+        thanks={thanks}
+      />
+    </Suspense>
   );
 }

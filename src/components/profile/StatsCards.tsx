@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "motion/react";
 import { ProfileStats } from "@/lib/types/profile/types";
 
 interface StatsCardsProps {
@@ -16,11 +19,16 @@ export default function StatsCards({ stats }: StatsCardsProps) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       {cards.map((card) => (
-        <div key={card.label} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
-          <p className="mt-1 text-sm font-medium text-slate-700">{card.label}</p>
-          <p className="text-xs text-slate-400">{card.sub}</p>
-        </div>
+        <motion.div
+          key={card.label}
+          whileHover={{ y: -2 }}
+          transition={{ duration: 0.15 }}
+          className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs transition-shadow hover:shadow-xs"
+        >
+          <p className={`text-2xl font-bold tracking-tight ${card.color}`}>{card.value}</p>
+          <p className="mt-1 text-sm font-semibold text-slate-800">{card.label}</p>
+          <p className="text-xs font-medium text-slate-400">{card.sub}</p>
+        </motion.div>
       ))}
     </div>
   );

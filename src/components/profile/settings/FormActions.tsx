@@ -1,4 +1,4 @@
-import { card, buttonGhost, buttonOutline, buttonPrimary } from "./styles";
+import { Button } from "@/components/ui/button";
 
 interface FormActionsProps {
   onCancel: () => void;
@@ -9,18 +9,18 @@ interface FormActionsProps {
 
 export default function FormActions({ onCancel, onPreview, onSave, isSaving }: FormActionsProps) {
   return (
-    <div className={`${card} flex flex-col-reverse items-center justify-between gap-3 p-4 sm:flex-row`}>
-      <button type="button" onClick={onCancel} className={buttonGhost}>
+    <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs flex flex-col-reverse items-center justify-between gap-3 p-4 sm:flex-row">
+      <Button type="button" variant="ghost" onClick={onCancel} className="text-slate-500 hover:text-slate-900 cursor-pointer">
         Cancel
-      </button>
+      </Button>
       <div className="flex w-full gap-3 sm:w-auto">
-        <button type="button" onClick={onPreview} className={`${buttonOutline} flex-1 sm:flex-none`}>
+        <Button type="button" variant="outline" onClick={onPreview} className="flex-1 sm:flex-none cursor-pointer rounded-xl border-slate-300 font-semibold text-slate-700">
           Preview profile
-        </button>
-        <button type="button" onClick={onSave} disabled={isSaving} className={`${buttonPrimary} flex-1 sm:flex-none`}>
+        </Button>
+        <Button type="button" onClick={onSave} disabled={isSaving} className="flex-1 sm:flex-none cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-2xs">
           {isSaving ? "Saving..." : "Save changes"}
-        </button>
+        </Button>
       </div>
     </div>
   );
-}
+}

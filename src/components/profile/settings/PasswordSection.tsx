@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff, Lock } from "lucide-react";
-import { inputBase } from "./styles";
+import { Eye, EyeOff } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export interface PasswordFormState {
   currentPassword: string;
@@ -32,25 +32,25 @@ function PasswordField({
 
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="text-sm font-medium text-[#171717]">
+      <label htmlFor={id} className="text-xs font-semibold uppercase tracking-wider text-slate-500">
         {label}
       </label>
       <div className="relative">
-        <input
+        <Input
           id={id}
           type={visible ? "text" : "password"}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className={`${inputBase} pr-10`}
+          className="h-10.5 rounded-xl border-slate-300 bg-white pr-9 text-slate-800 shadow-2xs focus-visible:ring-2 focus-visible:ring-blue-600/30"
         />
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4d4d4d] transition hover:text-[#171717]"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition cursor-pointer"
           aria-label={visible ? "Hide password" : "Show password"}
         >
-          {visible ? <EyeOff size={15} /> : <Eye size={15} />}
+          {visible ? <EyeOff size={14} /> : <Eye size={14} />}
         </button>
       </div>
     </div>
@@ -59,35 +59,27 @@ function PasswordField({
 
 export default function PasswordSection({ value, onChange }: PasswordSectionProps) {
   return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-2 text-sm font-semibold text-[#171717]">
-        <Lock size={15} />
-        Change password
-      </div>
-
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <PasswordField
         id="currentPassword"
-        label="Current password"
-        placeholder="Enter your current password"
+        label="Old Password"
+        placeholder="Enter your password"
         value={value.currentPassword}
         onChange={(v) => onChange("currentPassword", v)}
       />
 
-      <div>
-        <PasswordField
-          id="newPassword"
-          label="New password"
-          placeholder="Enter a new password (min 8 characters)"
-          value={value.newPassword}
-          onChange={(v) => onChange("newPassword", v)}
-        />
-        <p className="mt-1.5 text-sm text-[#4d4d4d]">Password must be at least 8 characters long and contain a mix of letters, numbers, and symbols.</p>
-      </div>
+      <PasswordField
+        id="newPassword"
+        label="New Password"
+        placeholder="Enter new password"
+        value={value.newPassword}
+        onChange={(v) => onChange("newPassword", v)}
+      />
 
       <PasswordField
         id="confirmPassword"
-        label="Confirm new password"
-        placeholder="Confirm your new password"
+        label="New Password Again"
+        placeholder="Confirm new password"
         value={value.confirmPassword}
         onChange={(v) => onChange("confirmPassword", v)}
       />

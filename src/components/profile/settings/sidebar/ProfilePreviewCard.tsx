@@ -1,7 +1,7 @@
+import Image from "next/image";
 import { Globe, User as UserIcon } from "lucide-react";
 import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
 import { EditProfileFormData } from "@/lib/types/profile/types";
-import { card, sectionLabel, badgePill } from "../styles";
 
 interface ProfilePreviewCardProps {
   data: EditProfileFormData;
@@ -9,37 +9,37 @@ interface ProfilePreviewCardProps {
 
 export default function ProfilePreviewCard({ data }: ProfilePreviewCardProps) {
   return (
-    <div className={`${card} p-5`}>
-      <p className={`inline-flex items-center gap-1.5 ${sectionLabel}`}>
-        <UserIcon size={13} />
+    <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs p-5">
+      <p className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400">
+        <UserIcon size={14} />
         Profile preview
       </p>
 
-      <div className="mt-3 flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#2563EB] text-sm font-bold text-white">
-          {data.avatarInitials}
+      <div className="mt-3.5 flex items-center gap-3">
+        <div className="h-12 w-12 rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden relative bg-slate-100 shrink-0">
+          <Image
+            src="/justin.png"
+            alt={data.fullName}
+            fill
+            className="object-cover"
+          />
         </div>
-        <div>
-          <p className="text-sm font-semibold text-[#171717]">{data.fullName}</p>
-          <p className="text-sm text-[#4d4d4d]">@{data.username}</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-base font-bold text-slate-800 dark:text-slate-100 truncate">{data.fullName}</p>
+          <p className="text-xs font-medium text-slate-500 truncate">@{data.username}</p>
         </div>
       </div>
 
-      <span className={`${badgePill} mt-2 bg-[#2563EB]/10 text-[#2563EB]`}>
-        <UserIcon size={11} />
-        {data.accountType}
-      </span>
+      <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300 line-clamp-3">{data.bio}</p>
 
-      <p className="mt-3 text-sm leading-relaxed text-[#4d4d4d]">{data.bio}</p>
-
-      <div className="mt-3 flex items-center gap-3 text-[#4d4d4d]">
-        {data.socialLinks.github && <FaGithub size={15} />}
-        {data.socialLinks.twitter && <FaTwitter size={15} />}
-        {data.socialLinks.linkedin && <FaLinkedin size={15} />}
-        {data.socialLinks.website && <Globe size={15} />}
+      <div className="mt-3 flex items-center gap-3 text-slate-500">
+        {data.socialLinks.github && <FaGithub size={16} className="hover:text-slate-800 dark:hover:text-slate-200 transition" />}
+        {data.socialLinks.twitter && <FaTwitter size={16} className="hover:text-slate-800 dark:hover:text-slate-200 transition" />}
+        {data.socialLinks.linkedin && <FaLinkedin size={16} className="hover:text-slate-800 dark:hover:text-slate-200 transition" />}
+        {data.socialLinks.website && <Globe size={16} className="hover:text-blue-600 transition" />}
       </div>
 
-      <p className="mt-3 text-sm text-[#4d4d4d]">Your profile is visible to the community.</p>
+      <p className="mt-3 text-xs font-medium text-slate-400">Your profile is visible to the community.</p>
     </div>
   );
-}
+}

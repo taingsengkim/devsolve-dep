@@ -1,0 +1,51 @@
+export type BookmarkCategory = "all" | "Program" | "Problems" | "Solutions";
+
+export type BookmarkSeverity = "Critical" | "High" | "Medium" | "Low";
+
+export interface BookmarkItem {
+  id: string;
+  category: "Program" | "Problems" | "Solutions";
+  title: string;
+  description: string;
+  savedAt: string;
+  tags: string[];
+  url?: string;
+  
+  // Program specific
+  companyName?: string;
+  logoUrl?: string;
+  bountyMax?: string;
+  programType?: "Bounty" | "Response" | "Vulnerability";
+  inScopeCount?: number;
+
+  // Problems specific
+  severity?: BookmarkSeverity;
+  points?: number;
+  submissionsCount?: number;
+  status?: "Open" | "Solved" | "In Review";
+
+  // Solutions specific
+  authorName?: string;
+  authorAvatar?: string;
+  readTime?: string;
+  likesCount?: number;
+  targetProgram?: string;
+}
+
+export interface BookmarkFilterParams {
+  category?: BookmarkCategory;
+  search?: string;
+  severity?: string;
+  sortBy?: "newest" | "oldest" | "title";
+}
+
+export interface BookmarksResponse {
+  data: BookmarkItem[];
+  counts: {
+    all: number;
+    Program: number;
+    Problems: number;
+    Solutions: number;
+  };
+  totalCount: number;
+}
