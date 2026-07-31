@@ -142,7 +142,7 @@ export default function CustomCountrySelect({
                     <div className="flex items-center gap-2.5 min-w-0">
                       <img
                         src={`https://flagcdn.com/w40/${c.code.toLowerCase()}.png`}
-                        alt={c.name}
+                        alt="Country flag"
                         className="w-5 h-3.5 object-cover rounded-sm border border-slate-200/80 shadow-xs shrink-0"
                       />
                       <span className="truncate">{c.name}</span>
