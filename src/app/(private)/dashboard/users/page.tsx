@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import {
@@ -44,32 +44,35 @@ export default function AdminUsersPage() {
   });
 
   /* ── Handlers ────────────────────────────────────────────────────── */
-  const handleUpdateStatus = async (id: string, status: "ACTIVE" | "SUSPENDED") => {
-    try {
-      await updateUser({ id, status });
-      toast.success(
-        status === "ACTIVE" ? "Account activated." : "Account suspended.",
-        { description: `User status updated successfully.` }
-      );
-    } catch {
-      toast.error("Failed to update user status.");
-    }
-  };
+  const handleUpdateStatus = useCallback(
+    async (id: string, status: "ACTIVE" | "SUSPENDED") => {
+      try {
+        await updateUser({ id, status }).unwrap();
+        toast.success(
+          status === "ACTIVE" ? "Account activated." : "Account suspended.",
+          { description: `User status updated successfully.` }
+        );
+      } catch {
+        toast.error("Failed to update user status.");
+      }
+    },
+    [updateUser]
+  );
 
-  const handleUpdateRole = async (
-    id: string,
-    role: "USER" | "COMPANY" | "ADMIN" | "MODERATOR"
-  ) => {
-    try {
-      const user = users.find((u) => u.id === id);
-      const safeStatus: "ACTIVE" | "SUSPENDED" =
-        user?.status === "SUSPENDED" ? "SUSPENDED" : "ACTIVE";
-      await updateUser({ id, status: safeStatus, role });
-      toast.success("Role updated.", { description: `User role changed to ${role}.` });
-    } catch {
-      toast.error("Failed to update user role.");
-    }
-  };
+  const handleUpdateRole = useCallback(
+    async (
+      id: string,
+      role: "USER" | "COMPANY" | "ADMIN" | "MODERATOR"
+    ) => {
+      try {
+        await updateUser({ id, role }).unwrap();
+        toast.success("Role updated.", { description: `User role changed to ${role}.` });
+      } catch {
+        toast.error("Failed to update user role.");
+      }
+    },
+    [updateUser]
+  );
 
   const columns = useMemo(
     () =>
@@ -77,7 +80,7 @@ export default function AdminUsersPage() {
         onUpdateStatus: handleUpdateStatus,
         onUpdateRole: handleUpdateRole,
       }),
-    [users]
+    [handleUpdateStatus, handleUpdateRole]
   );
 
   const suspendedCount = statusCounts.suspended;

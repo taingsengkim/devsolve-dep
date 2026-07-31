@@ -315,6 +315,7 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     role: "ADMIN",
     status: "ACTIVE",
     joinedDate: "2025-01-10",
+    avatarUrl: "/u1.jpg",
   },
   {
     id: "usr_2",
@@ -324,6 +325,7 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     status: "ACTIVE",
     joinedDate: "2026-02-14",
     programsManaged: 3,
+    avatarUrl: "/u2.jpg",
   },
   {
     id: "usr_3",
@@ -333,6 +335,7 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     status: "ACTIVE",
     joinedDate: "2026-03-01",
     reportsSubmitted: 28,
+    avatarUrl: "/u3.jpg",
   },
   {
     id: "usr_4",
@@ -342,6 +345,7 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     status: "SUSPENDED",
     joinedDate: "2026-07-20",
     reportsSubmitted: 0,
+    avatarUrl: "/u4.jpg",
   },
   {
     id: "usr_5",
@@ -350,6 +354,7 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     role: "MODERATOR",
     status: "ACTIVE",
     joinedDate: "2025-06-15",
+    avatarUrl: "/u1.jpg",
   },
   {
     id: "usr_6",
@@ -359,6 +364,7 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     status: "ACTIVE",
     joinedDate: "2026-04-22",
     programsManaged: 7,
+    avatarUrl: "/u2.jpg",
   },
   {
     id: "usr_7",
@@ -368,6 +374,7 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     status: "ACTIVE",
     joinedDate: "2026-01-05",
     reportsSubmitted: 54,
+    avatarUrl: "/u3.jpg",
   },
   {
     id: "usr_8",
@@ -376,6 +383,7 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     role: "MODERATOR",
     status: "ACTIVE",
     joinedDate: "2025-11-03",
+    avatarUrl: "/u4.jpg",
   },
   {
     id: "usr_9",
@@ -385,6 +393,7 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     status: "SUSPENDED",
     joinedDate: "2026-06-18",
     reportsSubmitted: 2,
+    avatarUrl: "/u1.jpg",
   },
   {
     id: "usr_10",
@@ -394,6 +403,7 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     status: "ACTIVE",
     joinedDate: "2026-07-27",
     programsManaged: 4,
+    avatarUrl: "/u2.jpg",
   },
   {
     id: "usr_11",
@@ -403,6 +413,7 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     status: "PENDING",
     joinedDate: "2026-07-31",
     reportsSubmitted: 0,
+    avatarUrl: "/u3.jpg",
   },
 ];
 
@@ -492,25 +503,31 @@ export const MOCK_REPORT_REASONS_BREAKDOWN: ReportReasonsBreakdownData = {
   total: 14,
 };
 
+let mockCompanyVerificationsStore = [...MOCK_COMPANY_VERIFICATIONS];
+let mockReportConfirmationsStore = [...MOCK_REPORT_CONFIRMATIONS];
+let mockAdminUsersStore = [...MOCK_ADMIN_USERS];
+let mockModerationItemsStore = [...MOCK_MODERATION_ITEMS];
+let mockContentReportsStore = [...MOCK_CONTENT_REPORTS];
+
 export const adminApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAdminOverview: builder.query<AdminDashboardOverviewResponse, void>({
       queryFn: () => {
-        return { data: MOCK_ADMIN_OVERVIEW };
+        return { data: { ...MOCK_ADMIN_OVERVIEW } };
       },
       providesTags: ["Report", "Program"],
     }),
     getCompanyVerifications: builder.query<CompanyVerificationItem[], void>({
       queryFn: () => {
-        return { data: MOCK_COMPANY_VERIFICATIONS };
+        return { data: mockCompanyVerificationsStore.map((c) => ({ ...c })) };
       },
       providesTags: ["CompanyVerification"],
     }),
     getCompanyVerificationById: builder.query<CompanyVerificationItem, string>({
       queryFn: (id) => {
-        const found = MOCK_COMPANY_VERIFICATIONS.find((c) => c.id === id);
-        if (found) return { data: found };
-        return { data: MOCK_COMPANY_VERIFICATIONS[0] };
+        const found = mockCompanyVerificationsStore.find((c) => c.id === id);
+        if (found) return { data: { ...found } };
+        return { data: { ...mockCompanyVerificationsStore[0] } };
       },
       providesTags: (_result, _error, id) => [{ type: "CompanyVerification", id }],
     }),
@@ -520,19 +537,19 @@ export const adminApi = baseApi.injectEndpoints({
     >({
       // TODO: replace queryFn with query() when real API is ready
       queryFn: ({ id, status, notes }) => {
-        const item = MOCK_COMPANY_VERIFICATIONS.find((c) => c.id === id);
-        if (item) {
-          item.status = status;
-          if (notes) item.notes = notes;
-        }
-        return { data: item || MOCK_COMPANY_VERIFICATIONS[0] };
+        mockCompanyVerificationsStore = mockCompanyVerificationsStore.map((c) =>
+          c.id === id ? { ...c, status, ...(notes ? { notes } : {}) } : c
+        );
+        const updated = mockCompanyVerificationsStore.find((c) => c.id === id);
+        return { data: updated ? { ...updated } : { ...mockCompanyVerificationsStore[0] } };
       },
       invalidatesTags: ["CompanyVerification"],
     }),
     getReportConfirmations: builder.query<ReportConfirmationItem[], void>({
       queryFn: () => {
-        return { data: MOCK_REPORT_CONFIRMATIONS };
+        return { data: mockReportConfirmationsStore.map((r) => ({ ...r })) };
       },
+      providesTags: ["Report"],
     }),
     updateConfirmReport: builder.mutation<
       ReportConfirmationItem,
@@ -540,38 +557,45 @@ export const adminApi = baseApi.injectEndpoints({
     >({
       // TODO: replace queryFn with query() when real API is ready
       queryFn: ({ id, status }) => {
-        const item = MOCK_REPORT_CONFIRMATIONS.find((r) => r.id === id);
-        if (item) {
-          item.status = status;
-        }
-        return { data: item || MOCK_REPORT_CONFIRMATIONS[0] };
+        mockReportConfirmationsStore = mockReportConfirmationsStore.map((r) =>
+          r.id === id ? { ...r, status } : r
+        );
+        const updated = mockReportConfirmationsStore.find((r) => r.id === id);
+        return { data: updated ? { ...updated } : { ...mockReportConfirmationsStore[0] } };
       },
       invalidatesTags: ["Report"],
     }),
     getAdminUsers: builder.query<AdminUserItem[], void>({
       queryFn: () => {
-        return { data: MOCK_ADMIN_USERS };
+        return { data: mockAdminUsersStore.map((u) => ({ ...u })) };
       },
+      providesTags: ["AdminUser"],
     }),
     updateAdminUserStatus: builder.mutation<
       AdminUserItem,
-      { id: string; status: "ACTIVE" | "SUSPENDED"; role?: "USER" | "COMPANY" | "ADMIN" | "MODERATOR" }
+      { id: string; status?: "ACTIVE" | "SUSPENDED" | "PENDING"; role?: "USER" | "COMPANY" | "ADMIN" | "MODERATOR" }
     >({
       // TODO: replace queryFn with query() when real API is ready
       queryFn: ({ id, status, role }) => {
-        const item = MOCK_ADMIN_USERS.find((u) => u.id === id);
-        if (item) {
-          item.status = status;
-          if (role) item.role = role;
-        }
-        return { data: item || MOCK_ADMIN_USERS[0] };
+        mockAdminUsersStore = mockAdminUsersStore.map((u) =>
+          u.id === id
+            ? {
+                ...u,
+                ...(status ? { status } : {}),
+                ...(role ? { role } : {}),
+              }
+            : u
+        );
+        const updated = mockAdminUsersStore.find((u) => u.id === id);
+        return { data: updated ? { ...updated } : { ...mockAdminUsersStore[0] } };
       },
       invalidatesTags: ["AdminUser"],
     }),
     getModerationItems: builder.query<ModerationItem[], void>({
       queryFn: () => {
-        return { data: MOCK_MODERATION_ITEMS };
+        return { data: mockModerationItemsStore.map((m) => ({ ...m })) };
       },
+      providesTags: ["ModerationItem"],
     }),
     updateModerationItem: builder.mutation<
       ModerationItem,
@@ -579,11 +603,11 @@ export const adminApi = baseApi.injectEndpoints({
     >({
       // TODO: replace queryFn with query() when real API is ready
       queryFn: ({ id, status }) => {
-        const item = MOCK_MODERATION_ITEMS.find((m) => m.id === id);
-        if (item) {
-          item.status = status;
-        }
-        return { data: item || MOCK_MODERATION_ITEMS[0] };
+        mockModerationItemsStore = mockModerationItemsStore.map((m) =>
+          m.id === id ? { ...m, status } : m
+        );
+        const updated = mockModerationItemsStore.find((m) => m.id === id);
+        return { data: updated ? { ...updated } : { ...mockModerationItemsStore[0] } };
       },
       invalidatesTags: ["ModerationItem"],
     }),
@@ -594,11 +618,12 @@ export const adminApi = baseApi.injectEndpoints({
       queryFn: () => {
         return {
           data: {
-            items: MOCK_CONTENT_REPORTS,
-            breakdown: MOCK_REPORT_REASONS_BREAKDOWN,
+            items: mockContentReportsStore.map((r) => ({ ...r })),
+            breakdown: { ...MOCK_REPORT_REASONS_BREAKDOWN },
           },
         };
       },
+      providesTags: ["ContentReport"],
     }),
     updateContentReportAction: builder.mutation<
       ContentReportItem,
@@ -606,13 +631,16 @@ export const adminApi = baseApi.injectEndpoints({
     >({
       // TODO: replace queryFn with query() when real API is ready
       queryFn: ({ id, action }) => {
-        const item = MOCK_CONTENT_REPORTS.find((r) => r.id === id);
-        if (item) {
-          if (action === "DISMISS") item.status = "DISMISSED";
-          if (action === "WARN") item.status = "WARNED";
-          if (action === "REMOVE") item.status = "REMOVED";
-        }
-        return { data: item || MOCK_CONTENT_REPORTS[0] };
+        mockContentReportsStore = mockContentReportsStore.map((r) => {
+          if (r.id !== id) return r;
+          let newStatus = r.status;
+          if (action === "DISMISS") newStatus = "DISMISSED";
+          if (action === "WARN") newStatus = "WARNED";
+          if (action === "REMOVE") newStatus = "REMOVED";
+          return { ...r, status: newStatus };
+        });
+        const updated = mockContentReportsStore.find((r) => r.id === id);
+        return { data: updated ? { ...updated } : { ...mockContentReportsStore[0] } };
       },
       invalidatesTags: ["ContentReport"],
     }),
