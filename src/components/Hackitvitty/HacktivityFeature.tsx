@@ -7,6 +7,7 @@ import { useGetHacktivityFeedQuery } from "@/lib/redux/services/hacktivityApi";
 import SearchBar from "@/components/shared/SearchBar";
 import { Badge } from "@/components/ui/badge";
 import FeaturedDisclosures from "./FeaturedDisclosures";
+import HacktivityHero from "./HacktivityHero";
 import {
   ShieldAlert,
   Award,
@@ -57,30 +58,8 @@ export default function HacktivityFeature() {
   return (
     <div className="min-h-screen bg-slate-50/50 py-8 px-4 sm:py-12 sm:px-6 md:px-8 lg:px-12">
       <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-              Hacktivity Stream
-            </h1>
-            <p className="mt-1.5 text-sm text-slate-500 max-w-2xl">
-              Real-time feed of resolved vulnerabilities, hacker milestones, and public disclosure reports.
-            </p>
-          </div>
-
-          {/* Stats Badges */}
-          <div className="flex flex-wrap items-center gap-3">
-            {activityStats.map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-xl border border-slate-200/80 bg-white px-3.5 py-2 shadow-xs"
-              >
-                <div className="text-sm font-bold text-slate-900">{stat.value}</div>
-                <div className="text-[11px] font-medium text-slate-500">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Hero Section */}
+        {/* <HacktivityHero stats={activityStats} /> */}
 
         {/* Featured Vulnerability Disclosures */}
         <FeaturedDisclosures />
@@ -297,7 +276,7 @@ export default function HacktivityFeature() {
                         <div className="text-xs font-bold text-slate-900">
                           {hacker.name}
                         </div>
-                        <div className="text-[11px] text-slate-500 font-medium">
+                        <div className="text-xs text-slate-500 font-medium">
                           @{hacker.handle}
                         </div>
                       </div>

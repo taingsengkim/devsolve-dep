@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { ShieldAlert, Award, Heart, Sparkles, ExternalLink } from "lucide-react";
@@ -125,9 +126,11 @@ export default function FeaturedDisclosures() {
             {/* Reporter & Upvote Footer */}
             <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <img
+                <Image
                   src={item.avatarUrl}
-                  alt={item.handle}
+                  alt={`${item.handle} avatar`}
+                  width={28}
+                  height={28}
                   className="h-7 w-7 rounded-full object-cover ring-1 ring-slate-200"
                 />
                 <span className="text-xs font-bold text-slate-900">@{item.handle}</span>
