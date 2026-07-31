@@ -11,10 +11,20 @@ import { DashboardActionQueue } from "@/components/dashboard/DashboardActionQueu
 import { DashboardMyPrograms } from "@/components/dashboard/DashboardMyPrograms";
 import { DashboardReportStatus } from "@/components/dashboard/DashboardReportStatus";
 import { DashboardReportSeverity } from "@/components/dashboard/DashboardReportSeverity";
-import { DashboardSecurityFeed } from "@/components/dashboard/DashboardSecurityFeed";
+import { AdminDashboardOverview } from "@/components/admin/AdminDashboardOverview";
+import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 
 export default function DashboardPage() {
+  const { user } = useSidebarAuth();
+  const isAdminUser = user?.roles?.includes("ADMIN") || user?.role?.includes("ADMIN");
+
+  const viewMode = isAdminUser ? "ADMIN" : "COMPANY";
+
   const { data: dashboardData, isLoading, isFetching, refetch } = useGetDashboardOverviewQuery();
+
+  if (viewMode === "ADMIN") {
+    return <AdminDashboardOverview />;
+  }
 
   if (isLoading || !dashboardData) {
     return (
@@ -29,8 +39,8 @@ export default function DashboardPage() {
           <div className="lg:col-span-5 h-80 bg-slate-200/60 dark:bg-slate-800 rounded-xl" />
           <div className="lg:col-span-7 h-80 bg-slate-200/60 dark:bg-slate-800 rounded-xl" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2].map((i) => (
             <div key={i} className="h-72 bg-slate-200/60 dark:bg-slate-800 rounded-xl" />
           ))}
         </div>
@@ -45,7 +55,7 @@ export default function DashboardPage() {
       transition={{ duration: 0.3, ease: "easeOut" }}
       className="space-y-6 w-full pb-12"
     >
-      {/* Page Header */}
+      {/* Page Header with option to switch back to Admin Platform View */}
       <DashboardHeader onRefresh={refetch} isRefreshing={isFetching} />
 
       {/* Top 4 Stat Metric Cards */}
@@ -64,14 +74,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Bottom Section: Status Breakdown + Severity Breakdown + Security Feed */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Bottom Section: Status Breakdown + Severity Breakdown */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <DashboardReportStatus distribution={dashboardData.reportStatus} />
         <DashboardReportSeverity distribution={dashboardData.reportSeverity} />
-        <DashboardSecurityFeed feed={dashboardData.securityFeed} />
       </div>
     </motion.div>
   );
 }
-
-

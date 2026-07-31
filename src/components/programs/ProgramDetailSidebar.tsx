@@ -2,9 +2,12 @@
 
 import React from "react";
 import Link from "next/link";
-import { Zap, Calendar, FileText } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Zap, Calendar, FileText, Loader2 } from "lucide-react";
 import { ProgramItem } from "@/lib/types/programs/types";
 import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth/auth-client";
+import { useKeycloakLogin } from "@/hooks/useKeycloakLogin";
 
 interface ProgramDetailSidebarProps {
   program: ProgramItem;
@@ -13,6 +16,19 @@ interface ProgramDetailSidebarProps {
 export const ProgramDetailSidebar: React.FC<ProgramDetailSidebarProps> = ({
   program,
 }) => {
+  const router = useRouter();
+  const { data: session } = authClient.useSession();
+  const { handleLogin, isLoggingIn } = useKeycloakLogin();
+
+  const handleSubmitReport = () => {
+    const targetUrl = `/dashboard/submit-report?programId=${program.id}`;
+    if (session?.user) {
+      router.push(targetUrl);
+    } else {
+      handleLogin(targetUrl);
+    }
+  };
+
   return (
     <aside className="space-y-6">
       {/* Widget 1: Program Timeline */}
@@ -78,12 +94,20 @@ export const ProgramDetailSidebar: React.FC<ProgramDetailSidebarProps> = ({
           </p>
         </div>
 
-        <Link href={`/dashboard/my-reports`} className="block relative z-10">
-          <Button className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold gap-2 shadow-sm cursor-pointer">
-            <Zap className="w-4 h-4" />
+        <div className="block relative z-10">
+          <Button
+            onClick={handleSubmitReport}
+            disabled={isLoggingIn}
+            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold gap-2 shadow-sm cursor-pointer"
+          >
+            {isLoggingIn ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Zap className="w-4 h-4" />
+            )}
             Submit a Report
           </Button>
-        </Link>
+        </div>
       </section>
     </aside>
   );

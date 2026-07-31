@@ -15,6 +15,13 @@ function parseJwtPayload(token?: string) {
 }
 
 export const auth = betterAuth({
+  trustedOrigins: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "https://devsolve-frontend.vercel.app",
+    ...(process.env.NEXT_PUBLIC_SITE_URL ? [process.env.NEXT_PUBLIC_SITE_URL] : []),
+  ],
   user: {
     additionalFields: {
       role: {

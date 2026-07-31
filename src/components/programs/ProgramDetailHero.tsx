@@ -3,10 +3,13 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Bookmark, Send } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ArrowLeft, Bookmark, Send, Loader2 } from "lucide-react";
 import { ProgramItem } from "@/lib/types/programs/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { authClient } from "@/lib/auth/auth-client";
+import { useKeycloakLogin } from "@/hooks/useKeycloakLogin";
 
 interface ProgramDetailHeroProps {
   program: ProgramItem;
@@ -14,13 +17,30 @@ interface ProgramDetailHeroProps {
 
 export const ProgramDetailHero: React.FC<ProgramDetailHeroProps> = ({ program }) => {
   const [isSaved, setIsSaved] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = authClient.useSession();
+  const { handleLogin, isLoggingIn } = useKeycloakLogin();
+
+  const backUrl = pathname?.startsWith("/dashboard")
+    ? "/dashboard/programs"
+    : "/programs";
+
+  const handleSubmitReport = () => {
+    const targetUrl = `/dashboard/submit-report?programId=${program.id}`;
+    if (session?.user) {
+      router.push(targetUrl);
+    } else {
+      handleLogin(targetUrl);
+    }
+  };
 
   return (
     <div className="space-y-6">
       {/* Back to Programs Navigation */}
       <nav aria-label="Back Navigation">
         <Link
-          href="/dashboard/programs"
+          href={backUrl}
           className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -87,12 +107,18 @@ export const ProgramDetailHero: React.FC<ProgramDetailHeroProps> = ({ program })
               {isSaved ? "Saved" : "Save"}
             </Button>
 
-            <Link href={`/dashboard/submit-report?programId=${program.id}`}>
-              <Button className="rounded-xl h-10 px-5 font-semibold text-sm bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transition-all gap-2 shadow-xs">
+            <Button
+              onClick={handleSubmitReport}
+              disabled={isLoggingIn}
+              className="rounded-xl h-10 px-5 font-semibold text-sm bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transition-all gap-2 shadow-xs"
+            >
+              {isLoggingIn ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
                 <Send className="w-4 h-4" />
-                <span>Submit Report</span>
-              </Button>
-            </Link>
+              )}
+              <span>Submit Report</span>
+            </Button>
           </div>
         </div>
 

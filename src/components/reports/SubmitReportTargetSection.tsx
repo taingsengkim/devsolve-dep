@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { UseFormRegister, FieldErrors, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { Target, CheckCircle2, XCircle, Lock, AlertTriangle } from "lucide-react";
 import { SubmitReportFormValues, HTTP_METHODS, ENVIRONMENTS } from "@/lib/validations/report";
@@ -91,13 +92,24 @@ export function SubmitReportTargetSection({
       {/* Dynamic Program Header Banner */}
       <div className="bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div
-            className={`w-11 h-11 rounded-xl ${
-              selectedProgram?.logoBgColor || "bg-blue-600"
-            } flex items-center justify-center text-white font-bold text-base shrink-0 shadow-xs`}
-          >
-            {companyInitials}
-          </div>
+          {selectedProgram?.logoUrl ? (
+            <Image
+              src={selectedProgram.logoUrl}
+              alt={selectedProgram.companyName || "Company logo"}
+              width={44}
+              height={44}
+              unoptimized
+              className="w-11 h-11 rounded-xl object-contain shrink-0 bg-white p-1 shadow-xs border border-slate-200 dark:border-slate-800"
+            />
+          ) : (
+            <div
+              className={`w-11 h-11 rounded-xl ${
+                selectedProgram?.logoBgColor || "bg-blue-600"
+              } flex items-center justify-center text-white font-bold text-base shrink-0 shadow-xs`}
+            >
+              {companyInitials}
+            </div>
+          )}
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
@@ -176,9 +188,11 @@ export function SubmitReportTargetSection({
         {/* HTTP Method & Vulnerable Parameter */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label htmlFor="httpMethod" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-              HTTP Method
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="httpMethod" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                HTTP Method <span className="text-red-500">*</span>
+              </label>
+            </div>
             <Select
               value={selectedHttpMethod}
               onValueChange={(val) =>
@@ -190,7 +204,7 @@ export function SubmitReportTargetSection({
             >
               <SelectTrigger
                 id="httpMethod"
-                className="w-full h-11 px-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-2xs cursor-pointer"
+                className="w-full h-11 data-[size=default]:h-11 px-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-2xs cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <span

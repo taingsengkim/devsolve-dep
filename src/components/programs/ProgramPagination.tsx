@@ -3,6 +3,13 @@
 import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ProgramPaginationProps {
   currentPage: number;
@@ -26,21 +33,33 @@ export const ProgramPagination: React.FC<ProgramPaginationProps> = ({
   return (
     <footer className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200/80">
       <div className="flex items-center gap-3 text-sm text-slate-600">
-        <label htmlFor="rows-per-page" className="font-medium">
+        <label htmlFor="rows-per-page" className="font-medium text-slate-700">
           Rows per page
         </label>
-        <select
-          id="rows-per-page"
-          value={rowsPerPage}
-          onChange={(e) => onRowsPerPageChange(Number(e.target.value))}
-          className="h-9 px-3 rounded-lg bg-white border border-slate-300 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600"
+        <Select
+          value={String(rowsPerPage)}
+          onValueChange={(val) => onRowsPerPageChange(Number(val))}
         >
-          <option value="6">6</option>
-          <option value="10">10</option>
-          <option value="20">20</option>
-        </select>
+          <SelectTrigger
+            id="rows-per-page"
+            className="h-9 px-3 rounded-xl bg-white border-slate-300 text-sm font-semibold text-slate-800 shadow-2xs focus:ring-2 focus:ring-blue-600 cursor-pointer"
+          >
+            <SelectValue placeholder={String(rowsPerPage)} />
+          </SelectTrigger>
+          <SelectContent className="bg-white border border-slate-200 rounded-xl shadow-lg min-w-[72px] p-1">
+            {[6, 10, 20, 50].map((num) => (
+              <SelectItem
+                key={num}
+                value={String(num)}
+                className="rounded-lg cursor-pointer py-1.5 px-2.5 text-sm font-medium hover:bg-slate-100 focus:bg-slate-100 data-[highlighted]:bg-slate-100"
+              >
+                {num}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-        <span className="text-xs text-slate-400 ml-2">
+        <span className="text-xs text-slate-500 font-medium ml-2">
           Showing {displayedCount} of {totalCount} programs
         </span>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink, Award, Clock, Target } from "lucide-react";
 import { motion } from "motion/react";
@@ -45,9 +46,20 @@ export const SubmitReportProgramCard: React.FC<SubmitReportProgramCardProps> = (
     >
       {/* Program Header */}
       <div className="flex items-center gap-3">
-        <div className={`w-11 h-11 rounded-xl ${logoBgColor} flex items-center justify-center text-white font-bold text-base shrink-0 shadow-xs`}>
-          {initials}
-        </div>
+        {program?.logoUrl ? (
+          <Image
+            src={program.logoUrl}
+            alt={displayCompany}
+            width={44}
+            height={44}
+            unoptimized
+            className="w-11 h-11 rounded-xl object-contain shrink-0 bg-white p-1 shadow-xs border border-slate-200 dark:border-slate-800"
+          />
+        ) : (
+          <div className={`w-11 h-11 rounded-xl ${logoBgColor} flex items-center justify-center text-white font-bold text-base shrink-0 shadow-xs`}>
+            {initials}
+          </div>
+        )}
         <div className="min-w-0">
           <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate tracking-tight">
             {displayTitle}

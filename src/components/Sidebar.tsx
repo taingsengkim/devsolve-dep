@@ -140,7 +140,7 @@ function SidebarContent({
             <div key={category} className="space-y-1">
               {catIndex > 0 && <Separator className="my-2.5 bg-slate-200/60" />}
 
-              <div className="px-3 pt-1 pb-1 text-[11px] font-bold tracking-wider text-slate-400 uppercase select-none">
+              <div className="px-3 pt-1 pb-1 text-xs font-bold tracking-wider text-slate-400 uppercase select-none">
                 {category}
               </div>
 
