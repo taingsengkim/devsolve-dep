@@ -188,9 +188,11 @@ export function SubmitReportTargetSection({
         {/* HTTP Method & Vulnerable Parameter */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label htmlFor="httpMethod" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-              HTTP Method
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="httpMethod" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                HTTP Method <span className="text-red-500">*</span>
+              </label>
+            </div>
             <Select
               value={selectedHttpMethod}
               onValueChange={(val) =>
@@ -202,7 +204,7 @@ export function SubmitReportTargetSection({
             >
               <SelectTrigger
                 id="httpMethod"
-                className="w-full h-11 px-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-2xs cursor-pointer"
+                className="w-full h-11 data-[size=default]:h-11 px-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-2xs cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <span
