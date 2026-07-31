@@ -13,6 +13,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { useNotification } from "@/components/notifications/NotificationContext";
+import { NotificationTrigger } from "@/components/notifications/NotificationTrigger";
 
 function getInitials(text: string): string {
   return text
@@ -40,6 +42,7 @@ function SidebarContent({
   onNavItemClick,
   onSignOut,
 }: SidebarContentProps) {
+  const { openNotification } = useNotification();
   // Derive a profile slug from the signed-in user — swap this for `user.username`
   // once the session/auth provider exposes a real username directly.
   const profileSlug = (user?.name || user?.email?.split("@")[0] || "")
@@ -63,7 +66,7 @@ function SidebarContent({
     <div className="flex flex-col h-full overflow-hidden">
       {/* Logo Section */}
       <div className="flex items-center justify-between mt-1 mb-3 shrink-0 px-1">
-        <Link href="/" onClick={onNavItemClick} className="flex items-center gap-2">
+        {/* <Link href="/" onClick={onNavItemClick} className="flex items-center gap-2">
           <Image
             src="/logo-1.png"
             alt="DevSolve Logo"
@@ -75,7 +78,7 @@ function SidebarContent({
           <span className="text-xl font-bold text-slate-900 tracking-tight lg:hidden">
             DevSolve
           </span>
-        </Link>
+        </Link> */}
         {onNavItemClick && (
           <Button
             size="icon"
@@ -151,7 +154,18 @@ function SidebarContent({
                   (item.href !== "/dashboard" && pathname.startsWith(item.href));
 
                 return (
-                  <Link key={item.name} href={item.href} onClick={onNavItemClick} className="block w-full">
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={(e) => {
+                      if (item.name === "Notification") {
+                        e.preventDefault();
+                        openNotification();
+                      }
+                      if (onNavItemClick) onNavItemClick();
+                    }}
+                    className="block w-full"
+                  >
                     <Button
                       variant="ghost"
                       className={`w-full cursor-pointer justify-between h-10 px-3 rounded-xl ${
@@ -225,15 +239,18 @@ const Sidebar = () => {
           <span className="text-lg font-bold text-slate-900 tracking-tight">DevSolve</span>
         </Link>
 
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => setIsOpen(true)}
-          aria-label="Open Menu"
-          className="rounded-xl text-slate-700 hover:bg-slate-100 cursor-pointer"
-        >
-          <Menu className="w-6 h-6" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <NotificationTrigger />
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => setIsOpen(true)}
+            aria-label="Open Menu"
+            className="rounded-xl text-slate-700 hover:bg-slate-100 cursor-pointer"
+          >
+            <Menu className="w-6 h-6" />
+          </Button>
+        </div>
       </header>
 
       {/* Mobile Drawer (Slide-over on < lg screens) */}
@@ -271,7 +288,7 @@ const Sidebar = () => {
       </AnimatePresence>
 
       {/* Desktop Sticky Sidebar */}
-      <aside className="hidden lg:flex flex-col w-[260px] shrink-0 h-[100dvh] sticky top-0 p-4 rounded-r-[20px] border border-blue-600/15 bg-[linear-gradient(331deg,rgba(255,255,255,0.10)_59.38%,rgba(166,179,209,0.25)_92.74%,rgba(21,56,133,0.50)_132.79%),linear-gradient(154deg,rgba(255,255,255,0.30)_76.51%,rgba(37,99,235,0.30)_132.61%)] shadow-[0_4px_32px_0_rgba(37,99,235,0.10)] overflow-hidden">
+      <aside className="hidden lg:flex flex-col w-[260px] shrink-0 h-[100dvh] sticky top-0 p-4 border border-gray-100 overflow-hidden">
         <SidebarContent
           pathname={pathname}
           user={user}

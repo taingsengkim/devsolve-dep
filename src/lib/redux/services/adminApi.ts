@@ -99,7 +99,7 @@ export const MOCK_ADMIN_OVERVIEW: AdminDashboardOverviewResponse = {
         subtitle: "Flagged Posts & Discussions",
         count: 4,
         status: "pending",
-        linkHref: "/dashboard/community-moderation",
+        linkHref: "/dashboard/content-moderation",
         type: "moderation",
       },
       {
@@ -152,98 +152,326 @@ export const MOCK_ADMIN_OVERVIEW: AdminDashboardOverviewResponse = {
 export const MOCK_COMPANY_VERIFICATIONS: CompanyVerificationItem[] = [
   {
     id: "comp_1",
-    companyName: "Nexus Financial Solutions",
-    email: "security@nexusfin.com",
-    domain: "nexusfin.com",
+    orgCode: "ORG-2025-001",
+    companyName: "Acme Corporation",
+    email: "james.chen@acme.com",
+    domain: "acme.com",
     taxId: "TAX-9948201",
-    businessType: "FinTech Platform",
-    registrationDate: "2026-07-28",
+    businessType: "Technology / Software",
+    registrationDate: "2025-07-08",
+    submittedAt: "Jul 8, 2025, 04:14 PM",
     status: "PENDING",
     documentsCount: 3,
     notes: "Submitted Certificate of Incorporation & Tax Certificate.",
+    contactName: "James Chen",
+    jobTitle: "CISO",
+    phone: "+1 415 234 5678",
+    website: "https://acme.com",
+    country: "United States",
+    industry: "Technology / Software",
+    description: "Acme Corporation is a leading software platform serving 12M+ users globally. We are committed to proactive security and want to run a public bug bounty program to identify vulnerabilities before they become incidents.",
+    logoUrl: "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=128&auto=format&fit=crop&q=80",
+    riskIndicators: {
+      domainMatchesEmail: true,
+      noFailedDocs: true,
+      descriptionProvided: true,
+    },
   },
   {
     id: "comp_2",
-    companyName: "CloudPulse Systems",
-    email: "admin@cloudpulse.io",
-    domain: "cloudpulse.io",
+    orgCode: "ORG-2025-002",
+    companyName: "Nexus Financial Solutions",
+    email: "security@nexusfin.com",
+    domain: "nexusfin.com",
     taxId: "TAX-4481923",
-    businessType: "Cloud Infrastructure",
-    registrationDate: "2026-07-27",
+    businessType: "FinTech Platform",
+    registrationDate: "2026-07-28",
+    submittedAt: "Jul 28, 2026, 11:30 AM",
     status: "PENDING",
-    documentsCount: 2,
-    notes: "Requires DNS TXT verification check.",
+    documentsCount: 3,
+    notes: "Submitted Certificate of Incorporation & Tax Certificate.",
+    contactName: "Sarah Jenkins",
+    jobTitle: "Head of Security",
+    phone: "+1 212 555 0192",
+    website: "https://nexusfin.com",
+    country: "United States",
+    industry: "FinTech / Banking",
+    description: "Nexus Financial Solutions powers next-gen payment gateways and digital asset custody for over 500 enterprise institutions.",
+    logoUrl: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=128&auto=format&fit=crop&q=80",
+    riskIndicators: {
+      domainMatchesEmail: true,
+      noFailedDocs: true,
+      descriptionProvided: true,
+    },
   },
   {
     id: "comp_3",
-    companyName: "BioHealth Global Tech",
-    email: "compliance@biohealth.org",
-    domain: "biohealth.org",
+    orgCode: "ORG-2025-003",
+    companyName: "CloudPulse Systems",
+    email: "admin@cloudpulse.io",
+    domain: "cloudpulse.io",
     taxId: "TAX-1129481",
-    businessType: "Healthcare Tech",
-    registrationDate: "2026-07-25",
+    businessType: "Cloud Infrastructure",
+    registrationDate: "2026-07-27",
+    submittedAt: "Jul 27, 2026, 09:15 AM",
     status: "APPROVED",
     documentsCount: 4,
     notes: "Fully verified KYB and active VDP host.",
+    contactName: "Alex Rivera",
+    jobTitle: "VP of Engineering",
+    phone: "+1 415 888 2049",
+    website: "https://cloudpulse.io",
+    country: "Canada",
+    industry: "Cloud Infrastructure",
+    description: "CloudPulse Systems delivers edge computing infrastructure, microservice orchestration, and serverless runtime platforms.",
+    logoUrl: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=128&auto=format&fit=crop&q=80",
+    riskIndicators: {
+      domainMatchesEmail: true,
+      noFailedDocs: true,
+      descriptionProvided: true,
+    },
   },
   {
     id: "comp_4",
+    orgCode: "ORG-2025-004",
     companyName: "Shadow Crypto Protocol",
     email: "contact@shadowcrypto.fake",
     domain: "shadowcrypto.fake",
     taxId: "TAX-0000000",
     businessType: "DeFi",
     registrationDate: "2026-07-24",
+    submittedAt: "Jul 24, 2026, 02:00 PM",
     status: "REJECTED",
     documentsCount: 1,
     notes: "Invalid business registration document.",
+    contactName: "Unknown Registrant",
+    jobTitle: "Founder",
+    phone: "+1 000 000 0000",
+    website: "https://shadowcrypto.fake",
+    country: "Unknown",
+    industry: "DeFi",
+    description: "Decentralized liquidity pool aggregator protocol.",
+    logoUrl: "",
+    riskIndicators: {
+      domainMatchesEmail: false,
+      noFailedDocs: false,
+      descriptionProvided: false,
+    },
   },
 ];
 
 export const MOCK_REPORT_CONFIRMATIONS: ReportConfirmationItem[] = [
   {
     id: "rep_conf_1",
+    reportCode: "DS-4456",
+    title: "Stored XSS in user profile bio field",
+    researcherName: "@c0sm0null",
+    companyName: "Shopify",
+    programName: "Shopify HackerOne",
+    avatarColor: "bg-purple-600 text-white",
+    severity: "High",
+    status: "CONFIRMED",
+    submittedAt: "Jun 22, 2026",
+    acceptedAt: "Jun 25, 2026",
+    rewardEstimate: "$1,200 - $3,000",
+    rewardAmount: "$1,800",
+    category: "XSS / Stored",
+    cwe: "CWE-79: Cross-site Scripting (XSS)",
+    cvssScore: "8.2",
+    cvssVector: "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N",
+    targetAsset: "https://admin.shopify.com/api/v1/profile/bio",
+    severitiesAgree: true,
+    hackerClaimedSeverity: {
+      tier: "High",
+      cvss: "CVSS 7.0 - 8.9",
+      typicalReward: "Typically $1,200 - $3,000",
+    },
+    companyConfirmedSeverity: {
+      tier: "High",
+      cvss: "CVSS 7.0 - 8.9",
+      typicalReward: "Typically $1,200 - $3,000",
+    },
+    companyReasoning:
+      "Severity aligns with our bounty matrix for stored XSS affecting admin context. High is correct — well-documented, clean PoC.",
+    description:
+      "A vulnerability was discovered in the User Profile API endpoint (/api/v1/profile/{id}) where an authenticated user could access and modify any other user's profile details by simply changing the 'id' parameter. The server fails to validate if the authenticated user owns the resource being requested.",
+    impact:
+      "This is a classic Insecure Direct Object Reference (IDOR). Attackers could harvest private information for the entire user base, including email addresses, phone numbers, and physical addresses.",
+    reproduceSteps: [
+      "Log in as user A.",
+      "Intercept the request to 'GET /api/v1/profile/12345' (your ID).",
+      "Change the ID to '12346' (user B's ID).",
+      "Observe that the full profile details for user B are returned, including PII.",
+    ],
+    pocPayload: `GET /api/v1/profile/12346 HTTP/1.1
+Host: admin.shopify.com
+Authorization: Bearer <user_A_session_token>`,
+    attachments: [
+      { name: "evidence_proof.png", size: "1.4 MB", type: "image/png" },
+      { name: "payload.json", size: "4 KB", type: "application/json" },
+    ],
+    discussionThread: [
+      {
+        id: "m1",
+        author: "@c0sm0null",
+        role: "HACKER",
+        text: "Thanks for the quick triage — happy with the High severity decision!",
+        timestamp: "Jun 2, 2026",
+      },
+      {
+        id: "m2",
+        author: "Shopify",
+        role: "COMPANY",
+        text: "Confirmed — patch is in test release. Bounty processing.",
+        timestamp: "Jun 3, 2026",
+      },
+    ],
+    fairnessSignals: {
+      companyDowngradeRate: "22%",
+      companyDowngradeText: "Downgraded severity in 2/99 reviewed reports",
+      researcherAcceptanceRate: "76%",
+      researcherReputationText: "28 total reports • Rep score 870/100 • Trusted researcher with strong track record",
+    },
+    triageNotes: "High severity confirmed. Bounty set to $1,800 based on admin context stored XSS matrix.",
+    auditLog: [
+      {
+        id: "al_1",
+        action: "Report Submitted",
+        actor: "@c0sm0null",
+        timestamp: "Jun 22, 2026",
+      },
+      {
+        id: "al_2",
+        action: "Triage Confirmed & Reward Assigned ($1,800)",
+        actor: "Shopify Security Team",
+        timestamp: "Jun 25, 2026",
+      },
+    ],
+  },
+  {
+    id: "rep_conf_2",
+    reportCode: "DS-4420",
     title: "SQL Injection in Authentication API Endpoint",
     researcherName: "alex_sec",
     companyName: "Nexus Financial",
+    programName: "Nexus FinTech Public Bounty",
+    avatarColor: "bg-blue-600 text-white",
     severity: "Critical",
     status: "PENDING",
     submittedAt: "1h ago",
     rewardEstimate: "$3,500 - $5,000",
+    rewardAmount: "$4,500",
     category: "Web Vulnerability",
+    cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')",
+    cvssScore: "9.8",
+    cvssVector: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+    targetAsset: "https://api.nexusfin.com/v1/auth/login",
+    severitiesAgree: true,
+    hackerClaimedSeverity: {
+      tier: "Critical",
+      cvss: "CVSS 9.0 - 10.0",
+      typicalReward: "Typically $3,500 - $5,000",
+    },
+    companyConfirmedSeverity: {
+      tier: "Critical",
+      cvss: "CVSS 9.0 - 10.0",
+      typicalReward: "Typically $3,500 - $5,000",
+    },
+    companyReasoning: "Validated blind time-based SQL injection vulnerability on production login gateway.",
+    description:
+      "A time-based blind SQL injection vulnerability exists in the POST parameter 'username' of the authentication endpoint. Unauthenticated attackers can execute arbitrary SQL queries against the underlying database server.",
+    impact:
+      "Full database compromise, leading to unauthorized retrieval of user hashes, PII, transaction logs, and potentially remote command execution depending on database privilege escalation.",
+    reproduceSteps: [
+      "Send a POST request to https://api.nexusfin.com/v1/auth/login with JSON body `{\"username\": \"admin' AND (SELECT 1 FROM (SELECT(SLEEP(5)))a)--\", \"password\": \"test\"}`.",
+      "Observe server response latency delaying by exactly 5 seconds.",
+    ],
+    pocPayload: `POST /v1/auth/login HTTP/1.1\nHost: api.nexusfin.com\nContent-Type: application/json\n\n{"username": "admin' AND (SELECT 1 FROM (SELECT(SLEEP(5)))a)--"}`,
+    attachments: [
+      { name: "sql_injection_proof.png", size: "1.2 MB", type: "image/png" },
+    ],
+    discussionThread: [
+      {
+        id: "m201",
+        author: "alex_sec",
+        role: "HACKER",
+        text: "Please verify sleep payload on the login endpoint.",
+        timestamp: "1h ago",
+      },
+    ],
+    fairnessSignals: {
+      companyDowngradeRate: "10%",
+      companyDowngradeText: "Downgraded severity in 1/10 reviewed reports",
+      researcherAcceptanceRate: "92%",
+      researcherReputationText: "45 total reports • Rep score 940/100 • Top tier bug hunter",
+    },
+    triageNotes: "Awaiting initial triage validation by platform security engineer.",
+    auditLog: [
+      {
+        id: "al_10",
+        action: "Report Submitted",
+        actor: "alex_sec",
+        timestamp: "1h ago",
+      },
+    ],
   },
   {
-    id: "rep_conf_2",
+    id: "rep_conf_3",
+    reportCode: "DS-4389",
     title: "Unauthenticated Remote Code Execution in Image Processor",
     researcherName: "bug_hunter_pro",
     companyName: "CloudPulse Systems",
+    programName: "CloudPulse Infrastructure VDP",
+    avatarColor: "bg-emerald-600 text-white",
     severity: "Critical",
     status: "PENDING",
     submittedAt: "3h ago",
     rewardEstimate: "$7,500 - $10,000",
+    rewardAmount: "$8,500",
     category: "Infrastructure",
-  },
-  {
-    id: "rep_conf_3",
-    title: "IDOR allowing unauthorized user profile access",
-    researcherName: "byte_wizard",
-    companyName: "BioHealth Global",
-    severity: "High",
-    status: "CONFIRMED",
-    submittedAt: "1d ago",
-    rewardEstimate: "$1,200",
-    category: "Access Control",
-  },
-  {
-    id: "rep_conf_4",
-    title: "Reflected XSS on search query parameter",
-    researcherName: "shadow_coder",
-    companyName: "ACME Corp",
-    severity: "Medium",
-    status: "PENDING",
-    submittedAt: "5h ago",
-    rewardEstimate: "$400",
-    category: "XSS",
+    cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command",
+    cvssScore: "10.0",
+    cvssVector: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+    targetAsset: "https://media.cloudpulse.io/v2/transform",
+    severitiesAgree: true,
+    hackerClaimedSeverity: {
+      tier: "Critical",
+      cvss: "CVSS 9.0 - 10.0",
+      typicalReward: "Typically $7,500 - $10,000",
+    },
+    companyConfirmedSeverity: {
+      tier: "Critical",
+      cvss: "CVSS 9.0 - 10.0",
+      typicalReward: "Typically $7,500 - $10,000",
+    },
+    companyReasoning: "RCE confirmed via SVG ImageMagick delegate execution vector.",
+    description:
+      "The image transformation daemon invokes ImageMagick delegates without sanitizing image metadata parameters, enabling unauthenticated remote code execution via malformed SVG payloads.",
+    impact:
+      "Allows remote attackers to execute arbitrary system commands with root privileges inside the containerized conversion worker.",
+    reproduceSteps: [
+      "Craft an SVG file containing a malicious delegate command string.",
+      "Upload the SVG to the transform endpoint via curl binary post.",
+    ],
+    pocPayload: `<?xml version="1.0" encoding="UTF-8"?><svg width="100" height="100"><image href="https://example.com/test.jpg" /></svg>`,
+    attachments: [
+      { name: "rce_poc_exploit.svg", size: "14 KB", type: "image/svg+xml" },
+    ],
+    discussionThread: [],
+    fairnessSignals: {
+      companyDowngradeRate: "15%",
+      companyDowngradeText: "Downgraded severity in 3/20 reviewed reports",
+      researcherAcceptanceRate: "88%",
+      researcherReputationText: "50 total reports • Rep score 910/100",
+    },
+    auditLog: [
+      {
+        id: "al_11",
+        action: "Report Submitted",
+        actor: "bug_hunter_pro",
+        timestamp: "3h ago",
+      },
+    ],
   },
 ];
 
@@ -255,6 +483,7 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     role: "ADMIN",
     status: "ACTIVE",
     joinedDate: "2025-01-10",
+    avatarUrl: "/u1.jpg",
   },
   {
     id: "usr_2",
@@ -264,6 +493,7 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     status: "ACTIVE",
     joinedDate: "2026-02-14",
     programsManaged: 3,
+    avatarUrl: "/u2.jpg",
   },
   {
     id: "usr_3",
@@ -273,15 +503,17 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     status: "ACTIVE",
     joinedDate: "2026-03-01",
     reportsSubmitted: 28,
+    avatarUrl: "/u3.jpg",
   },
   {
     id: "usr_4",
-    name: "Spammy Bot account",
+    name: "Spammy Bot",
     email: "bot99281@tempmail.org",
     role: "USER",
     status: "SUSPENDED",
     joinedDate: "2026-07-20",
     reportsSubmitted: 0,
+    avatarUrl: "/u4.jpg",
   },
   {
     id: "usr_5",
@@ -290,6 +522,66 @@ export const MOCK_ADMIN_USERS: AdminUserItem[] = [
     role: "MODERATOR",
     status: "ACTIVE",
     joinedDate: "2025-06-15",
+    avatarUrl: "/u1.jpg",
+  },
+  {
+    id: "usr_6",
+    name: "Priya Patel",
+    email: "priya.patel@cyberarm.io",
+    role: "COMPANY",
+    status: "ACTIVE",
+    joinedDate: "2026-04-22",
+    programsManaged: 7,
+    avatarUrl: "/u2.jpg",
+  },
+  {
+    id: "usr_7",
+    name: "Jordan Blake",
+    email: "j.blake@sec-research.dev",
+    role: "USER",
+    status: "ACTIVE",
+    joinedDate: "2026-01-05",
+    reportsSubmitted: 54,
+    avatarUrl: "/u3.jpg",
+  },
+  {
+    id: "usr_8",
+    name: "Elena Sokolova",
+    email: "elena@devsolve.com",
+    role: "MODERATOR",
+    status: "ACTIVE",
+    joinedDate: "2025-11-03",
+    avatarUrl: "/u4.jpg",
+  },
+  {
+    id: "usr_9",
+    name: "Thomas Webb",
+    email: "t.webb@bugbounty.pro",
+    role: "USER",
+    status: "SUSPENDED",
+    joinedDate: "2026-06-18",
+    reportsSubmitted: 2,
+    avatarUrl: "/u1.jpg",
+  },
+  {
+    id: "usr_10",
+    name: "CloudPulse Admin",
+    email: "admin@cloudpulse.io",
+    role: "COMPANY",
+    status: "ACTIVE",
+    joinedDate: "2026-07-27",
+    programsManaged: 4,
+    avatarUrl: "/u2.jpg",
+  },
+  {
+    id: "usr_11",
+    name: "New Researcher",
+    email: "new.user@example.com",
+    role: "USER",
+    status: "PENDING",
+    joinedDate: "2026-07-31",
+    reportsSubmitted: 0,
+    avatarUrl: "/u3.jpg",
   },
 ];
 
@@ -331,6 +623,7 @@ export const MOCK_CONTENT_REPORTS: ContentReportItem[] = [
     id: "cr_1",
     type: "SOLUTION",
     title: '"Buy cheap followers here — best price guaranteed..."',
+    snippet: "Instant delivery on 10,000 real active followers for cheap. Click here to boost your profile now!",
     timestamp: "1 day ago",
     reportCount: 8,
     reason: "Spam",
@@ -342,7 +635,8 @@ export const MOCK_CONTENT_REPORTS: ContentReportItem[] = [
     id: "cr_2",
     type: "PROBLEM",
     title: '"How to hack my ex\'s Instagram account..."',
-    timestamp: "3 day ago",
+    snippet: "Need urgent tool or keylogger to gain access to account without password verification. Will pay.",
+    timestamp: "3 days ago",
     reportCount: 12,
     reason: "Harmful",
     author: "anon_44",
@@ -352,7 +646,8 @@ export const MOCK_CONTENT_REPORTS: ContentReportItem[] = [
     id: "cr_3",
     type: "COMMENT",
     title: '"This is completely wrong, you clearly have no idea..."',
-    timestamp: "4 day ago",
+    snippet: "Stop posting nonsense solutions. You are wasting everyone's time and shouldn't be on this platform.",
+    timestamp: "4 days ago",
     reportCount: 3,
     reason: "Offensive",
     author: "rude_user",
@@ -362,11 +657,36 @@ export const MOCK_CONTENT_REPORTS: ContentReportItem[] = [
     id: "cr_4",
     type: "PROGRAM",
     title: '"Test our website"',
-    timestamp: "8 day ago",
+    snippet: "Unverified bounty program submission with invalid company details and no security scope.",
+    timestamp: "8 days ago",
     reportCount: 1,
     reason: "Off-topic",
     author: "FakeCorp",
     pastViolationsCount: 2,
+    status: "PENDING",
+  },
+  {
+    id: "cr_5",
+    type: "SOLUTION",
+    title: '"Zero-day RCE PoC download mirror link"',
+    snippet: "Download mirror executable containing unverified payload targeting active enterprise VDPs.",
+    timestamp: "2 hours ago",
+    reportCount: 6,
+    reason: "Harmful",
+    author: "shadow_leaker",
+    pastViolationsCount: 4,
+    status: "PENDING",
+  },
+  {
+    id: "cr_6",
+    type: "COMMENT",
+    title: '"Unsolicited crypto casino referral link"',
+    snippet: "Earn 500 free spins today at fast-payout-casino.fake! Limited time promo bonus code.",
+    timestamp: "5 hours ago",
+    reportCount: 5,
+    reason: "Spam",
+    author: "bot_promoter",
+    pastViolationsCount: 1,
     status: "PENDING",
   },
 ];
@@ -379,77 +699,144 @@ export const MOCK_REPORT_REASONS_BREAKDOWN: ReportReasonsBreakdownData = {
   total: 14,
 };
 
+let mockCompanyVerificationsStore = [...MOCK_COMPANY_VERIFICATIONS];
+let mockReportConfirmationsStore = [...MOCK_REPORT_CONFIRMATIONS];
+let mockAdminUsersStore = [...MOCK_ADMIN_USERS];
+let mockModerationItemsStore = [...MOCK_MODERATION_ITEMS];
+let mockContentReportsStore = [...MOCK_CONTENT_REPORTS];
+
 export const adminApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAdminOverview: builder.query<AdminDashboardOverviewResponse, void>({
       queryFn: () => {
-        return { data: MOCK_ADMIN_OVERVIEW };
+        return { data: { ...MOCK_ADMIN_OVERVIEW } };
       },
       providesTags: ["Report", "Program"],
     }),
     getCompanyVerifications: builder.query<CompanyVerificationItem[], void>({
       queryFn: () => {
-        return { data: MOCK_COMPANY_VERIFICATIONS };
+        return { data: mockCompanyVerificationsStore.map((c) => ({ ...c })) };
       },
+      providesTags: ["CompanyVerification"],
+    }),
+    getCompanyVerificationById: builder.query<CompanyVerificationItem, string>({
+      queryFn: (id) => {
+        const found = mockCompanyVerificationsStore.find((c) => c.id === id);
+        if (found) return { data: { ...found } };
+        return { data: { ...mockCompanyVerificationsStore[0] } };
+      },
+      providesTags: (_result, _error, id) => [{ type: "CompanyVerification", id }],
     }),
     updateCompanyVerificationStatus: builder.mutation<
       CompanyVerificationItem,
-      { id: string; status: "APPROVED" | "REJECTED"; notes?: string }
+      { id: string; status: "APPROVED" | "REJECTED" | "UNDER_REVIEW"; notes?: string }
     >({
       // TODO: replace queryFn with query() when real API is ready
       queryFn: ({ id, status, notes }) => {
-        const item = MOCK_COMPANY_VERIFICATIONS.find((c) => c.id === id);
-        if (item) {
-          item.status = status;
-          if (notes) item.notes = notes;
-        }
-        return { data: item || MOCK_COMPANY_VERIFICATIONS[0] };
+        mockCompanyVerificationsStore = mockCompanyVerificationsStore.map((c) =>
+          c.id === id ? { ...c, status, ...(notes ? { notes } : {}) } : c
+        );
+        const updated = mockCompanyVerificationsStore.find((c) => c.id === id);
+        return { data: updated ? { ...updated } : { ...mockCompanyVerificationsStore[0] } };
       },
       invalidatesTags: ["CompanyVerification"],
     }),
     getReportConfirmations: builder.query<ReportConfirmationItem[], void>({
       queryFn: () => {
-        return { data: MOCK_REPORT_CONFIRMATIONS };
+        return { data: mockReportConfirmationsStore.map((r) => ({ ...r })) };
       },
+      providesTags: ["Report"],
+    }),
+    getReportConfirmationById: builder.query<ReportConfirmationItem, string>({
+      queryFn: (id) => {
+        const found = mockReportConfirmationsStore.find((r) => r.id === id);
+        if (found) return { data: { ...found } };
+        return { data: { ...mockReportConfirmationsStore[0] } };
+      },
+      providesTags: (_result, _error, id) => [{ type: "Report", id }],
     }),
     updateConfirmReport: builder.mutation<
       ReportConfirmationItem,
-      { id: string; status: "CONFIRMED" | "REJECTED" | "ESCALATED" }
+      {
+        id: string;
+        status: "CONFIRMED" | "REJECTED" | "ESCALATED";
+        severity?: "Critical" | "High" | "Medium" | "Low";
+        rewardEstimate?: string;
+        rewardAmount?: string;
+        companyReasoning?: string;
+        triageNotes?: string;
+      }
     >({
       // TODO: replace queryFn with query() when real API is ready
-      queryFn: ({ id, status }) => {
-        const item = MOCK_REPORT_CONFIRMATIONS.find((r) => r.id === id);
-        if (item) {
-          item.status = status;
-        }
-        return { data: item || MOCK_REPORT_CONFIRMATIONS[0] };
+      queryFn: ({ id, status, severity, rewardEstimate, rewardAmount, companyReasoning, triageNotes }) => {
+        mockReportConfirmationsStore = mockReportConfirmationsStore.map((r) => {
+          if (r.id !== id) return r;
+          const updatedAudit = [...(r.auditLog || [])];
+          updatedAudit.push({
+            id: `al_${Date.now()}`,
+            action: `Status set to ${status}`,
+            actor: "Admin Triage Officer",
+            timestamp: "Just now",
+            note: triageNotes || companyReasoning,
+          });
+
+          const newSeverity = severity || r.severity;
+          const hackerSev = r.hackerClaimedSeverity?.tier || r.severity;
+          const agree = hackerSev === newSeverity;
+
+          const updatedConfirmedSeverity = r.companyConfirmedSeverity
+            ? { ...r.companyConfirmedSeverity, tier: newSeverity }
+            : { tier: newSeverity, cvss: r.cvssVector || "7.0 - 8.9", typicalReward: rewardEstimate || r.rewardEstimate };
+
+          return {
+            ...r,
+            status,
+            severity: newSeverity,
+            severitiesAgree: agree,
+            companyConfirmedSeverity: updatedConfirmedSeverity,
+            ...(rewardEstimate ? { rewardEstimate } : {}),
+            ...(rewardAmount ? { rewardAmount } : {}),
+            ...(companyReasoning ? { companyReasoning } : {}),
+            ...(triageNotes ? { triageNotes } : {}),
+            auditLog: updatedAudit,
+          };
+        });
+        const updated = mockReportConfirmationsStore.find((r) => r.id === id);
+        return { data: updated ? { ...updated } : { ...mockReportConfirmationsStore[0] } };
       },
       invalidatesTags: ["Report"],
     }),
     getAdminUsers: builder.query<AdminUserItem[], void>({
       queryFn: () => {
-        return { data: MOCK_ADMIN_USERS };
+        return { data: mockAdminUsersStore.map((u) => ({ ...u })) };
       },
+      providesTags: ["AdminUser"],
     }),
     updateAdminUserStatus: builder.mutation<
       AdminUserItem,
-      { id: string; status: "ACTIVE" | "SUSPENDED"; role?: "USER" | "COMPANY" | "ADMIN" | "MODERATOR" }
+      { id: string; status?: "ACTIVE" | "SUSPENDED" | "PENDING"; role?: "USER" | "COMPANY" | "ADMIN" | "MODERATOR" }
     >({
       // TODO: replace queryFn with query() when real API is ready
       queryFn: ({ id, status, role }) => {
-        const item = MOCK_ADMIN_USERS.find((u) => u.id === id);
-        if (item) {
-          item.status = status;
-          if (role) item.role = role;
-        }
-        return { data: item || MOCK_ADMIN_USERS[0] };
+        mockAdminUsersStore = mockAdminUsersStore.map((u) =>
+          u.id === id
+            ? {
+                ...u,
+                ...(status ? { status } : {}),
+                ...(role ? { role } : {}),
+              }
+            : u
+        );
+        const updated = mockAdminUsersStore.find((u) => u.id === id);
+        return { data: updated ? { ...updated } : { ...mockAdminUsersStore[0] } };
       },
       invalidatesTags: ["AdminUser"],
     }),
     getModerationItems: builder.query<ModerationItem[], void>({
       queryFn: () => {
-        return { data: MOCK_MODERATION_ITEMS };
+        return { data: mockModerationItemsStore.map((m) => ({ ...m })) };
       },
+      providesTags: ["ModerationItem"],
     }),
     updateModerationItem: builder.mutation<
       ModerationItem,
@@ -457,11 +844,11 @@ export const adminApi = baseApi.injectEndpoints({
     >({
       // TODO: replace queryFn with query() when real API is ready
       queryFn: ({ id, status }) => {
-        const item = MOCK_MODERATION_ITEMS.find((m) => m.id === id);
-        if (item) {
-          item.status = status;
-        }
-        return { data: item || MOCK_MODERATION_ITEMS[0] };
+        mockModerationItemsStore = mockModerationItemsStore.map((m) =>
+          m.id === id ? { ...m, status } : m
+        );
+        const updated = mockModerationItemsStore.find((m) => m.id === id);
+        return { data: updated ? { ...updated } : { ...mockModerationItemsStore[0] } };
       },
       invalidatesTags: ["ModerationItem"],
     }),
@@ -470,13 +857,21 @@ export const adminApi = baseApi.injectEndpoints({
       void
     >({
       queryFn: () => {
+        const pendingItems = mockContentReportsStore.filter((r) => r.status === "PENDING");
+        const spam = pendingItems.filter((r) => r.reason === "Spam").length;
+        const harmful = pendingItems.filter((r) => r.reason === "Harmful").length;
+        const offensive = pendingItems.filter((r) => r.reason === "Offensive").length;
+        const offTopic = pendingItems.filter((r) => r.reason === "Off-topic").length;
+        const total = pendingItems.length;
+
         return {
           data: {
-            items: MOCK_CONTENT_REPORTS,
-            breakdown: MOCK_REPORT_REASONS_BREAKDOWN,
+            items: mockContentReportsStore.map((r) => ({ ...r })),
+            breakdown: { spam, harmful, offensive, offTopic, total },
           },
         };
       },
+      providesTags: ["ContentReport"],
     }),
     updateContentReportAction: builder.mutation<
       ContentReportItem,
@@ -484,13 +879,16 @@ export const adminApi = baseApi.injectEndpoints({
     >({
       // TODO: replace queryFn with query() when real API is ready
       queryFn: ({ id, action }) => {
-        const item = MOCK_CONTENT_REPORTS.find((r) => r.id === id);
-        if (item) {
-          if (action === "DISMISS") item.status = "DISMISSED";
-          if (action === "WARN") item.status = "WARNED";
-          if (action === "REMOVE") item.status = "REMOVED";
-        }
-        return { data: item || MOCK_CONTENT_REPORTS[0] };
+        mockContentReportsStore = mockContentReportsStore.map((r) => {
+          if (r.id !== id) return r;
+          let newStatus = r.status;
+          if (action === "DISMISS") newStatus = "DISMISSED";
+          if (action === "WARN") newStatus = "WARNED";
+          if (action === "REMOVE") newStatus = "REMOVED";
+          return { ...r, status: newStatus };
+        });
+        const updated = mockContentReportsStore.find((r) => r.id === id);
+        return { data: updated ? { ...updated } : { ...mockContentReportsStore[0] } };
       },
       invalidatesTags: ["ContentReport"],
     }),
@@ -500,8 +898,10 @@ export const adminApi = baseApi.injectEndpoints({
 export const {
   useGetAdminOverviewQuery,
   useGetCompanyVerificationsQuery,
+  useGetCompanyVerificationByIdQuery,
   useUpdateCompanyVerificationStatusMutation,
   useGetReportConfirmationsQuery,
+  useGetReportConfirmationByIdQuery,
   useUpdateConfirmReportMutation,
   useGetAdminUsersQuery,
   useUpdateAdminUserStatusMutation,
