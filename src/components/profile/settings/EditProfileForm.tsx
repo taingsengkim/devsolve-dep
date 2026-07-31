@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { User2, Globe, Lock, Bell } from "lucide-react";
 import { EditProfileFormData, AccountStatus } from "@/lib/types/profile/types";
 import { useEditProfileForm } from "@/hooks/profile/useEditProfileForm";
-import SettingsNav from "./SettingsNav";
+import SettingsTab from "./SettingsTab";
 import PhotoUpload from "./PhotoUpload";
 import PersonalInfoSection from "./PersonalInfoSection";
 import BioSocialSection from "./BioSocialSection";
@@ -38,63 +38,65 @@ export default function EditProfileForm({ initialData, accountStatus, onSave }: 
   } = useEditProfileForm({ initialData, onSave });
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
-      className="flex flex-col md:flex-row gap-8 items-start"
-    >
-      <div className="md:sticky md:top-24 self-start">
-        <SettingsNav activeId={activeSection} onSelect={setActiveSection} />
-      </div>
+    <div className="space-y-6 w-full">
+      <SettingsTab activeId={activeSection} onSelect={setActiveSection} />
 
-      <div className="flex-1 space-y-6 w-full min-w-0">
-        <div id="personal-info">
-          <SettingsSectionCard icon={<User2 size={18} className="text-slate-500" />} title="Personal Information">
-            <PhotoUpload avatarInitials={form.avatarInitials} avatarUrl="/justin.png" />
-            <PersonalInfoSection
-              data={{ fullName: form.fullName, username: form.username, email: form.email }}
-              onChange={updateField}
-            />
-          </SettingsSectionCard>
-        </div>
-
-        <div id="bio-social">
-          <SettingsSectionCard icon={<Globe size={18} className="text-slate-500" />} title="Bio & Social Links">
-            <BioSocialSection
-              bio={form.bio}
-              location={form.location}
-              socialLinks={form.socialLinks}
-              onBioChange={(v) => setForm((prev) => ({ ...prev, bio: v }))}
-              onLocationChange={(v) => setForm((prev) => ({ ...prev, location: v }))}
-              onSocialLinkChange={updateSocialLink}
-            />
-          </SettingsSectionCard>
-        </div>
-
-        <div id="password">
-          <SettingsSectionCard icon={<Lock size={18} className="text-slate-500" />} title="Change Password">
-            <PasswordSection
-              value={passwords}
-              onChange={(field, value) => setPasswords((prev) => ({ ...prev, [field]: value }))}
-            />
-          </SettingsSectionCard>
-        </div>
-
-        <div id="preferences">
-          <SettingsSectionCard icon={<Bell size={18} className="text-slate-500" />} title="Preferences & Security">
-            <div className="space-y-8">
-              <TwoFactorSection
-                enabled={form.twoFactorEnabled}
-                onToggle={(enabled) => setForm((prev) => ({ ...prev, twoFactorEnabled: enabled }))}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeSection}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2 }}
+          className="space-y-6"
+        >
+          {activeSection === "personal-info" && (
+            <SettingsSectionCard icon={<User2 size={18} className="text-slate-500" />} title="Personal Information">
+              <PhotoUpload avatarInitials={form.avatarInitials} avatarUrl="/justin.png" />
+              <PersonalInfoSection
+                data={{ fullName: form.fullName, username: form.username, email: form.email }}
+                onChange={updateField}
               />
-              <NotificationPreferencesSection preferences={form.notifications} onChange={updateNotification} />
-            </div>
-          </SettingsSectionCard>
-        </div>
+            </SettingsSectionCard>
+          )}
 
-        <FormActions onCancel={handleCancel} onPreview={handlePreview} onSave={handleSave} isSaving={isSaving} />
-      </div>
-    </motion.div>
+          {activeSection === "bio-social" && (
+            <SettingsSectionCard icon={<Globe size={18} className="text-slate-500" />} title="Bio & Social Links">
+              <BioSocialSection
+                bio={form.bio}
+                location={form.location}
+                socialLinks={form.socialLinks}
+                onBioChange={(v) => setForm((prev) => ({ ...prev, bio: v }))}
+                onLocationChange={(v) => setForm((prev) => ({ ...prev, location: v }))}
+                onSocialLinkChange={updateSocialLink}
+              />
+            </SettingsSectionCard>
+          )}
+
+          {activeSection === "password" && (
+            <SettingsSectionCard icon={<Lock size={18} className="text-slate-500" />} title="Change Password">
+              <PasswordSection
+                value={passwords}
+                onChange={(field, value) => setPasswords((prev) => ({ ...prev, [field]: value }))}
+              />
+            </SettingsSectionCard>
+          )}
+
+          {activeSection === "preferences" && (
+            <SettingsSectionCard icon={<Bell size={18} className="text-slate-500" />} title="Preferences & Security">
+              <div className="space-y-8">
+                <TwoFactorSection
+                  enabled={form.twoFactorEnabled}
+                  onToggle={(enabled) => setForm((prev) => ({ ...prev, twoFactorEnabled: enabled }))}
+                />
+                <NotificationPreferencesSection preferences={form.notifications} onChange={updateNotification} />
+              </div>
+            </SettingsSectionCard>
+          )}
+
+          <FormActions onCancel={handleCancel} onPreview={handlePreview} onSave={handleSave} isSaving={isSaving} />
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }
