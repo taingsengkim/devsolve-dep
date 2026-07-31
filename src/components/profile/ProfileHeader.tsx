@@ -32,7 +32,7 @@ export default function ProfileHeader({ profile, backHref = "/dashboard" }: Prof
               Settings
             </Link>
           ) : null}
-        </div> */}
+        </div> */}  
       </div>
 
       {/* Identity row */}

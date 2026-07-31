@@ -7,15 +7,18 @@ import OverviewTab from "./overview/OverviewTab";
 import HacktivityTab from "./hacktivity/HacktivityTab";
 import CommunityTab from "./community/CommunityTab";
 import HallOfThanksTab from "./hall-of-thanks/HallOfThanksTab";
-import { ProfileStats, SeverityStats, ProfileBadge, HacktivityEntry, CommunityPost, ThanksEntry } from "@/lib/types/profile/types";
+import { ProfileStats, SeverityStats, ProfileBadge } from "@/lib/types/profile/types";
+import {
+  useGetHacktivityQuery,
+  useGetCommunityPostsQuery,
+  useGetThanksQuery,
+} from "@/lib/redux/services/profileApi";
 
 interface ProfileTabsContainerProps {
   stats: ProfileStats;
   severity: SeverityStats;
   badges: ProfileBadge[];
-  hacktivity: HacktivityEntry[];
-  communityPosts: CommunityPost[];
-  thanks: ThanksEntry[];
+  username: string;
 }
 
 const VALID_TABS: ProfileTabId[] = ["overview", "hacktivity", "community", "hall-of-thanks"];
@@ -24,9 +27,7 @@ export default function ProfileTabsContainer({
   stats,
   severity,
   badges,
-  hacktivity,
-  communityPosts,
-  thanks,
+  username,
 }: ProfileTabsContainerProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -46,15 +47,19 @@ export default function ProfileTabsContainer({
     [pathname, router, searchParams]
   );
 
+  const { data: hacktivity } = useGetHacktivityQuery(username, { skip: activeTab !== "hacktivity" });
+  const { data: communityPosts } = useGetCommunityPostsQuery(username, { skip: activeTab !== "community" });
+  const { data: thanks } = useGetThanksQuery(username, { skip: activeTab !== "hall-of-thanks" });
+
   return (
     <div className="mt-6">
       <ProfileTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
       <div className="mt-5">
         {activeTab === "overview" && <OverviewTab stats={stats} severity={severity} badges={badges} />}
-        {activeTab === "hacktivity" && <HacktivityTab entries={hacktivity} />}
-        {activeTab === "community" && <CommunityTab posts={communityPosts} />}
-        {activeTab === "hall-of-thanks" && <HallOfThanksTab entries={thanks} />}
+        {activeTab === "hacktivity" && <HacktivityTab entries={hacktivity ?? []} />}
+        {activeTab === "community" && <CommunityTab posts={communityPosts ?? []} />}
+        {activeTab === "hall-of-thanks" && <HallOfThanksTab entries={thanks ?? []} />}
       </div>
     </div>
   );
