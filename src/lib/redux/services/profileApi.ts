@@ -100,6 +100,7 @@ function toProfileOverview(raw: UserProfileApiResponse): ProfileOverviewResponse
     username: usernameOf(raw, mockProfile.username),
     displayName,
     avatarInitials: initialsOf(displayName),
+    avatarUrl: raw.avatarUrl,
     bio: raw.biography || mockProfile.bio,
     location: raw.country || mockProfile.location,
     memberSince: memberSinceOf(raw.createdAt, mockProfile.memberSince),

@@ -1,16 +1,8 @@
 "use client";
 
-"use client";
-
-import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowLeft } from "lucide-react";
 import EditProfileForm from "@/components/profile/settings/EditProfileForm";
-import { Button } from "@/components/ui/button";
-import {
-  useGetProfileSettingsQuery,
-  useUpdateProfileSettingsMutation,
-} from "@/lib/redux/services/profileApi";
+import Breadcrumb from "@/components/profile/settings/Breadcrumb";
 import {
   useGetEditProfileFormQuery,
   useGetAccountStatusQuery,
@@ -18,10 +10,11 @@ import {
 } from "@/lib/redux/services/profileApi";
 
 export default function EditProfileSettingsPage() {
-  const { data, isLoading } = useGetProfileSettingsQuery();
-  const [updateProfileSettings] = useUpdateProfileSettingsMutation();
+  const { data: initialData, isLoading: isLoadingForm } = useGetEditProfileFormQuery();
+  const { data: accountStatus, isLoading: isLoadingStatus } = useGetAccountStatusQuery();
+  const [updateProfile] = useUpdateProfileMutation();
 
-  if (isLoading || !data) {
+  if (isLoadingForm || isLoadingStatus || !initialData || !accountStatus) {
     return (
       <div className="space-y-6 w-full pb-12 animate-pulse">
         <div className="h-16 bg-slate-200/60 dark:bg-slate-800 rounded-xl" />
@@ -31,20 +24,6 @@ export default function EditProfileSettingsPage() {
         </div>
       </div>
     );
-  }
-
-  const { formData, accountStatus } = data;
-
-  const handleSave = async (updatedData: typeof formData) => {
-    await updateProfileSettings({ formData: updatedData });
-  };
-
-  const { data: initialData, isLoading: isLoadingForm } = useGetEditProfileFormQuery();
-  const { data: accountStatus, isLoading: isLoadingStatus } = useGetAccountStatusQuery();
-  const [updateProfile] = useUpdateProfileMutation();
-
-  if (isLoadingForm || isLoadingStatus || !initialData || !accountStatus) {
-    return <div className="p-6 text-sm text-slate-400">Loading profile settings...</div>;
   }
 
   return (
@@ -57,6 +36,12 @@ export default function EditProfileSettingsPage() {
       {/* Page Header */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
         <div className="space-y-1">
+          <Breadcrumb
+            items={[
+              { label: "Profile", href: `/dashboard/profile/${initialData.username}` },
+              { label: "Edit profile" },
+            ]}
+          />
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             Account Settings
           </h1>
@@ -64,33 +49,9 @@ export default function EditProfileSettingsPage() {
             Manage your personal profile, account details, security settings, and notification preferences.
           </p>
         </div>
-
-        <Link href={`/dashboard/profile/${formData.username}`}>
-          <Button
-            variant="outline"
-            size="sm"
-            className="self-start sm:self-auto cursor-pointer rounded-xl border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all gap-2 px-4 shadow-xs"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>View Profile</span>
-          </Button>
-        </Link>
       </header>
 
       {/* Main Settings Form */}
-      <EditProfileForm
-        initialData={formData}
-        accountStatus={accountStatus}
-        onSave={handleSave}
-      />
-    </motion.div>
-    <div className="space-y-4">
-      <Breadcrumb
-        items={[
-          { label: "Profile", href: `/dashboard/profile/${initialData.username}` },
-          { label: "Edit profile" },
-        ]}
-      />
       <EditProfileForm
         initialData={initialData}
         accountStatus={accountStatus}
@@ -100,7 +61,6 @@ export default function EditProfileSettingsPage() {
           await updateProfile(profileData).unwrap();
         }}
       />
-    </div>
+    </motion.div>
   );
 }
-

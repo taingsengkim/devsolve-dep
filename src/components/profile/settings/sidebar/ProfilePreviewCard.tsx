@@ -42,4 +42,4 @@ export default function ProfilePreviewCard({ data }: ProfilePreviewCardProps) {
       <p className="mt-3 text-xs font-medium text-slate-400">Your profile is visible to the community.</p>
     </div>
   );
-}
+}
