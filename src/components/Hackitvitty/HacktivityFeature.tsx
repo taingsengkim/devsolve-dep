@@ -22,7 +22,7 @@ export default function HacktivityFeature() {
       <div className="mx-auto max-w-6xl">
         <div className="flex gap-32 xl:grid-cols-[minmax(0,1fr)_350px] xl:items-end">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700 shadow-sm">
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold tracking-[0.3em] text-emerald-700 shadow-sm">
               <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-700" />
               Live platform activity
             </div>
@@ -45,22 +45,25 @@ export default function HacktivityFeature() {
 
          
 
-        <div className="mt-10 rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
+        <div className="mt-10 rounded-3xl bg-white p-6 shadow-sm border border-slate-200 mb-5">
           <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">Hacktivity</h2>
               <p className="mt-1 text-sm text-slate-500">Search researcher names, platforms, or vulnerability types.</p>
             </div>
-            <div className="w-full max-w-xl">
-              <SearchBar value={query} onChange={setQuery} placeholder="Search researchers..." />
-            </div>
+            <div className="mt-6 flex font-medium flex-wrap items-center text-xs tracking-[0.25em] text-slate-400">
+              <span className="px-2.5 py-1.5">Critical</span>
+              <span className="px-2.5 py-1.5">Bounty</span>
+              <span className="px-2.5 py-1.5">High</span>
+          </div>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.25em] text-slate-500">
-            <span className="rounded-full bg-slate-100 px-2.5 py-1.5">Critical</span>
-            <span className="rounded-full bg-slate-100 px-2.5 py-1.5">Bounty</span>
-            <span className="rounded-full bg-slate-100 px-2.5 py-1.5">High</span>
-            <span className="ml-auto rounded-full bg-slate-100 px-2.5 py-1.5">{activities.length} activities</span>
+          <div className="w-full rounded-3xl mt-5 ">
+            <SearchBar value={query} onChange={setQuery} placeholder="Search researchers..." />
+          </div>
+          
+          <div className="mt-5">
+            <span className="ml-auto px-2.5 py-1.5">{activities.length} activities</span>
           </div>
 
           <div className="mt-5 space-y-3">
@@ -95,7 +98,7 @@ export default function HacktivityFeature() {
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-900">
                         <span className="truncate">{activity.handle}</span>
-                        <Badge variant="default" className="rounded-full bg-emerald-500 text-white px-2 py-0.5 text-[11px] uppercase tracking-[0.18em]">
+                        <Badge variant="default" className="rounded-full bg-[#EFF6FF] text-[#155DFC] px-2 py-0.5 text-[11px] tracking-[0.18em]">
                           {activity.label}
                         </Badge>
                       </div>
