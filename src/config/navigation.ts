@@ -15,7 +15,6 @@ import {
   ShieldCheck,
   FileCheck,
   MessageSquareCode,
-  FileSearch,
   UserCheck,
   ShieldAlert,
   LucideIcon,
@@ -53,7 +52,6 @@ export const NAV_ITEMS: NavItem[] = [
   { name: "Organization Verification", href: "/dashboard/company-verification", icon: ShieldCheck, roles: ["ADMIN"], category: "Administration" },
   { name: "Report Confirmation", href: "/dashboard/report-confirmation", icon: FileCheck, roles: ["ADMIN"], category: "Administration" },
   { name: "Community Moderation", href: "/dashboard/community-moderation", icon: MessageSquareCode, roles: ["ADMIN"], category: "Administration" },
-  { name: "Review Report", href: "/dashboard/review-report", icon: FileSearch, roles: ["ADMIN"], category: "Administration" },
   { name: "Users", href: "/dashboard/users", icon: UserCheck, roles: ["ADMIN"], category: "Administration" },
   { name: "Content Reports", href: "/dashboard/content-moderation", icon: ShieldAlert, roles: ["ADMIN"], category: "Administration" },
 ];
