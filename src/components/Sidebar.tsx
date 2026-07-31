@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useNotification } from "@/components/notifications/NotificationContext";
+import { NotificationTrigger } from "@/components/notifications/NotificationTrigger";
 
 function getInitials(text: string): string {
   return text
@@ -238,15 +239,18 @@ const Sidebar = () => {
           <span className="text-lg font-bold text-slate-900 tracking-tight">DevSolve</span>
         </Link>
 
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => setIsOpen(true)}
-          aria-label="Open Menu"
-          className="rounded-xl text-slate-700 hover:bg-slate-100 cursor-pointer"
-        >
-          <Menu className="w-6 h-6" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <NotificationTrigger />
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => setIsOpen(true)}
+            aria-label="Open Menu"
+            className="rounded-xl text-slate-700 hover:bg-slate-100 cursor-pointer"
+          >
+            <Menu className="w-6 h-6" />
+          </Button>
+        </div>
       </header>
 
       {/* Mobile Drawer (Slide-over on < lg screens) */}
