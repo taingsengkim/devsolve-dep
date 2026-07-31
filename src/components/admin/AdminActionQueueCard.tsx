@@ -35,7 +35,6 @@ export function AdminActionQueueCard({ items, totalCount }: AdminActionQueueCard
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <Clock className="size-5 text-amber-500" />
               Admin Action Queue
             </CardTitle>
             <CardDescription className="text-sm text-slate-500 mt-0.5">

@@ -4,8 +4,7 @@ export const dynamic = "force-dynamic";
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ShieldCheck, Building2, RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Building2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useGetCompanyVerificationsQuery } from "@/lib/redux/services/adminApi";
 import { OrganizationStatCards } from "@/components/admin/organizations/OrganizationStatCards";
@@ -41,11 +40,6 @@ export default function OrganizationVerificationPage() {
       item.email.toLowerCase().includes(q);
     return matchesFilter && matchesSearch;
   });
-
-  const handleResetFilters = () => {
-    setStatusFilter("ALL");
-    setSearchQuery("");
-  };
 
   return (
     <motion.div
@@ -109,16 +103,6 @@ export default function OrganizationVerificationPage() {
                 No records match your current filter or search criteria.
               </p>
             </div>
-            {(statusFilter !== "ALL" || searchQuery) && (
-              <Button
-                variant="outline"
-                onClick={handleResetFilters}
-                className="rounded-xl border-slate-300 dark:border-slate-700 font-semibold gap-1.5 text-sm cursor-pointer"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Reset Filters
-              </Button>
-            )}
           </Card>
         ) : (
           <div className="grid grid-cols-1 gap-3">
@@ -133,3 +117,4 @@ export default function OrganizationVerificationPage() {
     </motion.div>
   );
 }
+

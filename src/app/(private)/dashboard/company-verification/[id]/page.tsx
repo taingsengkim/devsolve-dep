@@ -166,10 +166,7 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
             {company.companyName.charAt(0)}
           </div>
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              KYC / KYB Audit
-            </div>
+       
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               {company.companyName}
             </h1>

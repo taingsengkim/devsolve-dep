@@ -2,11 +2,8 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Users, UserCheck, RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import React, { useState, useMemo } from "react";
+import { motion } from "motion/react";
 import { toast } from "sonner";
 import {
   useGetAdminUsersQuery,
@@ -15,28 +12,19 @@ import {
 import { UserStatCards } from "@/components/admin/users/UserStatCards";
 import {
   UserFiltersBar,
-  type RoleFilter,
   type StatusFilter,
 } from "@/components/admin/users/UserFiltersBar";
-import { UserTableRow } from "@/components/admin/users/UserTableRow";
+import { UserDataTable } from "@/components/admin/users/UserDataTable";
+import { getUserColumns } from "@/components/admin/users/userColumns";
 
 export default function AdminUsersPage() {
   const { data: users = [], isLoading, isFetching } = useGetAdminUsersQuery();
   const [updateUser] = useUpdateAdminUserStatusMutation();
 
-  const [roleFilter, setRoleFilter] = useState<RoleFilter>("ALL");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
   /* ── Counts ─────────────────────────────────────────────────────── */
-  const counts = {
-    all: users.length,
-    user: users.filter((u) => u.role === "USER").length,
-    company: users.filter((u) => u.role === "COMPANY").length,
-    admin: users.filter((u) => u.role === "ADMIN").length,
-    moderator: users.filter((u) => u.role === "MODERATOR").length,
-  };
-
   const statusCounts = {
     all: users.length,
     active: users.filter((u) => u.status === "ACTIVE").length,
@@ -46,14 +34,13 @@ export default function AdminUsersPage() {
 
   /* ── Filtering ───────────────────────────────────────────────────── */
   const filteredUsers = users.filter((u) => {
-    const matchesRole = roleFilter === "ALL" || u.role === roleFilter;
     const matchesStatus = statusFilter === "ALL" || u.status === statusFilter;
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch =
       !q ||
       u.name.toLowerCase().includes(q) ||
       u.email.toLowerCase().includes(q);
-    return matchesRole && matchesStatus && matchesSearch;
+    return matchesStatus && matchesSearch;
   });
 
   /* ── Handlers ────────────────────────────────────────────────────── */
@@ -84,14 +71,14 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleResetFilters = () => {
-    setRoleFilter("ALL");
-    setStatusFilter("ALL");
-    setSearchQuery("");
-  };
-
-  const hasActiveFilters =
-    roleFilter !== "ALL" || statusFilter !== "ALL" || searchQuery !== "";
+  const columns = useMemo(
+    () =>
+      getUserColumns({
+        onUpdateStatus: handleUpdateStatus,
+        onUpdateRole: handleUpdateRole,
+      }),
+    [users]
+  );
 
   const suspendedCount = statusCounts.suspended;
 
@@ -106,10 +93,6 @@ export default function AdminUsersPage() {
       {/* PAGE HEADER */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-            <UserCheck className="w-3.5 h-3.5" />
-            Admin / User Management
-          </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             Platform Users
           </h1>
@@ -134,78 +117,35 @@ export default function AdminUsersPage() {
       {isLoading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-24 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
+            <div
+              key={i}
+              className="h-24 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800"
+            />
           ))}
         </div>
       )}
 
       {/* FILTER BAR */}
       <UserFiltersBar
-        roleFilter={roleFilter}
-        onRoleFilterChange={setRoleFilter}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         searchQuery={searchQuery}
         onSearchQueryChange={setSearchQuery}
-        counts={counts}
         statusCounts={statusCounts}
       />
 
-      {/* USER LIST */}
+      {/* DATA TABLE */}
       <main className="space-y-3">
         {isLoading || isFetching ? (
           <div className="space-y-3 animate-pulse">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="h-20 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800"
-              />
-            ))}
+            <div className="h-64 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
           </div>
-        ) : filteredUsers.length === 0 ? (
-          <Card className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center space-y-4 shadow-2xs">
-            <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 mx-auto flex items-center justify-center">
-              <Users className="w-7 h-7" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                No Users Found
-              </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
-                No users match your current role, status, or search criteria.
-              </p>
-            </div>
-            {hasActiveFilters && (
-              <Button
-                variant="outline"
-                onClick={handleResetFilters}
-                className="rounded-xl border-slate-300 dark:border-slate-700 font-semibold gap-1.5 text-sm cursor-pointer"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Reset Filters
-              </Button>
-            )}
-          </Card>
         ) : (
-          <div className="space-y-3">
-            {/* Results count */}
-            <p className="text-xs font-medium text-slate-400 dark:text-slate-500 px-1">
-              Showing {filteredUsers.length} of {users.length} users
-            </p>
-            <AnimatePresence mode="popLayout">
-              {filteredUsers.map((user, index) => (
-                <UserTableRow
-                  key={user.id}
-                  user={user}
-                  index={index}
-                  onUpdateStatus={handleUpdateStatus}
-                  onUpdateRole={handleUpdateRole}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
+          <UserDataTable columns={columns} data={filteredUsers} />
         )}
       </main>
     </motion.div>
   );
 }
+
+
