@@ -154,6 +154,9 @@ export interface ContentReportItem {
   author: string;
   pastViolationsCount?: number;
   status: "PENDING" | "DISMISSED" | "WARNED" | "REMOVED";
+  snippet?: string;
+  authorAvatar?: string;
+  contentUrl?: string;
 }
 
 export interface ReportReasonsBreakdownData {

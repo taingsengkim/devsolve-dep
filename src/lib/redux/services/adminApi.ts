@@ -623,6 +623,7 @@ export const MOCK_CONTENT_REPORTS: ContentReportItem[] = [
     id: "cr_1",
     type: "SOLUTION",
     title: '"Buy cheap followers here — best price guaranteed..."',
+    snippet: "Instant delivery on 10,000 real active followers for cheap. Click here to boost your profile now!",
     timestamp: "1 day ago",
     reportCount: 8,
     reason: "Spam",
@@ -634,7 +635,8 @@ export const MOCK_CONTENT_REPORTS: ContentReportItem[] = [
     id: "cr_2",
     type: "PROBLEM",
     title: '"How to hack my ex\'s Instagram account..."',
-    timestamp: "3 day ago",
+    snippet: "Need urgent tool or keylogger to gain access to account without password verification. Will pay.",
+    timestamp: "3 days ago",
     reportCount: 12,
     reason: "Harmful",
     author: "anon_44",
@@ -644,7 +646,8 @@ export const MOCK_CONTENT_REPORTS: ContentReportItem[] = [
     id: "cr_3",
     type: "COMMENT",
     title: '"This is completely wrong, you clearly have no idea..."',
-    timestamp: "4 day ago",
+    snippet: "Stop posting nonsense solutions. You are wasting everyone's time and shouldn't be on this platform.",
+    timestamp: "4 days ago",
     reportCount: 3,
     reason: "Offensive",
     author: "rude_user",
@@ -654,11 +657,36 @@ export const MOCK_CONTENT_REPORTS: ContentReportItem[] = [
     id: "cr_4",
     type: "PROGRAM",
     title: '"Test our website"',
-    timestamp: "8 day ago",
+    snippet: "Unverified bounty program submission with invalid company details and no security scope.",
+    timestamp: "8 days ago",
     reportCount: 1,
     reason: "Off-topic",
     author: "FakeCorp",
     pastViolationsCount: 2,
+    status: "PENDING",
+  },
+  {
+    id: "cr_5",
+    type: "SOLUTION",
+    title: '"Zero-day RCE PoC download mirror link"',
+    snippet: "Download mirror executable containing unverified payload targeting active enterprise VDPs.",
+    timestamp: "2 hours ago",
+    reportCount: 6,
+    reason: "Harmful",
+    author: "shadow_leaker",
+    pastViolationsCount: 4,
+    status: "PENDING",
+  },
+  {
+    id: "cr_6",
+    type: "COMMENT",
+    title: '"Unsolicited crypto casino referral link"',
+    snippet: "Earn 500 free spins today at fast-payout-casino.fake! Limited time promo bonus code.",
+    timestamp: "5 hours ago",
+    reportCount: 5,
+    reason: "Spam",
+    author: "bot_promoter",
+    pastViolationsCount: 1,
     status: "PENDING",
   },
 ];
@@ -829,10 +857,17 @@ export const adminApi = baseApi.injectEndpoints({
       void
     >({
       queryFn: () => {
+        const pendingItems = mockContentReportsStore.filter((r) => r.status === "PENDING");
+        const spam = pendingItems.filter((r) => r.reason === "Spam").length;
+        const harmful = pendingItems.filter((r) => r.reason === "Harmful").length;
+        const offensive = pendingItems.filter((r) => r.reason === "Offensive").length;
+        const offTopic = pendingItems.filter((r) => r.reason === "Off-topic").length;
+        const total = pendingItems.length;
+
         return {
           data: {
             items: mockContentReportsStore.map((r) => ({ ...r })),
-            breakdown: { ...MOCK_REPORT_REASONS_BREAKDOWN },
+            breakdown: { spam, harmful, offensive, offTopic, total },
           },
         };
       },
