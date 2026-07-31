@@ -2,6 +2,20 @@ import { useState, useEffect } from "react";
 import { authClient } from "@/lib/auth/auth-client";
 import { extractRealmRolesFromToken } from "@/lib/auth/token-utils";
 
+/** Shape of the object returned by authClient.getAccessToken */
+interface AccessTokenResponse {
+  data?: string | { accessToken?: string; token?: string } | null;
+  token?: string;
+}
+
+/** Extension of the better-auth session user that includes the role field injected by Keycloak */
+interface SessionUserWithRole {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string | null;
+}
+
 export interface SidebarUser {
   name?: string | null;
   email?: string | null;
@@ -19,7 +33,7 @@ export function useSidebarAuth() {
   useEffect(() => {
     if (!session) return;
 
-    authClient.getAccessToken({ providerId: "keycloak" }).then((res: any) => {
+    authClient.getAccessToken({ providerId: "keycloak" }).then((res: AccessTokenResponse) => {
       const rawToken =
         typeof res?.data === "string"
           ? res.data
@@ -35,8 +49,8 @@ export function useSidebarAuth() {
     });
   }, [session]);
 
-  const sessionRoles = (user as any)?.role
-    ? String((user as any).role)
+  const sessionRoles = (user as SessionUserWithRole)?.role
+    ? String((user as SessionUserWithRole).role)
         .split(",")
         .map((r) => r.trim().toUpperCase())
     : [];

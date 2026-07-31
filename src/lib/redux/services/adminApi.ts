@@ -5,6 +5,8 @@ import {
   ReportConfirmationItem,
   AdminUserItem,
   ModerationItem,
+  ContentReportItem,
+  ReportReasonsBreakdownData,
 } from "@/lib/types/admin/types";
 
 export * from "@/lib/types/admin/types";
@@ -324,6 +326,59 @@ export const MOCK_MODERATION_ITEMS: ModerationItem[] = [
   },
 ];
 
+export const MOCK_CONTENT_REPORTS: ContentReportItem[] = [
+  {
+    id: "cr_1",
+    type: "SOLUTION",
+    title: '"Buy cheap followers here — best price guaranteed..."',
+    timestamp: "1 day ago",
+    reportCount: 8,
+    reason: "Spam",
+    author: "spammer_x",
+    pastViolationsCount: 3,
+    status: "PENDING",
+  },
+  {
+    id: "cr_2",
+    type: "PROBLEM",
+    title: '"How to hack my ex\'s Instagram account..."',
+    timestamp: "3 day ago",
+    reportCount: 12,
+    reason: "Harmful",
+    author: "anon_44",
+    status: "PENDING",
+  },
+  {
+    id: "cr_3",
+    type: "COMMENT",
+    title: '"This is completely wrong, you clearly have no idea..."',
+    timestamp: "4 day ago",
+    reportCount: 3,
+    reason: "Offensive",
+    author: "rude_user",
+    status: "PENDING",
+  },
+  {
+    id: "cr_4",
+    type: "PROGRAM",
+    title: '"Test our website"',
+    timestamp: "8 day ago",
+    reportCount: 1,
+    reason: "Off-topic",
+    author: "FakeCorp",
+    pastViolationsCount: 2,
+    status: "PENDING",
+  },
+];
+
+export const MOCK_REPORT_REASONS_BREAKDOWN: ReportReasonsBreakdownData = {
+  spam: 6,
+  harmful: 3,
+  offensive: 3,
+  offTopic: 2,
+  total: 14,
+};
+
 export const adminApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAdminOverview: builder.query<AdminDashboardOverviewResponse, void>({
@@ -341,6 +396,7 @@ export const adminApi = baseApi.injectEndpoints({
       CompanyVerificationItem,
       { id: string; status: "APPROVED" | "REJECTED"; notes?: string }
     >({
+      // TODO: replace queryFn with query() when real API is ready
       queryFn: ({ id, status, notes }) => {
         const item = MOCK_COMPANY_VERIFICATIONS.find((c) => c.id === id);
         if (item) {
@@ -349,6 +405,7 @@ export const adminApi = baseApi.injectEndpoints({
         }
         return { data: item || MOCK_COMPANY_VERIFICATIONS[0] };
       },
+      invalidatesTags: ["CompanyVerification"],
     }),
     getReportConfirmations: builder.query<ReportConfirmationItem[], void>({
       queryFn: () => {
@@ -359,6 +416,7 @@ export const adminApi = baseApi.injectEndpoints({
       ReportConfirmationItem,
       { id: string; status: "CONFIRMED" | "REJECTED" | "ESCALATED" }
     >({
+      // TODO: replace queryFn with query() when real API is ready
       queryFn: ({ id, status }) => {
         const item = MOCK_REPORT_CONFIRMATIONS.find((r) => r.id === id);
         if (item) {
@@ -366,6 +424,7 @@ export const adminApi = baseApi.injectEndpoints({
         }
         return { data: item || MOCK_REPORT_CONFIRMATIONS[0] };
       },
+      invalidatesTags: ["Report"],
     }),
     getAdminUsers: builder.query<AdminUserItem[], void>({
       queryFn: () => {
@@ -376,6 +435,7 @@ export const adminApi = baseApi.injectEndpoints({
       AdminUserItem,
       { id: string; status: "ACTIVE" | "SUSPENDED"; role?: "USER" | "COMPANY" | "ADMIN" | "MODERATOR" }
     >({
+      // TODO: replace queryFn with query() when real API is ready
       queryFn: ({ id, status, role }) => {
         const item = MOCK_ADMIN_USERS.find((u) => u.id === id);
         if (item) {
@@ -384,6 +444,7 @@ export const adminApi = baseApi.injectEndpoints({
         }
         return { data: item || MOCK_ADMIN_USERS[0] };
       },
+      invalidatesTags: ["AdminUser"],
     }),
     getModerationItems: builder.query<ModerationItem[], void>({
       queryFn: () => {
@@ -394,6 +455,7 @@ export const adminApi = baseApi.injectEndpoints({
       ModerationItem,
       { id: string; status: "RESOLVED" | "DISMISSED" }
     >({
+      // TODO: replace queryFn with query() when real API is ready
       queryFn: ({ id, status }) => {
         const item = MOCK_MODERATION_ITEMS.find((m) => m.id === id);
         if (item) {
@@ -401,6 +463,36 @@ export const adminApi = baseApi.injectEndpoints({
         }
         return { data: item || MOCK_MODERATION_ITEMS[0] };
       },
+      invalidatesTags: ["ModerationItem"],
+    }),
+    getContentReports: builder.query<
+      { items: ContentReportItem[]; breakdown: ReportReasonsBreakdownData },
+      void
+    >({
+      queryFn: () => {
+        return {
+          data: {
+            items: MOCK_CONTENT_REPORTS,
+            breakdown: MOCK_REPORT_REASONS_BREAKDOWN,
+          },
+        };
+      },
+    }),
+    updateContentReportAction: builder.mutation<
+      ContentReportItem,
+      { id: string; action: "DISMISS" | "WARN" | "REMOVE" }
+    >({
+      // TODO: replace queryFn with query() when real API is ready
+      queryFn: ({ id, action }) => {
+        const item = MOCK_CONTENT_REPORTS.find((r) => r.id === id);
+        if (item) {
+          if (action === "DISMISS") item.status = "DISMISSED";
+          if (action === "WARN") item.status = "WARNED";
+          if (action === "REMOVE") item.status = "REMOVED";
+        }
+        return { data: item || MOCK_CONTENT_REPORTS[0] };
+      },
+      invalidatesTags: ["ContentReport"],
     }),
   }),
 });
@@ -415,4 +507,6 @@ export const {
   useUpdateAdminUserStatusMutation,
   useGetModerationItemsQuery,
   useUpdateModerationItemMutation,
+  useGetContentReportsQuery,
+  useUpdateContentReportActionMutation,
 } = adminApi;

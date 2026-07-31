@@ -81,6 +81,26 @@ export interface ModerationItem {
   details: string;
 }
 
+export interface ContentReportItem {
+  id: string;
+  type: "SOLUTION" | "PROBLEM" | "COMMENT" | "PROGRAM";
+  title: string;
+  timestamp: string;
+  reportCount: number;
+  reason: "Spam" | "Harmful" | "Offensive" | "Off-topic";
+  author: string;
+  pastViolationsCount?: number;
+  status: "PENDING" | "DISMISSED" | "WARNED" | "REMOVED";
+}
+
+export interface ReportReasonsBreakdownData {
+  spam: number;
+  harmful: number;
+  offensive: number;
+  offTopic: number;
+  total: number;
+}
+
 export interface AdminActivityFeedItem {
   id: string;
   title: string;

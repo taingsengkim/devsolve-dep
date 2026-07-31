@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { motion } from "motion/react";
 import { useGetDashboardOverviewQuery } from "@/lib/redux/services/dashboardApi";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -18,16 +18,7 @@ export default function DashboardPage() {
   const { user } = useSidebarAuth();
   const isAdminUser = user?.roles?.includes("ADMIN") || user?.role?.includes("ADMIN");
 
-  // State to support view mode toggle (defaulting to Admin view for Admin users, or toggleable)
-  const [viewMode, setViewMode] = useState<"ADMIN" | "COMPANY">("ADMIN");
-
-  useEffect(() => {
-    if (isAdminUser) {
-      setViewMode("ADMIN");
-    } else {
-      setViewMode("COMPANY");
-    }
-  }, [isAdminUser]);
+  const viewMode = isAdminUser ? "ADMIN" : "COMPANY";
 
   const { data: dashboardData, isLoading, isFetching, refetch } = useGetDashboardOverviewQuery();
 
