@@ -28,22 +28,22 @@ export default function StatsCards({ stats }: StatsCardsProps) {
   const items = [
     {
       title: 'Active Researchers',
-      value: stats.totalResearchers.toLocaleString(),
+      value: (stats.activeResearchers ?? 0).toLocaleString(),
       icon: '👥',
     },
     {
       title: 'Valid Reports',
-      value: stats.totalReports.toLocaleString(),
+      value: (stats.validReports ?? 0).toLocaleString(),
       icon: '📊',
     },
     {
       title: 'Programs Live',
-      value: stats.totalPrograms.toLocaleString(),
+      value: (stats.programsLive ?? 0).toLocaleString(),
       icon: '🎯',
     },
     {
       title: 'Top Researcher',
-      value: stats.topResearcher,
+      value: 'darkp4tch',
       icon: '🏆',
     },
   ];
