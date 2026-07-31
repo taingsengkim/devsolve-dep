@@ -65,7 +65,7 @@ function SidebarContent({
     <div className="flex flex-col h-full overflow-hidden">
       {/* Logo Section */}
       <div className="flex items-center justify-between mt-1 mb-3 shrink-0 px-1">
-        <Link href="/" onClick={onNavItemClick} className="flex items-center gap-2">
+        {/* <Link href="/" onClick={onNavItemClick} className="flex items-center gap-2">
           <Image
             src="/logo-1.png"
             alt="DevSolve Logo"
@@ -77,7 +77,7 @@ function SidebarContent({
           <span className="text-xl font-bold text-slate-900 tracking-tight lg:hidden">
             DevSolve
           </span>
-        </Link>
+        </Link> */}
         {onNavItemClick && (
           <Button
             size="icon"
@@ -284,7 +284,7 @@ const Sidebar = () => {
       </AnimatePresence>
 
       {/* Desktop Sticky Sidebar */}
-      <aside className="hidden lg:flex flex-col w-[260px] shrink-0 h-[100dvh] sticky top-0 p-4 rounded-r-[20px] border border-blue-600/15 bg-[linear-gradient(331deg,rgba(255,255,255,0.10)_59.38%,rgba(166,179,209,0.25)_92.74%,rgba(21,56,133,0.50)_132.79%),linear-gradient(154deg,rgba(255,255,255,0.30)_76.51%,rgba(37,99,235,0.30)_132.61%)] shadow-[0_4px_32px_0_rgba(37,99,235,0.10)] overflow-hidden">
+      <aside className="hidden lg:flex flex-col w-[260px] shrink-0 h-[100dvh] sticky top-0 p-4 border border-gray-100 overflow-hidden">
         <SidebarContent
           pathname={pathname}
           user={user}
