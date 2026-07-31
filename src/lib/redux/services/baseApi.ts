@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { authClient } from "@/lib/auth/auth-client";
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || "/api";
 
 export const baseApi = createApi({
   reducerPath: "api",
@@ -21,6 +21,6 @@ export const baseApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["User", "Post", "Report", "Program", "CompanyVerification", "ContentReport", "ModerationItem", "AdminUser", "Notification", "Bookmark"],
+  tagTypes: ["User", "Post", "Report", "Program", "CompanyVerification", "ContentReport", "ModerationItem", "AdminUser", "Notification", "Bookmark", "Profile"],
   endpoints: () => ({}),
 });

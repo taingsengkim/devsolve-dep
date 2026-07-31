@@ -1,25 +1,34 @@
+"use client";
+
+import { useParams, notFound } from "next/navigation";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import FollowingList from "@/components/profile/following/FollowingList";
-import { mockProfile, mockFollowingCounts, mockFollowedHackers } from "@/lib/types/profile/mock-data";
+import {
+  useGetProfileByUsernameQuery,
+  useGetFollowingCountsQuery,
+  useGetFollowedHackersQuery,
+} from "@/lib/redux/services/profileApi";
 
-interface FollowingPageProps {
-  params: Promise<{ username: string }>;
-}
+export default function FollowingPage() {
+  const { username } = useParams<{ username: string }>();
+  const { data: overview, isLoading: isLoadingProfile, isError } = useGetProfileByUsernameQuery(username);
+  const { data: counts, isLoading: isLoadingCounts } = useGetFollowingCountsQuery(username);
+  const { data: hackers, isLoading: isLoadingHackers } = useGetFollowedHackersQuery(username);
 
-export default async function FollowingPage({ params }: FollowingPageProps) {
-  // TODO: replace with a real fetch keyed by username
-  const { username } = await params;
-  void username;
+  if (isLoadingProfile || isLoadingCounts || isLoadingHackers) {
+    return <div className="p-6 text-sm text-slate-400">Loading...</div>;
+  }
+  if (isError || !overview || !counts || !hackers) return notFound();
 
   return (
     <div>
       <div className="rounded-2xl bg-white shadow-sm">
-        <ProfileHeader profile={mockProfile} backHref={`/dashboard/profile/${mockProfile.username}`} />
+        <ProfileHeader profile={overview.profile} backHref={`/dashboard/profile/${username}`} />
         <div className="h-5" />
       </div>
 
       <div className="mt-6">
-        <FollowingList counts={mockFollowingCounts} hackers={mockFollowedHackers} />
+        <FollowingList counts={counts} hackers={hackers} />
       </div>
     </div>
   );
