@@ -43,7 +43,7 @@ const BADGE_CONFIG: Record<
 
 export default function TopResearcherCard({ researcher }: TopResearcherCardProps) {
   return (
-    <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300">
+    <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300">
       {/* Top Header Section */}
       <div>
         <div className="flex items-center justify-between">

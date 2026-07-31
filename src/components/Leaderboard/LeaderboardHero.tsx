@@ -24,7 +24,7 @@ export default function LeaderboardHero({ stats }: LeaderboardHeroProps) {
 
       <div className="flex gap-8">
         {statCards.map((stat) => (
-          <div key={stat.label} className="text-right">
+          <div key={stat.label} className="text-center">
             <p className="text-2xl font-extrabold text-slate-900 sm:text-3xl">{stat.value}</p>
             <p className="text-xs text-slate-500 sm:text-sm">{stat.label}</p>
           </div>
