@@ -99,7 +99,7 @@ export const MOCK_ADMIN_OVERVIEW: AdminDashboardOverviewResponse = {
         subtitle: "Flagged Posts & Discussions",
         count: 4,
         status: "pending",
-        linkHref: "/dashboard/community-moderation",
+        linkHref: "/dashboard/content-moderation",
         type: "moderation",
       },
       {
