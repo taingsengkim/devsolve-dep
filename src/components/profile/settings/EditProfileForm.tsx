@@ -98,5 +98,5 @@ export default function EditProfileForm({ initialData, accountStatus, onSave }: 
         </motion.div>
       </AnimatePresence>
     </div>
-  );
+    );
 }
