@@ -7,7 +7,6 @@ import { useGetHacktivityFeedQuery } from "@/lib/redux/services/hacktivityApi";
 import SearchBar from "@/components/shared/SearchBar";
 import { Badge } from "@/components/ui/badge";
 import FeaturedDisclosures from "./FeaturedDisclosures";
-import HacktivityHero from "./HacktivityHero";
 import {
   ShieldAlert,
   Award,
@@ -58,8 +57,30 @@ export default function HacktivityFeature() {
   return (
     <div className="min-h-screen bg-slate-50/50 py-8 px-4 sm:py-12 sm:px-6 md:px-8 lg:px-12">
       <div className="mx-auto max-w-7xl">
-        {/* Hero Section */}
-        {/* <HacktivityHero stats={activityStats} /> */}
+        {/* Header */}
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+              Hacktivity Stream
+            </h1>
+            <p className="mt-1.5 text-sm text-slate-500 max-w-2xl">
+              Real-time feed of resolved vulnerabilities, hacker milestones, and public disclosure reports.
+            </p>
+          </div>
+
+          {/* Stats Badges */}
+          <div className="flex flex-wrap items-center gap-3">
+            {activityStats.map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-xl border border-slate-200/80 bg-white px-3.5 py-2 shadow-xs"
+              >
+                <div className="text-sm font-bold text-slate-900">{stat.value}</div>
+                <div className="text-[11px] font-medium text-slate-500">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Featured Vulnerability Disclosures */}
         <FeaturedDisclosures />
@@ -89,11 +110,10 @@ export default function HacktivityFeature() {
                       type="button"
                       key={option}
                       onClick={() => setSelectedFilter(isActive ? null : option)}
-                      className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all shadow-xs ${
-                        isActive
+                      className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all shadow-xs ${isActive
                           ? "bg-blue-600 text-white"
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      }`}
+                        }`}
                     >
                       {option}
                     </button>
@@ -191,13 +211,12 @@ export default function HacktivityFeature() {
                             <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
                               {activity.severity && (
                                 <span
-                                  className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-semibold ${
-                                    activity.severity === "Critical"
+                                  className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-semibold ${activity.severity === "Critical"
                                       ? "bg-red-50 text-red-700 border border-red-200"
                                       : activity.severity === "High"
-                                      ? "bg-amber-50 text-amber-700 border border-amber-200"
-                                      : "bg-slate-100 text-slate-700"
-                                  }`}
+                                        ? "bg-amber-50 text-amber-700 border border-amber-200"
+                                        : "bg-slate-100 text-slate-700"
+                                    }`}
                                 >
                                   <ShieldAlert size={12} />
                                   {activity.severity}
@@ -222,11 +241,10 @@ export default function HacktivityFeature() {
                           <button
                             type="button"
                             onClick={() => toggleLike(activity.id)}
-                            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
-                              isLiked
+                            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${isLiked
                                 ? "bg-rose-50 text-rose-600 border border-rose-200"
                                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                            }`}
+                              }`}
                           >
                             <Heart
                               size={14}
@@ -276,7 +294,7 @@ export default function HacktivityFeature() {
                         <div className="text-xs font-bold text-slate-900">
                           {hacker.name}
                         </div>
-                        <div className="text-xs text-slate-500 font-medium">
+                        <div className="text-[11px] text-slate-500 font-medium">
                           @{hacker.handle}
                         </div>
                       </div>
