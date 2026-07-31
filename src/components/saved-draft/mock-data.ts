@@ -139,7 +139,7 @@ export const SAVED_DRAFT_ITEMS: SavedDraftItem[] = [
     id: "program-3",
     title: "Partner API Scope Proposal",
     description:
-      "Program solve draft mapping reachable assets, likely trust boundaries, and a first-pass testing plan.",
+      "Program draft mapping reachable assets, likely trust boundaries, and a first-pass testing plan.",
     category: "program",
     programDraftKind: "bounty",
     tags: ["scope", "api", "planning"],
@@ -150,4 +150,9 @@ export const SAVED_DRAFT_ITEMS: SavedDraftItem[] = [
   },
 ];
 
-export const SAVED_DRAFT_TAB_ORDER: DraftCategory[] = ["problem", "solution", "program"];
+export const SAVED_DRAFT_TAB_ORDER: DraftCategory[] = [
+  "problem",
+  "solution",
+  "program",
+  "report",
+];

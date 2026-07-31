@@ -22,6 +22,19 @@ export type AboutTeamMember = {
   accent: "blue" | "emerald" | "slate";
 };
 
+export type AboutOffer = {
+  title: string;
+  description: string;
+  points: string[];
+  accent: "blue" | "emerald" | "violet";
+};
+
+export type AboutImpactStat = {
+  label: string;
+  value: string;
+  description: string;
+};
+
 export const ABOUT_TEAM_MEMBERS: AboutTeamMember[] = [
   {
     name: "Sreng Chipor",
@@ -158,7 +171,7 @@ export const ABOUT_VALUES = [
   },
 ];
 
-export const ABOUT_STATS = [
+export const ABOUT_STATS: AboutImpactStat[] = [
   {
     label: "Organizations Secured",
     value: "250+",
@@ -179,4 +192,68 @@ export const ABOUT_STATS = [
     value: "8K+",
     description: "Celebrating achievements",
   },
+];
+
+export const ABOUT_OFFERS: AboutOffer[] = [
+  {
+    title: "Bug Bounty Platform",
+    description:
+      "Organizations launch bug bounty programs and hackers help find vulnerabilities before attackers do.",
+    points: [
+      "Create and manage programs",
+      "Submit and track vulnerability reports",
+      "Fair rewards and recognition",
+    ],
+    accent: "emerald",
+  },
+  {
+    title: "Developer Community",
+    description:
+      "A space for developers and students to ask questions, share solutions, and learn from each other.",
+    points: [
+      "Post problems and get help",
+      "Share solutions and knowledge",
+      "Follow, vote, and interact",
+    ],
+    accent: "blue",
+  },
+  {
+    title: "Project Showcase",
+    description:
+      "Showcase your projects, explain the build process, share source code, and the technologies you use.",
+    points: [
+      "Step-by-step build process",
+      "Show your tech stack and repo",
+      "Inspire and get discovered",
+    ],
+    accent: "violet",
+  },
+];
+
+export const ABOUT_ROLE_STRIP = [
+  {
+    title: "3 Roles",
+    description: "Organizations, Hackers, Developers",
+  },
+  {
+    title: "100%",
+    description: "Focused on Security and Quality",
+  },
+  {
+    title: "Grow",
+    description: "Learn, Collaborate and Improve",
+  },
+  {
+    title: "Build",
+    description: "Showcase Your Work and Get Recognized",
+  },
+];
+
+export const ABOUT_REASON_POINTS = [
+  "Strengthen security through responsible vulnerability disclosure",
+  "Connect organizations with a global community of ethical hackers",
+  "Support learning and growth for developers and students",
+  "Build your reputation with public profiles and achievements",
+  "Encourage collaboration, innovation, and knowledge sharing",
+  "Create a trusted and positive community",
 ];

@@ -31,7 +31,9 @@ export const PRIORITY_REVIEW_ITEMS: PriorityReviewItem[] = [
     severity: "Critical",
     reporter: "Seng Songhuor",
     submittedAt: "Jul 29, 2026",
+    queue: "Pending Intake",
     status: "Needs scope validation",
+    assets: ["api.tiktok.com", "Android App"],
   },
   {
     id: 6,
@@ -39,7 +41,9 @@ export const PRIORITY_REVIEW_ITEMS: PriorityReviewItem[] = [
     severity: "Critical",
     reporter: "Seng Songhuor",
     submittedAt: "Jul 28, 2026",
+    queue: "Under Review",
     status: "Awaiting severity confirmation",
+    assets: ["Android App", "auth.tiktok.com"],
   },
   {
     id: 9,
@@ -47,7 +51,9 @@ export const PRIORITY_REVIEW_ITEMS: PriorityReviewItem[] = [
     severity: "High",
     reporter: "Seng Songhuor",
     submittedAt: "Jul 28, 2026",
+    queue: "Under Review",
     status: "Evidence review in progress",
+    assets: ["sandbox-api.tiktok.com", "Partner Sandbox"],
   },
   {
     id: 3,
@@ -55,6 +61,8 @@ export const PRIORITY_REVIEW_ITEMS: PriorityReviewItem[] = [
     severity: "Medium",
     reporter: "Seng Songhuor",
     submittedAt: "Jul 27, 2026",
+    queue: "Approval Ready",
     status: "Waiting analyst notes",
+    assets: ["commerce-api.tiktok.com", "Partner Portal"],
   },
 ];

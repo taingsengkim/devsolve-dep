@@ -12,11 +12,11 @@ export default function InviteMemberPage() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="flex flex-col gap-6 pb-12"
+      className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 pb-12"
     >
       <InviteMemberHeader />
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.75fr)]">
         <InviteMemberForm />
         <InviteMemberSidebar />
       </div>

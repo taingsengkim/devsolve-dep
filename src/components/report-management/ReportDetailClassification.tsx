@@ -1,12 +1,6 @@
-import type { ReportManagementDetail } from "@/components/report-management/types";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { ReportDetailSectionCard } from "@/components/report-management/ReportDetailSectionCard";
+import type { ReportManagementDetail } from "@/components/report-management/types";
 
 type ReportDetailClassificationProps = {
   detail: ReportManagementDetail;
@@ -15,66 +9,81 @@ type ReportDetailClassificationProps = {
 export function ReportDetailClassification({
   detail,
 }: ReportDetailClassificationProps) {
-  return (
-    <Card className="rounded-2xl border border-slate-200/80 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
-      <CardHeader className="gap-3">
-        <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
-          Vulnerability Classification
-        </CardTitle>
-        <CardDescription className="text-base text-slate-500">
-          Reference taxonomy, weakness identifier, and severity vector used during triage.
-        </CardDescription>
-      </CardHeader>
+  const severityBadgeClass =
+    detail.severity === "Critical"
+      ? "border-red-200 bg-red-50 text-red-700"
+      : detail.severity === "High"
+        ? "border-orange-200 bg-orange-50 text-orange-700"
+        : detail.severity === "Medium"
+          ? "border-amber-200 bg-amber-50 text-amber-700"
+          : "border-blue-200 bg-blue-50 text-blue-700";
 
-      <CardContent className="flex flex-col gap-5">
-        <div className="grid gap-4">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-              Vulnerability Type
-            </span>
-            <p className="mt-3 text-base font-semibold text-slate-900">
+  return (
+    <ReportDetailSectionCard
+      title="Vulnerability Classification"
+      icon={
+        <span className="grid grid-cols-2 gap-0.5">
+          <span className="size-1.5 rounded-[2px] bg-current" />
+          <span className="size-1.5 rounded-[2px] bg-current" />
+          <span className="size-1.5 rounded-[2px] bg-current" />
+          <span className="size-1.5 rounded-[2px] bg-current" />
+        </span>
+      }
+      contentClassName="space-y-5"
+    >
+        <div className="grid gap-5 md:grid-cols-3">
+          <InfoBlock label="Vulnerability Type">
+            <p className="text-base font-semibold tracking-tight text-slate-900">
               {detail.vulnerabilityType}
             </p>
-          </div>
+          </InfoBlock>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-slate-200 bg-white p-4">
-              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                CWE Identifier
+          <InfoBlock label="CWE Identifier">
+            <a
+              href="#"
+              className="text-base font-semibold text-blue-600 hover:text-blue-700"
+            >
+              {detail.cweIdentifier}
+            </a>
+          </InfoBlock>
+
+          <InfoBlock label="CVSS Score">
+            <div className="flex items-center gap-2">
+              <span className="text-base font-semibold text-red-600">
+                {detail.cvssScore}
               </span>
-              <a
-                href="#"
-                className="mt-3 inline-flex text-base font-semibold text-blue-600 hover:text-blue-700"
+              <Badge
+                variant="outline"
+                className={`rounded-full px-2.5 ${severityBadgeClass}`}
               >
-                {detail.cweIdentifier}
-              </a>
+                {detail.severity}
+              </Badge>
             </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-white p-4">
-              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                CVSS Score
-              </span>
-              <div className="mt-3">
-                <Badge
-                  variant="outline"
-                  className="border-red-200 bg-red-50 text-red-700"
-                >
-                  {detail.cvssScore} High
-                </Badge>
-              </div>
-            </div>
-          </div>
+          </InfoBlock>
         </div>
 
-        <div className="flex flex-col gap-2 rounded-2xl bg-slate-50/80 p-4 ring-1 ring-slate-200/70">
-          <span className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
-            Vector String
-          </span>
-          <code className="overflow-x-auto rounded-2xl bg-white px-3 py-2 text-sm text-slate-700 ring-1 ring-slate-200">
+        <InfoBlock label="Vector String">
+          <code className="block overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 font-mono text-xs text-slate-700">
             {detail.vectorString}
           </code>
-        </div>
-      </CardContent>
-    </Card>
+        </InfoBlock>
+    </ReportDetailSectionCard>
+  );
+}
+
+function InfoBlock({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+        {label}
+      </p>
+      {children}
+    </div>
   );
 }

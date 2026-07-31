@@ -1,108 +1,226 @@
+"use client";
+
+import Image from "next/image";
 import Link from "next/link";
-import { CircleDot } from "lucide-react";
-import { motion } from "motion/react";
 
 import type { ManagedReport } from "@/components/report-management/types";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { reportListGridClass } from "@/components/report-management/report-list-layout";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
-function severityBadgeClass(severity: ManagedReport["severity"]) {
-  if (severity === "Critical") return "text-slate-800";
-  if (severity === "High") return "text-blue-600";
-  if (severity === "Medium") return "text-emerald-600";
-  return "text-slate-400";
-}
-
-function statusBadgeClass(status: ManagedReport["status"]) {
-  return status === "Open" ? "text-emerald-600" : "text-rose-500";
-}
-
-function typeBadgeClass(type: ManagedReport["type"]) {
+function getTypeBadgeClass(type: ManagedReport["type"]) {
   return type === "Bounty"
-    ? "bg-blue-50 text-blue-700"
-    : "bg-slate-100 text-slate-700";
+    ? "border-blue-200 bg-blue-50 text-blue-700"
+    : "border-violet-200 bg-violet-50 text-violet-700";
 }
+
+function getStatusBadgeClass(status: ManagedReport["status"]) {
+  return status === "Open"
+    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+    : "border-slate-200 bg-slate-100 text-slate-600";
+}
+
+function getSeverityBadgeClass(severity: ManagedReport["severity"]) {
+  if (severity === "Critical") return "border-red-200 bg-red-50 text-red-700";
+  if (severity === "High") return "border-orange-200 bg-orange-50 text-orange-700";
+  if (severity === "Medium") return "border-amber-200 bg-amber-50 text-amber-700";
+  return "border-blue-200 bg-blue-50 text-blue-700";
+}
+
+const badgeBaseClass =
+  "h-7 min-w-[84px] justify-center rounded-full px-3 text-[12px] font-medium";
 
 type ManagedReportCardProps = {
   report: ManagedReport;
+  isLast?: boolean;
 };
 
-export function ManagedReportCard({ report }: ManagedReportCardProps) {
+export function ManagedReportCard({
+  report,
+  isLast = false,
+}: ManagedReportCardProps) {
+  const reportId = `RPT-2026-${report.id.toString().padStart(5, "0")}`;
+  const visibleAssets = report.assets.slice(0, 2);
+  const hiddenAssetsCount = Math.max(0, report.assets.length - visibleAssets.length);
+
   return (
-    <Card className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white py-0 shadow-[0_2px_8px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_8px_18px_rgba(15,23,42,0.05)]">
-      <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(15,23,42,0.02)_1px,transparent_1px)] bg-[length:4px_4px]" />
-      </div>
-      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-transparent via-slate-200/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-      <CardContent className="relative p-4">
-        <div className="flex items-start gap-3">
-          <Avatar size="sm" className="mt-0.5 border border-slate-200 bg-slate-100 text-slate-700 transition-colors duration-300 group-hover:border-slate-300 group-hover:bg-white">
-            {report.programLogo ? (
-              <AvatarImage src={report.programLogo} alt={`${report.title} logo`} />
-            ) : null}
-            <AvatarFallback className="bg-slate-100 text-xs font-semibold text-slate-700">
-              {report.authorInitials}
-            </AvatarFallback>
-          </Avatar>
-
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <h3 className="truncate text-sm font-semibold text-slate-900">
-                    {report.title}
-                  </h3>
-                  <span className="text-xs text-slate-400">by {report.author}</span>
-                </div>
-
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] font-medium">
-                  <Badge className={typeBadgeClass(report.type)}>{report.type}</Badge>
-                  <span className={statusBadgeClass(report.status)}>
-                    <span className="inline-flex items-center gap-1">
-                      <CircleDot className="size-2.5 fill-current" />
-                      {report.status}
-                    </span>
+    <Link
+      href={`/dashboard/report-management/${report.id}`}
+      aria-label={`Open report ${report.title}`}
+      className={cn(
+        "group block cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500/30",
+        !isLast && "border-b border-slate-200"
+      )}
+      onKeyDown={(event) => {
+        if (event.key === " ") {
+          event.preventDefault();
+          event.currentTarget.click();
+        }
+      }}
+    >
+      <div className="px-6 py-5 transition-colors duration-200 group-hover:bg-blue-50/35">
+        <div className={cn(reportListGridClass, "hidden lg:grid")}>
+          <div className="min-w-0">
+            <div className="flex items-start gap-4">
+              <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
+                {report.programLogo ? (
+                  <Image
+                    src={report.programLogo}
+                    alt={`${report.title} logo`}
+                    width={48}
+                    height={48}
+                    className="size-11 object-contain"
+                  />
+                ) : (
+                  <span className="text-sm font-semibold text-slate-700">
+                    {report.authorInitials}
                   </span>
-                  <span className={severityBadgeClass(report.severity)}>
-                    {report.severity}
-                  </span>
-                </div>
+                )}
               </div>
 
-              <motion.div whileHover={{ y: -1 }} whileTap={{ y: 0 }}>
-                <Link
-                  href={`/dashboard/report-management/${report.id}`}
-                  className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-all duration-200 hover:border-slate-800 hover:bg-slate-800 hover:text-white hover:shadow-[0_8px_18px_rgba(15,23,42,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:ring-offset-2 group-hover:border-slate-300"
-                >
-                  Review details
-                </Link>
-              </motion.div>
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="space-y-1.5">
+                  <h3 className="truncate text-[17px] font-semibold leading-6 text-[#0F172A]">
+                    {report.title}
+                  </h3>
+                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-slate-500">
+                    <span>{reportId}</span>
+                    <span className="text-slate-300">&bull;</span>
+                    <span className="truncate">{report.author}</span>
+                    <span className="text-slate-300">&bull;</span>
+                    <span>{report.submittedAt}</span>
+                  </p>
+                </div>
+
+                <p className="line-clamp-1 text-[14px] leading-6 text-slate-500">
+                  {report.summary}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {visibleAssets.map((asset) => (
+              <span
+                key={asset}
+                className="inline-flex max-w-[165px] truncate rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-600"
+                title={asset}
+              >
+                {asset}
+              </span>
+            ))}
+            {hiddenAssetsCount > 0 ? (
+              <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-500">
+                +{hiddenAssetsCount} more
+              </span>
+            ) : null}
+          </div>
+
+          <div className="flex items-center justify-center">
+            <Badge
+              variant="outline"
+              className={cn(badgeBaseClass, getTypeBadgeClass(report.type))}
+            >
+              {report.type}
+            </Badge>
+          </div>
+
+          <div className="flex items-center justify-center">
+            <Badge
+              variant="outline"
+              className={cn(badgeBaseClass, getStatusBadgeClass(report.status))}
+            >
+              {report.status}
+            </Badge>
+          </div>
+
+          <div className="flex items-center justify-center">
+            <Badge
+              variant="outline"
+              className={cn(badgeBaseClass, getSeverityBadgeClass(report.severity))}
+            >
+              {report.severity}
+            </Badge>
+          </div>
+        </div>
+
+        <div className="space-y-3 lg:hidden">
+          <div className="flex items-start gap-3">
+            <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
+              {report.programLogo ? (
+                <Image
+                  src={report.programLogo}
+                  alt={`${report.title} logo`}
+                  width={44}
+                  height={44}
+                  className="size-10 object-contain"
+                />
+              ) : (
+                <span className="text-sm font-semibold text-slate-700">
+                  {report.authorInitials}
+                </span>
+              )}
             </div>
 
-            <p className="mt-3 line-clamp-2 text-xs leading-5 text-slate-500">
-              {report.summary}
-            </p>
+            <div className="min-w-0 flex-1 space-y-3">
+              <div className="space-y-1.5">
+                <h3 className="truncate text-[16px] font-semibold leading-6 text-[#0F172A]">
+                  {report.title}
+                </h3>
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-slate-500">
+                  <span>{reportId}</span>
+                  <span className="text-slate-300">&bull;</span>
+                  <span className="truncate">{report.author}</span>
+                  <span className="text-slate-300">&bull;</span>
+                  <span>{report.submittedAt}</span>
+                </p>
+              </div>
 
-            <div className="mt-3">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                In-scope assets
-              </span>
-              <div className="mt-1.5 flex flex-wrap gap-1.5">
-                {report.assets.map((asset) => (
+              <p className="line-clamp-1 text-[13px] leading-6 text-slate-500">
+                {report.summary}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className={cn(badgeBaseClass, getTypeBadgeClass(report.type))}
+                >
+                  {report.type}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={cn(badgeBaseClass, getStatusBadgeClass(report.status))}
+                >
+                  {report.status}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={cn(badgeBaseClass, getSeverityBadgeClass(report.severity))}
+                >
+                  {report.severity}
+                </Badge>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {visibleAssets.map((asset) => (
                   <span
                     key={asset}
-                    className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-500 transition-colors duration-300 group-hover:border-slate-300 group-hover:bg-white"
+                    className="inline-flex max-w-[165px] truncate rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-600"
+                    title={asset}
                   >
                     {asset}
                   </span>
                 ))}
+                {hiddenAssetsCount > 0 ? (
+                  <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-500">
+                    +{hiddenAssetsCount} more
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </Link>
   );
 }

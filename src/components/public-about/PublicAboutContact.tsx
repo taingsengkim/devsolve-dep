@@ -1,57 +1,40 @@
 import Link from "next/link";
-import { ArrowRight, Mail, Shield } from "lucide-react";
+import { ArrowRight, UsersRound } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function PublicAboutContact() {
   return (
-    <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_2px_12px_rgba(15,23,42,0.04)] dark:border-white/10 dark:bg-slate-900 sm:p-8">
-      <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-300">
-            Get in touch
-          </p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Let&apos;s build trusted security experiences together
-          </h2>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
-            Whether you are a researcher, a company, or a student collaborator,
-            DevSolve is open to meaningful partnerships around vulnerability
-            workflows, responsible disclosure, and product design.
-          </p>
+    <section className="relative overflow-hidden rounded-[34px] border border-slate-200 bg-white shadow-[0_2px_12px_rgba(15,23,42,0.04)] dark:border-white/10 dark:bg-slate-900">
+      <div className="relative grid gap-6 px-6 py-7 lg:grid-cols-[auto_1fr_auto] lg:items-center lg:px-8">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.10),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.06),transparent_18%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.14),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.08),transparent_18%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.72),rgba(255,255,255,0.92),rgba(255,255,255,0.74))] dark:bg-[linear-gradient(90deg,rgba(15,23,42,0.70),rgba(15,23,42,0.90),rgba(15,23,42,0.74))]" />
 
-          <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
-            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-white/10 dark:bg-slate-950/70">
-              <Mail className="size-4 text-blue-600" />
-              hello@devsolve.io
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-white/10 dark:bg-slate-950/70">
-              <Shield className="size-4 text-emerald-600" />
-              Responsible disclosure friendly
-            </span>
-          </div>
+        <div className="relative flex size-20 items-center justify-center rounded-full border border-blue-100 bg-blue-50 shadow-[0_8px_20px_rgba(37,99,235,0.08)] dark:border-blue-400/15 dark:bg-blue-500/10">
+          <UsersRound className="size-10 text-blue-600 dark:text-blue-300" />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="relative">
+          <p className="text-4xl font-bold tracking-[-0.05em] text-slate-900 dark:text-white">
+            Join the DevSolve Community
+          </p>
+          <p className="mt-3 max-w-3xl text-base leading-8 text-slate-600 dark:text-slate-300">
+            Whether you&apos;re an organization, an ethical hacker, or a developer,
+            DevSolve is the place to collaborate, learn, and make an impact.
+          </p>
+        </div>
+
+        <div className="relative flex items-center">
           <Link
             href="/account-type"
             className={cn(
               buttonVariants({ variant: "default", size: "lg" }),
-              "rounded-full bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.2)] hover:bg-blue-700"
+              "rounded-xl bg-blue-600 px-6 text-white shadow-[0_10px_24px_rgba(37,99,235,0.20)] hover:-translate-y-0.5 hover:bg-blue-700"
             )}
           >
-            Start with DevSolve
+            Get Started Now
             <ArrowRight data-icon="inline-end" />
-          </Link>
-          <Link
-            href="/program"
-            className={cn(
-              buttonVariants({ variant: "outline", size: "lg" }),
-              "rounded-full border-slate-300 bg-white text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:border-white/12 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-blue-400/30 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
-            )}
-          >
-            Explore Programs
           </Link>
         </div>
       </div>

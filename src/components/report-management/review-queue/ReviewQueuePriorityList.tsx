@@ -1,76 +1,473 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 
-import { PRIORITY_REVIEW_ITEMS } from "@/components/report-management/review-queue/mock-data";
+import { MANAGED_REPORTS } from "@/components/report-management/mock-data";
+import { reportListGridClass } from "@/components/report-management/report-list-layout";
+import type {
+  PriorityReviewItem,
+  ReviewQueueLaneFilter,
+  ReviewSeverity,
+} from "@/components/report-management/review-queue/types";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-function severityClass(severity: (typeof PRIORITY_REVIEW_ITEMS)[number]["severity"]) {
-  if (severity === "Critical") {
-    return "bg-slate-900 text-white";
-  }
-  if (severity === "High") {
-    return "bg-slate-200 text-slate-800";
-  }
-  return "bg-slate-100 text-slate-700";
+function getTypeBadgeClass(type: "Bounty" | "Response") {
+  return type === "Bounty"
+    ? "border-blue-200 bg-blue-50 text-blue-700"
+    : "border-violet-200 bg-violet-50 text-violet-700";
 }
 
-export function ReviewQueuePriorityList() {
+function getQueueBadgeClass(queue: Exclude<ReviewQueueLaneFilter, "All">) {
+  if (queue === "Pending Intake") {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+
+  if (queue === "Under Review") {
+    return "border-blue-200 bg-blue-50 text-blue-700";
+  }
+
+  return "border-emerald-200 bg-emerald-50 text-emerald-700";
+}
+
+function getSeverityBadgeClass(severity: ReviewSeverity) {
+  if (severity === "Critical") return "border-red-200 bg-red-50 text-red-700";
+  if (severity === "High") return "border-orange-200 bg-orange-50 text-orange-700";
+  if (severity === "Medium") return "border-amber-200 bg-amber-50 text-amber-700";
+  return "border-blue-200 bg-blue-50 text-blue-700";
+}
+
+const badgeBaseClass =
+  "h-7 min-w-[92px] justify-center rounded-full px-3 text-[12px] font-medium";
+
+type ReviewQueuePriorityListProps = {
+  activeQueue: ReviewQueueLaneFilter;
+  onQueueChange: (queue: ReviewQueueLaneFilter) => void;
+  severityFilter: "All" | ReviewSeverity;
+  onSeverityFilterChange: (severity: "All" | ReviewSeverity) => void;
+  sortBy: "priority" | "recent";
+  onSortByChange: (value: "priority" | "recent") => void;
+  queueCounts: {
+    all: number;
+    pending: number;
+    review: number;
+    ready: number;
+  };
+  items: PriorityReviewItem[];
+};
+
+export function ReviewQueuePriorityList({
+  activeQueue,
+  onQueueChange,
+  severityFilter,
+  onSeverityFilterChange,
+  sortBy,
+  onSortByChange,
+  queueCounts,
+  items,
+}: ReviewQueuePriorityListProps) {
   return (
-    <section className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-          Priority submissions
-        </h2>
-        <p className="mt-1 text-base text-slate-500">
-          Focus the moderation team on the reports that need the next decision first.
-        </p>
+    <section className="space-y-3">
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl font-semibold tracking-[-0.02em] text-[#0F172A]">
+              Priority submissions
+            </h2>
+            <span className="inline-flex h-6 items-center rounded-full border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-500">
+              {items.length} reports
+            </span>
+          </div>
+          <p className="text-sm text-slate-500">
+            Focus analyst attention on reports waiting for the next moderation step.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5">
+          <QueueSelect
+            label="Sort"
+            value={sortBy}
+            displayValue={sortBy === "priority" ? "Priority" : "Most recent"}
+            options={[
+              { label: "Priority", value: "priority" },
+              { label: "Most recent", value: "recent" },
+            ]}
+            onChange={(value) => onSortByChange(value as "priority" | "recent")}
+            minWidthClassName="min-w-[156px]"
+          />
+
+          <QueueSelect
+            label="Severity"
+            value={severityFilter}
+            displayValue={severityFilter === "All" ? "All severities" : severityFilter}
+            options={[
+              { label: "All severities", value: "All" },
+              { label: "Critical", value: "Critical" },
+              { label: "High", value: "High" },
+              { label: "Medium", value: "Medium" },
+              { label: "Low", value: "Low" },
+            ]}
+            onChange={(value) =>
+              onSeverityFilterChange(value as "All" | ReviewSeverity)
+            }
+            icon={<SlidersHorizontal className="size-4 text-slate-400" />}
+            minWidthClassName="min-w-[184px]"
+          />
+        </div>
       </div>
 
-      <div className="space-y-3">
-        {PRIORITY_REVIEW_ITEMS.map((item) => (
-          <Card
-            key={item.id}
-            className="rounded-[26px] border border-slate-200 bg-white py-0 shadow-[0_2px_10px_rgba(15,23,42,0.04)]"
-          >
-            <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
-              <div className="min-w-0 space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline" className="border-slate-200 bg-slate-100 text-slate-600">
-                    Report #{item.id}
-                  </Badge>
-                  <Badge className={cn("border-0", severityClass(item.severity))}>
-                    {item.severity}
-                  </Badge>
-                </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <QueueTab
+          active={activeQueue === "All"}
+          label="All"
+          count={queueCounts.all}
+          onClick={() => onQueueChange("All")}
+        />
+        <QueueTab
+          active={activeQueue === "Pending Intake"}
+          label="Pending Intake"
+          count={queueCounts.pending}
+          onClick={() => onQueueChange("Pending Intake")}
+        />
+        <QueueTab
+          active={activeQueue === "Under Review"}
+          label="Under Review"
+          count={queueCounts.review}
+          onClick={() => onQueueChange("Under Review")}
+        />
+        <QueueTab
+          active={activeQueue === "Approval Ready"}
+          label="Approval Ready"
+          count={queueCounts.ready}
+          onClick={() => onQueueChange("Approval Ready")}
+        />
+      </div>
 
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-900">{item.title}</h3>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Reporter: {item.reporter} • Submitted: {item.submittedAt}
-                  </p>
-                </div>
-              </div>
+      <div className="overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.03)]">
+        {items.map((item) => {
+          const reportId = `RPT-2026-${item.id.toString().padStart(5, "0")}`;
+          const matchedReport = MANAGED_REPORTS.find((report) => report.id === item.id);
+          const reportType = matchedReport?.type ?? "Response";
+          const authorInitials = matchedReport?.authorInitials ?? "TT";
+          const logoSrc = matchedReport?.programLogo ?? "/tiktok.png";
 
-              <div className="flex flex-col items-start gap-3 lg:items-end">
-                <p className="text-sm font-medium text-slate-500">{item.status}</p>
-                <Link
-                  href={`/dashboard/report-management/${item.id}`}
-                  className={cn(
-                    buttonVariants({ variant: "outline" }),
-                    "rounded-xl border-slate-300 bg-white text-slate-700"
-                  )}
-                >
-                  Open report
-                  <ArrowRight data-icon="inline-end" />
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+          return (
+            <ReviewQueueReportRow
+              key={item.id}
+              item={item}
+              reportId={reportId}
+              reportType={reportType}
+              authorInitials={authorInitials}
+              logoSrc={logoSrc}
+              isLast={items.indexOf(item) === items.length - 1}
+            />
+          );
+        })}
       </div>
     </section>
+  );
+}
+
+function ReviewQueueReportRow({
+  item,
+  reportId,
+  reportType,
+  authorInitials,
+  logoSrc,
+  isLast,
+}: {
+  item: PriorityReviewItem;
+  reportId: string;
+  reportType: "Bounty" | "Response";
+  authorInitials: string;
+  logoSrc: string;
+  isLast: boolean;
+}) {
+  const visibleAssets = item.assets.slice(0, 2);
+  const hiddenAssetsCount = Math.max(0, item.assets.length - visibleAssets.length);
+
+  return (
+    <Link
+      href={`/dashboard/report-management/${item.id}`}
+      aria-label={`Open queue item ${item.title}`}
+      className={cn(
+        "group block cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500/30",
+        !isLast && "border-b border-slate-200"
+      )}
+      onKeyDown={(event) => {
+        if (event.key === " ") {
+          event.preventDefault();
+          event.currentTarget.click();
+        }
+      }}
+    >
+      <div className="px-6 py-5 transition-colors duration-200 group-hover:bg-blue-50/35">
+        <div className={cn(reportListGridClass, "hidden lg:grid")}>
+          <div className="min-w-0">
+            <div className="flex items-start gap-4">
+              <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
+                {logoSrc ? (
+                  <Image
+                    src={logoSrc}
+                    alt={`${item.title} logo`}
+                    width={48}
+                    height={48}
+                    className="size-11 object-contain"
+                  />
+                ) : (
+                  <span className="text-sm font-semibold text-slate-700">
+                    {authorInitials}
+                  </span>
+                )}
+              </div>
+
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="space-y-1.5">
+                  <h3 className="truncate text-[17px] font-semibold leading-6 text-[#0F172A]">
+                    {item.title}
+                  </h3>
+                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-slate-500">
+                    <span>{reportId}</span>
+                    <span className="text-slate-300">&bull;</span>
+                    <span className="truncate">{item.reporter}</span>
+                    <span className="text-slate-300">&bull;</span>
+                    <span>{item.submittedAt}</span>
+                  </p>
+                </div>
+
+                <p className="line-clamp-1 text-[14px] leading-6 text-slate-500">
+                  {item.status}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {visibleAssets.map((asset) => (
+              <span
+                key={asset}
+                className="inline-flex max-w-[165px] truncate rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-600"
+                title={asset}
+              >
+                {asset}
+              </span>
+            ))}
+            {hiddenAssetsCount > 0 ? (
+              <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-500">
+                +{hiddenAssetsCount} more
+              </span>
+            ) : null}
+          </div>
+
+          <div className="flex items-center justify-center">
+            <Badge
+              variant="outline"
+              className={cn(badgeBaseClass, getTypeBadgeClass(reportType))}
+            >
+              {reportType}
+            </Badge>
+          </div>
+
+          <div className="flex items-center justify-center">
+            <Badge
+              variant="outline"
+              className={cn(
+                badgeBaseClass,
+                getQueueBadgeClass(item.queue)
+              )}
+            >
+              {item.queue}
+            </Badge>
+          </div>
+
+          <div className="flex items-center justify-center">
+            <Badge
+              variant="outline"
+              className={cn(
+                badgeBaseClass,
+                getSeverityBadgeClass(item.severity)
+              )}
+            >
+              {item.severity}
+            </Badge>
+          </div>
+        </div>
+
+        <div className="space-y-3 lg:hidden">
+          <div className="flex items-start gap-3">
+            <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
+              {logoSrc ? (
+                <Image
+                  src={logoSrc}
+                  alt={`${item.title} logo`}
+                  width={44}
+                  height={44}
+                  className="size-10 object-contain"
+                />
+              ) : (
+                <span className="text-sm font-semibold text-slate-700">
+                  {authorInitials}
+                </span>
+              )}
+            </div>
+
+            <div className="min-w-0 flex-1 space-y-3">
+              <div className="space-y-1.5">
+                <h3 className="truncate text-[16px] font-semibold leading-6 text-[#0F172A]">
+                  {item.title}
+                </h3>
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-slate-500">
+                  <span>{reportId}</span>
+                  <span className="text-slate-300">&bull;</span>
+                  <span className="truncate">{item.reporter}</span>
+                  <span className="text-slate-300">&bull;</span>
+                  <span>{item.submittedAt}</span>
+                </p>
+              </div>
+
+              <p className="line-clamp-1 text-[13px] leading-6 text-slate-500">
+                {item.status}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className={cn(badgeBaseClass, getTypeBadgeClass(reportType))}
+                >
+                  {reportType}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={cn(badgeBaseClass, getQueueBadgeClass(item.queue))}
+                >
+                  {item.queue}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={cn(badgeBaseClass, getSeverityBadgeClass(item.severity))}
+                >
+                  {item.severity}
+                </Badge>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {visibleAssets.map((asset) => (
+                  <span
+                    key={asset}
+                    className="inline-flex max-w-[165px] truncate rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-600"
+                    title={asset}
+                  >
+                    {asset}
+                  </span>
+                ))}
+                {hiddenAssetsCount > 0 ? (
+                  <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-500">
+                    +{hiddenAssetsCount} more
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function QueueSelect({
+  label,
+  value,
+  displayValue,
+  options,
+  onChange,
+  icon,
+  minWidthClassName,
+}: {
+  label: string;
+  value: string;
+  displayValue: string;
+  options: Array<{ label: string; value: string }>;
+  onChange: (value: string) => void;
+  icon?: React.ReactNode;
+  minWidthClassName?: string;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className={cn(
+          "inline-flex h-10 items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 text-left text-sm text-slate-700 shadow-none outline-none transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:border-blue-500 focus-visible:ring-4 focus-visible:ring-blue-500/10",
+          minWidthClassName
+        )}
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          {icon}
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="text-slate-400">{label}:</span>
+            <span className="truncate font-medium text-slate-700">{displayValue}</span>
+          </span>
+        </span>
+        <ChevronDown className="size-4 text-slate-400" />
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent
+        align="end"
+        sideOffset={8}
+        className="rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_18px_40px_rgba(15,23,42,0.12)]"
+      >
+        <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
+          {options.map((option) => (
+            <DropdownMenuRadioItem
+              key={option.value}
+              value={option.value}
+              className="rounded-xl px-3 py-2.5 text-slate-700 data-[checked]:bg-blue-50 data-[checked]:text-[#2563EB] focus:bg-blue-50 focus:text-[#2563EB]"
+            >
+              {option.label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function QueueTab({
+  active,
+  label,
+  count,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  count: number;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex h-8 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-all duration-200",
+        active
+          ? "border-blue-600 bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.18)]"
+          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+      )}
+    >
+      <span>{label}</span>
+      <span
+        className={cn(
+          "inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
+          active ? "bg-white/15 text-white" : "bg-slate-100 text-slate-500"
+        )}
+      >
+        {count}
+      </span>
+    </button>
   );
 }

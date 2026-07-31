@@ -1,6 +1,8 @@
 import { CircleCheckBig, Clock3, ShieldAlert, type LucideIcon } from "lucide-react";
 
 import { REVIEW_QUEUE_LANES } from "@/components/report-management/review-queue/mock-data";
+import type { ReviewQueueLaneFilter } from "@/components/report-management/review-queue/types";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -10,44 +12,75 @@ const LANE_ICONS: Record<(typeof REVIEW_QUEUE_LANES)[number]["accent"], LucideIc
   emerald: CircleCheckBig,
 };
 
-export function ReviewQueueLanes() {
+type ReviewQueueLanesProps = {
+  activeQueue: ReviewQueueLaneFilter;
+  onQueueChange: (queue: ReviewQueueLaneFilter) => void;
+};
+
+export function ReviewQueueLanes({
+  activeQueue,
+  onQueueChange,
+}: ReviewQueueLanesProps) {
   return (
-    <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+    <section className="grid grid-cols-1 gap-3 xl:grid-cols-3">
       {REVIEW_QUEUE_LANES.map((lane) => {
         const Icon = LANE_ICONS[lane.accent];
+        const isActive = activeQueue === lane.title;
 
         return (
-          <Card
+          <button
             key={lane.title}
-            className={cn(
-              "rounded-[28px] border bg-white py-0 shadow-[0_2px_12px_rgba(15,23,42,0.04)]",
-              lane.accent === "amber" && "border-amber-200/80",
-              lane.accent === "blue" && "border-blue-200/80",
-              lane.accent === "emerald" && "border-emerald-200/80"
-            )}
+            type="button"
+            onClick={() => onQueueChange(isActive ? "All" : lane.title)}
+            className="text-left"
           >
-            <CardContent className="space-y-4 p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-slate-500">{lane.title}</p>
-                  <p className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
-                    {lane.count}
-                  </p>
+            <Card
+              className={cn(
+                "rounded-[26px] border border-slate-200 bg-white py-0 shadow-[0_10px_24px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_16px_30px_rgba(15,23,42,0.06)]",
+                isActive && "border-blue-200 bg-blue-50/30 shadow-[0_16px_30px_rgba(37,99,235,0.08)]"
+              )}
+            >
+              <CardContent className="flex min-h-[142px] items-start justify-between px-5 py-5">
+                <div className="flex min-w-0 flex-1 flex-col gap-3">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={cn(
+                        "flex size-11 items-center justify-center rounded-2xl",
+                        lane.accent === "amber" && "bg-amber-50 text-amber-600",
+                        lane.accent === "blue" && "bg-blue-50 text-blue-600",
+                        lane.accent === "emerald" && "bg-emerald-50 text-emerald-600"
+                      )}
+                    >
+                      <Icon className="size-5" />
+                    </div>
+
+                    <div className="flex min-w-0 flex-1 flex-col gap-1">
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        {lane.title}
+                      </span>
+                      <span className="line-clamp-2 text-xs leading-5 text-slate-500">
+                        {lane.description}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-end gap-3">
+                    <p className="text-[2rem] font-semibold leading-none tracking-[-0.05em] text-[#0F172A]">
+                      {lane.count}
+                    </p>
+                    {isActive ? (
+                      <Badge
+                        variant="outline"
+                        className="h-7 rounded-full border-blue-200 bg-blue-50 px-2.5 text-xs font-semibold text-blue-700"
+                      >
+                        Active
+                      </Badge>
+                    ) : null}
+                  </div>
                 </div>
-                <div
-                  className={cn(
-                    "flex size-11 items-center justify-center rounded-2xl border",
-                    lane.accent === "amber" && "border-amber-200 bg-amber-50 text-amber-700",
-                    lane.accent === "blue" && "border-blue-200 bg-blue-50 text-blue-700",
-                    lane.accent === "emerald" && "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  )}
-                >
-                  <Icon className="size-5" />
-                </div>
-              </div>
-              <p className="text-sm leading-6 text-slate-500">{lane.description}</p>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </button>
         );
       })}
     </section>

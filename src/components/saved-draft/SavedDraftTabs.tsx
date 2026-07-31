@@ -1,6 +1,12 @@
 "use client";
 
-import { AlertTriangle, CircleDot, Lightbulb, type LucideIcon } from "lucide-react";
+import {
+  CircleDot,
+  FileText,
+  FolderKanban,
+  Lightbulb,
+  type LucideIcon,
+} from "lucide-react";
 
 import type { DraftCategory } from "@/components/saved-draft/types";
 import { Badge } from "@/components/ui/badge";
@@ -17,34 +23,13 @@ type DraftTabConfig = {
   key: DraftCategory;
   label: string;
   icon: LucideIcon;
-  activeClassName: string;
-  countClassName: string;
 };
 
 const TAB_CONFIG: DraftTabConfig[] = [
-  {
-    key: "problem",
-    label: "Problem",
-    icon: CircleDot,
-    activeClassName: "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:text-white",
-    countClassName: "bg-white/20 text-white",
-  },
-  {
-    key: "solution",
-    label: "Solution",
-    icon: Lightbulb,
-    activeClassName:
-      "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 hover:text-white",
-    countClassName: "bg-white/20 text-white",
-  },
-  {
-    key: "program",
-    label: "Program Solve",
-    icon: AlertTriangle,
-    activeClassName:
-      "border-amber-500 bg-amber-500 text-white hover:bg-amber-600 hover:text-white",
-    countClassName: "bg-white/20 text-white",
-  },
+  { key: "problem", label: "Problem", icon: CircleDot },
+  { key: "solution", label: "Solution", icon: Lightbulb },
+  { key: "program", label: "Program", icon: FolderKanban },
+  { key: "report", label: "Report", icon: FileText },
 ];
 
 export function SavedDraftTabs({
@@ -66,16 +51,17 @@ export function SavedDraftTabs({
             size="sm"
             onClick={() => onChange(tab.key)}
             className={cn(
-              "h-9 rounded-full border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-600 shadow-2xs hover:bg-slate-50 hover:text-slate-900",
-              isActive && tab.activeClassName
+              "h-10 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:border-blue-100 hover:bg-blue-50/60 hover:text-[#2563EB]",
+              isActive &&
+                "border-blue-600 bg-[#2563EB] text-white shadow-[0_10px_24px_rgba(37,99,235,0.18)] hover:bg-[#1D4ED8] hover:text-white"
             )}
           >
-            <Icon data-icon="inline-start" className="size-3.5" />
+            <Icon data-icon="inline-start" className="size-4" />
             {tab.label}
             <Badge
               className={cn(
                 "rounded-full border-0 bg-slate-100 px-1.5 py-0 text-[11px] font-semibold text-slate-500 shadow-none",
-                isActive && tab.countClassName
+                isActive && "bg-white/20 text-white"
               )}
             >
               {counts[tab.key]}

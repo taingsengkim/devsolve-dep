@@ -8,7 +8,7 @@ function buildVisiblePages(
   currentPage: number,
   totalPages: number
 ) {
-  if (totalPages <= 7) return pageNumbers;
+  if (totalPages <= 5) return pageNumbers;
 
   const visiblePages = new Set<number>([
     1,
@@ -23,65 +23,41 @@ function buildVisiblePages(
 
 type ReportManagementPaginationProps = {
   rowsPerPage: number;
-  onRowsPerPageChange: (value: number) => void;
   currentPage: number;
   totalPages: number;
   pageNumbers: number[];
   onPageChange: (value: number) => void;
+  filteredCount: number;
 };
 
 export function ReportManagementPagination({
   rowsPerPage,
-  onRowsPerPageChange,
   currentPage,
   totalPages,
   pageNumbers,
   onPageChange,
+  filteredCount,
 }: ReportManagementPaginationProps) {
   const visiblePages = buildVisiblePages(pageNumbers, currentPage, totalPages);
+  const start = filteredCount === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1;
+  const end = Math.min(currentPage * rowsPerPage, filteredCount);
 
   return (
-    <footer className="flex flex-col items-center justify-between gap-4 border-t border-slate-200/80 pt-6 sm:flex-row">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
-        <label
-          htmlFor="rows-per-page"
-          className="text-sm font-medium text-slate-500"
-        >
-          Rows per page
-        </label>
-        <select
-          id="rows-per-page"
-          value={rowsPerPage}
-          onChange={(event) => {
-            onRowsPerPageChange(Number(event.target.value));
-            onPageChange(1);
-          }}
-          className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition-[color,box-shadow,border-color] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
-        >
-          {[10, 25, 50].map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-        <span className="text-sm text-slate-400">
-          Page {currentPage} of {totalPages}
-        </span>
-      </div>
+    <footer className="flex flex-col gap-4 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm text-slate-500">
+        {start}-{end} of {filteredCount} reports
+      </p>
 
-      <nav
-        aria-label="Pagination"
-        className="flex flex-wrap items-center gap-1.5"
-      >
+      <nav aria-label="Pagination" className="flex items-center gap-2 self-end sm:self-auto">
         <Button
           variant="outline"
-          size="sm"
+          size="icon-sm"
           disabled={currentPage === 1}
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-          className="h-9 rounded-xl border-slate-300 text-sm font-medium"
+          className="rounded-xl border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+          aria-label="Previous page"
         >
-          <ChevronLeft data-icon="inline-start" />
-          Previous
+          <ChevronLeft />
         </Button>
 
         {visiblePages.map((pageNumber, index) => {
@@ -91,19 +67,20 @@ export function ReportManagementPagination({
 
           return (
             <div key={pageNumber} className="flex items-center gap-2">
-              {shouldRenderEllipsis && (
-                <span className="px-1 text-sm text-slate-400">...</span>
-              )}
+              {shouldRenderEllipsis ? (
+                <span className="px-1 text-sm font-medium text-slate-400">...</span>
+              ) : null}
               <Button
                 variant={currentPage === pageNumber ? "default" : "outline"}
-                size="sm"
-                className={cn(
-                  "h-9 w-9 rounded-xl p-0 text-sm font-semibold",
-                  currentPage === pageNumber
-                    ? "bg-blue-600 text-white shadow-2xs hover:bg-blue-700"
-                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
-                )}
+                size="icon-sm"
                 onClick={() => onPageChange(pageNumber)}
+                className={cn(
+                  "rounded-xl text-sm font-semibold",
+                  currentPage === pageNumber
+                    ? "bg-[#2563EB] text-white hover:bg-[#1d4ed8]"
+                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                )}
+                aria-current={currentPage === pageNumber ? "page" : undefined}
               >
                 {pageNumber}
               </Button>
@@ -113,13 +90,13 @@ export function ReportManagementPagination({
 
         <Button
           variant="outline"
-          size="sm"
+          size="icon-sm"
           disabled={currentPage === totalPages}
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-          className="h-9 rounded-xl border-slate-300 text-sm font-medium"
+          className="rounded-xl border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+          aria-label="Next page"
         >
-          Next
-          <ChevronRight data-icon="inline-end" />
+          <ChevronRight />
         </Button>
       </nav>
     </footer>

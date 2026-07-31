@@ -5,12 +5,14 @@ import { useMemo, useState } from "react";
 import { MANAGED_REPORTS } from "@/components/report-management/mock-data";
 import type {
   ManagedReport,
+  ReportStatus,
   ReportSeverity,
   ReportType,
 } from "@/components/report-management/types";
 
 type TypeFilter = "All Types" | ReportType;
 type SeverityFilter = "All" | ReportSeverity;
+type StatusFilter = "All Statuses" | ReportStatus;
 
 function paginateReports(
   reports: ManagedReport[],
@@ -32,6 +34,7 @@ export function useReportManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("All Types");
   const [severityFilter, setSeverityFilter] = useState<SeverityFilter>("All");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("All Statuses");
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -51,9 +54,12 @@ export function useReportManagement() {
       const matchesSeverity =
         severityFilter === "All" || report.severity === severityFilter;
 
-      return matchesSearch && matchesType && matchesSeverity;
+      const matchesStatus =
+        statusFilter === "All Statuses" || report.status === statusFilter;
+
+      return matchesSearch && matchesType && matchesSeverity && matchesStatus;
     });
-  }, [searchTerm, typeFilter, severityFilter]);
+  }, [searchTerm, severityFilter, statusFilter, typeFilter]);
 
   const typeCounts = useMemo(() => {
     return {
@@ -68,6 +74,13 @@ export function useReportManagement() {
       high: MANAGED_REPORTS.filter((report) => report.severity === "High").length,
       medium: MANAGED_REPORTS.filter((report) => report.severity === "Medium").length,
       low: MANAGED_REPORTS.filter((report) => report.severity === "Low").length,
+    };
+  }, []);
+
+  const statusCounts = useMemo(() => {
+    return {
+      open: MANAGED_REPORTS.filter((report) => report.status === "Open").length,
+      closed: MANAGED_REPORTS.filter((report) => report.status === "Closed").length,
     };
   }, []);
 
@@ -86,15 +99,19 @@ export function useReportManagement() {
     setTypeFilter,
     severityFilter,
     setSeverityFilter,
+    statusFilter,
+    setStatusFilter,
     rowsPerPage,
     setRowsPerPage,
     currentPage: pagination.currentPage,
     setCurrentPage,
+    totalCount: MANAGED_REPORTS.length,
     filteredCount: filteredReports.length,
     paginatedReports: pagination.paginatedReports,
     totalPages: pagination.totalPages,
     pageNumbers,
     typeCounts,
     severityCounts,
+    statusCounts,
   };
 }

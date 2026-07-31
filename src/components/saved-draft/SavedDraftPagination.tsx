@@ -37,8 +37,8 @@ export function SavedDraftPagination({
   const pages = buildPagination(currentPage, totalPages);
 
   return (
-    <footer className="flex flex-col items-center justify-between gap-4 pt-2 sm:flex-row">
-      <span className="text-sm text-slate-400">
+    <footer className="flex flex-col items-center justify-between gap-4 pt-1 sm:flex-row">
+      <span className="text-sm text-[#64748B]">
         Page {currentPage} of {totalPages}
       </span>
 
@@ -49,7 +49,7 @@ export function SavedDraftPagination({
           size="sm"
           disabled={currentPage === 1}
           onClick={() => onPageChange(currentPage - 1)}
-          className="rounded-full px-2.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+          className="rounded-xl px-3 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
         >
           <ChevronLeft data-icon="inline-start" className="size-4" />
           Previous
@@ -94,7 +94,7 @@ export function SavedDraftPagination({
           size="sm"
           disabled={currentPage === totalPages}
           onClick={() => onPageChange(currentPage + 1)}
-          className="rounded-full px-2.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+          className="rounded-xl px-3 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
         >
           Next
           <ChevronRight data-icon="inline-end" className="size-4" />
@@ -122,8 +122,9 @@ function PaginationPageButton({
       size="icon-sm"
       onClick={() => onPageChange(page)}
       className={cn(
-        "rounded-full border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900",
-        currentPage === page && "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:text-white"
+        "rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+        currentPage === page &&
+          "border-blue-600 bg-[#2563EB] text-white hover:bg-[#1D4ED8] hover:text-white"
       )}
     >
       {page}

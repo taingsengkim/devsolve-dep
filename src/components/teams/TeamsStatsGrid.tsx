@@ -53,47 +53,26 @@ export function TeamsStatsGrid({ counts }: TeamsStatsGridProps) {
   const statCards = buildTeamStatCards(counts);
 
   return (
-    <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-      {statCards.map((item, index) => {
-        const Icon = item.icon;
-
+    <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      {statCards.map((item) => {
         return (
           <div
             key={item.title}
             className={cn(
-              "group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_8px_18px_rgba(15,23,42,0.05)]",
-              index === 0 && "border-slate-200",
-              index === 1 && "border-blue-100",
-              index === 2 && "border-emerald-100",
-              index === 3 && "border-slate-200"
+              "rounded-[28px] border border-slate-200 bg-white px-5 py-4 shadow-[0_4px_18px_rgba(148,163,184,0.12)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(148,163,184,0.16)]"
             )}
           >
-            <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(15,23,42,0.02)_1px,transparent_1px)] bg-[length:4px_4px]" />
-            </div>
-
-            <div className="relative z-10 flex items-center gap-3">
-              <div
-                className={cn(
-                  "flex size-9 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-105",
-                  index === 0 && "bg-slate-100 text-slate-800",
-                  index === 1 && "bg-blue-50 text-blue-600",
-                  index === 2 && "bg-emerald-50 text-emerald-600",
-                  index === 3 && "bg-slate-100 text-slate-700"
-                )}
-              >
-                <Icon className="size-4.5" />
-              </div>
-
-              <div>
-                <p className="text-xl font-bold tracking-tight text-slate-900">
-                  {item.value}
-                </p>
-                <p className="text-xs font-medium text-slate-500">
-                  {item.title}
-                </p>
-              </div>
-            </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+              {item.title}
+            </p>
+            <p
+              className={cn(
+                "mt-2.5 text-4xl font-bold tracking-[-0.04em] text-[#2563EB]"
+              )}
+            >
+              {item.value}
+            </p>
+            <p className="mt-1.5 text-sm text-slate-400">{item.meta}</p>
           </div>
         );
       })}

@@ -28,10 +28,10 @@ export function PublicTeamGrid() {
     <section className="space-y-8 rounded-[36px] border border-slate-200 bg-white p-6 shadow-[0_2px_12px_rgba(15,23,42,0.04)] dark:border-white/10 dark:bg-slate-900 sm:p-8 lg:p-10">
       <div className="space-y-8">
         <div className="text-center">
-          <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em] text-slate-900 dark:text-white sm:text-4xl">
+          <h2 className="mt-4 text-2xl font-bold tracking-[-0.04em] text-slate-900 dark:text-white sm:text-3xl">
             The People Behind DevSolve
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-slate-500 dark:text-slate-400">
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400 sm:text-base">
             A focused team showcase with cleaner portraits, calmer spacing, and a
             more structured role presentation.
           </p>
@@ -146,19 +146,19 @@ function TeamCard({ member, index, featured = false }: TeamCardProps) {
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.24),transparent_52%)]" />
         <div className="absolute inset-x-2 -bottom-px flex justify-center">
-          <Badge variant="outline" className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] shadow-sm ${accentClasses.badge}`}>
+          <Badge variant="outline" className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] shadow-sm ${accentClasses.badge}`}>
             {member.role}
           </Badge>
         </div>
       </div>
 
-      <h3 className="mt-6 text-[22px] font-semibold tracking-[-0.03em] text-slate-900 dark:text-white">
+      <h3 className="mt-5 text-lg font-semibold tracking-[-0.02em] text-slate-900 dark:text-white sm:text-xl">
         {member.name}
       </h3>
-      <p className={`mt-1 text-[11px] font-bold uppercase tracking-[0.14em] ${accentClasses.text}`}>
+      <p className={`mt-1 text-[10px] font-bold uppercase tracking-[0.12em] ${accentClasses.text}`}>
         {member.specialty}
       </p>
-      <p className="mx-auto mt-3 max-w-[240px] text-sm leading-6 text-slate-500 dark:text-slate-400">
+      <p className="mx-auto mt-2.5 max-w-[232px] text-sm leading-6 text-slate-500 dark:text-slate-400">
         &quot;{member.quote}&quot;
       </p>
     </motion.article>

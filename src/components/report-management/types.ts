@@ -42,6 +42,21 @@ export type ReportManagementDetail = {
   vectorString: string;
   assessmentSummary: string;
   reproductionSteps: string[];
+  impact: string;
+  rootCause: string;
+  remediation: string;
+  analystTip: string;
+  proofRequestLanguage: string;
+  proofRequest: string;
+  expectedResult: string;
+  actualResult: string;
+  attachments: Array<{
+    name: string;
+    kind: "image" | "file";
+  }>;
+  externalDocumentation: string;
+  internalAssetLink: string;
+  relatedReport: string;
 };
 
 export type MetricCard = {

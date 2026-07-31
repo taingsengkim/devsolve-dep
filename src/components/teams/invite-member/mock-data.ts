@@ -1,42 +1,24 @@
-import type {
-  InviteRoleOption,
-  PendingInvite,
-} from "@/components/teams/invite-member/types";
+import type { InviteRoleOption } from "@/components/teams/invite-member/types";
 
 export const INVITE_ROLE_OPTIONS: InviteRoleOption[] = [
   {
-    role: "Manager",
+    role: "MANAGER",
     title: "Manager",
-    description: "Own member access, manage reports, and control workspace settings.",
-    access: ["Manage members", "Approve role updates", "Review high-priority reports"],
+    description: "Can manage members, reports, and organization settings.",
+    access: "Manage members, reports, and settings",
+    caution: "Should be assigned carefully",
   },
   {
-    role: "Member",
+    role: "MEMBER",
     title: "Member",
-    description: "Work inside active programs, collaborate on reports, and submit updates.",
-    access: ["Handle assigned work", "Comment on investigations", "Upload findings"],
+    description: "Can work with programs and reports and collaborate with the organization team.",
+    access: "Collaborate on programs and reports",
+    caution: "Recommended default role",
   },
   {
-    role: "Viewer",
+    role: "VIEWER",
     title: "Viewer",
-    description: "Read-only access for stakeholders who only need visibility.",
-    access: ["View dashboard", "Monitor report progress", "No edit permissions"],
-  },
-];
-
-export const PENDING_INVITES: PendingInvite[] = [
-  {
-    id: 1,
-    name: "Aisha Kamara",
-    email: "aisha@cloudvault.io",
-    role: "Member",
-    sentAt: "Today, 10:30 AM",
-  },
-  {
-    id: 2,
-    name: "Daniel Chen",
-    email: "daniel@cloudvault.io",
-    role: "Viewer",
-    sentAt: "Yesterday, 4:10 PM",
+    description: "Read-only access suitable for stakeholders or observers.",
+    access: "Read-only access",
   },
 ];

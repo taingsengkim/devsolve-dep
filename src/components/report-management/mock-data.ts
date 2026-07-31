@@ -228,6 +228,25 @@ export const REPORT_DETAIL: ReportManagementDetail = {
     "Modify the id parameter to a value not owned by you, such as 1336.",
     "Observe that the server returns the full PDF data and metadata for the unrelated invoice.",
   ],
+  impact:
+    "Exposure of PII, billing records, and enterprise service usage data for unrelated organizations. The issue introduces high confidentiality risk and can create regulatory exposure across customer accounts.",
+  rootCause:
+    "The invoice controller trusts the public invoice identifier without enforcing an organization ownership check before resolving the resource from storage.",
+  remediation:
+    "Introduce a direct authorization policy that validates invoice.organization_id against the authenticated organization context before returning invoice data. Use non-enumerable public identifiers for external document lookups and log authorization failures.",
+  analystTip:
+    "Tip: Prefer UUID-based public invoice references to reduce trivial enumeration, but still keep a strict server-side ownership check for every request.",
+  proofRequestLanguage: "javascript",
+  proofRequest: `// Reproduce the invoice enumeration issue with a captured session\nconst params = new URLSearchParams({\n  response_type: "token",\n  client_id: "client_id",\n  redirect_uri: "https://app.example.com/callback",\n  scope: "read:profile",\n});\n\n// Request observed during validation\n// GET https://app.example.com/v1/invoices/1337\n// Modify the invoice identifier to an unowned value such as 1336\n// Observe the returned PDF metadata for another organization`,
+  expectedResult: "403 Forbidden / 404 Not Found",
+  actualResult: "200 OK (full invoice body returned)",
+  attachments: [
+    { name: "screenshot_01.png", kind: "image" },
+    { name: "burp_log.xml", kind: "file" },
+  ],
+  externalDocumentation: "Google Drive: Full Reproduction Logs",
+  internalAssetLink: "Internal Asset: api.example.com/v1/docs",
+  relatedReport: "#RPT-2025-00982 - Similar IDOR in /v1/users",
 };
 
 export function getReportDetailById(id: string): ReportManagementDetail {

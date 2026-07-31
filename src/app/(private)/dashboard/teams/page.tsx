@@ -5,6 +5,10 @@ import { motion } from "motion/react";
 import { TeamsMembersSection } from "@/components/teams/TeamsMembersSection";
 import { TeamsPageHeader } from "@/components/teams/TeamsPageHeader";
 import { TeamsStatsGrid } from "@/components/teams/TeamsStatsGrid";
+import {
+  pageEnterContainer,
+  pageEnterItem,
+} from "@/components/ui/page-enter-motion";
 import { useTeamMembers } from "@/hooks/useTeamMembers";
 
 export default function TeamsPage() {
@@ -19,21 +23,26 @@ export default function TeamsPage() {
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-      className="space-y-6 w-full pb-12"
+      initial="hidden"
+      animate="visible"
+      variants={pageEnterContainer}
+      className="w-full space-y-7 pb-12"
     >
-      <TeamsPageHeader counts={counts} />
-      <TeamsStatsGrid counts={counts} />
-      <TeamsMembersSection
-        counts={counts}
-        filteredMembers={filteredMembers}
-        roleFilter={roleFilter}
-        setRoleFilter={setRoleFilter}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-      />
+      <motion.div variants={pageEnterItem} className="space-y-5">
+        <TeamsPageHeader counts={counts} />
+        <TeamsStatsGrid counts={counts} />
+      </motion.div>
+
+      <motion.div variants={pageEnterItem}>
+        <TeamsMembersSection
+          counts={counts}
+          filteredMembers={filteredMembers}
+          roleFilter={roleFilter}
+          setRoleFilter={setRoleFilter}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+        />
+      </motion.div>
     </motion.section>
   );
 }
