@@ -1,28 +1,18 @@
 
-import LeaderboardHero from '@/components/Leaderboard/LeaderboardHero';
-import TopResearcherGrid from '@/components/Leaderboard/TopResearcherGrid';
-import LeaderboardBoard from '@/components/Leaderboard/LeaderboardBoard';
-import { mockLeaderboardStats, mockTopResearchers, mockRankingTable } from '@/lib/types/leaderboard/mock-data';
-
+import LeaderboardClient from '@/components/Leaderboard/LeaderboardClient';
+import { mockTopResearchers, mockRankingTable } from '@/lib/types/leaderboard/mock-data';
 
 export default function LeaderboardPage() {
-  // TODO: replace with a real fetch, e.g. from a leaderboardApi RTK Query endpoint
-  const stats = mockLeaderboardStats;
-  const topResearchers = mockTopResearchers;
-  const rankingTable = mockRankingTable;
+  // Combine all researchers for the mock view, sort by rank to ensure consistency
+  const allResearchers = [...mockTopResearchers, ...mockRankingTable].sort((a, b) => a.rank - b.rank);
+  
+  // Deduplicate just in case mockTopResearchers and mockRankingTable have overlap in ranks
+  const uniqueResearchers = Array.from(new Map(allResearchers.map(r => [r.id, r])).values());
+  const sortedResearchers = uniqueResearchers.sort((a, b) => a.rank - b.rank);
 
   return (
     <div className="min-h-screen bg-white">
-
-      <main className="mx-auto max-w-7xl px-6 py-12">
-        <LeaderboardHero stats={stats} />
-
-        <div className="mt-10">
-          <TopResearcherGrid researchers={topResearchers} />
-        </div>
-
-        <LeaderboardBoard researchers={rankingTable} />
-      </main>
+      <LeaderboardClient researchers={sortedResearchers} />
     </div>
   );
 }

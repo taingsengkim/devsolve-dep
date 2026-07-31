@@ -20,6 +20,16 @@ export const mockTopResearchers: Researcher[] = [
     accepted: 91,
     critical: 14,
     badges: ["Top 10", "Bug Slayer"],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "r2",
@@ -33,6 +43,16 @@ export const mockTopResearchers: Researcher[] = [
     accepted: 87,
     critical: 12,
     badges: ["Top 10", "Speed Hacker"],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "r3",
@@ -46,6 +66,16 @@ export const mockTopResearchers: Researcher[] = [
     accepted: 80,
     critical: 11,
     badges: ["Top 10", "First Blood"],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "r4",
@@ -59,6 +89,16 @@ export const mockTopResearchers: Researcher[] = [
     accepted: 76,
     critical: 9,
     badges: ["Top 10", "Retest Pro"],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "r5",
@@ -73,6 +113,16 @@ export const mockTopResearchers: Researcher[] = [
     accepted: 71,
     critical: 8,
     badges: ["Top 10", "Bug Slayer"],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
 ];
 
@@ -91,6 +141,16 @@ export const mockRankingTable: Researcher[] = [
     accepted: 62,
     critical: 7,
     badges: ["Bug Slayer", "Speed Hacker"],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "t5",
@@ -104,6 +164,16 @@ export const mockRankingTable: Researcher[] = [
     accepted: 58,
     critical: 6,
     badges: ["First Blood", "Retest Pro"],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "t6",
@@ -117,6 +187,16 @@ export const mockRankingTable: Researcher[] = [
     accepted: 53,
     critical: 5,
     badges: ["Bug Slayer"],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "t7",
@@ -130,6 +210,16 @@ export const mockRankingTable: Researcher[] = [
     accepted: 49,
     critical: 4,
     badges: ["Speed Hacker"],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "t8",
@@ -143,6 +233,16 @@ export const mockRankingTable: Researcher[] = [
     accepted: 44,
     critical: 3,
     badges: ["Retest Pro"],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "t9",
@@ -156,6 +256,16 @@ export const mockRankingTable: Researcher[] = [
     accepted: 40,
     critical: 2,
     badges: ["First Blood"],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "t10",
@@ -168,6 +278,16 @@ export const mockRankingTable: Researcher[] = [
     accepted: 37,
     critical: 2,
     badges: ["Speed Hacker"],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "t11",
@@ -180,6 +300,16 @@ export const mockRankingTable: Researcher[] = [
     accepted: 33,
     critical: 1,
     badges: [],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "t12",
@@ -192,6 +322,16 @@ export const mockRankingTable: Researcher[] = [
     accepted: 28,
     critical: 1,
     badges: [],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "t13",
@@ -204,6 +344,16 @@ export const mockRankingTable: Researcher[] = [
     accepted: 24,
     critical: 0,
     badges: [],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "t14",
@@ -216,6 +366,16 @@ export const mockRankingTable: Researcher[] = [
     accepted: 20,
     critical: 0,
     badges: [],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
   {
     id: "t15",
@@ -228,5 +388,15 @@ export const mockRankingTable: Researcher[] = [
     accepted: 16,
     critical: 0,
     badges: [],
+    level: 3,
+    trend: { direction: "up", value: Math.floor(Math.random() * 10) + 1 },
+    categories: ["Best Talk", "Best Interactivity", "Talk to Listen Ratio"],
+    achievements: [
+      { id: "a1", level: 1, label: "Talk to Listen Ratio", value: 5, color: "blue" },
+      { id: "a2", level: 3, label: "Positive Sentiment", value: 30, color: "blue" },
+      { id: "a3", level: 4, label: "Number of Questions", value: 60, color: "cyan" },
+      { id: "a4", level: 2, label: "Conversations", value: 15, color: "purple" }
+    ],
+    levelProgress: 87,
   },
 ];

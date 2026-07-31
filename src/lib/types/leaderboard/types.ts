@@ -2,6 +2,14 @@ export type LeaderboardBadgeLabel = "Top 10" | "Bug Slayer" | "Speed Hacker" | "
 
 export type ResearcherAvatarUrl = string;
 
+export interface ResearcherAchievement {
+  id: string;
+  level: number;
+  label: string;
+  value: number; // e.g. 05, 30, 60, 15
+  color: string;
+}
+
 export interface Researcher {
   id: string;
   rank: number;
@@ -14,6 +22,11 @@ export interface Researcher {
   accepted: number;
   critical: number;
   badges: LeaderboardBadgeLabel[];
+  level: number;
+  trend: { direction: "up" | "down" | "neutral", value: number };
+  categories: string[];
+  achievements: ResearcherAchievement[];
+  levelProgress: number; // 0-100
 }
 
 export interface LeaderboardStats {
