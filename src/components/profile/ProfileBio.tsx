@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CalendarDays, Globe, MapPin, Users } from "lucide-react";
 import { Profile } from "@/lib/types/profile/types";
 import { SiGithub, SiX } from "react-icons/si";
@@ -7,7 +8,7 @@ interface ProfileBioProps {
 }
 
 export default function ProfileBio({ profile }: ProfileBioProps) {
-  const { bio, location, memberSince, socialLinks, followers, following } = profile;
+  const { bio, location, memberSince, socialLinks, followers, following, username } = profile;
 
   return (
     <div className="space-y-6 pt-2">
@@ -94,9 +95,13 @@ export default function ProfileBio({ profile }: ProfileBioProps) {
             <span className="w-28 shrink-0 font-medium text-slate-500">Community:</span>
             <span className="font-medium text-slate-600 flex items-center gap-2">
               <Users size={15} className="text-slate-400 shrink-0" />
-              <span>{followers} followers</span>
+              <Link href={`/dashboard/profile/${username}/followers`} className="hover:text-blue-600 hover:underline">
+                {followers} followers
+              </Link>
               <span className="text-slate-300">•</span>
-              <span>{following} following</span>
+              <Link href={`/dashboard/profile/${username}/following`} className="hover:text-blue-600 hover:underline">
+                {following} following
+              </Link>
             </span>
           </div>
         </div>

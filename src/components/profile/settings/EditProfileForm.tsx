@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
+
 import {
   User2,
   Lock,
@@ -12,10 +14,14 @@ import {
   LogOut,
   Check,
   Camera,
+  AlertTriangle,
+  Link2,
 } from "lucide-react";
 import { EditProfileFormData, AccountStatus, NotificationKey } from "@/lib/types/profile/types";
 import { useEditProfileForm } from "@/hooks/profile/useEditProfileForm";
 import PasswordSection, { PasswordFormState } from "./PasswordSection";
+import AdditionalDetailsSection from "./AdditionalDetailsSection";
+import BioSocialSection from "./BioSocialSection";
 import Toggle from "./Toggle";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,7 +30,10 @@ interface EditProfileFormProps {
   initialData: EditProfileFormData;
   accountStatus: AccountStatus;
   onSave?: (data: EditProfileFormData & { passwords: PasswordFormState }) => Promise<void> | void;
+  onUsernameChange?: (username: string) => void;
 }
+
+const MAX_AVATAR_FILE_SIZE = 2 * 1024 * 1024; // 2MB — base64 inflates size ~33%, keep this conservative
 
 const NOTIFICATION_ITEMS: { key: NotificationKey; label: string }[] = [
   { key: "reportStatusChanges", label: "Report Status Changes" },
@@ -35,8 +44,19 @@ const NOTIFICATION_ITEMS: { key: NotificationKey; label: string }[] = [
   { key: "followActivity", label: "Follow Activity & Achievements" },
 ];
 
-export default function EditProfileForm({ initialData, accountStatus, onSave }: EditProfileFormProps) {
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+export default function EditProfileForm({ initialData, accountStatus, onSave, onUsernameChange }: EditProfileFormProps) {
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [avatarPreviewDataUrl, setAvatarPreviewDataUrl] = useState<string | null>(null);
   const {
     form,
     setForm,
@@ -50,6 +70,29 @@ export default function EditProfileForm({ initialData, accountStatus, onSave }: 
     handleCancel,
   } = useEditProfileForm({ initialData, onSave });
 
+  useEffect(() => {
+    onUsernameChange?.(form.username);
+  }, [form.username, onUsernameChange]);
+
+  const handleLocalFilePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > MAX_AVATAR_FILE_SIZE) {
+      setAvatarError("Image is too large — please choose a file under 2MB.");
+      return;
+    }
+
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      setAvatarError(null);
+      setAvatarPreviewDataUrl(dataUrl);
+      toast.info("Showing a preview only — device upload isn't supported by the server yet, so this photo won't be saved. Use the Avatar URL field to save a real photo.");
+    } catch {
+      setAvatarError("Couldn't read that file — please try a different image.");
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -60,27 +103,34 @@ export default function EditProfileForm({ initialData, accountStatus, onSave }: 
       {/* 1. Account Settings Top Card */}
       <div className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs dark:bg-slate-900 dark:border-slate-800">
         {/* Card Section Header */}
-        <div className="flex items-center gap-2.5 pb-6 text-slate-900 dark:text-slate-100 font-bold text-lg border-b border-slate-100 dark:border-slate-800/80 mb-6">
+        {/* <div className="flex items-center gap-2.5 pb-6 text-slate-900 dark:text-slate-100 font-bold text-lg border-b border-slate-100 dark:border-slate-800/80 mb-6">
           <User2 className="size-5 text-slate-500 dark:text-slate-400" />
           <span>Account Settings</span>
-        </div>
+        </div> */}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left: Avatar & User Headline */}
           <div className="lg:col-span-3 flex flex-col items-center text-center space-y-3">
             <div className="relative group">
               <div className="h-28 w-28 rounded-full ring-4 ring-blue-500/20 border-2 border-blue-600 p-0.5 overflow-hidden relative bg-slate-100 shadow-sm">
-                <Image
-                  src="/justin.png"
-                  alt="Profile Avatar"
-                  fill
-                  className="object-cover rounded-full"
-                />
+                {avatarPreviewDataUrl || form.avatarUrl ? (
+                  <Image
+                    src={avatarPreviewDataUrl ?? form.avatarUrl ?? ""}
+                    alt="Profile Avatar"
+                    fill
+                    className="object-cover rounded-full"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white">
+                    {form.avatarInitials}
+                  </div>
+                )}
               </div>
               <label
                 htmlFor="avatar-upload"
                 className="absolute bottom-1 right-1 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-600 text-white shadow-md transition hover:bg-blue-700 hover:scale-105"
-                title="Change Photo"
+                title="Upload a photo"
               >
                 <Camera size={14} />
                 <input
@@ -88,6 +138,7 @@ export default function EditProfileForm({ initialData, accountStatus, onSave }: 
                   type="file"
                   accept="image/png,image/jpeg"
                   className="hidden"
+                  onChange={handleLocalFilePick}
                 />
               </label>
             </div>
@@ -105,107 +156,97 @@ export default function EditProfileForm({ initialData, accountStatus, onSave }: 
                 </p>
               )}
             </div>
+
+            {avatarError && (
+              <div className="flex items-start gap-2 rounded-lg bg-rose-50 dark:bg-rose-950/40 p-3 text-left">
+                <AlertTriangle size={14} className="mt-0.5 shrink-0 text-rose-600 dark:text-rose-400" />
+                <p className="text-xs leading-relaxed text-rose-700 dark:text-rose-300">{avatarError}</p>
+              </div>
+            )}
           </div>
 
           {/* Middle: Info Grid Fields */}
-          <div className="lg:col-span-6 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Full Name
-                </label>
-                <Input
-                  value={form.fullName}
-                  onChange={(e) => updateField("fullName", e.target.value)}
-                  placeholder="First & Last Name"
-                  className="h-10.5 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-sm font-medium shadow-2xs"
-                />
-              </div>
+<div className="lg:col-span-6 space-y-4">
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div className="space-y-1.5">
+      <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        Full Name
+      </label>
+      <Input
+        value={form.fullName}
+        onChange={(e) => updateField("fullName", e.target.value)}
+        placeholder="First & Last Name"
+        className="h-10.5 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-sm font-medium shadow-2xs"
+      />
+    </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Username
-                </label>
-                <Input
-                  value={form.username}
-                  onChange={(e) => updateField("username", e.target.value)}
-                  placeholder="username"
-                  className="h-10.5 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-sm font-medium shadow-2xs"
-                />
-              </div>
+    <div className="space-y-1.5">
+      <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        Username
+      </label>
+      <Input
+        value={form.username}
+        onChange={(e) => updateField("username", e.target.value)}
+        placeholder="username"
+        className="h-10.5 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-sm font-medium shadow-2xs"
+      />
+    </div>
 
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Registered Email
-                </label>
-                <Input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => updateField("email", e.target.value)}
-                  placeholder="you@example.com"
-                  className="h-10.5 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-sm font-medium shadow-2xs"
-                />
-              </div>
+    <div className="space-y-1.5 sm:col-span-2">
+      <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        Registered Email
+      </label>
+      <Input
+        type="email"
+        value={form.email}
+        onChange={(e) => updateField("email", e.target.value)}
+        placeholder="you@example.com"
+        className="h-10.5 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-sm font-medium shadow-2xs"
+      />
+    </div>
 
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Address / Location
-                </label>
-                <Input
-                  value={form.location}
-                  onChange={(e) => setForm((prev) => ({ ...prev, location: e.target.value }))}
-                  placeholder="City, State, Country"
-                  className="h-10.5 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-sm font-medium shadow-2xs"
-                />
-              </div>
+    <div className="space-y-1.5 sm:col-span-2">
+      <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        Avatar URL
+      </label>
+      <div className="relative">
+        <Link2 size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <Input
+          value={form.avatarUrl ?? ""}
+          onChange={(e) => setForm((prev) => ({ ...prev, avatarUrl: e.target.value }))}
+          placeholder="https://example.com/your-photo.jpg"
+          className="h-10.5 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 pl-9 text-slate-900 dark:text-slate-100 text-sm font-medium shadow-2xs"
+        />
+      </div>
+      <p className="text-xs text-slate-400 dark:text-slate-500">
+        Paste a link to a hosted image, or use the camera icon on your photo to upload one from this device instead.
+      </p>
+    </div>
 
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Bio
-                </label>
-                <textarea
-                  value={form.bio}
-                  onChange={(e) => setForm((prev) => ({ ...prev, bio: e.target.value }))}
-                  placeholder="Tell the community about yourself..."
-                  rows={4}
-                  className="w-full min-h-[110px] rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 p-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-600/30 shadow-2xs resize-y"
-                />
-              </div>
+    <div className="sm:col-span-2">
+      <BioSocialSection
+        bio={form.bio}
+        location={form.location}
+        socialLinks={form.socialLinks}
+        onBioChange={(value) => setForm((prev) => ({ ...prev, bio: value }))}
+        onLocationChange={(value) => setForm((prev) => ({ ...prev, location: value }))}
+        onSocialLinkChange={updateSocialLink}
+      />
+    </div>
 
-              {/* Social Links */}
-              <div className="space-y-2 sm:col-span-2 pt-1">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Social Links
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  <Input
-                    value={form.socialLinks.website}
-                    onChange={(e) => updateSocialLink("website", e.target.value)}
-                    placeholder="Website (https://...)"
-                    className="h-9.5 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-medium"
-                  />
-                  <Input
-                    value={form.socialLinks.github}
-                    onChange={(e) => updateSocialLink("github", e.target.value)}
-                    placeholder="GitHub (https://github.com/...)"
-                    className="h-9.5 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-medium"
-                  />
-                  <Input
-                    value={form.socialLinks.twitter}
-                    onChange={(e) => updateSocialLink("twitter", e.target.value)}
-                    placeholder="Twitter (https://x.com/...)"
-                    className="h-9.5 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-medium"
-                  />
-                  <Input
-                    value={form.socialLinks.linkedin}
-                    onChange={(e) => updateSocialLink("linkedin", e.target.value)}
-                    placeholder="LinkedIn (https://linkedin.com/in/...)"
-                    className="h-9.5 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-medium"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="space-y-2 sm:col-span-2 pt-1 mt-2 border-t border-slate-100 dark:border-slate-800/80">
+      <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        Additional Details
+      </label>
+      <AdditionalDetailsSection
+        phone={form.phone}
+        dateOfBirth={form.dateOfBirth}
+        gender={form.gender}
+        onChange={(field, value) => setForm((prev) => ({ ...prev, [field]: value }))}
+      />
+    </div>
+  </div>
+</div>
 
           {/* Right: Actions */}
           <div className="lg:col-span-3 flex flex-col sm:flex-row lg:flex-col gap-3 justify-start items-stretch pt-2 lg:pt-0">
@@ -328,4 +369,4 @@ export default function EditProfileForm({ initialData, accountStatus, onSave }: 
       </div>
     </motion.div>
   );
-}
+}   

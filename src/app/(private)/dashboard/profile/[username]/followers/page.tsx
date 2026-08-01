@@ -2,21 +2,23 @@
 
 import { useParams, notFound } from "next/navigation";
 import ProfileHeader from "@/components/profile/ProfileHeader";
-import FollowingList from "@/components/profile/following/FollowingList";
+import FollowersList from "@/components/profile/followers/FollowersList";
 import {
   useGetProfileByUsernameQuery,
-  useGetMyFollowsQuery,
+  useGetFollowersQuery,
 } from "@/lib/redux/services/profileApi";
 
-export default function FollowingPage() {
+export default function FollowersPage() {
   const { username } = useParams<{ username: string }>();
   const { data: overview, isLoading: isLoadingProfile, isError } = useGetProfileByUsernameQuery(username);
-  const { data: follows, isLoading: isLoadingFollows } = useGetMyFollowsQuery();
+  const { data: followers, isLoading: isLoadingFollowers } = useGetFollowersQuery(overview?.profile.id ?? "", {
+    skip: !overview,
+  });
 
-  if (isLoadingProfile || isLoadingFollows) {
+  if (isLoadingProfile || isLoadingFollowers) {
     return <div className="p-6 text-sm text-slate-400">Loading...</div>;
   }
-  if (isError || !overview || !follows) return notFound();
+  if (isError || !overview || !followers) return notFound();
 
   return (
     <div>
@@ -26,7 +28,7 @@ export default function FollowingPage() {
       </div>
 
       <div className="mt-6">
-        <FollowingList counts={follows.counts} items={follows.items} />
+        <FollowersList total={followers.total} items={followers.items} />
       </div>
     </div>
   );

@@ -4,9 +4,9 @@ import { motion } from "motion/react";
 import { useGetProfileByUsernameQuery } from "@/lib/redux/services/profileApi";
 import { useParams } from "next/navigation";
 import { Suspense } from "react";
+import ProfileSidebar from "@/components/profile/ProfileSidebar";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileBio from "@/components/profile/ProfileBio";
-import ProfileSidebar from "@/components/profile/ProfileSidebar";
 import ProfileTabsContainer from "@/components/profile/ProfileTabsContainer";
 
 export default function ProfilePage() {
@@ -29,6 +29,7 @@ export default function ProfilePage() {
       </div>
     );
   }
+
   if (isError || !data) {
     return (
       <div className="p-6 text-sm text-red-500">
@@ -37,7 +38,16 @@ export default function ProfilePage() {
     );
   }
 
-  const { profile, stats, severity, badges } = data;
+  const { profile: rawProfile, stats, severity, badges } = data;
+
+  // The backend only ever returns the signed-in user's own profile — there's no
+  // real public-lookup-by-username endpoint yet (see profileApi.ts notes). So
+  // "own profile" isn't reliably knowable from the URL alone; this checks whether
+  // the route's username actually matches what the backend returned for "me".
+  // If they don't match, this is someone else's URL but you're still seeing your
+  // own data under it — isOwnProfile is forced false so Settings/edit actions hide.
+  const isOwnProfile = profile_matches_route(rawProfile.username, username);
+  const profile = { ...rawProfile, isOwnProfile };
 
   return (
     <motion.div
@@ -52,9 +62,9 @@ export default function ProfilePage() {
           <ProfileSidebar profile={profile} stats={stats} />
         </div>
 
-        {/* Right Column — Header, Bio & Tabs */}
+        {/* Right Column — Header, bio & tabs */}
         <div className="lg:col-span-8 xl:col-span-9">
-          <div className="rounded-2xl bg-white shadow-sm">
+          <div>
             <ProfileHeader profile={profile} />
             <div className="px-1 pb-5">
               <ProfileBio profile={profile} />
@@ -68,4 +78,8 @@ export default function ProfilePage() {
       </div>
     </motion.div>
   );
+}
+
+function profile_matches_route(returnedUsername: string, routeUsername: string): boolean {
+  return returnedUsername.toLowerCase() === routeUsername.toLowerCase();
 }

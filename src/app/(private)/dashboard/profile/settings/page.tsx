@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "motion/react";
 import EditProfileForm from "@/components/profile/settings/EditProfileForm";
 import Breadcrumb from "@/components/profile/settings/Breadcrumb";
@@ -13,6 +14,7 @@ export default function EditProfileSettingsPage() {
   const { data: initialData, isLoading: isLoadingForm } = useGetEditProfileFormQuery();
   const { data: accountStatus, isLoading: isLoadingStatus } = useGetAccountStatusQuery();
   const [updateProfile] = useUpdateProfileMutation();
+  const [liveUsername, setLiveUsername] = useState<string | undefined>(undefined);
 
   if (isLoadingForm || isLoadingStatus || !initialData || !accountStatus) {
     return (
@@ -38,7 +40,7 @@ export default function EditProfileSettingsPage() {
         <div className="space-y-1">
           <Breadcrumb
             items={[
-              { label: "Profile", href: `/dashboard/profile/${initialData.username}` },
+              { label: "Profile", href: `/dashboard/profile/${liveUsername ?? initialData.username}` },
               { label: "Edit profile" },
             ]}
           />
@@ -55,6 +57,7 @@ export default function EditProfileSettingsPage() {
       <EditProfileForm
         initialData={initialData}
         accountStatus={accountStatus}
+        onUsernameChange={setLiveUsername}
         onSave={async (data) => {
           const { passwords, ...profileData } = data;
           void passwords;

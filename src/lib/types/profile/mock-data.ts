@@ -6,8 +6,6 @@ import {
   HacktivityEntry,
   CommunityPost,
   ThanksEntry,
-  FollowedHacker,
-  FollowingCounts,
   EditProfileFormData,
   AccountStatus,
 } from "./types";
@@ -123,18 +121,6 @@ export const mockThanks: ThanksEntry[] = [
   },
 ];
 
-export const mockFollowingCounts: FollowingCounts = {
-  hackers: 6,
-  orgs: 5,
-  topics: 7,
-};
-
-export const mockFollowedHackers: FollowedHacker[] = [
-  { id: "f1", displayName: "Aryan Mehta", handle: "@0xd3adbeef", followers: 3100, reports: 312 },
-  { id: "f2", displayName: "Aryan Mehta", handle: "@0xd3adbeef", followers: 3100, reports: 312 },
-  { id: "f3", displayName: "Aryan Mehta", handle: "@0xd3adbeef", followers: 3100, reports: 312 },
-];
-
 export const mockEditProfileFormData: EditProfileFormData = {
   avatarInitials: "NR",
   fullName: "Narong Seu",
@@ -166,4 +152,32 @@ export const mockAccountStatus: AccountStatus = {
   acceptedReports: mockStats.accepted,
   reputationPoints: mockStats.reputation,
   acceptanceRate: mockStats.acceptedRate,
+};
+export const mockEditProfileForm: EditProfileFormData = {
+  avatarInitials: "AK",
+  avatarUrl: undefined,
+  fullName: "Alex Kim",
+  username: "alexkim",
+  email: "alex.kim@example.com",
+  accountType: "Hacker",
+  bio: "Security researcher focused on web app vulnerabilities and API security. Love breaking things to make them safer.",
+  location: "San Francisco, CA",
+  phone: "",
+  dateOfBirth: "",
+  gender: undefined,
+  socialLinks: {
+    github: "https://github.com/alexkim",
+    twitter: "https://twitter.com/alexkim",
+    linkedin: "https://linkedin.com/in/alexkim",
+    website: "https://alexkim.dev",
+  },
+  twoFactorEnabled: true,
+  notifications: {
+    reportStatusChanges: { inApp: true, email: true },
+    adminApprovals: { inApp: true, email: false },
+    newPrograms: { inApp: false, email: false },
+    retestInvites: { inApp: true, email: true },
+    communityActivity: { inApp: false, email: false },
+    followActivity: { inApp: true, email: false },
+  },
 };

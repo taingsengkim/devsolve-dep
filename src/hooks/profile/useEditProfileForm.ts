@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   EditProfileFormData,
   NotificationChannelPrefs,
@@ -47,6 +48,9 @@ export function useEditProfileForm({ initialData, onSave }: UseEditProfileFormPr
     setIsSaving(true);
     try {
       await onSave?.({ ...form, passwords });
+      toast.success("Profile updated.");
+    } catch {
+      toast.error("Failed to update profile. Please try again.");
     } finally {
       setIsSaving(false);
     }

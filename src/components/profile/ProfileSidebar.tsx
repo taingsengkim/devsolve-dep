@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Profile, ProfileStats } from "@/lib/types/profile/types";
 
 interface ProfileSidebarProps {
@@ -11,13 +10,18 @@ export default function ProfileSidebar({ profile, stats }: ProfileSidebarProps) 
     <div className="space-y-6">
       {/* Avatar Picture */}
       <div className="w-full aspect-square rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden relative bg-slate-100">
-        <Image
-          src={profile.avatarUrl || "/justin.png"}
-          alt={profile.displayName}
-          fill
-          className="object-cover"
-          priority
-        />
+        {profile.avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- arbitrary user-supplied URL, not in next/image's remote host allowlist
+          <img
+            src={profile.avatarUrl}
+            alt={profile.displayName}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-blue-600 text-4xl font-bold text-white">
+            {profile.avatarInitials}
+          </div>
+        )}
       </div>
 
       {/* Stats Divider Section */}
