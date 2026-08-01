@@ -6,7 +6,7 @@ import {
   Building2,
   FileCheck,
   Users,
-  MessageSquare,
+  ShieldAlert,
   ArrowUpRight,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -39,9 +39,9 @@ const QUICK_MODULES: QuickModule[] = [
     iconColor: "text-purple-600",
   },
   {
-    href: "/dashboard/community-moderation",
-    label: "Community Moderation",
-    Icon: MessageSquare,
+    href: "/dashboard/content-moderation",
+    label: "Content Reports",
+    Icon: ShieldAlert,
     iconColor: "text-amber-600",
   },
 ];

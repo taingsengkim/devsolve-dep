@@ -63,14 +63,62 @@ export interface CompanyVerificationItem {
 
 export interface ReportConfirmationItem {
   id: string;
+  reportCode?: string;
   title: string;
   researcherName: string;
   companyName: string;
+  programName?: string;
+  avatarColor?: string;
   severity: "Critical" | "High" | "Medium" | "Low";
   status: "PENDING" | "CONFIRMED" | "REJECTED" | "ESCALATED";
   submittedAt: string;
+  acceptedAt?: string;
   rewardEstimate: string;
+  rewardAmount?: string;
   category: string;
+  cwe?: string;
+  cvssScore?: string;
+  cvssVector?: string;
+  targetAsset?: string;
+  description?: string;
+  impact?: string;
+  reproduceSteps?: string[];
+  pocPayload?: string;
+  attachments?: { name: string; size?: string; type?: string; previewUrl?: string }[];
+  hackerClaimedSeverity?: {
+    tier: "Critical" | "High" | "Medium" | "Low";
+    cvss: string;
+    typicalReward: string;
+  };
+  companyConfirmedSeverity?: {
+    tier: "Critical" | "High" | "Medium" | "Low";
+    cvss: string;
+    typicalReward: string;
+  };
+  severitiesAgree?: boolean;
+  companyReasoning?: string;
+  discussionThread?: {
+    id: string;
+    author: string;
+    role: "HACKER" | "COMPANY" | "ADMIN";
+    avatar?: string;
+    text: string;
+    timestamp: string;
+  }[];
+  fairnessSignals?: {
+    companyDowngradeRate: string;
+    companyDowngradeText: string;
+    researcherAcceptanceRate: string;
+    researcherReputationText: string;
+  };
+  triageNotes?: string;
+  auditLog?: {
+    id: string;
+    action: string;
+    actor: string;
+    timestamp: string;
+    note?: string;
+  }[];
 }
 
 export interface AdminUserItem {
@@ -106,6 +154,9 @@ export interface ContentReportItem {
   author: string;
   pastViolationsCount?: number;
   status: "PENDING" | "DISMISSED" | "WARNED" | "REMOVED";
+  snippet?: string;
+  authorAvatar?: string;
+  contentUrl?: string;
 }
 
 export interface ReportReasonsBreakdownData {
