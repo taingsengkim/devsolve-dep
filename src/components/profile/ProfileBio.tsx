@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Globe, MapPin, Users } from "lucide-react";
+import { Cake, CalendarDays, Globe, MapPin, Phone, Users, VenusAndMars } from "lucide-react";
 import { Profile } from "@/lib/types/profile/types";
 import { SiGithub, SiX } from "react-icons/si";
 
@@ -7,8 +7,34 @@ interface ProfileBioProps {
   profile: Profile;
 }
 
+const GENDER_LABELS: Record<NonNullable<Profile["gender"]>, string> = {
+  MALE: "Male",
+  FEMALE: "Female",
+  OTHER: "Other",
+};
+
+function formatDateOfBirth(iso: string) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+// The edit form asks for full URLs (e.g. "https://github.com/username" — see
+// BioSocialSection's placeholders), so social links are stored that way. Build
+// the href straight from the stored value instead of re-prefixing a domain
+// onto it, which previously produced broken/duplicated URLs like
+// "github.com/https://github.com/handle" whenever a user followed the form's
+// own placeholder guidance.
+function toHref(value: string): string {
+  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+}
+
+function displayUrl(value: string): string {
+  return value.replace(/^https?:\/\//i, "").replace(/\/$/, "");
+}
+
 export default function ProfileBio({ profile }: ProfileBioProps) {
-  const { bio, location, memberSince, socialLinks, followers, following, username } = profile;
+  const { bio, location, memberSince, socialLinks, followers, following, username, phone, dateOfBirth, gender } = profile;
 
   return (
     <div className="space-y-6 pt-2">
@@ -29,17 +55,27 @@ export default function ProfileBio({ profile }: ProfileBioProps) {
             </div>
           )}
 
+          {phone && (
+            <div className="flex items-center gap-4">
+              <span className="w-28 shrink-0 font-medium text-slate-500">Phone:</span>
+              <span className="font-medium text-slate-600 flex items-center gap-1.5">
+                <Phone size={15} className="text-slate-400 shrink-0" />
+                {phone}
+              </span>
+            </div>
+          )}
+
           {socialLinks.website && (
             <div className="flex items-center gap-4">
               <span className="w-28 shrink-0 font-medium text-slate-500">Site:</span>
               <a
-                href={`https://${socialLinks.website}`}
+                href={toHref(socialLinks.website)}
                 target="_blank"
                 rel="noreferrer"
                 className="font-medium text-blue-500 hover:underline flex items-center gap-1.5"
               >
                 <Globe size={15} className="text-blue-400 shrink-0" />
-                {socialLinks.website}
+                {displayUrl(socialLinks.website)}
               </a>
             </div>
           )}
@@ -48,13 +84,13 @@ export default function ProfileBio({ profile }: ProfileBioProps) {
             <div className="flex items-center gap-4">
               <span className="w-28 shrink-0 font-medium text-slate-500">GitHub:</span>
               <a
-                href={`https://github.com/${socialLinks.github}`}
+                href={toHref(socialLinks.github)}
                 target="_blank"
                 rel="noreferrer"
                 className="font-medium text-blue-500 hover:underline flex items-center gap-1.5"
               >
                 <SiGithub size={15} className="text-slate-500 shrink-0" />
-                github.com/{socialLinks.github}
+                {displayUrl(socialLinks.github)}
               </a>
             </div>
           )}
@@ -63,13 +99,13 @@ export default function ProfileBio({ profile }: ProfileBioProps) {
             <div className="flex items-center gap-4">
               <span className="w-28 shrink-0 font-medium text-slate-500">X (Twitter):</span>
               <a
-                href={`https://twitter.com/${socialLinks.twitter.replace("@", "")}`}
+                href={toHref(socialLinks.twitter)}
                 target="_blank"
                 rel="noreferrer"
                 className="font-medium text-blue-500 hover:underline flex items-center gap-1.5"
               >
                 <SiX size={15} className="text-slate-500 shrink-0" />
-                {socialLinks.twitter}
+                {displayUrl(socialLinks.twitter)}
               </a>
             </div>
           )}
@@ -104,6 +140,26 @@ export default function ProfileBio({ profile }: ProfileBioProps) {
               </Link>
             </span>
           </div>
+
+          {dateOfBirth && (
+            <div className="flex items-center gap-4">
+              <span className="w-28 shrink-0 font-medium text-slate-500">Date of Birth:</span>
+              <span className="font-medium text-slate-600 flex items-center gap-1.5">
+                <Cake size={15} className="text-slate-400 shrink-0" />
+                {formatDateOfBirth(dateOfBirth)}
+              </span>
+            </div>
+          )}
+
+          {gender && (
+            <div className="flex items-center gap-4">
+              <span className="w-28 shrink-0 font-medium text-slate-500">Sex:</span>
+              <span className="font-medium text-slate-600 flex items-center gap-1.5">
+                <VenusAndMars size={15} className="text-slate-400 shrink-0" />
+                {GENDER_LABELS[gender]}
+              </span>
+            </div>
+          )}
         </div>
 
         {bio && (

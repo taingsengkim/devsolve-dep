@@ -37,10 +37,12 @@ export default function ProfileSidebar({ profile, stats }: ProfileSidebarProps) 
             <p className="text-sm text-slate-500 font-medium">Reputation Points</p>
           </div>
 
-          <div className="flex items-center justify-between py-1.5 border-t border-slate-100">
-            <span className="text-sm text-slate-500 font-medium">Global Rank</span>
-            <span className="text-sm font-bold text-slate-600">#{stats.globalRank}</span>
-          </div>
+          {stats.globalRank !== undefined && (
+            <div className="flex items-center justify-between py-1.5 border-t border-slate-100">
+              <span className="text-sm text-slate-500 font-medium">Global Rank</span>
+              <span className="text-sm font-bold text-slate-600">#{stats.globalRank}</span>
+            </div>
+          )}
 
           <div className="flex items-center justify-between py-1.5 border-t border-slate-100">
             <span className="text-sm text-slate-500 font-medium">Reports Submitted</span>

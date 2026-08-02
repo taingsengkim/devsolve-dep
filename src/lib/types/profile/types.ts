@@ -15,7 +15,7 @@ export interface ProfileBadge {
 
 export interface ProfileStats {
   reputation: number;
-  globalRank: number;
+  globalRank?: number; // no leaderboard/rank endpoint exists yet — omitted, never faked
   reportsSubmitted: number;
   accepted: number;
   acceptedRate: number; // 0-100
@@ -48,6 +48,9 @@ export interface Profile {
   followers: number;
   following: number;
   isOwnProfile: boolean;
+  phone?: string;
+  dateOfBirth?: string; // ISO date string, e.g. "1998-04-12"
+  gender?: "MALE" | "FEMALE" | "OTHER";
 }
 
 // Hacktivity
@@ -166,4 +169,7 @@ export interface AccountStatus {
   acceptedReports: number;
   reputationPoints: number;
   acceptanceRate: number; // 0-100
+  phone?: string;
+  dateOfBirth?: string; // ISO date string, e.g. "1998-04-12"
+  gender?: "MALE" | "FEMALE" | "OTHER";
 }

@@ -42,7 +42,7 @@ export default function ProfileHeader({ profile, backHref }: ProfileHeaderProps)
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-sm font-semibold text-slate-500 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-500 tracking-tight">
               {profile.displayName}
             </h1>
             {profile.location && (

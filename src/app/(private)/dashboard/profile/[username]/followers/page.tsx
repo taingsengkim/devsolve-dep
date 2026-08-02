@@ -22,10 +22,10 @@ export default function FollowersPage() {
 
   return (
     <div>
-      <div className="rounded-2xl bg-white shadow-sm">
+      {/* <div className="rounded-2xl bg-white shadow-sm">
         <ProfileHeader profile={overview.profile} backHref={`/dashboard/profile/${username}`} />
         <div className="h-5" />
-      </div>
+      </div> */}
 
       <div className="mt-6">
         <FollowersList total={followers.total} items={followers.items} />

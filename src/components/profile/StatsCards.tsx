@@ -10,7 +10,11 @@ interface StatsCardsProps {
 export default function StatsCards({ stats }: StatsCardsProps) {
   const cards = [
     { label: "Reputation", sub: "points", value: stats.reputation.toLocaleString(), color: "text-blue-600" },
-    { label: "Global Rank", sub: "leaderboard", value: `#${stats.globalRank}`, color: "text-slate-900" },
+    // No leaderboard/rank endpoint exists yet, so this card is omitted rather
+    // than showing a fabricated rank.
+    ...(stats.globalRank !== undefined
+      ? [{ label: "Global Rank", sub: "leaderboard", value: `#${stats.globalRank}`, color: "text-slate-900" }]
+      : []),
     { label: "Reports", sub: "submitted", value: stats.reportsSubmitted.toString(), color: "text-slate-900" },
     { label: "Accepted", sub: `${stats.acceptedRate}% rate`, value: stats.accepted.toString(), color: "text-emerald-600" },
     { label: "Total Earned", sub: "bounties", value: `$${stats.totalEarned.toLocaleString()}`, color: "text-emerald-600" },

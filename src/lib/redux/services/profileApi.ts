@@ -9,15 +9,13 @@ import {
   CommunityPost,
   ThanksEntry,
   EditProfileFormData,
+  SocialLinksForm,
   AccountStatus,
   FollowingCounts,
   FollowRecord,
 } from "@/lib/types/profile/types";
 import {
   mockProfile,
-  mockStats,
-  mockSeverity,
-  mockBadges,
   mockThanks,
   mockEditProfileFormData,
 } from "@/lib/types/profile/mock-data";
@@ -31,8 +29,8 @@ interface ProfileOverviewResponse {
 
 // Real shape of GET/PATCH /api/v1/user-profiles/me (confirmed against the live
 // OpenAPI spec at devsolve-api.quizzy.it.com/v3/api-docs). The backend has no
-// public username lookup, no socialLinks, no badges/hacktivity/community/thanks/
-// following endpoints — only the signed-in user's own profile.
+// public username lookup, no badges/hacktivity/community/thanks/following
+// endpoints — only the signed-in user's own profile.
 interface UserProfileApiResponse {
   id: string;
   email: string;
@@ -46,6 +44,7 @@ interface UserProfileApiResponse {
   gender?: "MALE" | "FEMALE" | "OTHER";
   country?: string;
   status?: "ACTIVE" | "SUSPENDED" | "REMOVED";
+  socialLinks?: { platform: "GITHUB" | "LINKEDIN" | "WEBSITE" | "X" | "FACEBOOK" | "TELEGRAM" | "OTHER"; url: string }[];
   reputation?: number;
   totalReports?: number;
   validReports?: number;
@@ -96,34 +95,33 @@ interface VoteSummaryApiResponse {
   score?: number;
 }
 
-// Backend doesn't persist social links yet. Used as a shared blank default so
-// mock placeholder values (ghostkode.dev etc.) never leak into a real user's form.
-const EMPTY_SOCIAL_LINKS = { github: "", twitter: "", linkedin: "", website: "" };
-
-// The backend has no socialLinks column at all (see UserProfileApiResponse below),
-// so without this, edits made in the Edit Profile form would have nowhere to live
-// and the public profile view would be stuck showing EMPTY_SOCIAL_LINKS forever.
-// Persisting client-side, keyed by user id, keeps the view page in sync with
-// whatever was last saved in the edit form until a real API field exists.
-const SOCIAL_LINKS_STORAGE_PREFIX = "devsolve:socialLinks:";
-
-function readStoredSocialLinks(userId: string | undefined) {
-  if (!userId || typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(SOCIAL_LINKS_STORAGE_PREFIX + userId);
-    return raw ? (JSON.parse(raw) as typeof EMPTY_SOCIAL_LINKS) : null;
-  } catch {
-    return null;
-  }
+// socialLinks comes back as a flat platform/url array — map the platforms our
+// UI actually has fields for onto SocialLinksForm. "X" is the platform's name
+// for what our UI calls "twitter". FACEBOOK/TELEGRAM/OTHER have no field in
+// this app's UI (see ProfileBio.tsx, BioSocialSection.tsx) so they're dropped
+// on read; toSocialLinksPayload only ever writes the four platforms below, so
+// a link stored under one of those unsupported platforms elsewhere would be
+// silently omitted the next time this app saves — same as before this app had
+// any real social-links support at all.
+function socialLinksOf(raw: UserProfileApiResponse): SocialLinksForm {
+  const links = raw.socialLinks ?? [];
+  const urlFor = (platform: string) => links.find((link) => link.platform === platform)?.url ?? "";
+  return {
+    github: urlFor("GITHUB"),
+    twitter: urlFor("X"),
+    linkedin: urlFor("LINKEDIN"),
+    website: urlFor("WEBSITE"),
+  };
 }
 
-function writeStoredSocialLinks(userId: string | undefined, links: typeof EMPTY_SOCIAL_LINKS) {
-  if (!userId || typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(SOCIAL_LINKS_STORAGE_PREFIX + userId, JSON.stringify(links));
-  } catch {
-    // best-effort client-only cache — ignore quota/serialization errors
-  }
+function toSocialLinksPayload(form: SocialLinksForm | undefined): { platform: string; url: string }[] | undefined {
+  if (!form) return undefined;
+  const entries: { platform: string; url: string }[] = [];
+  if (form.github) entries.push({ platform: "GITHUB", url: form.github });
+  if (form.twitter) entries.push({ platform: "X", url: form.twitter });
+  if (form.linkedin) entries.push({ platform: "LINKEDIN", url: form.linkedin });
+  if (form.website) entries.push({ platform: "WEBSITE", url: form.website });
+  return entries;
 }
 
 function initialsOf(name: string): string {
@@ -156,13 +154,46 @@ function acceptedRateOf(total: number, valid: number): number {
   return total > 0 ? Math.round((valid / total) * 1000) / 10 : 0;
 }
 
+// Derives the severity-breakdown bars and rejected/duplicate/retest counters
+// from the user's own reports (GET /reports/mine) — there's no dedicated
+// stats-breakdown endpoint, so this is computed client-side. Rejected/duplicate
+// reports are counted separately from the severity bars rather than double
+// counted. There's no retest endpoint at all yet, so `retests` is always 0 —
+// a real "nothing tracked" rather than a fabricated placeholder count.
+function severityStatsOf(reports: ReportApiResponse[]): SeverityStats {
+  const counts = { critical: 0, high: 0, medium: 0, low: 0, rejected: 0, duplicate: 0 };
+  for (const report of reports) {
+    if (report.state === "REJECTED") counts.rejected += 1;
+    else if (report.state === "DUPLICATE") counts.duplicate += 1;
+    else if (report.severity === "CRITICAL") counts.critical += 1;
+    else if (report.severity === "HIGH") counts.high += 1;
+    else if (report.severity === "MEDIUM") counts.medium += 1;
+    else if (report.severity === "LOW") counts.low += 1;
+  }
+  return { ...counts, retests: 0 };
+}
+
+function totalEarnedOf(reports: ReportApiResponse[]): number {
+  return reports.reduce((sum, report) => sum + (report.rewards?.reduce((s, reward) => s + (reward.amount ?? 0), 0) ?? 0), 0);
+}
+
+// Shared by toProfileOverview and getAccountStatus so the submission/accepted
+// counts shown on the profile page and the Settings sidebar can't drift apart.
+// raw.totalReports/validReports are trusted when present; reports.length is
+// only a fallback for when the profile response omits them.
+function reportCountsOf(raw: UserProfileApiResponse, reports: ReportApiResponse[]) {
+  const total = raw.totalReports ?? reports.length;
+  const valid = raw.validReports ?? reports.filter((r) => r.state === "RESOLVED" || r.state === "VALID_CONFIRMED").length;
+  return { total, valid };
+}
+
 function toProfileOverview(
   raw: UserProfileApiResponse,
-  social: { followers: number; following: number }
+  social: { followers: number; following: number },
+  reports: ReportApiResponse[]
 ): ProfileOverviewResponse {
   const displayName = fullNameOf(raw, mockProfile.displayName);
-  const totalReports = raw.totalReports ?? mockStats.reportsSubmitted;
-  const validReports = raw.validReports ?? mockStats.accepted;
+  const { total: totalReports, valid: validReports } = reportCountsOf(raw, reports);
 
   const profile: Profile = {
     ...mockProfile,
@@ -174,25 +205,29 @@ function toProfileOverview(
     bio: raw.biography || mockProfile.bio,
     location: raw.country || mockProfile.location,
     memberSince: memberSinceOf(raw.createdAt, mockProfile.memberSince),
-    socialLinks: readStoredSocialLinks(raw.id) ?? EMPTY_SOCIAL_LINKS,
+    socialLinks: socialLinksOf(raw),
     followers: social.followers,
     following: social.following,
+    phone: raw.phone,
+    dateOfBirth: raw.dateOfBirth,
+    gender: raw.gender,
   };
 
   const stats: ProfileStats = {
-    ...mockStats,
-    reputation: raw.reputation ?? mockStats.reputation,
+    reputation: raw.reputation ?? 0,
+    // No leaderboard/rank endpoint exists yet — omitted rather than faked.
+    globalRank: undefined,
     reportsSubmitted: totalReports,
     accepted: validReports,
     acceptedRate: acceptedRateOf(totalReports, validReports),
+    totalEarned: totalEarnedOf(reports),
   };
 
-  const severity: SeverityStats = {
-    ...mockSeverity,
-    critical: raw.criticalReports ?? mockSeverity.critical,
-  };
+  const severity = severityStatsOf(reports);
 
-  return { profile, stats, severity, badges: mockBadges };
+  // No badges endpoint exists yet — an empty grid is honest; the mock badge
+  // set was fabricated achievement data with no backing from the backend.
+  return { profile, stats, severity, badges: [] };
 }
 
 export const profileApi = baseApi.injectEndpoints({
@@ -200,16 +235,19 @@ export const profileApi = baseApi.injectEndpoints({
     // The `username` arg is accepted for route compatibility but ignored —
     // the backend only exposes the signed-in user's own profile. Also pulls the
     // real followers/following counts from the follows API (size=1 just to read
-    // the `totalElements` pagination field cheaply) instead of the mock 284/61.
+    // the `totalElements` pagination field cheaply) instead of the mock 284/61,
+    // and the user's reports to derive the Overview tab's stats/severity
+    // breakdown (see toProfileOverview) instead of mock numbers.
     getProfileByUsername: builder.query<ProfileOverviewResponse, string>({
       async queryFn(_username, _api, _extraOptions, fetchWithBQ) {
         const profileResult = await fetchWithBQ(`/user-profiles/me`);
         if (profileResult.error) return { error: profileResult.error };
         const raw = profileResult.data as UserProfileApiResponse;
 
-        const [followingResult, followersResult] = await Promise.all([
+        const [followingResult, followersResult, reportsResult] = await Promise.all([
           fetchWithBQ(`/follows/mine?size=1`),
           fetchWithBQ(`/follows/USER/${raw.id}/followers?size=1`),
+          fetchWithBQ(`/reports/mine?size=100`),
         ]);
 
         const followingCount = !followingResult.error
@@ -218,12 +256,19 @@ export const profileApi = baseApi.injectEndpoints({
         const followersCount = !followersResult.error
           ? (followersResult.data as { totalElements?: number } | undefined)?.totalElements
           : undefined;
+        const reports = !reportsResult.error
+          ? (reportsResult.data as { content?: ReportApiResponse[] } | undefined)?.content ?? []
+          : [];
 
         return {
-          data: toProfileOverview(raw, {
-            followers: followersCount ?? mockProfile.followers,
-            following: followingCount ?? mockProfile.following,
-          }),
+          data: toProfileOverview(
+            raw,
+            {
+              followers: followersCount ?? mockProfile.followers,
+              following: followingCount ?? mockProfile.following,
+            },
+            reports
+          ),
         };
       },
       providesTags: ["Profile"],
@@ -344,9 +389,7 @@ export const profileApi = baseApi.injectEndpoints({
           phone: raw.phone || "",
           dateOfBirth: raw.dateOfBirth || "",
           gender: raw.gender,
-          // Backend has no socialLinks field yet — read back whatever was last
-          // saved locally instead of the mock's fake ghostkode.dev/ghostkode/@ghostkode_sec.
-          socialLinks: readStoredSocialLinks(raw.id) ?? { ...EMPTY_SOCIAL_LINKS },
+          socialLinks: socialLinksOf(raw),
         };
       },
       providesTags: ["Profile"],
@@ -371,14 +414,12 @@ export const profileApi = baseApi.injectEndpoints({
             avatarUrl: body.avatarUrl || undefined,
             dateOfBirth: body.dateOfBirth || undefined,
             gender: body.gender || undefined,
+            socialLinks: toSocialLinksPayload(body.socialLinks),
           },
         };
       },
       transformResponse: (raw: UserProfileApiResponse, _meta, arg): EditProfileFormData => {
         const fullName = fullNameOf(raw, arg.fullName || mockEditProfileFormData.fullName);
-        // Persist locally so the public profile view (toProfileOverview) can read
-        // back what was just saved — the backend has nowhere to store this yet.
-        if (arg.socialLinks) writeStoredSocialLinks(raw.id, arg.socialLinks);
         return {
           ...mockEditProfileFormData,
           ...arg,
@@ -391,25 +432,39 @@ export const profileApi = baseApi.injectEndpoints({
           phone: raw.phone ?? arg.phone ?? "",
           dateOfBirth: raw.dateOfBirth ?? arg.dateOfBirth ?? "",
           gender: raw.gender ?? arg.gender,
-          // Preserve whatever the user had typed this session rather than falling
-          // back to mock placeholder values, since the backend doesn't persist this.
-          socialLinks: arg.socialLinks ?? { ...EMPTY_SOCIAL_LINKS },
+          socialLinks: socialLinksOf(raw),
         };
       },
       invalidatesTags: ["Profile"],
     }),
 
+    // Same totalSubmissions/acceptedReports derivation as toProfileOverview
+    // (via reportCountsOf) so the Settings sidebar never disagrees with the
+    // main profile page's numbers.
     getAccountStatus: builder.query<AccountStatus, void>({
-      query: () => `/user-profiles/me`,
-      transformResponse: (raw: UserProfileApiResponse): AccountStatus => {
-        const totalReports = raw.totalReports ?? mockStats.reportsSubmitted;
-        const validReports = raw.validReports ?? mockStats.accepted;
+      async queryFn(_arg, _api, _extraOptions, fetchWithBQ) {
+        const [profileResult, reportsResult] = await Promise.all([
+          fetchWithBQ(`/user-profiles/me`),
+          fetchWithBQ(`/reports/mine?size=100`),
+        ]);
+        if (profileResult.error) return { error: profileResult.error };
+        const raw = profileResult.data as UserProfileApiResponse;
+        const reports = !reportsResult.error
+          ? (reportsResult.data as { content?: ReportApiResponse[] } | undefined)?.content ?? []
+          : [];
+
+        const { total, valid } = reportCountsOf(raw, reports);
         return {
-          memberSince: memberSinceOf(raw.createdAt, mockProfile.memberSince),
-          totalSubmissions: totalReports,
-          acceptedReports: validReports,
-          reputationPoints: raw.reputation ?? mockStats.reputation,
-          acceptanceRate: acceptedRateOf(totalReports, validReports),
+          data: {
+            memberSince: memberSinceOf(raw.createdAt, mockProfile.memberSince),
+            totalSubmissions: total,
+            acceptedReports: valid,
+            reputationPoints: raw.reputation ?? 0,
+            acceptanceRate: acceptedRateOf(total, valid),
+            phone: raw.phone,
+            dateOfBirth: raw.dateOfBirth,
+            gender: raw.gender,
+          },
         };
       },
       providesTags: ["Profile"],
