@@ -9,7 +9,7 @@ import {
 } from "@/lib/redux/services/discussionsApi";
 import type { DiscussionCategory, TopicFilter } from "@/lib/types/dicussion/types";
 
-const DEFAULT_LIMIT = 10;
+const DEFAULT_LIMIT = 3;
 
 export function useDiscussionFilters() {
   const [category, setCategory] = useState<DiscussionCategory>("All");

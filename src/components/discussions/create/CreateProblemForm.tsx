@@ -4,6 +4,13 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Send, Plus, X, Loader2, AlertCircle } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useCreateDiscussionMutation } from "@/lib/redux/services/discussionsApi";
 import type { TopicFilter } from "@/lib/types/dicussion/types";
 
@@ -102,21 +109,26 @@ export function CreateProblemForm() {
 
       {/* 2. Topic Category */}
       <div className="space-y-2">
-        <label htmlFor="post-topic" className="text-base font-bold text-slate-900">
+        <label className="text-base font-bold text-slate-900">
           Topic Category <span className="text-red-500">*</span>
         </label>
-        <select
-          id="post-topic"
+        <Select
           value={topic}
-          onChange={(e) => setTopic(e.target.value as TopicFilter)}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base font-semibold text-slate-800 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+          onValueChange={(val) => {
+            if (val) setTopic(val as TopicFilter);
+          }}
         >
-          {TOPIC_OPTIONS.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base font-semibold text-slate-800 h-12">
+            <SelectValue placeholder="Select topic" />
+          </SelectTrigger>
+          <SelectContent className="bg-white border border-slate-200 shadow-md rounded-xl">
+            {TOPIC_OPTIONS.map((opt) => (
+              <SelectItem key={opt} value={opt} className="text-base font-medium cursor-pointer">
+                {opt}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* 3. Detailed Description */}

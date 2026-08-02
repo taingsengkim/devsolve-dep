@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getProblemDetailById } from "@/lib/types/dicussion/problemDetailMockdata";
 import { SolutionCard } from "@/components/discussions/SolutionCard";
+import { DiscussionPagination } from "@/components/discussions/DiscussionPagination";
 import { ProblemDetail , SolutionItem  } from "@/lib/types/dicussion/types";
 import {
   ArrowLeft,
@@ -38,6 +39,10 @@ export default function ProblemDetailPage() {
   const [sortOrder, setSortOrder] = useState<"votes" | "newest">("votes");
   const [showcaseTab, setShowcaseTab] = useState<"overview" | "diagram" | "code">("overview");
 
+  // Pagination for solutions list
+  const [solutionPage, setSolutionPage] = useState(1);
+  const [solutionsPerPage, setSolutionsPerPage] = useState(5);
+
   // Get primary solution data if available (e.g. for step-by-step or diagram)
   const primarySolution = problem?.solutions?.[0];
 
@@ -69,7 +74,7 @@ export default function ProblemDetailPage() {
           The requested discussion or post does not exist.
         </p>
         <Link
-          href="/dashboard/discussions"
+          href="/discussions"
           className="inline-flex items-center space-x-2 text-sm font-semibold text-blue-600 hover:underline"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -114,13 +119,19 @@ export default function ProblemDetailPage() {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
+  const paginatedSolutions = sortedSolutions.slice(
+    (solutionPage - 1) * solutionsPerPage,
+    solutionPage * solutionsPerPage
+  );
+  const totalSolutionPages = Math.ceil(sortedSolutions.length / solutionsPerPage) || 1;
+
   const isShowcase = problem.category === "Showcase";
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-sans pb-16">
       <main className="mx-auto max-w-7xl px-6 py-8">
         <Link
-          href="/dashboard/discussions"
+          href="/discussions"
           className="inline-flex items-center space-x-2 text-sm font-semibold text-slate-500 hover:text-blue-600 mb-6 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -135,7 +146,7 @@ export default function ProblemDetailPage() {
                 <span
                   className={`inline-flex items-center space-x-1.5 rounded-full px-3 py-1 text-xs font-bold ${
                     isShowcase
-                      ? "bg-purple-100 text-purple-700"
+                      ? "bg-blue-100 text-blue-700"
                       : problem.status === "Solved"
                       ? "bg-emerald-100 text-emerald-700"
                       : "bg-blue-100 text-blue-700"
@@ -168,7 +179,7 @@ export default function ProblemDetailPage() {
                     onClick={handleVoteProblem}
                     className={`rounded-lg p-1.5 transition-colors ${
                       hasVotedProblem
-                        ? "bg-purple-600 text-white"
+                        ? "bg-blue-600 text-white"
                         : "text-slate-500 hover:bg-slate-200"
                     }`}
                   >
@@ -189,7 +200,7 @@ export default function ProblemDetailPage() {
                     key={i}
                     className={`rounded-lg px-2.5 py-1 text-xs font-mono font-medium ${
                       isShowcase
-                        ? "bg-purple-50 border border-purple-200/60 text-purple-800"
+                        ? "bg-blue-50 border border-blue-200/60 text-blue-800"
                         : "bg-slate-100 border border-slate-200/60 text-slate-700"
                     }`}
                   >
@@ -233,7 +244,7 @@ export default function ProblemDetailPage() {
                     onClick={() => setShowcaseTab("overview")}
                     className={`flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
                       showcaseTab === "overview"
-                        ? "bg-purple-600 text-white shadow-xs"
+                        ? "bg-blue-600 text-white shadow-xs"
                         : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
                     }`}
                   >
@@ -244,7 +255,7 @@ export default function ProblemDetailPage() {
                     onClick={() => setShowcaseTab("diagram")}
                     className={`flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
                       showcaseTab === "diagram"
-                        ? "bg-purple-600 text-white shadow-xs"
+                        ? "bg-blue-600 text-white shadow-xs"
                         : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
                     }`}
                   >
@@ -255,7 +266,7 @@ export default function ProblemDetailPage() {
                     onClick={() => setShowcaseTab("code")}
                     className={`flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
                       showcaseTab === "code"
-                        ? "bg-purple-600 text-white shadow-xs"
+                        ? "bg-blue-600 text-white shadow-xs"
                         : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
                     }`}
                   >
@@ -268,7 +279,7 @@ export default function ProblemDetailPage() {
                 {showcaseTab === "overview" && (
                   <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
                     <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-                      <Terminal className="h-4 w-4 text-purple-600" />
+                      <Terminal className="h-4 w-4 text-blue-600" />
                       <span>Implementation Flow</span>
                     </h3>
                     <div className="space-y-3">
@@ -282,7 +293,7 @@ export default function ProblemDetailPage() {
                           key={idx}
                           className="flex gap-3 items-start bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm"
                         >
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-purple-600 text-xs font-bold text-white shadow-xs">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-xs">
                             {idx + 1}
                           </span>
                           <p className="text-slate-700 leading-relaxed">{step}</p>
@@ -296,10 +307,10 @@ export default function ProblemDetailPage() {
                 {showcaseTab === "diagram" && (
                   <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
                     <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center space-x-2">
-                      <Network className="h-4 w-4 text-purple-600" />
+                      <Network className="h-4 w-4 text-blue-600" />
                       <span>Security Architecture Sequence Flow</span>
                     </h3>
-                    <div className="rounded-xl border border-purple-100 bg-purple-50/50 p-6 font-mono text-sm text-slate-800 leading-relaxed overflow-x-auto">
+                    <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-6 font-mono text-sm text-slate-800 leading-relaxed overflow-x-auto">
                       <pre className="text-slate-700">
 {` +------------------+           +--------------------+           +----------------------+
  | Client Browser   |           |  Auth Server       |           |  Resource API        |
@@ -328,10 +339,10 @@ export default function ProblemDetailPage() {
                 {showcaseTab === "code" && (
                   <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
                     <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center space-x-2">
-                      <Code2 className="h-4 w-4 text-purple-600" />
+                      <Code2 className="h-4 w-4 text-blue-600" />
                       <span>Core Logic / Implementation Code</span>
                     </h3>
-                    <pre className="rounded-xl bg-slate-900 p-4 text-sm font-mono text-purple-300 overflow-x-auto leading-relaxed">
+                    <pre className="rounded-xl bg-slate-900 p-4 text-sm font-mono text-blue-300 overflow-x-auto leading-relaxed">
                       {problem.codeSnippet || primarySolution?.codeFix || `// Core PKCE Challenge logic`}
                     </pre>
                   </div>
@@ -378,11 +389,11 @@ export default function ProblemDetailPage() {
                       value={newShowcaseComment}
                       onChange={(e) => setNewShowcaseComment(e.target.value)}
                       placeholder="Share feedback on this showcase..."
-                      className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
+                      className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                     />
                     <button
                       type="submit"
-                      className="rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-700 transition-colors shadow-xs"
+                      className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-xs"
                     >
                       <Send className="h-4 w-4" />
                     </button>
@@ -428,10 +439,24 @@ export default function ProblemDetailPage() {
                 </div>
 
                 <div className="space-y-4">
-                  {sortedSolutions.map((sol, index) => (
+                  {paginatedSolutions.map((sol, index) => (
                     <SolutionCard key={sol.id} solution={sol} index={index} />
                   ))}
                 </div>
+
+                {sortedSolutions.length > 0 && (
+                  <DiscussionPagination
+                    page={solutionPage}
+                    totalPages={totalSolutionPages}
+                    limit={solutionsPerPage}
+                    totalCount={sortedSolutions.length}
+                    onPageChange={setSolutionPage}
+                    onLimitChange={(l) => {
+                      setSolutionsPerPage(l);
+                      setSolutionPage(1);
+                    }}
+                  />
+                )}
               </>
             )}
           </div>

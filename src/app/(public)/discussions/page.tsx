@@ -98,7 +98,7 @@ export default function DiscussionsPage() {
               </div>
 
               {/* ── Pagination ─────────────────────────────────────────── */}
-              {discussions && discussions.totalPages > 1 && (
+              {discussions && discussions.totalCount > 0 && (
                 <DiscussionPagination
                   page={page}
                   totalPages={discussions.totalPages}

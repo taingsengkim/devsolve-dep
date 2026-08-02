@@ -1,8 +1,15 @@
 "use client";
 
 import React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface DiscussionPaginationProps {
   page: number;
@@ -29,26 +36,33 @@ export function DiscussionPagination({
     return [1, "...", page - 1, page, page + 1, "...", totalPages];
   };
 
-  if (totalPages <= 1 && totalCount === 0) return null;
+  if (totalCount === 0) return null;
 
   return (
     <div className="mt-8 flex flex-col sm:flex-row items-center justify-between border-t border-slate-200 pt-6 gap-4">
       {/* Rows per page */}
       <div className="flex items-center gap-2 text-base text-slate-700 font-medium">
         <span>Rows per page</span>
-        <select
-          id="discussions-rows-per-page"
-          value={limit}
-          onChange={(e) => {
-            onLimitChange(Number(e.target.value));
-            onPageChange(1);
+        <Select
+          value={String(limit)}
+          onValueChange={(val) => {
+            if (val) {
+              onLimitChange(Number(val));
+              onPageChange(1);
+            }
           }}
-          className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-base font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
         >
-          {[10, 20, 50].map((n) => (
-            <option key={n} value={n}>{n}</option>
-          ))}
-        </select>
+          <SelectTrigger className="rounded-xl border border-slate-300 bg-white text-base font-semibold text-slate-800 h-9 px-3 min-w-[70px]">
+            <SelectValue placeholder={String(limit)} />
+          </SelectTrigger>
+          <SelectContent className="bg-white border border-slate-200 shadow-md rounded-xl">
+            {[3, 5, 10, 20].map((n) => (
+              <SelectItem key={n} value={String(n)} className="text-base font-medium cursor-pointer">
+                {n}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Page controls */}
