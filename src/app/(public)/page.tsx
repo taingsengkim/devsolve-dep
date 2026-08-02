@@ -1,9 +1,19 @@
-import { Hero  } from "@/components/landing/Hero";
+import { Hero } from "@/components/landing/Hero";
+import { FeatureHighlights } from "@/components/landing/FeatureHighlights";
+import { StatsSection } from "@/components/landing/StatsSection";
+import { BountyPreview } from "@/components/landing/BountyPreview";
+import { DiscussionsTeaser } from "@/components/landing/DiscussionsTeaser";
+import { CTABanner } from "@/components/landing/CTABanner";
 
 export default function Page() {
   return (
-    <main className="min-h-[100dvh] bg-[#FAF9F5] text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
+    <main className="text-slate-900 selection:bg-blue-100 selection:text-blue-900">
       <Hero />
+      <FeatureHighlights />
+      <StatsSection />
+      <BountyPreview />
+      <DiscussionsTeaser />
+      <CTABanner />
     </main>
   );
 }
