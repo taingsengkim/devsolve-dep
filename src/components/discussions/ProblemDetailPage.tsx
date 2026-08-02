@@ -121,7 +121,7 @@ export default function ProblemDetailPage() {
       <main className="mx-auto max-w-7xl px-6 py-8">
         <Link
           href="/dashboard/discussions"
-          className="inline-flex items-center space-x-2 text-xs font-semibold text-slate-500 hover:text-blue-600 mb-6 transition-colors"
+          className="inline-flex items-center space-x-2 text-sm font-semibold text-slate-500 hover:text-blue-600 mb-6 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Discussions</span>
@@ -133,7 +133,7 @@ export default function ProblemDetailPage() {
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
               <div className="flex items-center space-x-2 mb-3">
                 <span
-                  className={`inline-flex items-center space-x-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
+                  className={`inline-flex items-center space-x-1.5 rounded-full px-3 py-1 text-xs font-bold ${
                     isShowcase
                       ? "bg-purple-100 text-purple-700"
                       : problem.status === "Solved"
@@ -152,21 +152,21 @@ export default function ProblemDetailPage() {
                 </span>
 
                 {problem.sdlcPhase && (
-                  <span className="rounded-md bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
+                  <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
                     {problem.sdlcPhase}
                   </span>
                 )}
               </div>
 
               <div className="flex items-start justify-between gap-4">
-                <h1 className="text-xl font-extrabold text-slate-900 leading-snug">
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
                   {problem.title}
                 </h1>
 
                 <div className="flex items-center space-x-1 rounded-xl border border-slate-200 bg-slate-50 p-1 shrink-0">
                   <button
                     onClick={handleVoteProblem}
-                    className={`rounded-lg p-1 transition-colors ${
+                    className={`rounded-lg p-1.5 transition-colors ${
                       hasVotedProblem
                         ? "bg-purple-600 text-white"
                         : "text-slate-500 hover:bg-slate-200"
@@ -174,23 +174,23 @@ export default function ProblemDetailPage() {
                   >
                     <ChevronUp className="h-4 w-4" />
                   </button>
-                  <span className="text-xs font-bold text-slate-800 px-1">
+                  <span className="text-sm font-bold text-slate-800 px-1.5 tabular-nums">
                     {problemVotes}
                   </span>
-                  <button className="rounded-lg p-1 text-slate-500 hover:bg-slate-200">
+                  <button className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-200">
                     <ChevronDown className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
-              <div className="mt-3 flex flex-wrap gap-1.5">
+              <div className="mt-3.5 flex flex-wrap gap-1.5">
                 {problem.tags.map((tag, i) => (
                   <span
                     key={i}
-                    className={`rounded-md px-2.5 py-1 text-[11px] font-mono ${
+                    className={`rounded-lg px-2.5 py-1 text-xs font-mono font-medium ${
                       isShowcase
-                        ? "bg-purple-50 text-purple-700"
-                        : "bg-slate-100 text-slate-600"
+                        ? "bg-purple-50 border border-purple-200/60 text-purple-800"
+                        : "bg-slate-100 border border-slate-200/60 text-slate-700"
                     }`}
                   >
                     {tag}
@@ -202,23 +202,23 @@ export default function ProblemDetailPage() {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
                   {isShowcase ? "Project Overview" : "Description"}
                 </h3>
-                <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">
+                <p className="text-base text-slate-700 leading-relaxed whitespace-pre-wrap">
                   {problem.description}
                 </p>
               </div>
 
-              <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4 text-xs">
+              <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4 text-sm">
                 <div className="flex items-center space-x-3">
-                  <button className="flex items-center space-x-1 rounded-lg border border-slate-200 px-3 py-1.5 text-slate-600 hover:bg-slate-50">
-                    <Bookmark className="h-3.5 w-3.5" />
+                  <button className="flex items-center space-x-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 text-slate-600 hover:bg-slate-50 font-medium">
+                    <Bookmark className="h-4 w-4" />
                     <span>Bookmark</span>
                   </button>
-                  <button className="flex items-center space-x-1 rounded-lg border border-slate-200 px-3 py-1.5 text-slate-600 hover:bg-slate-50">
-                    <Share2 className="h-3.5 w-3.5" />
+                  <button className="flex items-center space-x-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 text-slate-600 hover:bg-slate-50 font-medium">
+                    <Share2 className="h-4 w-4" />
                     <span>Share</span>
                   </button>
-                  <button className="p-1.5 text-slate-400 hover:text-slate-600">
-                    <Flag className="h-3.5 w-3.5" />
+                  <button className="p-2 text-slate-400 hover:text-slate-600 rounded-lg">
+                    <Flag className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -231,35 +231,35 @@ export default function ProblemDetailPage() {
                 <div className="flex items-center space-x-2 border-b border-slate-200 pb-2">
                   <button
                     onClick={() => setShowcaseTab("overview")}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                    className={`flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
                       showcaseTab === "overview"
-                        ? "bg-purple-600 text-white shadow-sm"
+                        ? "bg-purple-600 text-white shadow-xs"
                         : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
                     }`}
                   >
-                    <Terminal className="h-3.5 w-3.5" />
+                    <Terminal className="h-4 w-4" />
                     <span>Steps & Implementation</span>
                   </button>
                   <button
                     onClick={() => setShowcaseTab("diagram")}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                    className={`flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
                       showcaseTab === "diagram"
-                        ? "bg-purple-600 text-white shadow-sm"
+                        ? "bg-purple-600 text-white shadow-xs"
                         : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
                     }`}
                   >
-                    <Network className="h-3.5 w-3.5" />
+                    <Network className="h-4 w-4" />
                     <span>Architecture Diagram</span>
                   </button>
                   <button
                     onClick={() => setShowcaseTab("code")}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                    className={`flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
                       showcaseTab === "code"
-                        ? "bg-purple-600 text-white shadow-sm"
+                        ? "bg-purple-600 text-white shadow-xs"
                         : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
                     }`}
                   >
-                    <Code2 className="h-3.5 w-3.5" />
+                    <Code2 className="h-4 w-4" />
                     <span>Key Code Snippet</span>
                   </button>
                 </div>
@@ -267,7 +267,7 @@ export default function ProblemDetailPage() {
                 {/* Tab 1: Steps & Implementation */}
                 {showcaseTab === "overview" && (
                   <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-                    <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                    <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
                       <Terminal className="h-4 w-4 text-purple-600" />
                       <span>Implementation Flow</span>
                     </h3>
@@ -280,9 +280,9 @@ export default function ProblemDetailPage() {
                       ]).map((step, idx) => (
                         <div
                           key={idx}
-                          className="flex gap-3 items-start bg-slate-50 p-3.5 rounded-xl border border-slate-100 text-xs"
+                          className="flex gap-3 items-start bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm"
                         >
-                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-600 text-[10px] font-bold text-white shadow-xs">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-purple-600 text-xs font-bold text-white shadow-xs">
                             {idx + 1}
                           </span>
                           <p className="text-slate-700 leading-relaxed">{step}</p>
@@ -295,11 +295,11 @@ export default function ProblemDetailPage() {
                 {/* Tab 2: Architecture Diagram */}
                 {showcaseTab === "diagram" && (
                   <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-                    <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center space-x-2">
+                    <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center space-x-2">
                       <Network className="h-4 w-4 text-purple-600" />
                       <span>Security Architecture Sequence Flow</span>
                     </h3>
-                    <div className="rounded-xl border border-purple-100 bg-purple-50/50 p-6 font-mono text-xs text-slate-800 leading-relaxed overflow-x-auto">
+                    <div className="rounded-xl border border-purple-100 bg-purple-50/50 p-6 font-mono text-sm text-slate-800 leading-relaxed overflow-x-auto">
                       <pre className="text-slate-700">
 {` +------------------+           +--------------------+           +----------------------+
  | Client Browser   |           |  Auth Server       |           |  Resource API        |
@@ -327,11 +327,11 @@ export default function ProblemDetailPage() {
                 {/* Tab 3: Code Snippet */}
                 {showcaseTab === "code" && (
                   <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-                    <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center space-x-2">
+                    <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center space-x-2">
                       <Code2 className="h-4 w-4 text-purple-600" />
                       <span>Core Logic / Implementation Code</span>
                     </h3>
-                    <pre className="rounded-xl bg-slate-900 p-4 text-xs font-mono text-purple-300 overflow-x-auto leading-relaxed">
+                    <pre className="rounded-xl bg-slate-900 p-4 text-sm font-mono text-purple-300 overflow-x-auto leading-relaxed">
                       {problem.codeSnippet || primarySolution?.codeFix || `// Core PKCE Challenge logic`}
                     </pre>
                   </div>
@@ -339,7 +339,7 @@ export default function ProblemDetailPage() {
 
                 {/* Comments Thread for Showcase */}
                 <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-                  <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center space-x-2">
+                  <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center space-x-2">
                     <MessageSquare className="h-4 w-4 text-slate-500" />
                     <span>Comments ({showcaseComments.length})</span>
                   </h3>
@@ -348,23 +348,23 @@ export default function ProblemDetailPage() {
                     {showcaseComments.map((comment) => (
                       <div
                         key={comment.id}
-                        className="text-xs text-slate-600 flex items-start space-x-3 bg-slate-50 p-3.5 rounded-xl border border-slate-100"
+                        className="text-sm text-slate-600 flex items-start space-x-3 bg-slate-50 p-4 rounded-xl border border-slate-100"
                       >
                         <img
                           src={comment.author.avatarUrl}
                           alt={comment.author.name}
-                          className="h-7 w-7 rounded-full bg-slate-200"
+                          className="h-8 w-8 rounded-full bg-slate-200"
                         />
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-bold text-slate-800">
                               {comment.author.name}
                             </span>
-                            <span className="text-[10px] text-slate-400">
+                            <span className="text-xs text-slate-400">
                               {comment.createdAt}
                             </span>
                           </div>
-                          <p className="text-slate-600 leading-relaxed">
+                          <p className="text-slate-700 leading-relaxed">
                             {comment.content}
                           </p>
                         </div>
@@ -378,13 +378,13 @@ export default function ProblemDetailPage() {
                       value={newShowcaseComment}
                       onChange={(e) => setNewShowcaseComment(e.target.value)}
                       placeholder="Share feedback on this showcase..."
-                      className="flex-1 rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-purple-500 focus:outline-none"
+                      className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
                     />
                     <button
                       type="submit"
-                      className="rounded-xl bg-purple-600 px-3.5 py-2 text-white hover:bg-purple-700 transition-colors shadow-xs"
+                      className="rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-700 transition-colors shadow-xs"
                     >
-                      <Send className="h-3.5 w-3.5" />
+                      <Send className="h-4 w-4" />
                     </button>
                   </form>
                 </div>
@@ -393,14 +393,14 @@ export default function ProblemDetailPage() {
               /* REGULAR PROBLEM VIEW */
               <>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-bold text-slate-700">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-base font-bold text-slate-800">
                       {problem.solutions.length} Solutions
                     </span>
-                    <div className="flex items-center bg-slate-200/60 p-0.5 rounded-lg text-[11px] font-bold">
+                    <div className="flex items-center bg-slate-200/60 p-0.5 rounded-lg text-xs font-bold">
                       <button
                         onClick={() => setSortOrder("votes")}
-                        className={`px-2.5 py-1 rounded-md transition-colors ${
+                        className={`px-3 py-1 rounded-md transition-colors ${
                           sortOrder === "votes"
                             ? "bg-white text-slate-900 shadow-xs"
                             : "text-slate-500"
@@ -410,7 +410,7 @@ export default function ProblemDetailPage() {
                       </button>
                       <button
                         onClick={() => setSortOrder("newest")}
-                        className={`px-2.5 py-1 rounded-md transition-colors ${
+                        className={`px-3 py-1 rounded-md transition-colors ${
                           sortOrder === "newest"
                             ? "bg-white text-slate-900 shadow-xs"
                             : "text-slate-500"
@@ -421,7 +421,7 @@ export default function ProblemDetailPage() {
                     </div>
                   </div>
 
-                  <button className="flex items-center space-x-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-emerald-700 transition-colors">
+                  <button className="flex items-center space-x-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-emerald-700 transition-colors">
                     <Plus className="h-4 w-4" />
                     <span>Your Solution</span>
                   </button>
@@ -438,73 +438,72 @@ export default function ProblemDetailPage() {
 
           {/* Right Sidebar */}
           <div className="space-y-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3 text-xs">
-              <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2 uppercase tracking-wider text-[10px] text-slate-400">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3.5 text-sm">
+              <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2 uppercase tracking-wider text-xs text-slate-400">
                 {isShowcase ? "Showcase Metadata" : "Problem Details"}
               </h3>
               {problem.sdlcPhase && (
-                <div className="flex justify-between">
-                  <span className="text-slate-400">SDLC Phase</span>
-                  <span className="font-semibold text-slate-700">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 text-xs">SDLC Phase</span>
+                  <span className="font-semibold text-slate-800 text-sm">
                     {problem.sdlcPhase}
                   </span>
                 </div>
               )}
-              <div className="flex justify-between">
-                <span className="text-slate-400">Category</span>
-                <span className="font-semibold text-slate-700">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 text-xs">Category</span>
+                <span className="font-semibold text-slate-800 text-sm">
                   {problem.category}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Views</span>
-                <span className="font-semibold text-slate-700">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 text-xs">Views</span>
+                <span className="font-semibold text-slate-800 text-sm">
                   {problem.viewsCount.toLocaleString()}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Posted</span>
-                <span className="font-semibold text-slate-700">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 text-xs">Posted</span>
+                <span className="font-semibold text-slate-800 text-sm">
                   {problem.postedDate}
                 </span>
               </div>
             </div>
 
             {isShowcase && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs text-xs space-y-3">
-                <h3 className="font-bold text-slate-900 uppercase tracking-wider text-[10px] text-slate-400">
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs text-sm space-y-3">
+                <h3 className="font-bold text-slate-900 uppercase tracking-wider text-xs text-slate-400">
                   Project Links
                 </h3>
                 <a
                   href="https://github.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
                 >
-                  <div className="flex items-center space-x-2 font-semibold text-slate-700">
-                    {/* <Github className="h-4 w-4" /> */}
+                  <div className="flex items-center space-x-2 font-semibold text-slate-700 text-sm">
                     <span>GitHub Repository</span>
                   </div>
-                  <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
+                  <ExternalLink className="h-4 w-4 text-slate-400" />
                 </a>
               </div>
             )}
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs text-xs">
-              <h3 className="font-bold text-slate-900 mb-3 uppercase tracking-wider text-[10px] text-slate-400">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs text-sm">
+              <h3 className="font-bold text-slate-900 mb-3 uppercase tracking-wider text-xs text-slate-400">
                 Posted By
               </h3>
               <div className="flex items-center space-x-3">
                 <img
                   src={problem.postedBy.avatarUrl}
                   alt={problem.postedBy.name}
-                  className="h-10 w-10 rounded-full bg-slate-100"
+                  className="h-10 w-10 rounded-full bg-slate-100 border border-slate-200"
                 />
                 <div>
-                  <p className="font-bold text-slate-900">
+                  <p className="font-bold text-slate-900 text-base">
                     {problem.postedBy.name}
                   </p>
-                  <p className="text-[11px] text-slate-400 font-medium">
+                  <p className="text-xs text-slate-500 font-medium">
                     {problem.postedBy.reputation.toLocaleString()} reputation
                   </p>
                 </div>

@@ -7,7 +7,7 @@ export type VerificationStatus = "PENDING" | "APPROVED" | "REJECTED" | "UNDER_RE
 interface StatusConfig {
   label: string;
   badgeClass: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 const STATUS_CONFIG: Record<VerificationStatus, StatusConfig> = {

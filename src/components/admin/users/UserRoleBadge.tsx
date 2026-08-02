@@ -9,7 +9,7 @@ export type UserRole = "USER" | "COMPANY" | "ADMIN" | "MODERATOR";
 interface RoleConfig {
   label: string;
   className: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 const ROLE_CONFIG: Record<UserRole, RoleConfig> = {

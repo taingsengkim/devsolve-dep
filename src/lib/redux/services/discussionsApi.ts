@@ -2,6 +2,7 @@ import { baseApi } from "./baseApi";
 import {
   DiscussionPost,
   TopicCount,
+  TopicFilter,
 } from "@/lib/types/dicussion/types";
 import {
   MOCK_DISCUSSIONS,
@@ -174,6 +175,49 @@ export const discussionsApi = baseApi.injectEndpoints({
         { type: "Discussion" as const, id: "LIST" },
       ],
     }),
+
+    // ── Create discussion mutation ─────────────────────────────────────────
+    createDiscussion: builder.mutation<
+      DiscussionPost,
+      {
+        title: string;
+        category: "Problems" | "Showcase";
+        topic: TopicFilter;
+        description: string;
+        tags: string[];
+        techStack?: string[];
+        codeSnippet?: string;
+        thumbnailUrl?: string;
+      }
+    >({
+      queryFn: (newPost) => {
+        const created: DiscussionPost = {
+          id: `disc-${Date.now()}`,
+          title: newPost.title,
+          category: newPost.category,
+          topic: newPost.topic,
+          description: newPost.description,
+          tags: newPost.tags,
+          techStack: newPost.techStack,
+          votes: 1,
+          answersCount: 0,
+          viewsCount: 1,
+          status: newPost.category === "Problems" ? "Open" : undefined,
+          thumbnailUrl: newPost.thumbnailUrl,
+          author: {
+            name: "Alex Mercer",
+            avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Alex",
+          },
+          createdAt: "Just now",
+          isBookmarked: false,
+          isUpvoted: true,
+        };
+        MOCK_DISCUSSIONS.unshift(created);
+        votesMap[created.id] = { votes: 1, isUpvoted: true };
+        return { data: created };
+      },
+      invalidatesTags: [{ type: "Discussion" as const, id: "LIST" }],
+    }),
   }),
 });
 
@@ -185,4 +229,5 @@ export const {
   useGetDiscussionStatsQuery,
   useVoteDiscussionMutation,
   useBookmarkDiscussionMutation,
+  useCreateDiscussionMutation,
 } = discussionsApi;

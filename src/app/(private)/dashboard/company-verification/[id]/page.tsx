@@ -44,7 +44,7 @@ function InfoField({
   label,
   children,
 }: {
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   children: React.ReactNode;
 }) {
