@@ -39,31 +39,33 @@ function AnimatedWord() {
   );
 }
 
-/* ─── Magnetic card ────────────────────────────────────────────────── */
-function MagneticCard({
+/* ─── Interactive Draggable Card ────────────────────────────────────── */
+function InteractiveCard({
   children,
   className = "",
   delay = 0,
+  dragConstraints,
 }: {
   children: React.ReactNode;
   className?: string;
   delay?: number;
+  dragConstraints?: React.RefObject<HTMLDivElement | null>;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [zIndex, setZIndex] = useState(10);
   const rotateX = useSpring(useMotionValue(0), { stiffness: 200, damping: 20 });
   const rotateY = useSpring(useMotionValue(0), { stiffness: 200, damping: 20 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
+    if (!ref.current || isDragging) return;
     const rect = ref.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     const relX = (e.clientX - centerX) / (rect.width / 2);
     const relY = (e.clientY - centerY) / (rect.height / 2);
-    rotateX.set(-relY * 8);
-    rotateY.set(relX * 8);
+    rotateX.set(-relY * 10);
+    rotateY.set(relX * 10);
   };
 
   const handleMouseLeave = () => {
@@ -74,6 +76,21 @@ function MagneticCard({
   return (
     <motion.div
       ref={ref}
+      drag
+      dragConstraints={dragConstraints}
+      dragElastic={0.25}
+      dragTransition={{ bounceStiffness: 400, bounceDamping: 25 }}
+      whileDrag={{ scale: 1.08, zIndex: 50 }}
+      whileHover={{ scale: 1.03 }}
+      onDragStart={() => {
+        setIsDragging(true);
+        setZIndex(50);
+      }}
+      onDragEnd={() => {
+        setIsDragging(false);
+        rotateX.set(0);
+        rotateY.set(0);
+      }}
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
@@ -84,8 +101,9 @@ function MagneticCard({
         rotateY,
         transformPerspective: 800,
         transformStyle: "preserve-3d",
+        zIndex,
       }}
-      className={`cursor-default ${className}`}
+      className={`cursor-grab active:cursor-grabbing select-none ${className}`}
     >
       {children}
     </motion.div>
@@ -93,11 +111,12 @@ function MagneticCard({
 }
 
 /* ─── Floating UI preview cards ────────────────────────────────────── */
-function BountyCard() {
+function BountyCard({ dragConstraints }: { dragConstraints?: React.RefObject<HTMLDivElement | null> }) {
   return (
-    <MagneticCard
+    <InteractiveCard
       delay={0.3}
-      className="bg-white rounded-2xl border border-slate-200 shadow-xl p-4 w-64"
+      dragConstraints={dragConstraints}
+      className="bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-xl hover:shadow-2xl p-4 w-64 transition-shadow"
     >
       <div className="flex items-center gap-2 mb-3">
         <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center">
@@ -123,15 +142,16 @@ function BountyCard() {
           transition={{ duration: 1.5, delay: 0.8, ease: "easeOut" }}
         />
       </div>
-    </MagneticCard>
+    </InteractiveCard>
   );
 }
 
-function DiscussionCard() {
+function DiscussionCard({ dragConstraints }: { dragConstraints?: React.RefObject<HTMLDivElement | null> }) {
   return (
-    <MagneticCard
+    <InteractiveCard
       delay={0.5}
-      className="bg-white rounded-2xl border border-slate-200 shadow-xl p-4 w-60"
+      dragConstraints={dragConstraints}
+      className="bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-xl hover:shadow-2xl p-4 w-60 transition-shadow"
     >
       <div className="flex items-center gap-2 mb-3">
         <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
@@ -153,11 +173,11 @@ function DiscussionCard() {
         </div>
         <span className="text-xs text-slate-400">24 replies · 3h ago</span>
       </div>
-    </MagneticCard>
+    </InteractiveCard>
   );
 }
 
-function LeaderboardCard() {
+function LeaderboardCard({ dragConstraints }: { dragConstraints?: React.RefObject<HTMLDivElement | null> }) {
   const items = [
     { name: "0xShadow", pts: 12400, color: "from-yellow-400 to-orange-500" },
     { name: "BugHunterX", pts: 9870, color: "from-slate-400 to-slate-600" },
@@ -165,9 +185,10 @@ function LeaderboardCard() {
   ];
 
   return (
-    <MagneticCard
+    <InteractiveCard
       delay={0.7}
-      className="bg-white rounded-2xl border border-slate-200 shadow-xl p-4 w-56"
+      dragConstraints={dragConstraints}
+      className="bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-xl hover:shadow-2xl p-4 w-56 transition-shadow"
     >
       <div className="flex items-center gap-2 mb-3">
         <div className="w-7 h-7 rounded-lg bg-yellow-100 flex items-center justify-center">
@@ -196,7 +217,7 @@ function LeaderboardCard() {
           </motion.div>
         ))}
       </div>
-    </MagneticCard>
+    </InteractiveCard>
   );
 }
 
@@ -239,6 +260,8 @@ function PillBadge({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
 
 /* ─── Main Hero ────────────────────────────────────────────────────── */
 export function Hero() {
+  const rightContainerRef = useRef<HTMLDivElement>(null);
+
   return (
     <section className="relative min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden bg-[#FAF9F5]">
       {/* Smooth cursor */}
@@ -351,12 +374,17 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* Right — Floating UI cards */}
-          <div className="relative hidden lg:flex items-center justify-center h-[580px]">
+          {/* Right — Floating Interactive Draggable UI cards */}
+          <div
+            ref={rightContainerRef}
+            className="relative hidden lg:flex items-center justify-center h-[580px]"
+          >
+
             {/* Main center card */}
-            <MagneticCard
+            <InteractiveCard
               delay={0.2}
-              className="absolute inset-0 m-auto w-72 h-56 bg-white rounded-3xl border border-slate-200 shadow-2xl p-5 flex flex-col gap-3"
+              dragConstraints={rightContainerRef}
+              className="absolute inset-0 m-auto w-72 h-56 bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/90 shadow-2xl p-5 flex flex-col gap-3"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-md shadow-blue-500/20">
@@ -383,21 +411,21 @@ export function Hero() {
                   </div>
                 ))}
               </div>
-            </MagneticCard>
+            </InteractiveCard>
 
             {/* Top-right card */}
             <div className="absolute top-8 right-4">
-              <BountyCard />
+              <BountyCard dragConstraints={rightContainerRef} />
             </div>
 
             {/* Bottom-left card */}
             <div className="absolute bottom-16 left-0">
-              <DiscussionCard />
+              <DiscussionCard dragConstraints={rightContainerRef} />
             </div>
 
             {/* Top-left card */}
             <div className="absolute top-16 left-8">
-              <LeaderboardCard />
+              <LeaderboardCard dragConstraints={rightContainerRef} />
             </div>
 
             {/* Decorative floating dots */}
