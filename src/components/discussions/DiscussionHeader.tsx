@@ -12,26 +12,28 @@ interface DiscussionHeaderProps {
 
 export function DiscussionHeader({ searchQuery, onSearch }: DiscussionHeaderProps) {
   return (
-    <div className="space-y-5">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-slate-600 font-medium">
-        <span className="hover:text-slate-900 cursor-pointer transition-colors">Home</span>
-        <span>/</span>
-        <span className="text-slate-900 font-semibold">Discussions</span>
-      </nav>
+    <div className="space-y-6">
+      {/* ── Standard Page Header ────────────────────────────────────────── */}
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800">
+        <div className="space-y-1">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">
+            <Link href="/" className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+              Home
+            </Link>
+            <span>/</span>
+            <span className="text-slate-900 dark:text-slate-100 font-semibold">Discussions</span>
+          </nav>
 
-      {/* Title block */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div className="space-y-1.5">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             Discussions
           </h1>
-          <p className="text-base text-slate-700 max-w-xl leading-relaxed">
-            Browse problems, share showcases, and collaborate with the security community.
+          <p className="text-base text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+            Browse problems, share showcase projects, and collaborate with the developer community.
           </p>
         </div>
 
-        {/* Add Post CTA */}
+        {/* Add Post CTA Button */}
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
           <Link
             href="/discussions/create"
@@ -41,20 +43,20 @@ export function DiscussionHeader({ searchQuery, onSearch }: DiscussionHeaderProp
             Add Post
           </Link>
         </motion.div>
-      </div>
+      </header>
 
-      {/* Search bar */}
+      {/* ── Search Bar ──────────────────────────────────────────────────── */}
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-slate-500 pointer-events-none" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-slate-400 dark:text-slate-500 pointer-events-none" />
         <input
           type="text"
           id="discussions-search"
           value={searchQuery}
           onChange={(e) => onSearch(e.target.value)}
           placeholder="Search problems, tags, keywords..."
-          className="w-full rounded-2xl border border-slate-300 bg-white pl-12 pr-14 py-3.5 text-base text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20 shadow-xs transition-shadow"
+          className="w-full rounded-2xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 pl-12 pr-14 py-3.5 text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20 shadow-xs transition-shadow"
         />
-        <div className="absolute right-3.5 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1 text-xs text-slate-600 font-bold bg-slate-100 border border-slate-200 rounded-md px-2 py-1 font-mono pointer-events-none">
+        <div className="absolute right-3.5 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 font-bold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 font-mono pointer-events-none">
           <Command className="size-3.5" />
           <span>K</span>
         </div>

@@ -16,13 +16,13 @@ export default function PublicCreateProblemPage() {
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         <CreatePostHeader
           title="Create a Problem Post"
-          subtitle="Report a security flaw, vulnerability, or technical blocker for community feedback."
-          badgeText="Problem / Bug"
-          badgeColor="blue"
+          subtitle="Describe the issue, environment, and error logs to get help from researchers."
           backHref="/discussions/create"
+          currentType="problem"
         />
-        <CreateProblemForm />
+        <CreateProblemForm cancelHref="/discussions" />
       </main>
     </motion.div>
   );
 }
+

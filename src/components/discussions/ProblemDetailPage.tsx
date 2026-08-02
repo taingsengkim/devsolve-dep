@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getProblemDetailById } from "@/lib/types/dicussion/problemDetailMockdata";
 import { SolutionCard } from "@/components/discussions/SolutionCard";
-import { DiscussionPagination } from "@/components/discussions/DiscussionPagination";
 import { ProblemDetail , SolutionItem  } from "@/lib/types/dicussion/types";
 import {
   ArrowLeft,
@@ -28,6 +27,8 @@ import {
   Cpu,
 } from "lucide-react";
 
+import { motion } from "motion/react";
+
 export default function ProblemDetailPage() {
   const params = useParams();
   const problemId = Array.isArray(params?.id) ? params.id[0] : params?.id;
@@ -38,10 +39,6 @@ export default function ProblemDetailPage() {
   const [hasVotedProblem, setHasVotedProblem] = useState(false);
   const [sortOrder, setSortOrder] = useState<"votes" | "newest">("votes");
   const [showcaseTab, setShowcaseTab] = useState<"overview" | "diagram" | "code">("overview");
-
-  // Pagination for solutions list
-  const [solutionPage, setSolutionPage] = useState(1);
-  const [solutionsPerPage, setSolutionsPerPage] = useState(5);
 
   // Get primary solution data if available (e.g. for step-by-step or diagram)
   const primarySolution = problem?.solutions?.[0];
@@ -68,9 +65,9 @@ export default function ProblemDetailPage() {
 
   if (!problem) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center text-slate-800">
+      <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 flex flex-col items-center justify-center text-slate-800 dark:text-slate-100">
         <h1 className="text-2xl font-bold mb-2">Post Not Found</h1>
-        <p className="text-slate-500 mb-4">
+        <p className="text-slate-500 dark:text-slate-400 mb-4">
           The requested discussion or post does not exist.
         </p>
         <Link
@@ -119,20 +116,19 @@ export default function ProblemDetailPage() {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
-  const paginatedSolutions = sortedSolutions.slice(
-    (solutionPage - 1) * solutionsPerPage,
-    solutionPage * solutionsPerPage
-  );
-  const totalSolutionPages = Math.ceil(sortedSolutions.length / solutionsPerPage) || 1;
-
   const isShowcase = problem.category === "Showcase";
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-sans pb-16">
-      <main className="mx-auto max-w-7xl px-6 py-8">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans pb-16"
+    >
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <Link
           href="/discussions"
-          className="inline-flex items-center space-x-2 text-sm font-semibold text-slate-500 hover:text-blue-600 mb-6 transition-colors"
+          className="inline-flex items-center space-x-2 text-base font-semibold text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 mb-6 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Discussions</span>
@@ -141,7 +137,7 @@ export default function ProblemDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-3 space-y-6">
             {/* Main Title Header Card */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs">
               <div className="flex items-center space-x-2 mb-3">
                 <span
                   className={`inline-flex items-center space-x-1.5 rounded-full px-3 py-1 text-xs font-bold ${
@@ -439,24 +435,10 @@ export default function ProblemDetailPage() {
                 </div>
 
                 <div className="space-y-4">
-                  {paginatedSolutions.map((sol, index) => (
+                  {sortedSolutions.map((sol, index) => (
                     <SolutionCard key={sol.id} solution={sol} index={index} />
                   ))}
                 </div>
-
-                {sortedSolutions.length > 0 && (
-                  <DiscussionPagination
-                    page={solutionPage}
-                    totalPages={totalSolutionPages}
-                    limit={solutionsPerPage}
-                    totalCount={sortedSolutions.length}
-                    onPageChange={setSolutionPage}
-                    onLimitChange={(l) => {
-                      setSolutionsPerPage(l);
-                      setSolutionPage(1);
-                    }}
-                  />
-                )}
               </>
             )}
           </div>
@@ -537,6 +519,6 @@ export default function ProblemDetailPage() {
           </div>
         </div>
       </main>
-    </div>
+    </motion.div>
   );
 }
