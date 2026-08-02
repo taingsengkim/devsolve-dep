@@ -17,9 +17,9 @@ export default function PublicCreateShowcasePage() {
         <CreatePostHeader
           title="Create a Showcase Post"
           subtitle="Share your architecture, full-stack project, step-by-step implementation guide, or demo."
-          badgeText="Showcase"
-          badgeColor="purple"
+          badgeColor="blue"
           backHref="/discussions/create"
+          currentType="showcase"
         />
         <CreateShowcaseForm />
       </main>
