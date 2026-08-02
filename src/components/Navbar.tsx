@@ -12,6 +12,7 @@ import { authClient } from '@/lib/auth/auth-client';
 const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Programs', href: '/programs' },
+    { name: 'Discussions', href: '/discussions' },
     { name: 'Hacker activity', href: '/hacktivity' },
     { name: 'Leaderboard', href: '/leaderboard' },
 ];
