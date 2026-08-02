@@ -110,8 +110,8 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
         status === "APPROVED"
           ? "approved"
           : status === "REJECTED"
-          ? "rejected"
-          : "marked as under review";
+            ? "rejected"
+            : "marked as under review";
       toast.success(`Application ${label}!`, {
         description: `${company.companyName} verification status updated.`,
       });
@@ -166,7 +166,7 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
             {company.companyName.charAt(0)}
           </div>
           <div className="space-y-1">
-       
+
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               {company.companyName}
             </h1>
