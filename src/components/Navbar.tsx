@@ -23,6 +23,7 @@ const navLinks = [
 const Navbar = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isLoggingIn, setIsLoggingIn] = useState(false);
+    const [hoveredPath, setHoveredPath] = useState<string | null>(null);
     const pathname = usePathname();
 
     useEffect(() => {
