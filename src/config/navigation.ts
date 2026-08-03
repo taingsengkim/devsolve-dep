@@ -33,7 +33,7 @@ export const NAV_ITEMS: NavItem[] = [
   // Overview items
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
   { name: "Programs", href: "/dashboard/programs", icon: Globe, roles: ["USER", "COMPANY"], category: "Overview" },
-  { name: "Discussions", href: "/dashboard/discussions", icon: MessageSquare, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
+  { name: "Community", href: "/dashboard/discussions", icon: MessageSquare, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
   { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
 
   // USER Role items

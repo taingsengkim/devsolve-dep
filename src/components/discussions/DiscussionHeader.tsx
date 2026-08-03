@@ -1,66 +1,193 @@
 "use client";
 
-import React from "react";
-import { motion } from "motion/react";
-import { Search, Plus, Command } from "lucide-react";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
+import {
+  ChevronRight,
+  Command,
+  MessagesSquare,
+  Plus,
+  Search,
+  X,
+} from "lucide-react";
 
-interface DiscussionHeaderProps {
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
+interface DiscussionSearchProps {
   searchQuery: string;
-  onSearch: (v: string) => void;
+  onSearch: (value: string) => void;
+  onClearSearch: () => void;
+  isSearching?: boolean;
 }
 
-export function DiscussionHeader({ searchQuery, onSearch }: DiscussionHeaderProps) {
+export function DiscussionHeader() {
   return (
-    <div className="space-y-6">
-      {/* ── Standard Page Header ────────────────────────────────────────── */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800">
-        <div className="space-y-1">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">
-            <Link href="/" className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-              Home
-            </Link>
-            <span>/</span>
-            <span className="text-slate-900 dark:text-slate-100 font-semibold">Discussions</span>
-          </nav>
+    <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+      <div className="flex max-w-3xl flex-col gap-2.5">
+        <nav
+          aria-label="Breadcrumb"
+          className="flex items-center gap-2 text-sm font-medium text-muted-foreground"
+        >
+          <Link href="/" className="transition-colors hover:text-foreground">
+            Home
+          </Link>
+          <ChevronRight aria-hidden="true" className="size-4" />
+          <span aria-current="page" className="font-semibold text-foreground">
+            Community
+          </span>
+        </nav>
 
+        <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            Discussions
+            Community
           </h1>
-          <p className="text-base text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
-            Browse problems, share showcase projects, and collaborate with the developer community.
-          </p>
+          <Badge variant="tag" className="h-6 rounded-lg px-2.5 text-sm">
+            <MessagesSquare data-icon="inline-start" aria-hidden="true" />
+            Problems · Solutions · Showcases
+          </Badge>
         </div>
 
-        {/* Add Post CTA Button */}
-        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-          <Link
-            href="/discussions/create"
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 px-5 py-2.5 text-base font-bold text-white shadow-md transition-colors shrink-0"
-          >
-            <Plus className="size-5 stroke-[2.5]" />
-            Add Post
-          </Link>
-        </motion.div>
-      </header>
+        <p className="text-base leading-relaxed text-muted-foreground">
+          Ask focused questions, share practical solutions, and showcase what
+          you are building with other developers.
+        </p>
+      </div>
 
-      {/* ── Search Bar ──────────────────────────────────────────────────── */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-slate-400 dark:text-slate-500 pointer-events-none" />
-        <input
-          type="text"
+      <motion.div
+        className="w-full shrink-0 sm:w-auto"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.97 }}
+      >
+        <Link
+          href="/discussions/create"
+          className={cn(
+            buttonVariants({ size: "lg" }),
+            "w-full rounded-xl bg-blue-600 px-5 font-semibold text-white shadow-xs hover:bg-blue-700 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700",
+          )}
+        >
+          <Plus data-icon="inline-start" aria-hidden="true" />
+          Start a discussion
+        </Link>
+      </motion.div>
+    </header>
+  );
+}
+
+export function DiscussionSearch({
+  searchQuery,
+  onSearch,
+  onClearSearch,
+  isSearching,
+}: DiscussionSearchProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const isMac = useSyncExternalStore(
+    useCallback(() => () => {}, []),
+    () => /Mac|iPod|iPhone|iPad/.test(window.navigator.userAgent),
+    () => false,
+  );
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTyping =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target?.isContentEditable === true;
+
+      if (event.key.toLowerCase() === "k" && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        inputRef.current?.focus();
+        inputRef.current?.select();
+        return;
+      }
+
+      if (
+        event.key === "/" &&
+        !isTyping &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey
+      ) {
+        event.preventDefault();
+        inputRef.current?.focus();
+        return;
+      }
+
+      if (
+        event.key === "Escape" &&
+        document.activeElement === inputRef.current
+      ) {
+        inputRef.current?.blur();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  return (
+    <div className="flex items-center gap-2 rounded-2xl bg-card p-2 shadow-xs ring-1 ring-foreground/5">
+      <div className="relative min-w-0 flex-1">
+        <label htmlFor="discussions-search" className="sr-only">
+          Search discussions
+        </label>
+        <Search
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-muted-foreground"
+        />
+        <Input
+          ref={inputRef}
+          type="search"
           id="discussions-search"
           value={searchQuery}
-          onChange={(e) => onSearch(e.target.value)}
+          onChange={(event) => onSearch(event.target.value)}
           placeholder="Search problems, tags, keywords..."
-          className="w-full rounded-2xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 pl-12 pr-14 py-3.5 text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20 shadow-xs transition-shadow"
+          className="h-11 rounded-xl bg-muted/50 pr-4 pl-11 text-base shadow-none [&::-webkit-search-cancel-button]:hidden"
         />
-        <div className="absolute right-3.5 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 font-bold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 font-mono pointer-events-none">
-          <Command className="size-3.5" />
-          <span>K</span>
-        </div>
       </div>
+
+      <AnimatePresence>
+        {isSearching && (
+          <motion.span
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.7 }}
+            aria-label="Updating results"
+            className="size-2 shrink-0 rounded-full bg-primary"
+          />
+        )}
+      </AnimatePresence>
+
+      {searchQuery ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            onClearSearch();
+            inputRef.current?.focus();
+          }}
+          aria-label="Clear search"
+          className="rounded-xl"
+        >
+          <X aria-hidden="true" />
+        </Button>
+      ) : (
+        <kbd className="pointer-events-none hidden items-center gap-1 rounded-lg bg-muted px-2.5 py-1.5 font-mono text-sm font-semibold text-muted-foreground sm:flex">
+          {isMac ? <Command className="size-3.5" /> : <span>Ctrl</span>}
+          <span>K</span>
+        </kbd>
+      )}
     </div>
   );
 }
