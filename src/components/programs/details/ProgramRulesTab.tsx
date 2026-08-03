@@ -2,8 +2,26 @@
 
 import React from "react";
 import { motion } from "motion/react";
+import { RuleSection, ProgramDetail } from "@/lib/types/programs/types";
 
-export const ProgramRulesTab: React.FC = () => {
+interface ProgramRulesTabProps {
+  rulesOfEngagement?: RuleSection;
+  exclusions?: RuleSection;
+  program?: ProgramDetail; // Fallback in case parent passes program directly!
+}
+
+export const ProgramRulesTab: React.FC<ProgramRulesTabProps> = (props) => {
+  // Debug Log: Check F12 Console in Browser!
+  // console.log("ProgramRulesTab received props:", props);
+
+  // Extract rules from props directly OR from program prop fallback
+  const rulesData = props.rulesOfEngagement ?? props.program?.rulesOfEngagement;
+  const exclusionsData = props.exclusions ?? props.program?.exclusions;
+
+  // Extract rule arrays safely
+  const rulesList = Array.isArray(rulesData?.rules) ? rulesData.rules : [];
+  const exclusionsList = Array.isArray(exclusionsData?.rules) ? exclusionsData.rules : [];
+
   return (
     <motion.div
       key="rules"
@@ -19,23 +37,27 @@ export const ProgramRulesTab: React.FC = () => {
           Rules of Engagement
         </h2>
         <p className="text-base text-slate-600 leading-relaxed font-normal">
-          You must follow these rules during your testing. Violations may result in report rejection and account suspension.
+          {rulesData?.description ||
+            "You must follow these rules during your testing. Violations may result in report rejection and account suspension."}
         </p>
-        <ul className="space-y-3 pt-1">
-          {[
-            "Automated scanning allowed at up to 5 req/sec",
-            "Do not access, modify, or delete customer data",
-            "Do not perform DoS or DDoS attacks",
-            "Do not engage in social engineering against employees",
-            "Test only assets listed in scope",
-            "Submit one vulnerability per report",
-          ].map((rule, idx) => (
-            <li key={idx} className="flex items-start gap-3 text-base text-slate-800 font-medium leading-relaxed">
-              <span className="text-slate-400 font-bold text-base select-none">•</span>
-              <span>{rule}</span>
-            </li>
-          ))}
-        </ul>
+
+        {rulesList.length > 0 ? (
+          <ul className="space-y-3 pt-1">
+            {rulesList.map((rule, idx) => (
+              <li
+                key={idx}
+                className="flex items-start gap-3 text-base text-slate-800 font-medium leading-relaxed"
+              >
+                <span className="text-slate-400 font-bold text-base select-none">
+                  •
+                </span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-slate-400 italic">No specific rules specified.</p>
+        )}
       </div>
 
       <hr className="border-slate-200/80" />
@@ -46,22 +68,27 @@ export const ProgramRulesTab: React.FC = () => {
           Exclusions
         </h2>
         <p className="text-base text-slate-600 leading-relaxed font-normal">
-          Reports covering the following vulnerability types will not be accepted. Save your time and focus on what matters.
+          {exclusionsData?.description ||
+            "Reports covering the following vulnerability types will not be accepted. Save your time and focus on what matters."}
         </p>
-        <ul className="space-y-3 pt-1">
-          {[
-            "Self-XSS without demonstrated impact",
-            "Clickjacking on pages without sensitive actions",
-            "Missing security headers without demonstrated impact",
-            "Rate limiting on non-sensitive endpoints",
-            "Spam or phishing attacks",
-          ].map((exclusion, idx) => (
-            <li key={idx} className="flex items-start gap-3 text-base text-slate-800 font-medium leading-relaxed">
-              <span className="text-slate-400 font-bold text-base select-none">•</span>
-              <span>{exclusion}</span>
-            </li>
-          ))}
-        </ul>
+
+        {exclusionsList.length > 0 ? (
+          <ul className="space-y-3 pt-1">
+            {exclusionsList.map((exclusion, idx) => (
+              <li
+                key={idx}
+                className="flex items-start gap-3 text-base text-slate-800 font-medium leading-relaxed"
+              >
+                <span className="text-slate-400 font-bold text-base select-none">
+                  •
+                </span>
+                <span>{exclusion}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-slate-400 italic">No specific exclusions specified.</p>
+        )}
       </div>
     </motion.div>
   );
