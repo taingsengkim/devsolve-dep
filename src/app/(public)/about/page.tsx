@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { FaGithub, FaLinkedin, FaTelegram, FaGlobe } from "react-icons/fa6";
 import Link from "next/link";
 
+
 import {
   ArrowRight,
   Trophy,
@@ -145,7 +146,6 @@ function AboutHeroSection() {
           transition={{ duration: 0.7, delay: 0.25 }}
           className="relative w-full h-[320px] sm:h-[480px] lg:h-[580px] rounded-2xl sm:rounded-3xl lg:rounded-[36px] overflow-hidden group shadow-2xl border border-slate-800/60"
         >
-          {/* Main Hero Image from Unsplash/Internet */}
           <Image
             src="/about-hero-team.jpg"
             alt="We Are Creative Digital Agency Team"
@@ -155,20 +155,16 @@ function AboutHeroSection() {
             sizes="(max-width: 1280px) 100vw, 1280px"
           />
 
-          {/* Vignette Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
 
-          {/* Interactive Play Button Center Overlay */}
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <button
               onClick={() => setIsVideoOpen(true)}
               aria-label="Play presentation video"
               className="relative group/btn cursor-pointer focus:outline-none"
             >
-              {/* Outer Pulse Animation Ring */}
               <span className="absolute -inset-4 rounded-full bg-[#00D2B4]/30 animate-ping duration-1000" />
               
-              {/* Teal Play Button Circle matching mockup */}
               <div className="relative w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full bg-[#00D2B4] hover:bg-[#00c0a5] text-slate-950 flex items-center justify-center shadow-xl shadow-[#00D2B4]/40 transition-all duration-300 group-hover/btn:scale-110">
                 <Play className="w-7 h-7 sm:w-9 sm:h-9 lg:w-10 lg:h-10 fill-slate-950 translate-x-0.5" />
               </div>
@@ -177,7 +173,6 @@ function AboutHeroSection() {
         </motion.div>
       </div>
 
-      {/* Video Modal Popup */}
       <AnimatePresence>
         {isVideoOpen && (
           <motion.div
@@ -195,7 +190,6 @@ function AboutHeroSection() {
               className="relative w-full max-w-4xl bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close Button */}
               <button
                 onClick={() => setIsVideoOpen(false)}
                 className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-700 text-white flex items-center justify-center transition cursor-pointer"
@@ -308,18 +302,14 @@ function TechStackSection() {
         </p>
       </div>
 
-      {/* Animated Beams Visual Hub */}
       <div
         ref={containerRef}
         className="relative flex h-[460px] sm:h-[500px] w-full items-center justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-b from-white via-slate-50/50 to-slate-100/60 p-4 sm:p-8 lg:p-12 shadow-sm mb-12"
       >
-        {/* Subtle Grid Background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:2.5rem_2.5rem] opacity-30 pointer-events-none" />
 
-        {/* Ambient Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Left Column - Frontend & Security */}
         <div className="flex flex-col justify-between h-full z-10 gap-3">
           {leftTechs.map((item, idx) => (
             <div
@@ -349,7 +339,6 @@ function TechStackSection() {
           ))}
         </div>
 
-        {/* Center Hub - DevSolve Ecosystem */}
         <div className="flex items-center justify-center z-10 my-auto">
           <div
             ref={centerRef}
@@ -369,7 +358,6 @@ function TechStackSection() {
           </div>
         </div>
 
-        {/* Right Column - Backend & Infrastructure */}
         <div className="flex flex-col justify-between h-full z-10 gap-3">
           {rightTechs.map((item, idx) => (
             <div
@@ -399,7 +387,6 @@ function TechStackSection() {
           ))}
         </div>
 
-        {/* Animated Beams (Left to Center) */}
         {leftTechs.map((item, idx) => (
           <AnimatedBeam
             key={`left-${idx}`}
@@ -414,7 +401,6 @@ function TechStackSection() {
           />
         ))}
 
-        {/* Animated Beams (Center to Right) */}
         {rightTechs.map((item, idx) => (
           <AnimatedBeam
             key={`right-${idx}`}
@@ -458,7 +444,7 @@ function TeamSection() {
 
       {/* Mentors */}
       <div className="mb-14">
-        <h3 className="text-2xl font-semibold text-center mb-6 color-pink-300" >
+        <h3 className="text-2xl font-semibold text-center mb-6  color-pink-300" >
           Mentors
         </h3>
 
@@ -489,98 +475,213 @@ function TeamSection() {
   );
 }
 
+
+
+
+
+
 function MemberCard({ member }: { member: TeamMember }) {
   return (
     <motion.div
-      layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3 }}
-      className="flex flex-col group cursor-pointer"
+      className="group w-full"
     >
-      {/* Image Container with aspect ratio matching mockup */}
-      <div className="relative aspect-[3/4] rounded-3xl overflow-hidden bg-[#f3f4f6] border border-gray-100 shadow-2xs group-hover:shadow-md transition-all duration-300">
+      <div
+        className="
+          relative 
+          aspect-[3/4] 
+          overflow-hidden 
+          rounded-2xl 
+          bg-gray-100
+          shadow-sm
+          border border-gray-200
+          transition-all
+          duration-300
+          group-hover:shadow-xl
+        "
+      >
         <Image
           src={member.image}
           alt={member.name}
           fill
-          className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          className="
+            object-cover 
+            object-top
+            transition-transform 
+            duration-500
+            group-hover:scale-105
+          "
+          sizes="(max-width:768px) 100vw, 25vw"
         />
 
-        {/* Hover overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-        {/* Social Icons Overlay (Bottom Right of Image as in mockup) */}
-        <div className="absolute bottom-3 right-3 flex items-center gap-1.5 z-10">
+        <div
+          className="
+            absolute 
+            inset-x-0 
+            bottom-0 
+            h-32
+            bg-gradient-to-t 
+            from-black/70 
+            via-black/30 
+            to-transparent
+          "
+        />
+
+
+        {/* Role Badge */}
+        <div className="absolute bottom-4 left-4">
+          <span
+            className="
+              px-4
+              py-2
+              rounded-full
+              bg-black/60
+              backdrop-blur-md
+              text-white
+              text-[11px]
+              font-bold
+              tracking-wider
+              border
+              border-white/10
+            "
+          >
+            {member.subRole?.toUpperCase() || "FULL STACK"}
+          </span>
+        </div>
+
+
+        <div
+          className="
+            absolute 
+            bottom-4 
+            right-4 
+            flex 
+            gap-2
+          "
+        >
           {member.github && (
             <a
               href={member.github}
               target="_blank"
-              rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full bg-black/80 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all duration-300 shadow-xs hover:scale-110"
-              title="GitHub"
+              className="
+                w-9 h-9
+                rounded-full
+                bg-black/80
+                text-white
+                flex
+                items-center
+                justify-center
+                hover:scale-110
+                transition
+              "
             >
-              <FaGithub className="w-3.5 h-3.5" />
+              <FaGithub size={15}/>
             </a>
           )}
+
+
           {member.linkedin && (
             <a
               href={member.linkedin}
               target="_blank"
-              rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full bg-black/80 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all duration-300 shadow-xs hover:scale-110"
-              title="LinkedIn"
+              className="
+                w-9 h-9
+                rounded-full
+                bg-black/80
+                text-white
+                flex
+                items-center
+                justify-center
+                hover:scale-110
+                transition
+              "
             >
-              <FaLinkedin className="w-3.5 h-3.5" />
+              <FaLinkedin size={15}/>
             </a>
           )}
+
+
           {member.telegram && (
             <a
               href={member.telegram}
               target="_blank"
-              rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full bg-black/80 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all duration-300 shadow-xs hover:scale-110"
-              title="Telegram"
+              className="
+                w-9 h-9
+                rounded-full
+                bg-black/80
+                text-white
+                flex
+                items-center
+                justify-center
+                hover:scale-110
+                transition
+              "
             >
-              <FaTelegram className="w-3.5 h-3.5" />
-            </a>
-          )}
-          {member.email && (
-            <a
-              href={`mailto:${member.email}`}
-              className="w-8 h-8 rounded-full bg-black/80 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all duration-300 shadow-xs hover:scale-110"
-              title="Email"
-            >
-              <FaGlobe className="w-3.5 h-3.5" />
+              <FaTelegram size={15}/>
             </a>
           )}
         </div>
       </div>
 
-      {/* Info Row Below Image */}
-      <div className="mt-3.5 flex items-center justify-between px-1 gap-2">
-        <h3 className="text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
-          {member.name}
-        </h3>
 
-        {member.badge && (
-          <span className="border border-gray-300/80 bg-white/80 rounded-full px-3 py-0.5 text-xs font-normal text-gray-600 shadow-2xs shrink-0">
-            {member.badge}
+
+      <div className="mt-4 px-1">
+
+        <div className="flex items-center justify-between">
+
+          <h3
+            className="
+              text-lg
+              font-bold
+              text-gray-900
+            "
+          >
+            {member.name}
+          </h3>
+
+
+          <span
+            className="
+              text-[10px]
+              px-3
+              py-1
+              rounded-full
+              border
+              border-blue-200
+              text-blue-600
+              font-semibold
+              bg-blue-50
+            "
+          >
+            {member.badge || "MEMBER"}
           </span>
+
+        </div>
+
+
+
+        {member.quote && (
+          <p
+            className="
+              mt-2
+              text-sm
+              italic
+              text-gray-400
+              leading-relaxed
+            "
+          >
+            {member.quote.replace(/['"]+/g, "")}
+          </p>
         )}
+
       </div>
 
-      {/* Subrole / Quote */}
-      <p className="text-xs text-gray-500 mt-1 line-clamp-1 px-1 font-normal italic opacity-80 group-hover:opacity-100 transition-opacity">
-        {member.quote}
-      </p>
     </motion.div>
   );
 }
-
-
 
 
 
@@ -815,20 +916,4 @@ function ContactSection() {
   );
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// //////////////////// 
 
