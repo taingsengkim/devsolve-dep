@@ -5,12 +5,15 @@ interface AccountStatusCardProps {
   status: AccountStatus;
 }
 
+
 export default function AccountStatusCard({ status }: AccountStatusCardProps) {
   const rows = [
     { label: "Member since", value: status.memberSince },
     { label: "Total submissions", value: status.totalSubmissions },
     { label: "Accepted reports", value: status.acceptedReports },
     { label: "Reputation points", value: status.reputationPoints.toLocaleString() },
+
+  
   ];
 
   return (
@@ -35,4 +38,4 @@ export default function AccountStatusCard({ status }: AccountStatusCardProps) {
       <p className="mt-1.5 text-sm text-slate-500">{status.acceptanceRate}% acceptance rate</p>
     </div>
   );
-}
+}

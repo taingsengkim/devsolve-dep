@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { authClient } from "@/lib/auth/auth-client";
 import { extractRealmRolesFromToken } from "@/lib/auth/token-utils";
+import { useGetEditProfileFormQuery } from "@/lib/redux/services/profileApi";
 
 /** Shape of the object returned by authClient.getAccessToken */
 interface AccessTokenResponse {
@@ -27,7 +28,8 @@ export interface SidebarUser {
 export function useSidebarAuth() {
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
-  const displayName = user?.name ?? user?.email ?? "User";
+  const { data: profile } = useGetEditProfileFormQuery(undefined, { skip: !session });
+  const displayName = profile?.fullName || user?.name || user?.email || "User";
   const [tokenRoles, setTokenRoles] = useState<string[]>([]);
 
   useEffect(() => {
@@ -66,7 +68,7 @@ export function useSidebarAuth() {
     ? {
         name: user.name,
         email: user.email,
-        image: user.image,
+        image: profile?.avatarUrl || user.image,
         role: activeRoles.join(","),
         roles: activeRoles,
       }

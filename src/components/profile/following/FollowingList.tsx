@@ -2,17 +2,23 @@
 
 import { useState } from "react";
 import { User, Building2, Hash } from "lucide-react";
-import { FollowedHacker, FollowingCounts } from "@/lib/types/profile/types";
+import { FollowRecord, FollowingCounts } from "@/lib/types/profile/types";
 import FollowingItem from "./FollowingItem";
 
 interface FollowingListProps {
   counts: FollowingCounts;
-  hackers: FollowedHacker[];
+  items: FollowRecord[];
 }
 
 type FilterId = "hackers" | "orgs" | "topics";
 
-export default function FollowingList({ counts, hackers }: FollowingListProps) {
+function bucketOf(record: FollowRecord): FilterId {
+  if (record.followableType === "USER") return "hackers";
+  if (record.followableType === "ORGANIZATION") return "orgs";
+  return "topics";
+}
+
+export default function FollowingList({ counts, items }: FollowingListProps) {
   const [filter, setFilter] = useState<FilterId>("hackers");
 
   const pills: { id: FilterId; label: string; count: number; icon: typeof User }[] = [
@@ -20,6 +26,8 @@ export default function FollowingList({ counts, hackers }: FollowingListProps) {
     { id: "orgs", label: "orgs", count: counts.orgs, icon: Building2 },
     { id: "topics", label: "topics", count: counts.topics, icon: Hash },
   ];
+
+  const filteredItems = items.filter((item) => bucketOf(item) === filter);
 
   return (
     <div>
@@ -53,14 +61,8 @@ export default function FollowingList({ counts, hackers }: FollowingListProps) {
       </div>
 
       <div className="mt-5 space-y-3">
-        {filter === "hackers" ? (
-          hackers.length > 0 ? (
-            hackers.map((hacker) => <FollowingItem key={hacker.id} hacker={hacker} />)
-          ) : (
-            <p className="rounded-xl border border-dashed border-slate-200 bg-white p-10 text-center text-sm text-slate-400">
-              Not following any users yet.
-            </p>
-          )
+        {filteredItems.length > 0 ? (
+          filteredItems.map((item) => <FollowingItem key={item.id} record={item} />)
         ) : (
           <p className="rounded-xl border border-dashed border-slate-200 bg-white p-10 text-center text-sm text-slate-400">
             No {filter} followed yet.

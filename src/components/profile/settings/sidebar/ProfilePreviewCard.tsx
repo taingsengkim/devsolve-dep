@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Globe, User as UserIcon } from "lucide-react";
 import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
 import { EditProfileFormData } from "@/lib/types/profile/types";
@@ -17,12 +16,14 @@ export default function ProfilePreviewCard({ data }: ProfilePreviewCardProps) {
 
       <div className="mt-3.5 flex items-center gap-3">
         <div className="h-12 w-12 rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden relative bg-slate-100 shrink-0">
-          <Image
-            src="/justin.png"
-            alt={data.fullName}
-            fill
-            className="object-cover"
-          />
+          {data.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- arbitrary user-supplied URL, not in next/image's remote host allowlist
+            <img src={data.avatarUrl} alt={data.fullName} className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-blue-600 text-sm font-bold text-white">
+              {data.avatarInitials}
+            </div>
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-base font-bold text-slate-800 dark:text-slate-100 truncate">{data.fullName}</p>

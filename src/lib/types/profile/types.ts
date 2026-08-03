@@ -15,7 +15,7 @@ export interface ProfileBadge {
 
 export interface ProfileStats {
   reputation: number;
-  globalRank: number;
+  globalRank?: number; // no leaderboard/rank endpoint exists yet — omitted, never faked
   reportsSubmitted: number;
   accepted: number;
   acceptedRate: number; // 0-100
@@ -48,6 +48,9 @@ export interface Profile {
   followers: number;
   following: number;
   isOwnProfile: boolean;
+  phone?: string;
+  dateOfBirth?: string; // ISO date string, e.g. "1998-04-12"
+  gender?: "MALE" | "FEMALE" | "OTHER";
 }
 
 // Hacktivity
@@ -98,14 +101,19 @@ export interface ThanksEntry {
 }
 
 // Following
+//
+// GET /api/v1/follows/mine only returns raw follow relationships (id,
+// followableType, followableId, createdAt) — no denormalized display name,
+// avatar, or stats, since there's no per-type lookup endpoint yet to enrich
+// them with. FollowRecord reflects exactly what the backend returns.
 
-export interface FollowedHacker {
+export type FollowableType = "USER" | "ORGANIZATION" | "TOPIC" | (string & {});
+
+export interface FollowRecord {
   id: string;
-  displayName: string;
-  handle: string; // e.g. "@0xd3adbeef"
-  avatarUrl?: string;
-  followers: number;
-  reports: number;
+  followableType: FollowableType;
+  followableId: string;
+  createdAt: string; // ISO date
 }
 
 export interface FollowingCounts {
@@ -138,23 +146,30 @@ export interface NotificationChannelPrefs {
 
 export type NotificationPreferences = Record<NotificationKey, NotificationChannelPrefs>;
 
+
 export interface EditProfileFormData {
   avatarInitials: string;
+  avatarUrl?: string; // NEW — backend-persisted photo URL
   fullName: string;
   username: string;
   email: string;
-  accountType: string; // e.g. "Hacker" — locked, shown read-only
+  accountType: string;
   bio: string;
   location: string;
+  phone?: string; // NEW
+  dateOfBirth?: string; // NEW — ISO date string, e.g. "1998-04-12"
+  gender?: "MALE" | "FEMALE" | "OTHER"; // NEW — matches backend enum exactly
   socialLinks: SocialLinksForm;
   twoFactorEnabled: boolean;
   notifications: NotificationPreferences;
 }
-
 export interface AccountStatus {
   memberSince: string; // e.g. "Jan 2025"
   totalSubmissions: number;
   acceptedReports: number;
   reputationPoints: number;
   acceptanceRate: number; // 0-100
+  phone?: string;
+  dateOfBirth?: string; // ISO date string, e.g. "1998-04-12"
+  gender?: "MALE" | "FEMALE" | "OTHER";
 }
