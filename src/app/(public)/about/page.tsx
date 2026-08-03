@@ -1,9 +1,7 @@
 
-
-
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { FaGithub, FaLinkedin, FaTelegram, FaGlobe } from "react-icons/fa6";
@@ -267,158 +265,172 @@ function OfferSection() {
   );
 }
 
+
+
+
+
 function TechStackSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const centerRef = useRef<HTMLDivElement>(null);
-  const reactRef = useRef<HTMLDivElement>(null);
-  const springRef = useRef<HTMLDivElement>(null);
-  const postgresRef = useRef<HTMLDivElement>(null);
-  const dockerRef = useRef<HTMLDivElement>(null);
-  const keycloakRef = useRef<HTMLDivElement>(null);
-  const tailwindRef = useRef<HTMLDivElement>(null);
+  const techRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const leftTechs = [
-    { tech: TECHNOLOGIES[0], ref: reactRef, curvature: -30, color: "#38bdf8" },
-    { tech: TECHNOLOGIES[5], ref: tailwindRef, curvature: 0, color: "#2dd4bf" },
-    { tech: TECHNOLOGIES[4], ref: keycloakRef, curvature: 30, color: "#a855f7" },
-  ];
+  const [rotation, setRotation] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
-  const rightTechs = [
-    { tech: TECHNOLOGIES[1], ref: springRef, curvature: -30, color: "#10b981" },
-    { tech: TECHNOLOGIES[2], ref: postgresRef, curvature: 0, color: "#3b82f6" },
-    { tech: TECHNOLOGIES[3], ref: dockerRef, curvature: 30, color: "#06b6d4" },
-  ];
+  const [radius, setRadius] = useState(250);
+
+  useEffect(() => {
+    const updateRadius = () => {
+      if (window.innerWidth < 640) {
+        setRadius(130); // Mobile
+      } else if (window.innerWidth < 1024) {
+        setRadius(200); // Tablet
+      } else {
+        setRadius(260); // Desktop
+      }
+    };
+
+    updateRadius();
+    window.addEventListener("resize", updateRadius);
+    return () => window.removeEventListener("resize", updateRadius);
+  }, []);
+
+  useEffect(() => {
+    let frameId: number;
+    let lastTime = performance.now();
+
+    const animate = (time: number) => {
+      const delta = time - lastTime;
+      lastTime = time;
+
+      if (!isHovered) {
+        // 0.0003 controls rotation speed
+        setRotation((prev) => (prev + delta * 0.0003) % (2 * Math.PI));
+      }
+
+      frameId = window.requestAnimationFrame(animate);
+    };
+
+    frameId = window.requestAnimationFrame(animate);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [isHovered]);
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-16 md:py-20">
+    <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
       <div className="text-center mb-12">
-
-        <h2 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
+        <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">
           Built with Modern Technologies
         </h2>
-        <p className="text-gray-500 text-xs sm:text-sm max-w-xl mx-auto mt-3 leading-relaxed">
-          A carefully chosen, battle-tested stack for security, scalability, and
-          developer experience.
+        <p className="text-slate-500 text-xs sm:text-sm max-w-xl mx-auto mt-3 leading-relaxed">
+          A carefully chosen, battle-tested stack for security, scalability, and developer experience.
         </p>
       </div>
 
       <div
         ref={containerRef}
-        className="relative flex h-[460px] sm:h-[500px] w-full items-center justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-b from-white via-slate-50/50 to-slate-100/60 p-4 sm:p-8 lg:p-12 shadow-sm mb-12"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className="relative flex min-h-[580px] sm:min-h-[680px] lg:min-h-[750px] w-full items-center justify-center overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-b from-slate-50 via-white to-slate-100/80 p-6 sm:p-12 shadow-sm"
       >
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:2.5rem_2.5rem] opacity-30 pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-30 pointer-events-none" />
 
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div
+          style={{ width: radius * 2, height: radius * 2 }}
+          className="absolute rounded-full border border-slate-200/80 pointer-events-none transition-all duration-300"
+        />
+        <div
+          style={{ width: radius * 1.3, height: radius * 1.3 }}
+          className="absolute rounded-full border border-dashed border-slate-300/50 pointer-events-none transition-all duration-300"
+        />
 
-        <div className="flex flex-col justify-between h-full z-10 gap-3">
-          {leftTechs.map((item, idx) => (
-            <div
-              key={idx}
-              ref={item.ref}
-              className={`bg-white rounded-2xl p-2.5 sm:p-4 border ${item.tech.borderColor} shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2.5 sm:gap-3.5 w-36 sm:w-52 lg:w-60 bg-white/90 backdrop-blur-sm group cursor-default`}
-            >
-              <div
-                className={`w-9 h-9 sm:w-12 sm:h-12 rounded-xl ${item.tech.bgColor} p-1.5 flex items-center justify-center shrink-0 overflow-hidden relative group-hover:scale-105 transition-transform`}
-              >
-                <Image
-                  src={item.tech.image}
-                  alt={`${item.tech.name} logo`}
-                  fill
-                  className="object-contain p-1"
-                />
-              </div>
-              <div className="overflow-hidden">
-                <h3 className="text-xs sm:text-sm font-bold text-gray-900 truncate">
-                  {item.tech.name}
-                </h3>
-                <p className="text-gray-400 text-[10px] sm:text-[11px] font-medium truncate hidden sm:block">
-                  {item.tech.description}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-tr from-purple-500/15 via-blue-500/15 to-pink-500/15 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="flex items-center justify-center z-10 my-auto">
-          <div
-            ref={centerRef}
-            className="relative flex flex-col items-center justify-center w-36 h-36 sm:w-48 sm:h-48 lg:w-56 lg:h-56 rounded-full bg-white border border-slate-200/80 shadow-lg shadow-blue-500/10 text-center group cursor-default p-3"
-          >
-            <div className="w-16 h-16 sm:w-24 sm:h-24 lg:w-28 lg:h-28 relative flex items-center justify-center overflow-hidden rounded-full">
-              <Image
-                src="/devsolve-logo.png"
-                alt="DevSolve Logo"
-                fill
-                className="object-contain p-1"
-              />
-            </div>
-            <span className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-blue-600 bg-blue-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full border border-blue-100 tracking-wider uppercase mt-1 sm:mt-1.5 shadow-xs">
-              DevSolve Hub
-            </span>
+       
+        <div
+          ref={centerRef}
+          className="relative z-20 flex flex-col items-center justify-center w-36 h-36 sm:w-48 sm:h-48 lg:w-56 lg:h-56 rounded-full bg-white/90 backdrop-blur-xl border-4 border-slate-100 shadow-[0_10px_40px_rgba(59,130,246,0.18)] text-center group transition-transform duration-300 hover:scale-105"
+        >
+          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 opacity-20 blur-sm group-hover:opacity-40 transition-opacity" />
+
+          <div className="w-14 h-14 sm:w-20 sm:h-20 lg:w-24 lg:h-24 relative flex items-center justify-center overflow-hidden rounded-full">
+            <Image
+              src="/devsolve-logo.png"
+              alt="DevSolve Logo"
+              fill
+              className="object-contain p-2"
+            />
           </div>
+
+          <span className="text-[10px] sm:text-xs font-black text-slate-800 tracking-wider uppercase mt-1">
+            DevSolve Hub
+          </span>
+          <span className="text-[9px] sm:text-[10px] text-blue-600 font-semibold uppercase tracking-widest mt-0.5">
+            Architecture
+          </span>
         </div>
 
-        <div className="flex flex-col justify-between h-full z-10 gap-3">
-          {rightTechs.map((item, idx) => (
+        
+        {TECHNOLOGIES.map((tech, idx) => {
+          const total = TECHNOLOGIES.length;
+          const baseAngle = (idx / total) * 2 * Math.PI - Math.PI / 2;
+          const currentAngle = baseAngle + rotation;
+
+          const x = Math.cos(currentAngle) * radius;
+          const y = Math.sin(currentAngle) * radius;
+
+          return (
             <div
               key={idx}
-              ref={item.ref}
-              className={`bg-white rounded-2xl p-2.5 sm:p-4 border ${item.tech.borderColor} shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2.5 sm:gap-3.5 w-36 sm:w-52 lg:w-60 bg-white/90 backdrop-blur-sm group cursor-default`}
+              ref={(el) => {
+                techRefs.current[idx] = el;
+              }}
+              style={{
+                position: "absolute",
+                transform: `translate3d(${x}px, ${y}px, 0px)`,
+              }}
+              className="z-20 transition-transform duration-75 ease-linear"
             >
-              <div
-                className={`w-9 h-9 sm:w-12 sm:h-12 rounded-xl ${item.tech.bgColor} p-1.5 flex items-center justify-center shrink-0 overflow-hidden relative group-hover:scale-105 transition-transform`}
-              >
-                <Image
-                  src={item.tech.image}
-                  alt={`${item.tech.name} logo`}
-                  fill
-                  className="object-contain p-1"
-                />
-              </div>
-              <div className="overflow-hidden">
-                <h3 className="text-xs sm:text-sm font-bold text-gray-900 truncate">
-                  {item.tech.name}
+              <div className="flex flex-col items-center justify-center p-3 sm:p-4 w-28 sm:w-36 lg:w-40 rounded-2xl bg-white/85 backdrop-blur-md border border-white/80 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08)] text-center group cursor-pointer hover:shadow-xl hover:border-slate-300 hover:scale-105 transition-all duration-200">
+                <div
+                  className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl ${tech.bgColor} border ${tech.borderColor} p-2 flex items-center justify-center shrink-0 overflow-hidden relative shadow-inner group-hover:scale-105 transition-transform duration-200 mb-2`}
+                >
+                  <Image
+                    src={tech.image}
+                    alt={`${tech.name} logo`}
+                    fill
+                    className="object-contain p-1.5"
+                  />
+                </div>
+
+                <h3 className="text-xs sm:text-sm font-bold text-slate-900 truncate w-full">
+                  {tech.name}
                 </h3>
-                <p className="text-gray-400 text-[10px] sm:text-[11px] font-medium truncate hidden sm:block">
-                  {item.tech.description}
+                <p className="text-slate-400 text-[10px] sm:text-[11px] font-medium truncate w-full hidden sm:block mt-0.5">
+                  {tech.description}
                 </p>
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
 
-        {leftTechs.map((item, idx) => (
+        {TECHNOLOGIES.map((tech, idx) => (
           <AnimatedBeam
-            key={`left-${idx}`}
-            containerRef={containerRef}
-            fromRef={item.ref}
-            toRef={centerRef}
-            curvature={item.curvature}
-            gradientStartColor={item.color}
-            gradientStopColor="#3b82f6"
-            duration={3 + idx * 0.5}
-            pathWidth={2.5}
-          />
-        ))}
-
-        {rightTechs.map((item, idx) => (
-          <AnimatedBeam
-            key={`right-${idx}`}
+            key={`beam-${idx}`}
             containerRef={containerRef}
             fromRef={centerRef}
-            toRef={item.ref}
-            curvature={item.curvature}
+            toRef={{ current: techRefs.current[idx] }}
+            curvature={0}
             gradientStartColor="#3b82f6"
-            gradientStopColor={item.color}
-            duration={3.5 + idx * 0.4}
+            gradientStopColor={tech.color}
+            duration={3 + (idx % 3) * 0.5}
             pathWidth={2.5}
           />
         ))}
       </div>
-
     </section>
   );
 }
+
 
 
 
@@ -686,6 +698,8 @@ function MemberCard({ member }: { member: TeamMember }) {
 
 
 
+
+
 function ContactSection() {
   const [formData, setFormData] = useState({
     name: "",
@@ -709,101 +723,95 @@ function ContactSection() {
   };
 
   return (
-    <section id="contact" className="relative bg-slate-950 overflow-hidden py-16 lg:py-24">
-      {/* 1. Cyber Image Background Layer */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30 mix-blend-screen pointer-events-none"
-        style={{
-          // Replace '/cyber-bg.png' with the path to your image in the public folder
-          backgroundImage: `url('/cyber-bg.png')`, 
-        }}
-      />
+    <section id="contact" className="relative bg-slate-50 py-12 lg:py-16 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#3b82f620,transparent_45%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#dbeafe20_1px,transparent_1px),linear-gradient(to_bottom,#dbeafe20_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
+      
+      <div className="absolute -top-10 -left-10 h-40 w-40 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-0 h-56 w-56 rounded-full bg-blue-600/10 blur-3xl pointer-events-none" />
 
-      {/* 2. Gradient Overlay for Text Contrast */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-950/80 to-blue-950/90 pointer-events-none" />
-
-      {/* 3. Ambient Glow Effects */}
-      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-cyan-500/15 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-stretch bg-slate-950/80 rounded-3xl border border-slate-800/80 shadow-2xl overflow-hidden backdrop-blur-xl">
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-[0.95fr_1.3fr] rounded-2xl overflow-hidden shadow-2xl border border-slate-200/80 bg-white">
           
-          {/* Left Column: Dark Cyber Hero Banner */}
-          <div className="lg:col-span-5 relative flex flex-col justify-between p-8 sm:p-10 lg:p-12 overflow-hidden bg-gradient-to-b from-blue-950/30 via-slate-950/70 to-slate-950 border-r border-slate-800/80">
-            {/* Top Header & Intro */}
-            <div className="relative z-10 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/30 text-blue-400 text-xs font-semibold tracking-wide backdrop-blur-md">
-                <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+          <div className="relative flex flex-col justify-between overflow-hidden bg-[#071322] text-white p-6 lg:p-8">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0b1d33] via-[#071322] to-[#040914]" />
+            <div
+              className="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-screen pointer-events-none"
+              style={{ backgroundImage: "url('/image.png')" }}
+            />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-cyan-500/20 blur-[80px] pointer-events-none" />
+
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <img
+                src="/com.jpg"
+                alt="Cyber Shield"
+                className="w-[70%] max-w-[300px] object-contain opacity-30 mix-blend-screen drop-shadow-[0_0_25px_rgba(6,182,212,0.3)]"
+              />
+            </div>
+
+            <div className="relative z-10 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-400/30 text-cyan-300 text-[11px] font-semibold tracking-wide backdrop-blur-md">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
                 Cyber Defense Academy
               </div>
 
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
-                Let&apos;s Secure the <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400">
-                  Future Together.
+              <h2 className="text-2xl sm:text-3xl font-bold leading-tight tracking-tight text-white">
+                Secure Your Digital<br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-300">
+                  Future Today.
                 </span>
               </h2>
 
-              <p className="text-slate-300 text-sm leading-relaxed max-w-md font-normal">
-                Connect with our research and security engineering team to explore enterprise-grade solutions and academic partnerships.
+              <p className="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-sm font-normal">
+                Connect with our research and security engineering team for enterprise-grade solutions.
               </p>
             </div>
 
-            {/* Glowing Lock Badge Graphic */}
-            <div className="relative z-10 my-8 flex items-center justify-center py-4">
-              <div className="relative w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full border border-blue-400/20 animate-spin-slow" />
-                <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-blue-600/40 to-cyan-400/20 backdrop-blur-md border border-cyan-400/40 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                  <Lock className="w-10 h-10 text-cyan-300" />
+            <div className="relative z-10 my-6 flex items-center justify-center">
+              <div className="relative w-28 h-28 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full border border-cyan-400/20 animate-spin-slow" />
+                <div className="w-16 h-16 rounded-xl bg-slate-900/80 backdrop-blur-md border border-cyan-400/40 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                  <Lock className="w-7 h-7 text-cyan-300" />
                 </div>
               </div>
             </div>
 
-            {/* Bottom Contact Details */}
-            <div className="relative z-10 space-y-4 pt-6 border-t border-slate-800/80">
-              <div className="flex items-center gap-3 text-slate-300 hover:text-white transition">
-                <div className="w-9 h-9 rounded-xl bg-slate-900/90 border border-slate-700/60 flex items-center justify-center text-cyan-400 shrink-0">
-                  <Mail className="w-4 h-4" />
+            <div className="relative z-10 space-y-3 pt-4 border-t border-slate-800">
+              <div className="flex items-center gap-2.5 text-slate-300 hover:text-white transition">
+                <div className="w-8 h-8 rounded-lg bg-slate-900/80 border border-slate-700 flex items-center justify-center text-cyan-400 shrink-0">
+                  <Mail className="w-3.5 h-3.5" />
                 </div>
-                <a href="mailto:contact@devsolve.university" className="text-xs sm:text-sm font-medium">
+                <a href="mailto:contact@devsolve.university" className="text-xs font-medium">
                   contact@devsolve.university
                 </a>
               </div>
 
-              <div className="flex items-center gap-3 text-slate-300">
-                <div className="w-9 h-9 rounded-xl bg-slate-900/90 border border-slate-700/60 flex items-center justify-center text-teal-400 shrink-0">
-                  <MapPin className="w-4 h-4" />
+              <div className="flex items-center gap-2.5 text-slate-300">
+                <div className="w-8 h-8 rounded-lg bg-slate-900/80 border border-slate-700 flex items-center justify-center text-teal-400 shrink-0">
+                  <MapPin className="w-3.5 h-3.5" />
                 </div>
-                <span className="text-xs sm:text-sm font-medium">
+                <span className="text-xs font-medium">
                   Innovation Hub, Campus West
                 </span>
-              </div>
-
-              <div className="pt-2">
-                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
-                  Cybersecurity • Aura Professional
-                </p>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Floating Form Card */}
-          <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 bg-slate-900/40 flex flex-col justify-between">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-10 shadow-2xl border border-gray-100">
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold text-gray-900 tracking-tight">
+          <div className="p-6 sm:p-7 bg-white flex flex-col justify-between">
+            <div>
+              <div className="mb-5">
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
                   Send a Message
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Our team typically responds within 24 business hours.
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
                       Full Name
                     </label>
                     <input
@@ -812,102 +820,98 @@ function ContactSection() {
                       placeholder="John Doe"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50/80 border border-gray-200 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 transition"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                      Email Address
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Work Email
                     </label>
                     <input
                       type="email"
                       required
-                      placeholder="john@gmail.com"
+                      placeholder="john@university.edu"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50/80 border border-gray-200 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 transition"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Inquiry Type
                   </label>
                   <div className="relative">
                     <select
                       value={formData.inquiryType}
                       onChange={(e) => setFormData({ ...formData, inquiryType: e.target.value })}
-                      className="w-full appearance-none px-4 py-3 rounded-xl bg-gray-50/80 border border-gray-200 text-sm text-gray-900 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 transition cursor-pointer pr-10"
+                      className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 focus:outline-none cursor-pointer pr-10"
                     >
                       <option value="Cybersecurity Consulting">Cybersecurity Consulting</option>
                       <option value="Academic Research">Academic Research Partnership</option>
                       <option value="Bug Bounty Support">Bug Bounty Program Support</option>
                       <option value="General Inquiry">General Inquiry</option>
                     </select>
-                    <ChevronDown className="w-4 h-4 text-gray-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Your Message
                   </label>
                   <textarea
-                    rows={4}
+                    rows={3}
                     required
                     placeholder="How can our engineers help you?"
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50/80 border border-gray-200 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 transition resize-none"
-                  ></textarea>
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 focus:outline-none resize-none"
+                  />
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
-                  <label className="flex items-start sm:items-center gap-2 cursor-pointer group">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       required
                       checked={formData.agreeToTerms}
                       onChange={(e) => setFormData({ ...formData, agreeToTerms: e.target.checked })}
-                      className="mt-0.5 sm:mt-0 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500/20 transition"
+                      className="w-3.5 h-3.5 rounded text-cyan-600 focus:ring-cyan-500 border-slate-300"
                     />
-                    <span className="text-xs text-gray-500 group-hover:text-gray-700 transition">
-                      I agree to the{" "}
-                      <Link href="#" className="text-blue-600 hover:underline font-medium">
-                        Privacy Policy
-                      </Link>{" "}
-                      regarding my data processing.
+                    <span className="text-[11px] text-slate-500">
+                      I agree to the <a href="#" className="text-cyan-600 hover:underline">Privacy Policy</a>.
                     </span>
                   </label>
 
                   <button
                     type="submit"
-                    className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-6 py-3 rounded-xl transition shadow-lg shadow-blue-600/25 cursor-pointer gap-2 shrink-0"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 hover:scale-[1.02] hover:shadow-cyan-500/40 transition-all duration-200 cursor-pointer"
                   >
-                    <span>Send Message</span>
-                    <Send className="w-4 h-4" />
+                    Send Message
+                    <Send className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </form>
             </div>
 
-            {/* Bottom Security Badges */}
-            <div className="grid grid-cols-3 gap-4 pt-8 text-center text-slate-400">
-              <div className="flex flex-col items-center gap-1.5">
-                <ShieldCheck className="w-5 h-5 text-cyan-400" />
-                <span className="text-[11px] font-medium tracking-wide">ISO 27001</span>
+            <div className="grid grid-cols-3 gap-2 pt-6 text-center border-t border-slate-100 mt-6">
+              <div>
+                <span className="block text-base font-extrabold text-slate-900">500+</span>
+                <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Reports</span>
               </div>
-              <div className="flex flex-col items-center gap-1.5">
-                <GraduationCap className="w-5 h-5 text-cyan-400" />
-                <span className="text-[11px] font-medium tracking-wide">Academic Lab</span>
+              <div>
+                <span className="block text-base font-extrabold text-slate-900">98%</span>
+                <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Satisfaction</span>
               </div>
-              <div className="flex flex-col items-center gap-1.5">
-                <Award className="w-5 h-5 text-cyan-400" />
-                <span className="text-[11px] font-medium tracking-wide">EU Certified</span>
+              <div>
+                <span className="block text-base font-extrabold text-slate-900">24/7</span>
+                <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Support</span>
               </div>
             </div>
+
           </div>
 
         </div>
@@ -915,5 +919,11 @@ function ContactSection() {
     </section>
   );
 }
+
+
+
+
+
+
 
 
