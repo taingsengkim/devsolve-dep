@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { FaGithub, FaLinkedin, FaTelegram, FaGlobe } from "react-icons/fa6";
+import { FaFacebook, FaTwitter } from "react-icons/fa";
 import Link from "next/link";
 
 
@@ -20,9 +21,8 @@ import {
   GraduationCap,
   Send,
   Play,
+  Phone,
   X,
-  
-
 
   MapPin,
   ChevronDown,
@@ -304,7 +304,6 @@ function TechStackSection() {
       lastTime = time;
 
       if (!isHovered) {
-        // 0.0003 controls rotation speed
         setRotation((prev) => (prev + delta * 0.0003) % (2 * Math.PI));
       }
 
@@ -433,8 +432,6 @@ function TechStackSection() {
 
 
 
-
-
 function TeamSection() {
   return (
     <section id="team" className="max-w-6xl mx-auto px-6 py-2">
@@ -486,9 +483,6 @@ function TeamSection() {
     </section>
   );
 }
-
-
-
 
 
 
@@ -697,218 +691,223 @@ function MemberCard({ member }: { member: TeamMember }) {
 
 
 
-
-
-
 function ContactSection() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    inquiryType: "Cybersecurity Consulting",
+    subject: "",
     message: "",
-    agreeToTerms: false,
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form Submitted:", formData);
-    alert("Thank you for reaching out! Our team will respond within 24 business hours.");
-    setFormData({
-      name: "",
-      email: "",
-      inquiryType: "Cybersecurity Consulting",
-      message: "",
-      agreeToTerms: false,
-    });
+    setIsSubmitting(true);
+
+    setTimeout(() => {
+      console.log("Form Submitted:", formData);
+      alert(
+        "Thank you for reaching out! Our team will respond within 24 business hours."
+      );
+      setIsSubmitting(false);
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+    }, 1000);
   };
 
   return (
-    <section id="contact" className="relative bg-slate-50 py-12 lg:py-16 overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#3b82f620,transparent_45%)] pointer-events-none" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#dbeafe20_1px,transparent_1px),linear-gradient(to_bottom,#dbeafe20_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
-      
-      <div className="absolute -top-10 -left-10 h-40 w-40 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-0 h-56 w-56 rounded-full bg-blue-600/10 blur-3xl pointer-events-none" />
+    <section id="contact" className="py-24 bg-[#FFFFFF] text-[#0F172A]">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div className="text-center mb-12">
+          <h2 className="text-[40px] font-bold text-[#0F172A] tracking-tight leading-tight">
+            Get In Touch
+          </h2>
+          <p className="mt-3 text-base text-[#64748B] max-w-2xl mx-auto">
+            Have questions about DevSolve or cybersecurity services? Send us a
+            message and our team will respond within 24 hours.
+          </p>
+        </div>
 
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-[0.95fr_1.3fr] rounded-2xl overflow-hidden shadow-2xl border border-slate-200/80 bg-white">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           
-          <div className="relative flex flex-col justify-between overflow-hidden bg-[#071322] text-white p-6 lg:p-8">
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0b1d33] via-[#071322] to-[#040914]" />
-            <div
-              className="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-screen pointer-events-none"
-              style={{ backgroundImage: "url('/image.png')" }}
-            />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-cyan-500/20 blur-[80px] pointer-events-none" />
+          <div className="lg:col-span-7 bg-[#FFFFFF] rounded-3xl border border-[#CBD5E1] p-8 sm:p-10 shadow-xl">
+            <h3 className="text-[22px] font-bold text-[#1E2B45] mb-6">
+              Send Us a Message
+            </h3>
 
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <img
-                src="/com.jpg"
-                alt="Cyber Shield"
-                className="w-[70%] max-w-[300px] object-contain opacity-30 mix-blend-screen drop-shadow-[0_0_25px_rgba(6,182,212,0.3)]"
-              />
-            </div>
-
-            <div className="relative z-10 space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-400/30 text-cyan-300 text-[11px] font-semibold tracking-wide backdrop-blur-md">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                Cyber Defense Academy
-              </div>
-
-              <h2 className="text-2xl sm:text-3xl font-bold leading-tight tracking-tight text-white">
-                Secure Your Digital<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-300">
-                  Future Today.
-                </span>
-              </h2>
-
-              <p className="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-sm font-normal">
-                Connect with our research and security engineering team for enterprise-grade solutions.
-              </p>
-            </div>
-
-            <div className="relative z-10 my-6 flex items-center justify-center">
-              <div className="relative w-28 h-28 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full border border-cyan-400/20 animate-spin-slow" />
-                <div className="w-16 h-16 rounded-xl bg-slate-900/80 backdrop-blur-md border border-cyan-400/40 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                  <Lock className="w-7 h-7 text-cyan-300" />
-                </div>
-              </div>
-            </div>
-
-            <div className="relative z-10 space-y-3 pt-4 border-t border-slate-800">
-              <div className="flex items-center gap-2.5 text-slate-300 hover:text-white transition">
-                <div className="w-8 h-8 rounded-lg bg-slate-900/80 border border-slate-700 flex items-center justify-center text-cyan-400 shrink-0">
-                  <Mail className="w-3.5 h-3.5" />
-                </div>
-                <a href="mailto:contact@devsolve.university" className="text-xs font-medium">
-                  contact@devsolve.university
-                </a>
-              </div>
-
-              <div className="flex items-center gap-2.5 text-slate-300">
-                <div className="w-8 h-8 rounded-lg bg-slate-900/80 border border-slate-700 flex items-center justify-center text-teal-400 shrink-0">
-                  <MapPin className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-xs font-medium">
-                  Innovation Hub, Campus West
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 sm:p-7 bg-white flex flex-col justify-between">
-            <div>
-              <div className="mb-5">
-                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
-                  Send a Message
-                </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  Our team typically responds within 24 business hours.
-                </p>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="John Doe"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Work Email
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="john@university.edu"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 focus:outline-none"
-                    />
-                  </div>
-                </div>
-
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Inquiry Type
+                  <label className="mb-2 block text-sm font-semibold text-[#1E2B45]">
+                    Full Name
                   </label>
-                  <div className="relative">
-                    <select
-                      value={formData.inquiryType}
-                      onChange={(e) => setFormData({ ...formData, inquiryType: e.target.value })}
-                      className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 focus:outline-none cursor-pointer pr-10"
-                    >
-                      <option value="Cybersecurity Consulting">Cybersecurity Consulting</option>
-                      <option value="Academic Research">Academic Research Partnership</option>
-                      <option value="Bug Bounty Support">Bug Bounty Program Support</option>
-                      <option value="General Inquiry">General Inquiry</option>
-                    </select>
-                    <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Your Message
-                  </label>
-                  <textarea
-                    rows={3}
+                  <input
+                    type="text"
                     required
-                    placeholder="How can our engineers help you?"
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 focus:outline-none resize-none"
+                    placeholder="Kumara Sangy"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    className="w-full rounded-xl border border-[#CBD5E1] bg-[#FFFFFF] px-4 py-3 text-base text-[#0F172A] placeholder:text-[#64748B] transition focus:border-[#2B68F6] focus:ring-4 focus:ring-blue-100 outline-none"
                   />
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      required
-                      checked={formData.agreeToTerms}
-                      onChange={(e) => setFormData({ ...formData, agreeToTerms: e.target.checked })}
-                      className="w-3.5 h-3.5 rounded text-cyan-600 focus:ring-cyan-500 border-slate-300"
-                    />
-                    <span className="text-[11px] text-slate-500">
-                      I agree to the <a href="#" className="text-cyan-600 hover:underline">Privacy Policy</a>.
-                    </span>
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-[#1E2B45]">
+                    Email Address
                   </label>
-
-                  <button
-                    type="submit"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 hover:scale-[1.02] hover:shadow-cyan-500/40 transition-all duration-200 cursor-pointer"
-                  >
-                    Send Message
-                    <Send className="w-3.5 h-3.5" />
-                  </button>
+                  <input
+                    type="email"
+                    required
+                    placeholder="Kumara.Sangy@gmail.com"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    className="w-full rounded-xl border border-[#CBD5E1] bg-[#FFFFFF] px-4 py-3 text-base text-[#0F172A] placeholder:text-[#64748B] transition focus:border-[#2B68F6] focus:ring-4 focus:ring-blue-100 outline-none"
+                  />
                 </div>
-              </form>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-[#1E2B45]">
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Enter the subject of your message..."
+                  value={formData.subject}
+                  onChange={(e) =>
+                    setFormData({ ...formData, subject: e.target.value })
+                  }
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#FFFFFF] px-4 py-3 text-base text-[#0F172A] placeholder:text-[#64748B] transition focus:border-[#2B68F6] focus:ring-4 focus:ring-blue-100 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-[#1E2B45]">
+                  Message
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="Write more about your project..."
+                  value={formData.message}
+                  onChange={(e) =>
+                    setFormData({ ...formData, message: e.target.value })
+                  }
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#FFFFFF] px-4 py-3 text-base text-[#0F172A] placeholder:text-[#64748B] transition focus:border-[#2B68F6] focus:ring-4 focus:ring-blue-100 outline-none resize-none"
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2B68F6] px-8 py-3 text-base font-semibold text-white transition-all hover:bg-blue-600 hover:-translate-y-1 shadow-lg shadow-blue-500/20 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      Send Message
+                      <Send className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div className="lg:col-span-5 space-y-6">
+            
+            <div className="rounded-2xl border border-[#CBD5E1] bg-[#FFFFFF] p-6 shadow-sm flex items-start gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2B68F6]/10 text-[#2B68F6]">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-[18px] font-bold text-[#1E2B45] mb-1">
+                  Address
+                </h4>
+                <p className="text-sm text-[#64748B] leading-relaxed">
+                  Innovation Hub, Campus West <br />
+                  Phnom Penh, Cambodia
+                </p>
+              </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 pt-6 text-center border-t border-slate-100 mt-6">
-              <div>
-                <span className="block text-base font-extrabold text-slate-900">500+</span>
-                <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Reports</span>
+            <div className="rounded-2xl border border-[#CBD5E1] bg-[#FFFFFF] p-6 shadow-sm flex items-start gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#10B981]/10 text-[#10B981]">
+                <Mail className="w-5 h-5" />
               </div>
               <div>
-                <span className="block text-base font-extrabold text-slate-900">98%</span>
-                <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Satisfaction</span>
+                <h4 className="text-[18px] font-bold text-[#1E2B45] mb-1">
+                  Email Us
+                </h4>
+                <p className="text-sm text-[#64748B]">
+                  contact@devsolve.com
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[#CBD5E1] bg-[#FFFFFF] p-6 shadow-sm flex items-start gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2B68F6]/10 text-[#2B68F6]">
+                <Phone className="w-5 h-5" />
               </div>
               <div>
-                <span className="block text-base font-extrabold text-slate-900">24/7</span>
-                <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Support</span>
+                <h4 className="text-[18px] font-bold text-[#1E2B45] mb-1">
+                  Support HQ
+                </h4>
+                <p className="text-sm text-[#64748B] leading-relaxed ">
+                  #40, Street 273, Sangkat Boeung Kak Ti Mouy, Khan Toul Kork, Phnom Penh
+                </p>
+                <br></br>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[#CBD5E1] bg-[#FFFFFF] p-6 shadow-sm">
+              <h4 className="text-[18px] font-bold text-[#1E2B45] mb-4">
+                Connect With Us
+              </h4>
+              <div className="flex items-center gap-3">
+                <a
+                  href="https://www.facebook.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Visit our Facebook"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-[#CBD5E1] bg-[#FFFFFF] text-[#2B68F6] transition-all hover:bg-[#2B68F6] hover:text-white hover:border-[#2B68F6] shadow-sm"
+                >
+                  <FaFacebook className="w-5 h-5" />
+                </a>
+                <a
+                  href="https://www.linkedin.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Visit our LinkedIn"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-[#CBD5E1] bg-[#FFFFFF] text-[#2B68F6] transition-all hover:bg-[#2B68F6] hover:text-white hover:border-[#2B68F6] shadow-sm"
+                >
+                  <FaLinkedin className="w-5 h-5" />
+                </a>
+                <a
+                  href="https://x.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Visit our X account"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-[#CBD5E1] bg-[#FFFFFF] text-[#2B68F6] transition-all hover:bg-[#2B68F6] hover:text-white hover:border-[#2B68F6] shadow-sm"
+                >
+                  <FaTwitter className="w-5 h-5" />
+                </a>
               </div>
             </div>
 
@@ -919,11 +918,3 @@ function ContactSection() {
     </section>
   );
 }
-
-
-
-
-
-
-
-
