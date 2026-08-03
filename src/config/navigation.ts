@@ -5,6 +5,7 @@ import {
   Trophy,
   Bell,
   BookOpen,
+  MessageSquare,
   Globe,
   Bookmark,
   BarChart3,
@@ -32,12 +33,12 @@ export const NAV_ITEMS: NavItem[] = [
   // Overview items
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
   { name: "Programs", href: "/dashboard/programs", icon: Globe, roles: ["USER", "COMPANY"], category: "Overview" },
+  { name: "Community", href: "/dashboard/discussions", icon: MessageSquare, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
+  { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
 
   // USER Role items
   { name: "Reports", href: "/dashboard/my-reports", icon: FileText, roles: ["USER"], category: "Researcher" },
   { name: "Rewards", href: "/dashboard/rewards", icon: CircleDollarSign, roles: ["USER"], category: "Researcher" },
-  { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy, roles: ["USER"], category: "Researcher" },
-  { name: "Solution", href: "/dashboard/solution", icon: BookOpen, roles: ["USER"], category: "Researcher" },
   { name: "Bookmarks", href: "/dashboard/bookmarks", icon: Bookmark, badge: 3, roles: ["USER"], category: "Researcher" },
 
   // COMPANY Role items

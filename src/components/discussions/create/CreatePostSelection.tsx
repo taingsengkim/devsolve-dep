@@ -20,7 +20,7 @@ export function CreatePostSelection({
       <Link
         href={backHref}
         className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
-        aria-label="Back to discussions"
+        aria-label="Back to community"
       >
         <X className="size-5" />
       </Link>

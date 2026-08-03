@@ -3,15 +3,18 @@
 import React from "react";
 import { motion } from "motion/react";
 import { CheckCircle2 } from "lucide-react";
-import { ProgramItem } from "@/lib/types/programs/types";
+import { ProgramDetail } from "@/lib/types/programs/types";
 
 interface ProgramOverviewTabProps {
-  program: ProgramItem;
+  program: ProgramDetail;
 }
 
 export const ProgramOverviewTab: React.FC<ProgramOverviewTabProps> = ({
   program,
 }) => {
+
+// this is the Overview tab
+
   return (
     <motion.div
       key="overview"
@@ -30,7 +33,7 @@ export const ProgramOverviewTab: React.FC<ProgramOverviewTabProps> = ({
           Test our cloud infrastructure, API gateways, and core web services for vulnerabilities.
         </p>
         <p className="text-base text-slate-600 leading-relaxed font-normal">
-          {program.aboutSummary || program.description}
+          { program.description}
         </p>
       </div>
 
@@ -45,7 +48,7 @@ export const ProgramOverviewTab: React.FC<ProgramOverviewTabProps> = ({
           Each report must include the following to be considered valid:
         </p>
         <ul className="space-y-3">
-          {(program.pocRequirements || [
+          {(  [
             "Step-by-step reproduction guide",
             "Exact HTTP request/payload (use Burp Suite export)",
             "Screenshot or screen recording demonstrating impact",

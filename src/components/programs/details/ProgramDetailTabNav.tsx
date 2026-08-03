@@ -21,6 +21,9 @@ export const ProgramDetailTabNav: React.FC<ProgramDetailTabNavProps> = ({
   activeTab,
   onTabChange,
 }) => {
+
+// this si the filter tab ( Overview , Scope , Bounty Matrix , Rule & Exclusions )
+
   return (
     <nav className="border-b border-slate-200 bg-white rounded-xl px-2 pt-2 shadow-2xs">
       <ul className="flex items-center gap-1 overflow-x-auto">

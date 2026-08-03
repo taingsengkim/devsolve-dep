@@ -193,10 +193,10 @@ export default function Footer() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="max-w-4xl mx-auto flex flex-col items-center gap-6 sm:gap-8"
           >
-            {/* 1. mptc.png (Top Centered) */}
+            {/* 1. Logo_MPTC.png (Top Centered) */}
             <div className="w-full flex justify-center">
               <Image
-                src="/mptc.png"
+                src="/Logo_MPTC.png"
                 alt="Ministry of Post and Telecommunications"
                 width={600}
                 height={150}
@@ -204,7 +204,7 @@ export default function Footer() {
               />
             </div>
 
-            {/* 2 & 3. istad.png and cbrdfun.png (Bottom Row Side by Side) */}
+            {/* 2 & 3. istad.png and CBRD-Logo-Final.png (Bottom Row Side by Side) */}
             <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 w-full">
               {/* 2. istad.png */}
               <Image
@@ -214,9 +214,9 @@ export default function Footer() {
                 height={110}
                 className="h-12 sm:h-16 max-w-full w-auto object-contain transition-transform hover:scale-[1.02]"
               />
-              {/* 3. cbrdfun.png */}
+              {/* 3. CBRD-Logo-Final.png */}
               <Image
-                src="/cbrdfun.png"
+                src="/CBRD-Logo-Final.png"
                 alt="CBRD Fund"
                 width={340}
                 height={110}

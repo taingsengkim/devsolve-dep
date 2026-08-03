@@ -49,7 +49,7 @@ export default function LeaderboardClient() {
   const badgeChips = ["All", "Top 10", "Bug Slayer", "Speed Hacker", "First Blood", "Retest Pro"];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 md:py-12">
+    <div className="w-full">
       {/* 1. Hero Banner with Live Platform Metrics */}
       {/* <LeaderboardHero stats={stats} /> */}
 

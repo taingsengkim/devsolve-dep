@@ -1,5 +1,7 @@
 export type DiscussionCategory = "All" | "Problems" | "Showcase";
 
+export type DiscussionSort = "newest" | "oldest" | "top" | "discussed" | "viewed";
+
 export type TopicFilter =
   | "Authentication"
   | "Server-Side"

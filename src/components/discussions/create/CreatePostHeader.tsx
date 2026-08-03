@@ -47,7 +47,7 @@ export function CreatePostHeader({
           })}
         >
           <ArrowLeft className="size-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Back to Discussions</span>
+          <span>Back to Community</span>
         </Link>
 
         {/* Format Switcher Pills */}
