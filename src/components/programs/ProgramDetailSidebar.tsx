@@ -4,13 +4,13 @@ import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Zap, Calendar, FileText, Loader2 } from "lucide-react";
-import { ProgramItem } from "@/lib/types/programs/types";
+import { Program, ProgramDetail } from "@/lib/types/programs/types";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/auth-client";
 import { useKeycloakLogin } from "@/hooks/useKeycloakLogin";
 
 interface ProgramDetailSidebarProps {
-  program: ProgramItem;
+  program: ProgramDetail;
 }
 
 export const ProgramDetailSidebar: React.FC<ProgramDetailSidebarProps> = ({
@@ -29,6 +29,8 @@ export const ProgramDetailSidebar: React.FC<ProgramDetailSidebarProps> = ({
     }
   };
 
+// this is the right bar card in the program detail
+
   return (
     <aside className="space-y-6">
       {/* Widget 1: Program Timeline */}
@@ -40,17 +42,18 @@ export const ProgramDetailSidebar: React.FC<ProgramDetailSidebarProps> = ({
         <dl className="space-y-3 text-sm">
           <div className="flex justify-between items-center">
             <dt className="text-slate-500 font-medium">Start Date</dt>
-            <dd className="font-semibold text-slate-800">{program.startDate || "June 1, 2025"}</dd>
+            {/* <dd className="font-semibold text-slate-800">{program.createdAt || "June 1, 2025"}</dd> */}
+            <span>{program.createdAt?.split('T')[0]}</span>
           </div>
-          <div className="flex justify-between items-center">
+          {/* <div className="flex justify-between items-center">
             <dt className="text-slate-500 font-medium">End Date</dt>
-            <dd className="font-semibold text-slate-800">{program.endDate || "Aug 31, 2025"}</dd>
-          </div>
+            <dd className="font-semibold text-slate-800">{ "Aug 31, 2025"}</dd>
+          </div> */}
           <div className="flex justify-between items-center">
             <dt className="text-slate-500 font-medium">Status</dt>
             <dd className="font-medium text-slate-600 flex items-center gap-1 text-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-              {program.status}
+              {program.state}
             </dd>
           </div>
         </dl>
@@ -66,19 +69,19 @@ export const ProgramDetailSidebar: React.FC<ProgramDetailSidebarProps> = ({
           <div className="flex justify-between items-center">
             <dt className="text-slate-500 font-medium">Total Reports</dt>
             <dd className="font-bold text-slate-900">
-              {program.stats?.reportsSubmitted || 142}
+              { 142}
             </dd>
           </div>
           <div className="flex justify-between items-center">
             <dt className="text-slate-500 font-medium">Active Researchers</dt>
             <dd className="font-bold text-slate-900">
-              {program.researchersCount || 89}
+              { 89}
             </dd>
           </div>
           <div className="flex justify-between items-center">
             <dt className="text-slate-500 font-medium">Program Type</dt>
             <dd className="font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-100 text-xs">
-              {program.type}
+              {program.engagementType}
             </dd>
           </div>
         </dl>

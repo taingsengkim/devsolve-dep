@@ -1,190 +1,190 @@
 "use client";
-
-import React, { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { ArrowLeft, Bookmark, Send, Loader2 } from "lucide-react";
-import { ProgramItem } from "@/lib/types/programs/types";
+import React, { useState } from "react";
+import {
+  Bookmark,
+  Send,
+  Trophy,
+  Award,
+  Layers,
+  Calendar,
+} from "lucide-react";
+import { Program, ProgramDetail } from "@/lib/types/programs/types";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { authClient } from "@/lib/auth/auth-client";
-import { useKeycloakLogin } from "@/hooks/useKeycloakLogin";
 
 interface ProgramDetailHeroProps {
-  program: ProgramItem;
+  program: ProgramDetail;
 }
 
-export const ProgramDetailHero: React.FC<ProgramDetailHeroProps> = ({ program }) => {
+export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
   const [isSaved, setIsSaved] = useState(false);
-  const pathname = usePathname();
-  const router = useRouter();
-  const { data: session } = authClient.useSession();
-  const { handleLogin, isLoggingIn } = useKeycloakLogin();
 
-  const backUrl = pathname?.startsWith("/dashboard")
-    ? "/dashboard/programs"
-    : "/programs";
+  const isBounty = program.offersBounties || program.engagementType === "MANAGED";
 
-  const handleSubmitReport = () => {
-    const targetUrl = `/dashboard/submit-report?programId=${program.id}`;
-    if (session?.user) {
-      router.push(targetUrl);
-    } else {
-      handleLogin(targetUrl);
-    }
-  };
+  const minBounty = program.minimumBounty ?? 0;
+  const maxBounty = program.maximumBounty ?? 0;
+
+  const formattedCreatedDate = program.createdAt
+    ? new Date(program.createdAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "N/A";
+
+  const totalAssetsCount = program.assets?.length || 0;
+
+  const assetTypes = Array.from(
+    new Set(
+      (program.assets || [])
+        .map((a) => a.assetType || "Web")
+        .filter(Boolean)
+    )
+  );
 
   return (
-    <div className="space-y-6">
-      {/* Back to Programs Navigation */}
-      <nav aria-label="Back Navigation">
-        <Link
-          href={backUrl}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Programs</span>
-        </Link>
-      </nav>
-
-      {/* Program Hero Header */}
-      <header className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
-        {/* Meta Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            {program.logoUrl ? (
+    <div className="relative bg-white rounded-xl border border-slate-200/90 shadow-sm overflow-hidden">
+      <div className="p-4 sm:p-6 space-y-4">
+        {/* TOP HEADER */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-700 text-base border border-slate-200/60 shrink-0 overflow-hidden">
               <Image
-                src={program.logoUrl}
-                alt={program.companyName}
-                width={80}
-                height={80}
-                className="w-20 h-20 rounded-2xl object-contain bg-white p-1 shrink-0"
+                src="https://media.wired.com/photos/5926ffe47034dc5f91bed4e8/3:2/w_2560%2Cc_limit/google-logo.jpg"
+                alt={program.handle || "Organization"}
+                className="w-full h-full object-cover"
+                width={40}
+                height={40}
               />
-            ) : (
-              <div
-                className={`w-20 h-20 rounded-2xl flex items-center justify-center font-bold text-2xl text-white shadow-xs shrink-0 ${
-                  program.logoBgColor || "bg-blue-600"
-                }`}
-              >
-                {program.companyName.slice(0, 2).toUpperCase()}
-              </div>
-            )}
+            </div>
 
-            <div className="space-y-1">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="text-base font-bold text-slate-900">{program.companyName}</span>
-
-                {/* Status dot in gray */}
-                <span className="text-xs text-slate-500 font-medium flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                  {program.status}
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                  {program.handle}
+                </h1>
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                  • {program.state || "Active"}
                 </span>
-
-                {/* Type Badge in Gray */}
-                <Badge
-                  variant="outline"
-                  className="bg-slate-100 text-slate-600 border-slate-200 font-medium text-xs"
+                <span
+                  className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
+                    isBounty
+                      ? "bg-blue-50 text-blue-600 border-blue-100"
+                      : "bg-purple-50 text-purple-600 border-purple-100"
+                  }`}
                 >
-                  {program.type}
-                </Badge>
+                  {isBounty ? "Bounty" : "Response"}
+                </span>
               </div>
+              {program.handle && (
+                <p className="text-xs font-medium text-slate-400">@{program.handle}</p>
+              )}
             </div>
           </div>
 
-          {/* Actions: Save & Submit Report */}
-          <div className="flex items-center gap-3">
+          {/* TOP RIGHT BUTTONS */}
+          <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
             <Button
-              variant="outline"
               onClick={() => setIsSaved(!isSaved)}
-              className={`rounded-xl h-10 px-4 font-semibold text-sm cursor-pointer transition-all gap-2 ${
+              variant="outline"
+              size="sm"
+              className={`rounded-lg h-9 border-slate-200 text-xs font-semibold gap-1.5 transition-all ${
                 isSaved
-                  ? "bg-blue-50 text-blue-600 border-blue-300"
-                  : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                  ? "bg-blue-50 text-blue-600 border-blue-200"
+                  : "bg-white text-slate-700 hover:bg-slate-50"
               }`}
             >
-              <Bookmark className={`w-4 h-4 ${isSaved ? "fill-blue-600 text-blue-600" : ""}`} />
+              <Bookmark
+                className={`w-3.5 h-3.5 ${isSaved ? "fill-blue-600 text-blue-600" : "text-slate-500"}`}
+              />
               {isSaved ? "Saved" : "Save"}
             </Button>
-
-            <Button
-              onClick={handleSubmitReport}
-              disabled={isLoggingIn}
-              className="rounded-xl h-10 px-5 font-semibold text-sm bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transition-all gap-2 shadow-xs"
-            >
-              {isLoggingIn ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-              <span>Submit Report</span>
-            </Button>
           </div>
         </div>
 
-        {/* Title & Description */}
-        <div className="space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-            {program.title}
-          </h1>
-          <p className=" text-base  leading-relaxed max-w-4xl">
+        {/* PROGRAM NAME – responsive size */}
+        {program.description && (
+          <p className="text-xl sm:text-2xl md:text-3xl font-bold text-black leading-snug w-full line-clamp-2">
+            {program.name}
+          </p>
+        )}
+
+        {/* PROGRAM DESCRIPTION – responsive */}
+        {program.description && (
+          <p className="text-sm sm:text-base text-slate-600 leading-relaxed w-full line-clamp-2">
             {program.description}
           </p>
+        )}
+
+        {/* ASSET TYPE BADGES */}
+        {assetTypes.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {assetTypes.map((type, i) => (
+              <span
+                key={i}
+                className="bg-slate-50 text-slate-500 text-[10px] font-semibold px-2.5 py-0.5 rounded-md border border-slate-200/60 uppercase tracking-wider"
+              >
+                {type}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* STATS ROW – responsive grid with proper gaps */}
+        <div className="pt-3 border-t border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          {/* MIN REWARD */}
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-1 text-slate-400">
+              <Award className="w-3.5 h-3.5" />
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                {isBounty ? "Min Reward" : "Min Points"}
+              </span>
+            </div>
+            <p className="text-sm sm:text-base font-bold text-slate-800">
+              {isBounty ? `$${minBounty.toLocaleString()}` : `${minBounty} pts`}
+            </p>
+          </div>
+
+          {/* MAX REWARD */}
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-1 text-slate-400">
+              <Trophy className="w-3.5 h-3.5 text-blue-500" />
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                {isBounty ? "Max Reward" : "Max Points"}
+              </span>
+            </div>
+            <p className="text-sm sm:text-base font-bold text-blue-600">
+              {isBounty ? `$${maxBounty.toLocaleString()}` : `${maxBounty} pts`}
+            </p>
+          </div>
+
+          {/* TOTAL ASSETS */}
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-1 text-slate-400">
+              <Layers className="w-3.5 h-3.5" />
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                Total Assets
+              </span>
+            </div>
+            <p className="text-sm sm:text-base font-bold text-slate-800">
+              {totalAssetsCount}
+            </p>
+          </div>
+
+          {/* CREATED DATE */}
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-1 text-slate-400">
+              <Calendar className="w-3.5 h-3.5" />
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                Created Date
+              </span>
+            </div>
+            <p className="text-sm sm:text-base font-bold text-slate-800">
+              <span>{program.createdAt?.split('T')[0]}</span>
+            </p>
+          </div>
         </div>
-
-        {/* Program Tags */}
-        <div className="flex flex-wrap gap-2">
-          {program.assetCategories.map((cat) => (
-            <span
-              key={cat}
-              className="px-3 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200"
-            >
-              {cat}
-            </span>
-          ))}
-        </div>
-
-        <hr className="border-slate-200/80" />
-
-        {/* Header Stats Bar */}
-        <dl className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
-          <div className="space-y-1">
-            <dt className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Max Reward
-            </dt>
-            <dd className="text-xl sm:text-2xl font-bold text-emerald-600 tracking-tight">
-              {program.maxReward || program.rewardRange}
-            </dd>
-          </div>
-
-          <div className="space-y-1">
-            <dt className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Submissions
-            </dt>
-            <dd className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              {program.stats?.reportsSubmitted || 142}
-            </dd>
-          </div>
-
-          <div className="space-y-1">
-            <dt className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Researchers
-            </dt>
-            <dd className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              {program.researchersCount || 89}
-            </dd>
-          </div>
-
-          <div className="space-y-1">
-            <dt className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Closes
-            </dt>
-            <dd className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              {program.endDate || "Aug 31, 2025"}
-            </dd>
-          </div>
-        </dl>
-      </header>
+      </div>
     </div>
   );
-};
+}
