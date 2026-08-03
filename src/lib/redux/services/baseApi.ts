@@ -16,6 +16,16 @@ export const baseApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Program"],
+  tagTypes: [
+    "Program",
+    "Report",
+    "User",
+    "Notification",
+    "Bookmark",
+    "CompanyVerification",
+    "AdminUser",
+    "ModerationItem",
+    "ContentReport",
+  ],
   endpoints: () => ({}),
 });
