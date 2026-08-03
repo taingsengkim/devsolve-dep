@@ -8,6 +8,11 @@ export interface TeamMember {
   badgeColor?: BadgeColor;
   quote: string;
   image: string;
+  github?: string;
+  linkedin?: string;
+  facebook?: string;
+  telegram?: string;
+  email?: string;
 }
 
 export interface Technology {
