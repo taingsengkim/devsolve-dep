@@ -6,7 +6,6 @@ import { motion, useMotionValue, useSpring, AnimatePresence } from "motion/react
 import { ArrowRight, Bug, Trophy, Code2, MessageSquare, Star, ChevronRight, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import SmoothCursor from "@/components/lightswind/smooth-cursor";
-import WavyRippleBackground from "@/components/lightswind/wavy-ripple-background";
 
 /* ─── Animated looping words ─────────────────────────────────────── */
 const FEATURE_WORDS = ["Solutions", "Bounties", "Challenges", "Community", "Expertise"];
@@ -263,23 +262,12 @@ export function Hero() {
   const rightContainerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <section className="relative min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden bg-[#FAF9F5]">
+    <section className="relative min-h-[calc(100dvh-4rem)] flex flex-col items-center justify-center overflow-hidden bg-[#FAF9F5] py-12 lg:py-16">
       {/* Smooth cursor */}
       <SmoothCursor color="#2563EB" showTrail={true} glowEffect={true} />
 
       {/* Background effects */}
       <GridBackground />
-
-      {/* Wavy ripple at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-72 pointer-events-none opacity-40">
-        <WavyRippleBackground
-          waveColor="#2563EB"
-          speed={0.6}
-          frequency={2.8}
-          ringSharpness={0.4}
-          maxOpacity={0.35}
-        />
-      </div>
 
       {/* Ambient glow blobs */}
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
@@ -287,11 +275,11 @@ export function Hero() {
       <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-[600px] h-40 bg-indigo-400/8 rounded-full blur-3xl pointer-events-none" />
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-0">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[100dvh]">
+      <div className="relative z-10 w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
           {/* Left — Text */}
-          <div className="flex flex-col items-start gap-6 pt-16 lg:pt-0">
+          <div className="flex flex-col items-start gap-6">
             <PillBadge icon={Zap} text="Everything in One Place" />
 
             <div className="space-y-2">
@@ -446,21 +434,6 @@ export function Hero() {
           </div>
         </div>
       </div>
-
-      {/* Scroll hint */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 z-10"
-      >
-        <span className="text-xs font-medium text-slate-400 tracking-widest uppercase">Scroll</span>
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-          className="w-0.5 h-6 bg-gradient-to-b from-slate-400 to-transparent rounded-full"
-        />
-      </motion.div>
     </section>
   );
 }

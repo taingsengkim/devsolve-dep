@@ -216,10 +216,7 @@ export function FeatureHighlights() {
       >
         {/* Header Badge */}
         <header className="relative z-20 pt-8 px-6 sm:px-12 flex justify-between items-center max-w-[1280px] mx-auto w-full">
-          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-200/80 px-3.5 py-1.5 rounded-full shadow-xs">
-            <Sparkles className="w-3.5 h-3.5" />
-            GSAP Powered Scrollytelling
-          </div>
+         
 
           <div className="flex items-center gap-2">
             {chapters.map((ch, idx) => (
