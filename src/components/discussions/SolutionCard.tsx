@@ -173,37 +173,37 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) =
     return (
       <div className={`space-y-1.5 ${shouldIndent ? "ml-4 border-l border-slate-200 pl-2.5 sm:ml-5 sm:pl-3" : ""}`}>
         {/* Main Comment Box */}
-        <div className="group flex items-start justify-between rounded-lg bg-slate-50 p-2 text-xs text-slate-600">
+        <div className="group flex items-start justify-between rounded-xl bg-slate-50 p-2.5 text-sm text-slate-700 border border-slate-100">
           <div className="flex items-start space-x-2 flex-1 min-w-0 pr-2">
             <img
               src={comment.author.avatarUrl}
               alt={comment.author.name}
-              className="h-4 w-4 rounded-full mt-0.5 shrink-0"
+              className="h-5 w-5 rounded-full mt-0.5 shrink-0"
             />
-            <div className="leading-snug break-words min-w-0 flex-1">
-              <span className="font-bold text-slate-800 mr-1.5">{comment.author.name}:</span>
+            <div className="leading-relaxed break-words min-w-0 flex-1">
+              <span className="font-bold text-slate-900 mr-1.5">{comment.author.name}:</span>
 
               {comment.replyToAuthor && (
-                <span className="font-semibold text-blue-600 bg-blue-50 px-1 py-0.5 rounded text-[11px] mr-1 inline-block">
+                <span className="font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded text-xs mr-1.5 inline-block">
                   @{comment.replyToAuthor}
                 </span>
               )}
 
               <span>{comment.content}</span>
-              <span className="text-[10px] text-slate-400 ml-2 inline-block">{comment.createdAt}</span>
+              <span className="text-xs text-slate-400 ml-2 inline-block">{comment.createdAt}</span>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 shrink-0">
+          <div className="flex items-center space-x-2.5 shrink-0 pt-0.5">
             {/* Love Button */}
             <button
               type="button"
               onClick={() => handleToggleLike(comment.id)}
-              className={`flex items-center space-x-1 text-[11px] transition-colors ${
+              className={`flex items-center space-x-1 text-xs transition-colors ${
                 comment.isLiked ? "text-rose-500 font-bold" : "text-slate-400 hover:text-rose-500"
               }`}
             >
-              <Heart className={`h-3 w-3 ${comment.isLiked ? "fill-rose-500 text-rose-500" : ""}`} />
+              <Heart className={`h-3.5 w-3.5 ${comment.isLiked ? "fill-rose-500 text-rose-500" : ""}`} />
               {Boolean(comment.likes) && <span>{comment.likes}</span>}
             </button>
 
@@ -214,7 +214,7 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) =
                 setActiveReplyId(isReplying ? null : comment.id);
                 setReplyContent("");
               }}
-              className="text-[11px] font-medium text-blue-600 hover:underline shrink-0"
+              className="text-xs font-semibold text-blue-600 hover:underline shrink-0"
             >
               Reply
             </button>
@@ -224,10 +224,10 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) =
         {/* Sub-reply Input */}
         {isReplying && (
           <div className="flex items-center space-x-2 pt-1 pl-2">
-            <CornerDownRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+            <CornerDownRight className="h-4 w-4 text-slate-400 shrink-0" />
 
-            <div className="flex-1 flex items-center rounded-lg border border-blue-300 bg-white px-2.5 py-1 text-xs focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
-              <span className="text-blue-600 font-semibold mr-1.5 shrink-0 text-[11px]">
+            <div className="flex-1 flex items-center rounded-xl border border-blue-300 bg-white px-3 py-1.5 text-sm focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
+              <span className="text-blue-600 font-semibold mr-1.5 shrink-0 text-xs">
                 @{comment.author.name}
               </span>
               <input
@@ -237,7 +237,7 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) =
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     handleSendReply(comment);
-                    setShowReplies(true); // Automatically open thread on new reply!
+                    setShowReplies(true);
                   }
                 }}
                 placeholder="Write a reply..."
@@ -252,9 +252,9 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) =
                 handleSendReply(comment);
                 setShowReplies(true);
               }}
-              className="rounded-lg bg-blue-600 p-1 text-white hover:bg-blue-700 transition-colors shrink-0"
+              className="rounded-lg bg-blue-600 p-2 text-white hover:bg-blue-700 transition-colors shrink-0"
             >
-              <Send className="h-3 w-3" />
+              <Send className="h-3.5 w-3.5" />
             </button>
           </div>
         )}
@@ -265,16 +265,16 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) =
             <button
               type="button"
               onClick={() => setShowReplies(!showReplies)}
-              className="flex items-center space-x-1.5 text-[11px] font-semibold text-slate-500 hover:text-blue-600 transition-colors"
+              className="flex items-center space-x-1.5 text-xs font-semibold text-slate-500 hover:text-blue-600 transition-colors"
             >
-              <MessageSquare className="h-3 w-3 text-slate-400" />
+              <MessageSquare className="h-3.5 w-3.5 text-slate-400" />
               <span>
                 {showReplies
                   ? "Hide replies"
                   : `View ${totalReplies} ${totalReplies === 1 ? "reply" : "replies"}`}
               </span>
               <ChevronDown
-                className={`h-3 w-3 transition-transform duration-200 ${
+                className={`h-3.5 w-3.5 transition-transform duration-200 ${
                   showReplies ? "rotate-180" : ""
                 }`}
               />
@@ -297,7 +297,7 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) =
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden transition-all">
       {solution.isAccepted && (
-        <div className="flex items-center space-x-2 bg-emerald-50 border-b border-emerald-100 px-5 py-2 text-xs font-bold text-emerald-700">
+        <div className="flex items-center space-x-2 bg-emerald-50 border-b border-emerald-100 px-5 py-2.5 text-sm font-bold text-emerald-700">
           <Check className="h-4 w-4 text-emerald-600" />
           <span>Accepted Solution</span>
         </div>
@@ -306,7 +306,7 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) =
       {/* Main Body */}
       <div className="p-5">
         <div className="flex items-start space-x-4">
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center shrink-0">
             <button
               onClick={handleVote}
               className={`rounded-lg p-1.5 transition-colors ${
@@ -315,7 +315,7 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) =
             >
               <ChevronUp className="h-4 w-4" />
             </button>
-            <span className="text-xs font-bold text-slate-700 my-0.5">{votes}</span>
+            <span className="text-sm font-bold text-slate-800 my-1 tabular-nums">{votes}</span>
             <button
               onClick={() => {
                 if (hasVoted) handleVote();
@@ -327,18 +327,18 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) =
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-slate-700 leading-relaxed">{solution.explanation}</p>
+            <p className="text-base text-slate-700 leading-relaxed">{solution.explanation}</p>
 
-            <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-400">
+            <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-sm text-slate-500">
               <div className="flex items-center space-x-2">
                 <img
                   src={solution.author.avatarUrl}
                   alt={solution.author.name}
-                  className="h-5 w-5 rounded-full bg-slate-100"
+                  className="h-6 w-6 rounded-full bg-slate-100 border border-slate-200"
                 />
-                <span className="font-semibold text-slate-700">{solution.author.name}</span>
+                <span className="font-semibold text-slate-900">{solution.author.name}</span>
                 <span>•</span>
-                <span>answered {solution.createdAt}</span>
+                <span className="text-slate-500">answered {solution.createdAt}</span>
               </div>
             </div>
 
@@ -354,13 +354,13 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) =
                   value={newTopComment}
                   onChange={(e) => setNewTopComment(e.target.value)}
                   placeholder="Add a comment..."
-                  className="flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs focus:border-blue-500 focus:outline-none"
+                  className="flex-1 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                 />
                 <button
                   type="submit"
-                  className="rounded-lg bg-slate-100 p-1.5 text-slate-600 hover:bg-slate-200 transition-colors"
+                  className="rounded-lg bg-slate-100 px-3 py-2 text-slate-700 hover:bg-slate-200 transition-colors font-medium text-sm"
                 >
-                  <Send className="h-3.5 w-3.5" />
+                  <Send className="h-4 w-4" />
                 </button>
               </form>
             </div>

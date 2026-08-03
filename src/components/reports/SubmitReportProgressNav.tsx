@@ -7,7 +7,7 @@ import { motion } from "motion/react";
 export interface StepItem {
   id: number;
   label: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 export const STEPS: StepItem[] = [

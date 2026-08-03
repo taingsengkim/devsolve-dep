@@ -4,18 +4,17 @@ import React from "react";
 import { motion } from "motion/react";
 import { CreatePostSelection } from "@/components/discussions/create/CreatePostSelection";
 
-export default function DashboardCreatePostSelectionPage() {
+export default function PublicCreatePostSelectionPage() {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="space-y-6 w-full pb-12"
+      className="min-h-[100dvh] bg-[#F8FAFC]"
     >
-      <CreatePostSelection
-        basePath="/dashboard/discussions/create"
-        backHref="/dashboard/discussions"
-      />
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+        <CreatePostSelection basePath="/discussions/create" backHref="/discussions" />
+      </main>
     </motion.div>
   );
 }

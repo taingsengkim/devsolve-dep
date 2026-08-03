@@ -26,7 +26,7 @@ export function MarkdownEditor({
   value,
   onChange,
   placeholder = "Describe the root cause, affected parameters, and overall architecture vulnerability...",
-  height = 420,
+  height = 480,
   error = false,
 }: MarkdownEditorProps) {
   return (
@@ -46,12 +46,11 @@ export function MarkdownEditor({
         textareaProps={{
           placeholder,
           style: {
-            fontSize: "15px",
-            lineHeight: "1.6",
-            fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+            fontSize: "18px",
+            lineHeight: "1.7",
           },
         }}
-        className="!text-base [&_.w-md-editor-text-input]:!text-[15px] [&_.w-md-editor-text-input]:!leading-relaxed [&_.w-md-editor-text-pre]:!text-[15px] [&_.w-md-editor-text-pre]:!leading-relaxed [&_.wmde-markdown]:!text-base [&_.wmde-markdown]:!leading-relaxed"
+        className="!text-lg [&_textarea]:!text-[18px] [&_textarea]:!leading-relaxed [&_.w-md-editor-text-input]:!text-[18px] [&_.w-md-editor-text-input]:!leading-relaxed [&_.w-md-editor-text-pre]:!text-[18px] [&_.w-md-editor-text-pre]:!leading-relaxed [&_.w-md-editor-text-pre_code]:!text-[18px] [&_.wmde-markdown]:!text-[17px] [&_.wmde-markdown]:!leading-relaxed"
       />
     </div>
   );
