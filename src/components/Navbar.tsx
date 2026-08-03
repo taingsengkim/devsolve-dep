@@ -13,8 +13,9 @@ const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Programs', href: '/programs' },
     { name: 'Discussions', href: '/discussions' },
-    { name: 'Community', href: '/communityhacktivity' },
-    { name: 'Leaderboard', href: '/leaderboardabout' },
+    { name: 'Community', href: '/community' },
+    { name: 'Leaderboard', href: '/leaderboard' },
+    { name: 'About', href: '/about' },
 ];
 
 const Navbar = () => {
@@ -93,8 +94,8 @@ const Navbar = () => {
 
                     {/* Desktop Nav */}
                     <nav className="hidden lg:flex items-center gap-1 relative" onMouseLeave={() => setHoveredPath(null)}>
-                        {navLinks.map((link, index) => {
-                            const isActive = pathname === link.href && index === 0;
+                        {navLinks.map((link) => {
+                            const isActive = pathname === link.href;
                             const isHovered = hoveredPath === link.name;
                             return (
                                 <Link
