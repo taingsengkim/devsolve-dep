@@ -6,7 +6,7 @@ import { User, Globe, Lock, Bell } from "lucide-react";
 export interface SettingsTabItem {
   id: string;
   label: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 export const SETTINGS_TABS: SettingsTabItem[] = [

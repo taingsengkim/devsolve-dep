@@ -45,7 +45,7 @@ interface UserTableRowProps {
 const ROLE_OPTIONS: {
   value: "USER" | "COMPANY" | "ADMIN" | "MODERATOR";
   label: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
 }[] = [
   { value: "USER", label: "Researcher", icon: User },
   { value: "COMPANY", label: "Company", icon: Building2 },

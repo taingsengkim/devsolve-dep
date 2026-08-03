@@ -149,13 +149,7 @@ export default function Footer() {
         />
       )}
       {/* Dynamic Interactive Background Layers */}
-      <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
-        <WavyRippleBackground
-          waveColor="#0066FF"
-          speed={0.6}
-          frequency={3.2}
-          maxOpacity={0.3}
-        />
+      <div className="absolute inset-0 z-0 opacity-30 pointer-events-none">
         <EtherWavesBackground
           linesGradient={["#0066FF", "#00C853", "#3B82F6", "#10B981"]}
           animationSpeed={0.6}
@@ -163,6 +157,17 @@ export default function Footer() {
           interactive={true}
           lineCount={6}
           parallax={true}
+        />
+      </div>
+
+      {/* Wavy Ripple Background at bottom of footer */}
+      <div className="absolute bottom-0 left-0 right-0 h-72 pointer-events-none opacity-40 z-0 overflow-hidden">
+        <WavyRippleBackground
+          waveColor="#0066FF"
+          speed={0.6}
+          frequency={2.8}
+          ringSharpness={0.4}
+          maxOpacity={0.35}
         />
       </div>
 

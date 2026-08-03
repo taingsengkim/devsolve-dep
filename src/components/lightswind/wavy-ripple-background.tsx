@@ -111,7 +111,7 @@ export default function WavyRippleBackground({
     // Create OGL context
     const renderer = new Renderer({ alpha: true, antialias: true });
     const gl = renderer.gl;
-    
+
     gl.clearColor(0, 0, 0, 0);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
