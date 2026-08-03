@@ -68,6 +68,7 @@ export interface ReportDetail extends ReportItem {
 export interface SubmitReportPayload {
   programId: string;
   programName: string;
+  assetId?: string;
   targetAsset: string;
   httpMethod?: string;
   vulnerableParameter?: string;

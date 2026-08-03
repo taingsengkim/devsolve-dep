@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useGetProgramsQuery } from "@/lib/redux/services/programsApi";
+import { useGetSubmittableProgramsQuery } from "@/lib/redux/services/programsApi";
 import { useSubmitReportMutation } from "@/lib/redux/services/reportsApi";
 import {
   submitReportSchema,
@@ -40,10 +40,10 @@ export function useSubmitReportForm() {
     title: "",
   });
 
-  const { data: programsData, isLoading: isProgramsLoading } = useGetProgramsQuery();
+  const { data: programsData, isLoading: isProgramsLoading } = useGetSubmittableProgramsQuery();
   const [submitReport, { isLoading: isSubmitting }] = useSubmitReportMutation();
 
-  const programs = programsData?.data || [];
+  const programs = programsData || [];
 
   const form = useForm<SubmitReportFormValues>({
     resolver: zodResolver(submitReportSchema),
@@ -81,14 +81,18 @@ export function useSubmitReportForm() {
 
   const selectedProgram = programs.find((p) => p.id === selectedProgramId) || programs[0] || null;
 
-  // Synchronize preselected program ID when programs arrive asynchronously
+  // Synchronize preselected program ID when programs arrive asynchronously.
+  // Links into this form from a program's page (ProgramDetailHero/Sidebar)
+  // still carry that page's mock program id, which will never match a real
+  // program from useGetSubmittableProgramsQuery — so a match is required,
+  // not just a non-empty id, or the field gets stuck on an invalid id that
+  // silently fails at submit time.
   useEffect(() => {
-    if (preselectedProgramId && programs.length > 0) {
-      const found = programs.find((p) => p.id === preselectedProgramId);
-      if (found) {
-        setValue("programId", found.id);
-      }
-    } else if (!selectedProgramId && programs.length > 0) {
+    if (programs.length === 0) return;
+    const found = programs.find((p) => p.id === preselectedProgramId);
+    if (found) {
+      setValue("programId", found.id);
+    } else if (!programs.some((p) => p.id === selectedProgramId)) {
       setValue("programId", programs[0].id);
     }
   }, [preselectedProgramId, programs, setValue, selectedProgramId]);
@@ -214,11 +218,19 @@ export function useSubmitReportForm() {
     setSubmitError(null);
     const selectedProg = programs.find((p) => p.id === values.programId);
     const programName = selectedProg ? selectedProg.companyName : "CloudVault Security Program";
+    // The typed target URL rarely matches an asset identifier exactly (e.g.
+    // "https://api.example.com/v1/x" vs a registered "*.example.com"), so
+    // match loosely by substring; assetId is optional on the backend, so no
+    // match just means it's omitted rather than blocking submission.
+    const matchedAsset = selectedProg?.assets.find((asset) =>
+      values.targetAsset.includes(asset.identifier.replace(/^\*\./, ""))
+    );
 
     try {
       const res = await submitReport({
         programId: values.programId,
         programName,
+        assetId: matchedAsset?.id,
         targetAsset: values.targetAsset,
         httpMethod: values.httpMethod,
         vulnerableParameter: values.vulnerableParameter,

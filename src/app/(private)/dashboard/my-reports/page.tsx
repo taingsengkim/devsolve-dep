@@ -134,7 +134,12 @@ export default function MyReportsPage() {
     severity: severityFilter,
   });
 
-  const totalSubmissions = 12; // Total count across active programs
+  // Unfiltered fetch (separate cache entry) just to drive the header/footer
+  // totals, so "Showing X of Y" stays accurate against filters/search.
+  const { data: allReports = [] } = useGetReportsQuery();
+
+  const totalSubmissions = allReports.length;
+  const totalPrograms = new Set(allReports.map((r) => r.program)).size;
   const displayedCount = reports.length;
 
   const handleBack = () => {
@@ -249,7 +254,7 @@ export default function MyReportsPage() {
         <div className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">My Reports</h1>
           <p className="text-base text-slate-500 font-medium">
-            12 Active submissions across 5 programs
+            {totalSubmissions} submission{totalSubmissions === 1 ? "" : "s"} across {totalPrograms} program{totalPrograms === 1 ? "" : "s"}
           </p>
         </div>
         <Button
