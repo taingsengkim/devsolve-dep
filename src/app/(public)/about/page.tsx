@@ -49,33 +49,30 @@ export default function AboutPage() {
   );
 }
 
+
+
+
+
+
 function AboutHeroSection() {
-  const [isVideoOpen, setIsVideoOpen] = useState(false);
-
   return (
-    <section className="relative w-full py-10 sm:py-16 lg:py-20 px-4 sm:px-8 lg:px-12 bg-[#09131D] text-white overflow-hidden">
-      {/* Background Glow Overlay */}
-      <div className="absolute top-0 left-1/4 w-[600px] h-[350px] bg-teal-500/10 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[500px] h-[350px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
+    <section className="relative w-full py-12 sm:py-16 lg:py-24 px-4 sm:px-8 lg:px-12 bg-[#09131D] text-white overflow-hidden">
+      <div className="absolute top-0 left-1/4 w-[600px] h-[350px] bg-[#00D2B4]/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[350px] bg-blue-600/10 rounded-full blur-[130px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto space-y-10 sm:space-y-14">
-        {/* Top Header Layout (Split 2-Column with Divider) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center pt-2 sm:pt-4">
+      <div className="max-w-7xl mx-auto space-y-12 sm:space-y-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           
-          {/* Left Column: Established badge & Main Title */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="lg:col-span-7 space-y-4"
+            className="lg:col-span-7 space-y-5"
           >
-            <div className="flex items-center gap-3">
-              <span className="text-xs sm:text-sm font-light tracking-wider text-slate-400 uppercase">
-                Establish
-              </span>
-              <span className="text-sm sm:text-base font-bold text-white tracking-widest uppercase">
-                2026
-              </span>
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs sm:text-sm">
+              <span className="w-2 h-2 rounded-full bg-[#00D2B4] animate-pulse" />
+              <span className="text-slate-400 font-light uppercase tracking-wider">Established</span>
+              <span className="font-bold text-white tracking-widest">2026</span>
             </div>
 
             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.08]">
@@ -88,12 +85,10 @@ function AboutHeroSection() {
             </h1>
           </motion.div>
 
-          {/* Vertical Divider (Desktop) */}
           <div className="hidden lg:block lg:col-span-1 justify-self-center">
-            <div className="w-[1px] h-32 bg-slate-800/80" />
+            <div className="w-[1px] h-36 bg-gradient-to-b from-transparent via-slate-700 to-transparent" />
           </div>
 
-          {/* Right Column: Description paragraph & Stats Grid */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -104,11 +99,10 @@ function AboutHeroSection() {
               DevSolve connects organizations with top security researchers and developers to solve real-world technical challenges, fix vulnerabilities, and build resilient software.
             </p>
 
-            {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-4 border-t border-slate-800/70">
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-4 border-t border-slate-800/80">
               <div>
                 <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight">
-                  150 +
+                  150+
                 </div>
                 <div className="text-[11px] sm:text-xs text-slate-400 font-medium leading-tight mt-1">
                   Active Programs
@@ -117,7 +111,7 @@ function AboutHeroSection() {
 
               <div>
                 <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight">
-                  2.5K +
+                  2.5K+
                 </div>
                 <div className="text-[11px] sm:text-xs text-slate-400 font-medium leading-tight mt-1">
                   Top Developers
@@ -126,87 +120,79 @@ function AboutHeroSection() {
 
               <div>
                 <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight">
-                  5.0K +
+                  5.0K+
                 </div>
                 <div className="text-[11px] sm:text-xs text-slate-400 font-medium leading-tight mt-1">
-                  Solutions 
+                  Solutions Fixed
                 </div>
               </div>
             </div>
           </motion.div>
         </div>
 
-        {/* Bottom Hero Image Banner with Play Button */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.25 }}
-          className="relative w-full h-[320px] sm:h-[480px] lg:h-[580px] rounded-2xl sm:rounded-3xl lg:rounded-[36px] overflow-hidden group shadow-2xl border border-slate-800/60"
+          className="relative w-full h-[360px] sm:h-[480px] lg:h-[540px] rounded-2xl sm:rounded-3xl lg:rounded-[36px] overflow-hidden group shadow-2xl border border-slate-800/80"
         >
           <Image
             src="/about-hero-team.jpg"
-            alt="We Are Creative Digital Agency Team"
+            alt="DevSolve Engineering & Security Team"
             fill
             priority
-            className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+            className="object-cover object-center group-hover:scale-105 transition-transform duration-1000 ease-out"
             sizes="(max-width: 1280px) 100vw, 1280px"
           />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#09131D] via-[#09131D]/40 to-transparent z-10" />
 
-          <div className="absolute inset-0 flex items-center justify-center z-10">
-            <button
-              onClick={() => setIsVideoOpen(true)}
-              aria-label="Play presentation video"
-              className="relative group/btn cursor-pointer focus:outline-none"
-            >
-              <span className="absolute -inset-4 rounded-full bg-[#00D2B4]/30 animate-ping duration-1000" />
-              
-              <div className="relative w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full bg-[#00D2B4] hover:bg-[#00c0a5] text-slate-950 flex items-center justify-center shadow-xl shadow-[#00D2B4]/40 transition-all duration-300 group-hover/btn:scale-110">
-                <Play className="w-7 h-7 sm:w-9 sm:h-9 lg:w-10 lg:h-10 fill-slate-950 translate-x-0.5" />
+          <div className="absolute inset-x-0 bottom-0 z-20 p-6 sm:p-10 lg:p-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl">
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700/50">
+                <div className="p-2 rounded-lg bg-[#00D2B4]/10 text-[#00D2B4]">
+                  <Bug className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-semibold text-white">Bug Bounty</h4>
+                  <p className="text-[10px] text-slate-400">Continuous Audits</p>
+                </div>
               </div>
-            </button>
+
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700/50">
+                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-semibold text-white">Verified Pros</h4>
+                  <p className="text-[10px] text-slate-400">Vetted Engineers</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700/50">
+                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-semibold text-white">Encrypted</h4>
+                  <p className="text-[10px] text-slate-400">Zero Trust Flow</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="shrink-0">
+              <Link
+                href="/programs"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#00D2B4] hover:bg-[#00c0a5] text-slate-950 font-semibold text-sm transition-all duration-300 shadow-lg shadow-[#00D2B4]/25 hover:shadow-xl hover:scale-105"
+              >
+                <span>Explore Programs</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </motion.div>
       </div>
-
-      <AnimatePresence>
-        {isVideoOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
-            onClick={() => setIsVideoOpen(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-4xl bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setIsVideoOpen(false)}
-                className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-700 text-white flex items-center justify-center transition cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="relative aspect-video w-full">
-                <iframe
-                  className="w-full h-full"
-                  src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1"
-                  title="DevSolve Creative Video"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }
@@ -265,175 +251,6 @@ function OfferSection() {
 }
 
 
-
-
-
-// function TechStackSection() {
-//   const containerRef = useRef<HTMLDivElement>(null);
-//   const centerRef = useRef<HTMLDivElement>(null);
-//   const techRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-//   const [rotation, setRotation] = useState(0);
-//   const [isHovered, setIsHovered] = useState(false);
-
-//   const [radius, setRadius] = useState(250);
-
-//   useEffect(() => {
-//     const updateRadius = () => {
-//       if (window.innerWidth < 640) {
-//         setRadius(130); // Mobile
-//       } else if (window.innerWidth < 1024) {
-//         setRadius(200); // Tablet
-//       } else {
-//         setRadius(260); // Desktop
-//       }
-//     };
-
-//     updateRadius();
-//     window.addEventListener("resize", updateRadius);
-//     return () => window.removeEventListener("resize", updateRadius);
-//   }, []);
-
-//   useEffect(() => {
-//     let frameId: number;
-//     let lastTime = performance.now();
-
-//     const animate = (time: number) => {
-//       const delta = time - lastTime;
-//       lastTime = time;
-
-//       if (!isHovered) {
-//         setRotation((prev) => (prev + delta * 0.0003) % (2 * Math.PI));
-//       }
-
-//       frameId = window.requestAnimationFrame(animate);
-//     };
-
-//     frameId = window.requestAnimationFrame(animate);
-//     return () => window.cancelAnimationFrame(frameId);
-//   }, [isHovered]);
-
-//   return (
-//     <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
-//       <div className="text-center mb-12">
-//         <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">
-//           Built with Modern Technologies
-//         </h2>
-//         <p className="text-slate-500 text-xs sm:text-sm max-w-xl mx-auto mt-3 leading-relaxed">
-//           A carefully chosen, battle-tested stack for security, scalability, and developer experience.
-//         </p>
-//       </div>
-
-//       <div
-//         ref={containerRef}
-//         onMouseEnter={() => setIsHovered(true)}
-//         onMouseLeave={() => setIsHovered(false)}
-//         className="relative flex min-h-[580px] sm:min-h-[680px] lg:min-h-[750px] w-full items-center justify-center overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-b from-slate-50 via-white to-slate-100/80 p-6 sm:p-12 shadow-sm"
-//       >
-//         <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-30 pointer-events-none" />
-
-//         <div
-//           style={{ width: radius * 2, height: radius * 2 }}
-//           className="absolute rounded-full border border-slate-200/80 pointer-events-none transition-all duration-300"
-//         />
-//         <div
-//           style={{ width: radius * 1.3, height: radius * 1.3 }}
-//           className="absolute rounded-full border border-dashed border-slate-300/50 pointer-events-none transition-all duration-300"
-//         />
-
-//         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-tr from-purple-500/15 via-blue-500/15 to-pink-500/15 rounded-full blur-3xl pointer-events-none" />
-
-       
-//         <div
-//           ref={centerRef}
-//           className="relative z-20 flex flex-col items-center justify-center w-36 h-36 sm:w-48 sm:h-48 lg:w-56 lg:h-56 rounded-full bg-white/90 backdrop-blur-xl border-4 border-slate-100 shadow-[0_10px_40px_rgba(59,130,246,0.18)] text-center group transition-transform duration-300 hover:scale-105"
-//         >
-//           <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 opacity-20 blur-sm group-hover:opacity-40 transition-opacity" />
-
-//           <div className="w-14 h-14 sm:w-20 sm:h-20 lg:w-24 lg:h-24 relative flex items-center justify-center overflow-hidden rounded-full">
-//             <Image
-//               src="/devsolve-logo.png"
-//               alt="DevSolve Logo"
-//               fill
-//               className="object-contain p-2"
-//             />
-//           </div>
-
-//           <span className="text-[10px] sm:text-xs font-black text-slate-800 tracking-wider uppercase mt-1">
-//             DevSolve Hub
-//           </span>
-//           <span className="text-[9px] sm:text-[10px] text-blue-600 font-semibold uppercase tracking-widest mt-0.5">
-//             Architecture
-//           </span>
-//         </div>
-
-        
-//         {TECHNOLOGIES.map((tech, idx) => {
-//           const total = TECHNOLOGIES.length;
-//           const baseAngle = (idx / total) * 2 * Math.PI - Math.PI / 2;
-//           const currentAngle = baseAngle + rotation;
-
-//           const x = Math.cos(currentAngle) * radius;
-//           const y = Math.sin(currentAngle) * radius;
-
-//           return (
-//             <div
-//               key={idx}
-//               ref={(el) => {
-//                 techRefs.current[idx] = el;
-//               }}
-//               style={{
-//                 position: "absolute",
-//                 transform: `translate3d(${x}px, ${y}px, 0px)`,
-//               }}
-//               className="z-20 transition-transform duration-75 ease-linear"
-//             >
-//               <div className="flex flex-col items-center justify-center p-3 sm:p-4 w-28 sm:w-36 lg:w-40 rounded-2xl bg-white/85 backdrop-blur-md border border-white/80 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08)] text-center group cursor-pointer hover:shadow-xl hover:border-slate-300 hover:scale-105 transition-all duration-200">
-//                 <div
-//                   className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl ${tech.bgColor} border ${tech.borderColor} p-2 flex items-center justify-center shrink-0 overflow-hidden relative shadow-inner group-hover:scale-105 transition-transform duration-200 mb-2`}
-//                 >
-//                   <Image
-//                     src={tech.image}
-//                     alt={`${tech.name} logo`}
-//                     fill
-//                     className="object-contain p-1.5"
-//                   />
-//                 </div>
-
-//                 <h3 className="text-xs sm:text-sm font-bold text-slate-900 truncate w-full">
-//                   {tech.name}
-//                 </h3>
-//                 <p className="text-slate-400 text-[10px] sm:text-[11px] font-medium truncate w-full hidden sm:block mt-0.5">
-//                   {tech.description}
-//                 </p>
-//               </div>
-//             </div>
-//           );
-//         })}
-
-//         {TECHNOLOGIES.map((tech, idx) => (
-//           <AnimatedBeam
-//             key={`beam-${idx}`}
-//             containerRef={containerRef}
-//             fromRef={centerRef}
-//             toRef={{ current: techRefs.current[idx] }}
-//             curvature={0}
-//             gradientStartColor="#3b82f6"
-//             gradientStopColor={tech.color}
-//             duration={3 + (idx % 3) * 0.5}
-//             pathWidth={2.5}
-//           />
-//         ))}
-//       </div>
-//     </section>
-//   );
-// }
-
-
-
-
-
-
 interface TechStackSectionProps {
   technologies?: Technology[];
 }
@@ -473,7 +290,6 @@ export function TechStackSection({
 
   const flowLength = TECH_FLOW.length;
 
-  // Track responsive container width for precise ball coordinate alignment
   useEffect(() => {
     const updateWidth = () => {
       if (containerRef.current) {
@@ -486,7 +302,6 @@ export function TechStackSection({
     return () => window.removeEventListener("resize", updateWidth);
   }, []);
 
-  // Compute curved SVG node locations based on total node count and container width
   const positions = useMemo(() => {
     const total = Math.max(flowLength, 1);
     const nextPositions = [] as Array<{ x: number; y: number }>;
@@ -502,7 +317,6 @@ export function TechStackSection({
     return nextPositions;
   }, [flowLength, containerWidth]);
 
-  // Synchronized pipeline flow timer (3 seconds per node)
   useEffect(() => {
     if (hoveredNode !== null || flowLength === 0) return;
 
@@ -514,7 +328,6 @@ export function TechStackSection({
     return () => clearInterval(interval);
   }, [flowLength, hoveredNode]);
 
-  // Smooth ball movement & activation trigger
   useEffect(() => {
     if (flowLength === 0 || !positions[activeNode]) return;
 
@@ -529,7 +342,6 @@ export function TechStackSection({
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
-      {/* Section Header */}
       <div className="text-center mb-12">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-sm font-semibold mb-4">
           <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
@@ -543,18 +355,15 @@ export function TechStackSection({
         </p>
       </div>
 
-      {/* Main Flow Container */}
       <div
         ref={containerRef}
         className="relative overflow-visible rounded-[40px] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50 shadow-xl p-6 sm:p-10 md:p-14"
       >
-        {/* Background Blur Accents */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[40px]">
           <div className="absolute w-[450px] h-[450px] bg-blue-400/10 blur-[120px] rounded-full -top-40 -left-32 animate-bgGlow" />
           <div className="absolute w-[350px] h-[350px] bg-emerald-300/10 blur-[120px] rounded-full bottom-0 right-0 animate-bgGlow" />
         </div>
 
-        {/* TOP Header Bar */}
         <div className="relative z-10 flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div className="h-10 px-5 rounded-full bg-[#2B68F6] text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md shadow-blue-500/20">
@@ -571,9 +380,7 @@ export function TechStackSection({
           </div>
         </div>
 
-        {/* Process Track */}
         <div className="relative py-16 my-4 flex items-center justify-between gap-4 md:gap-8 overflow-x-auto no-scrollbar">
-          {/* Animated Wave Path & Flowing Particles */}
           <svg
             className="absolute inset-0 w-full h-full pointer-events-none z-0 min-w-[700px]"
             preserveAspectRatio="none"
@@ -586,7 +393,6 @@ export function TechStackSection({
               </filter>
             </defs>
 
-            {/* Base Path Line */}
             <path
               id="techPath"
               d="M 80,100 C 220,20 340,180 500,100 C 660,20 780,180 920,100"
@@ -596,7 +402,6 @@ export function TechStackSection({
               strokeDasharray="7 7"
             />
 
-            {/* Glowing Electric Flow Line */}
             <path
               d="M 80,100 C 220,20 340,180 500,100 C 660,20 780,180 920,100"
               fill="none"
@@ -608,7 +413,6 @@ export function TechStackSection({
               style={{ animation: "dash 4s linear infinite" }}
             />
 
-            {/* Active Moving Flow Line */}
             <path
               d="M 80,100 C 220,20 340,180 500,100 C 660,20 780,180 920,100"
               fill="none"
@@ -618,7 +422,6 @@ export function TechStackSection({
               style={{ animation: "dash 4s linear infinite" }}
             />
 
-            {/* Primary Tracking Orb */}
             <circle
               cx={ballPosition.x}
               cy={ballPosition.y}
@@ -627,7 +430,6 @@ export function TechStackSection({
               className="transition-all duration-700 ease-in-out"
             />
 
-            {/* Energy Arrival Ripple Outer Ring */}
             <circle
               cx={ballPosition.x}
               cy={ballPosition.y}
@@ -637,7 +439,6 @@ export function TechStackSection({
               className="transition-all duration-700 ease-in-out"
             />
 
-            {/* Background Particle Trails */}
             <circle r="3" fill="#10B981">
               <animateMotion begin="0s" dur="6s" repeatCount="indefinite">
                 <mpath href="#techPath" />
@@ -672,7 +473,6 @@ export function TechStackSection({
                   animationDelay: `${index * 0.4}s`,
                 }}
               >
-                {/* Active Impact Wave Pulse */}
                 {isActive && (
                   <>
                     <div className="absolute inset-0 rounded-full bg-blue-500/20 animate-ping pointer-events-none" />
@@ -680,7 +480,6 @@ export function TechStackSection({
                   </>
                 )}
 
-                {/* Sub Badges */}
                 {node.subBadges && (
                   <div className="absolute -top-3 left-0 right-0 pointer-events-none flex justify-between z-20 px-1">
                     {node.subBadges.map((badge, bIdx) => (
@@ -698,9 +497,7 @@ export function TechStackSection({
                   </div>
                 )}
 
-                {/* Interactive Node Container */}
                 <div className="relative flex items-center justify-center my-2">
-                  {/* Rotating Gradient Ring on Active Node */}
                   <div
                     className={`absolute -inset-2 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400 blur-xs transition-all duration-500 ${
                       isActive
@@ -711,7 +508,6 @@ export function TechStackSection({
                     }`}
                   />
 
-                  {/* Node Card Circle */}
                   <div
                     className={`relative flex flex-col items-center justify-center rounded-full bg-white border-2 transition-all duration-500 cursor-pointer shadow-md ${
                       shouldHighlight
@@ -748,7 +544,6 @@ export function TechStackSection({
                       {node.description}
                     </span>
 
-                    {/* Active Status Badge */}
                     {isActive && (
                       <div className="absolute -bottom-5 flex items-center gap-1 text-[8px] font-extrabold text-[#2B68F6] uppercase tracking-widest z-20 bg-white/90 px-2 py-0.5 rounded-full border border-blue-200 shadow-xs">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#2B68F6] animate-pulse" />
@@ -758,7 +553,6 @@ export function TechStackSection({
                   </div>
                 </div>
 
-                {/* Connection Arrow */}
                 {index < TECH_FLOW.length - 1 && (
                   <div
                     className={`absolute right-[-14px] md:right-[-20px] top-1/2 -translate-y-1/2 z-0 hidden sm:block font-bold text-sm transition-all duration-500 ${
@@ -775,7 +569,6 @@ export function TechStackSection({
           })}
         </div>
 
-        {/* BOTTOM Footer Line */}
         <div className="relative z-10 flex items-center justify-between mt-8">
           <div className="hidden sm:flex items-center gap-4 text-xs font-semibold text-slate-400 tracking-wider">
             <span>DATA INTEGRITY</span>
@@ -794,7 +587,6 @@ export function TechStackSection({
         </div>
       </div>
 
-      {/* Embedded Animations */}
       <style jsx>{`
         @keyframes dash {
           to {
@@ -893,7 +685,12 @@ function TeamSection() {
 
 
 
-function MemberCard({ member }: { member: TeamMember }) {
+
+interface MemberCardProps {
+  member: TeamMember;
+}
+
+export function MemberCard({ member }: MemberCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -901,202 +698,79 @@ function MemberCard({ member }: { member: TeamMember }) {
       transition={{ duration: 0.3 }}
       className="group w-full"
     >
-      <div
-        className="
-          relative 
-          aspect-[3/4] 
-          overflow-hidden 
-          rounded-2xl 
-          bg-gray-100
-          shadow-sm
-          border border-gray-200
-          transition-all
-          duration-300
-          group-hover:shadow-xl
-        "
-      >
+      <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-gray-100 shadow-xs border border-gray-200 transition-all duration-300 group-hover:shadow-xl">
         <Image
           src={member.image}
           alt={member.name}
           fill
-          className="
-            object-cover 
-            object-top
-            transition-transform 
-            duration-500
-            group-hover:scale-105
-          "
-          sizes="(max-width:768px) 100vw, 25vw"
+          className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, 25vw"
         />
 
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
-        <div
-          className="
-            absolute 
-            inset-x-0 
-            bottom-0 
-            h-32
-            bg-gradient-to-t 
-            from-black/70 
-            via-black/30 
-            to-transparent
-          "
-        />
-
-
-        {/* Role Badge */}
         <div className="absolute bottom-4 left-4">
-          <span
-            className="
-              px-4
-              py-2
-              rounded-full
-              bg-black/60
-              backdrop-blur-md
-              text-white
-              text-[11px]
-              font-bold
-              tracking-wider
-              border
-              border-white/10
-            "
-          >
+          <span className="px-4 py-2 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-bold tracking-wider border border-white/10">
             {member.subRole?.toUpperCase() || "FULL STACK"}
           </span>
         </div>
 
-
-        <div
-          className="
-            absolute 
-            bottom-4 
-            right-4 
-            flex 
-            gap-2
-          "
-        >
+        <div className="absolute bottom-4 right-4 flex gap-2">
           {member.github && (
             <a
               href={member.github}
               target="_blank"
-              className="
-                w-9 h-9
-                rounded-full
-                bg-black/80
-                text-white
-                flex
-                items-center
-                justify-center
-                hover:scale-110
-                transition
-              "
+              rel="noopener noreferrer"
+              className="w-9 h-9 rounded-full bg-black/80 text-white flex items-center justify-center hover:scale-110 hover:bg-black transition duration-200"
             >
-              <FaGithub size={15}/>
+              <FaGithub size={15} />
             </a>
           )}
-
 
           {member.linkedin && (
             <a
               href={member.linkedin}
               target="_blank"
-              className="
-                w-9 h-9
-                rounded-full
-                bg-black/80
-                text-white
-                flex
-                items-center
-                justify-center
-                hover:scale-110
-                transition
-              "
+              rel="noopener noreferrer"
+              className="w-9 h-9 rounded-full bg-black/80 text-white flex items-center justify-center hover:scale-110 hover:bg-black transition duration-200"
             >
-              <FaLinkedin size={15}/>
+              <FaLinkedin size={15} />
             </a>
           )}
-
 
           {member.telegram && (
             <a
               href={member.telegram}
               target="_blank"
-              className="
-                w-9 h-9
-                rounded-full
-                bg-black/80
-                text-white
-                flex
-                items-center
-                justify-center
-                hover:scale-110
-                transition
-              "
+              rel="noopener noreferrer"
+              className="w-9 h-9 rounded-full bg-black/80 text-white flex items-center justify-center hover:scale-110 hover:bg-black transition duration-200"
             >
-              <FaTelegram size={15}/>
+              <FaTelegram size={15} />
             </a>
           )}
         </div>
       </div>
 
-
-
       <div className="mt-4 px-1">
-
         <div className="flex items-center justify-between">
-
-          <h3
-            className="
-              text-lg
-              font-bold
-              text-gray-900
-            "
-          >
+          <h3 className="text-lg font-bold text-gray-900">
             {member.name}
           </h3>
 
-
-          <span
-            className="
-              text-[10px]
-              px-3
-              py-1
-              rounded-full
-              border
-              border-blue-200
-              text-blue-600
-              font-semibold
-              bg-blue-50
-            "
-          >
+          <span className="text-[10px] px-3 py-1 rounded-full border border-blue-200 text-blue-600 font-semibold bg-blue-50">
             {member.badge || "MEMBER"}
           </span>
-
         </div>
 
-
-
         {member.quote && (
-          <p
-            className="
-              mt-2
-              text-sm
-              italic
-              text-gray-400
-              leading-relaxed
-            "
-          >
-            {member.quote.replace(/['"]+/g, "")}
+          <p className="mt-2 text-sm italic text-gray-500 leading-relaxed">
+            "{member.quote.replace(/['"]+/g, "")}"
           </p>
         )}
-
       </div>
-
     </motion.div>
   );
 }
-
-
 
 function ContactSection() {
   const [formData, setFormData] = useState({
