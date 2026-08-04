@@ -22,7 +22,7 @@ interface SubmitReportReviewStepProps {
   onGoToStep: (step: number) => void;
   onSaveDraft: () => void;
   onSubmitReport: () => void;
-  selectedProgram?: ProgramItem | null;
+  selectedProgram?: any | null;
 }
 
 export function SubmitReportReviewStep({
