@@ -20,7 +20,7 @@ import {
   HTTP_METHODS,
   ENVIRONMENTS,
 } from "@/lib/validations/report";
-import { Program } from "@/lib/types/programs/types";
+import { ProgramItem } from "@/lib/redux/services/program/programsApi";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -183,19 +183,16 @@ export function SubmitReportTargetSection({
           In-Scope Targets ({inScopeList.length})
         </h3>
         <div className="flex flex-wrap gap-3 py-1">
-          {inScopeList.map((target, idx) => {
-            const targetName = typeof target === "string" ? target : target.identifier;
-            return (
-              <Badge
-                key={typeof target === "string" ? target : target.id || idx}
-                variant="outline"
-                className="px-4 py-4 text-sm font-mono font-medium gap-2.5"
-              >
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span>{targetName}</span>
-              </Badge>
-            );
-          })}
+          {inScopeList.map((target) => (
+            <Badge
+              key={target}
+              variant="outline"
+              className="px-4 py-4 text-sm font-mono font-medium gap-2.5"
+            >
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>{target}</span>
+            </Badge>
+          ))}
         </div>
       </div>
 
@@ -205,19 +202,16 @@ export function SubmitReportTargetSection({
           Out-of-Scope Rules & Exclusions
         </h3>
         <div className="flex flex-wrap gap-3 py-1">
-          {outOfScopeList.map((target, idx) => {
-            const targetName = typeof target === "string" ? target : String(target);
-            return (
-              <Badge
-                key={idx}
-                variant="secondary"
-                className="px-4 py-4 text-sm font-mono font-medium gap-2.5 opacity-90"
-              >
-                <XCircle className="w-4 h-4 text-rose-500 dark:text-rose-400 shrink-0" />
-                <span>{targetName}</span>
-              </Badge>
-            );
-          })}
+          {outOfScopeList.map((target) => (
+            <Badge
+              key={target}
+              variant="secondary"
+              className="px-4 py-4 text-sm font-mono font-medium gap-2.5 opacity-90"
+            >
+              <XCircle className="w-4 h-4 text-rose-500 dark:text-rose-400 shrink-0" />
+              <span>{target}</span>
+            </Badge>
+          ))}
         </div>
       </div>
 

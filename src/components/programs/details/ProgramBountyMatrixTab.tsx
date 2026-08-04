@@ -70,14 +70,14 @@ export function ProgramBountyMatrixTab({ program }: { program: ProgramDetail }) 
 
                 {/* Right Side: Points + Amount Range */}
                 <div className="flex items-center justify-between md:justify-end gap-4 shrink-0">
-                  {(reward.points ?? 0) > 0 && (
+                  {reward.points > 0 && (
                     <span className="flex items-center gap-1 text-xs text-amber-600 font-bold bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-lg">
                       <Zap className="w-3.5 h-3.5 fill-amber-500" />
                       {reward.points} pts
                     </span>
                   )}
                   <p className="text-lg sm:text-xl font-extrabold text-emerald-600">
-                    ${(reward.minAmount ?? 0).toLocaleString()} – ${(reward.maxAmount ?? 0).toLocaleString()}
+                    ${reward.minAmount.toLocaleString()} – ${reward.maxAmount.toLocaleString()}
                   </p>
                 </div>
               </div>
