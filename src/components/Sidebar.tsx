@@ -64,7 +64,6 @@ function SidebarContent({
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Logo Section */}
       <div className="flex items-center justify-between mt-1 mb-3 shrink-0 px-1">
         {/* <Link href="/" onClick={onNavItemClick} className="flex items-center gap-2">
           <Image
@@ -193,7 +192,6 @@ function SidebarContent({
         })}
       </nav>
 
-      {/* Settings & Logout Buttons (Pinned to bottom) */}
       <div className="mt-auto pt-3 shrink-0 space-y-1.5 border-t border-slate-200/50">
         <Link href="/dashboard/profile/settings" onClick={onNavItemClick} className="block w-full">
           <Button className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 flex items-center justify-start px-3 gap-3 shadow-2xs text-sm font-semibold">
@@ -225,7 +223,6 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile Top Header (Visible on < lg screens) */}
       <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 w-full">
         <Link href="/" className="flex items-center gap-2">
           <Image
@@ -253,11 +250,9 @@ const Sidebar = () => {
         </div>
       </header>
 
-      {/* Mobile Drawer (Slide-over on < lg screens) */}
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -266,7 +261,6 @@ const Sidebar = () => {
               className="lg:hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs"
             />
 
-            {/* Slide-over Panel */}
             <motion.aside
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}

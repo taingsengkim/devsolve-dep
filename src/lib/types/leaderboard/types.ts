@@ -1,32 +1,74 @@
-export type LeaderboardBadgeLabel = "Top 10" | "Bug Slayer" | "Speed Hacker" | "First Blood" | "Retest Pro";
+/* ────────────────────────────────────────────────────────────────────
+   Leaderboard domain types.
 
-export type ResearcherAvatarUrl = string;
+   Privacy contract: nothing in here may carry a company name, a report
+   title, or any vulnerability detail. The leaderboard only ever exposes
+   aggregate counts (3 Critical, 12 High) — never which program a finding
+   belongs to, and never what the bug was.
+   ──────────────────────────────────────────────────────────────────── */
 
-export interface ResearcherAchievement {
-  id: string;
-  level: number;
-  label: string;
-  value: number; // e.g. 05, 30, 60, 15
-  color: string;
+/** Ranking window. `all` is cumulative; `month` / `week` are points earned
+ *  inside that window and need windowed reputation on the backend. */
+export type LeaderboardPeriod = "all" | "month" | "week";
+
+export type SeverityLabel = "Critical" | "High" | "Medium" | "Low";
+
+export interface SeverityBreakdown {
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
 }
 
-export interface Researcher {
+export interface LeaderboardEntry {
   id: string;
+  /** Global rank for the selected period — 1 is best. */
   rank: number;
-  handle: string; // e.g. "darkp4tch"
-  realName: string; // e.g. "Amara Diallo"
-  countryCode: string; // e.g. "sn"
+  /** Rank in the previous comparable window, for the movement indicator. */
+  previousRank: number | null;
+  /** Profile slug — links to /dashboard/profile/[username]. */
+  username: string;
+  displayName: string;
+  avatarUrl?: string;
   avatarInitials: string;
-  avatarUrl?: ResearcherAvatarUrl;
+  countryCode: string;
+  countryName: string;
+  /** The sort key. Points, never payout amounts. */
   reputation: number;
-  accepted: number;
-  critical: number;
-  badges: LeaderboardBadgeLabel[];
-  level: number;
-  trend: { direction: "up" | "down" | "neutral", value: number };
-  categories: string[];
-  achievements: ResearcherAchievement[];
-  levelProgress: number; // 0-100
+  totalReports: number;
+  validReports: number;
+  criticalReports: number;
+  recognitionCount: number;
+  severity: SeverityBreakdown;
+  /** Highest severity this researcher has landed in the window. */
+  topSeverity: SeverityLabel;
+  isCurrentUser?: boolean;
+}
+
+export type LeaderboardHighlightKind =
+  | "reports"
+  | "valid"
+  | "critical"
+  | "recognition"
+  | "climb";
+
+/** The four "most X" cards above the table. */
+export interface LeaderboardHighlight {
+  kind: LeaderboardHighlightKind;
+  label: string;
+  value: number;
+  /** Formatted suffix, e.g. "reports" / "places". */
+  unit: string;
+  username: string;
+  displayName: string;
+  avatarUrl?: string;
+  avatarInitials: string;
+}
+
+export interface LeaderboardCountryOption {
+  code: string;
+  name: string;
+  count: number;
 }
 
 export interface LeaderboardStats {
@@ -35,4 +77,25 @@ export interface LeaderboardStats {
   programsLive: number;
 }
 
-export type LeaderboardSortMetric = "reputation" | "accepted" | "critical";
+/** How reputation points are earned. Surfaced in the UI so the ranking is
+ *  legible, and deliberately payout-independent. */
+export const REPUTATION_POINTS = {
+  critical: 45,
+  high: 20,
+  medium: 8,
+  low: 3,
+  recognition: 25,
+} as const;
+
+export const SEVERITY_ORDER: SeverityLabel[] = [
+  "Critical",
+  "High",
+  "Medium",
+  "Low",
+];
+
+export const PERIOD_LABELS: Record<LeaderboardPeriod, string> = {
+  all: "All time",
+  month: "This month",
+  week: "This week",
+};
