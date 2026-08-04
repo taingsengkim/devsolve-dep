@@ -75,7 +75,7 @@ export default function ProblemDetailPage() {
           className="inline-flex items-center space-x-2 text-sm font-semibold text-blue-600 hover:underline"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Back to Discussions</span>
+          <span>Back to Community</span>
         </Link>
       </div>
     );
@@ -131,7 +131,7 @@ export default function ProblemDetailPage() {
           className="inline-flex items-center space-x-2 text-base font-semibold text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 mb-6 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Back to Discussions</span>
+          <span>Back to Community</span>
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
