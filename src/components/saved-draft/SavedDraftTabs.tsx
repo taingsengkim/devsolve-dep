@@ -17,6 +17,7 @@ type SavedDraftTabsProps = {
   activeTab: DraftCategory;
   counts: Record<DraftCategory, number>;
   onChange: (category: DraftCategory) => void;
+  visibleTabs?: DraftCategory[];
 };
 
 type DraftTabConfig = {
@@ -36,10 +37,15 @@ export function SavedDraftTabs({
   activeTab,
   counts,
   onChange,
+  visibleTabs,
 }: SavedDraftTabsProps) {
+  const tabs = visibleTabs
+    ? TAB_CONFIG.filter((t) => visibleTabs.includes(t.key))
+    : TAB_CONFIG;
+
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {TAB_CONFIG.map((tab) => {
+      {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.key;
 
