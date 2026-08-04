@@ -2,7 +2,12 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { motion, useMotionValue, useSpring, useReducedMotion } from "motion/react";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useReducedMotion,
+} from "motion/react";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -84,7 +89,11 @@ function AuroraField() {
           className={`absolute rounded-full blur-[110px] ${blob.className}`}
           style={{ backgroundColor: blob.color, opacity: blob.opacity }}
           animate={reduce ? undefined : blob.path}
-          transition={{ duration: blob.duration, repeat: Infinity, ease: "easeInOut" }}
+          transition={{
+            duration: blob.duration,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
         />
       ))}
     </div>
@@ -231,7 +240,12 @@ function SilkBackdrop() {
       <motion.div
         className="absolute inset-y-0 -left-1/3 w-1/2 bg-[linear-gradient(100deg,transparent,rgba(255,255,255,0.85),transparent)]"
         animate={reduce ? undefined : { x: ["0%", "260%"] }}
-        transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", repeatDelay: 3 }}
+        transition={{
+          duration: 11,
+          repeat: Infinity,
+          ease: "easeInOut",
+          repeatDelay: 3,
+        }}
       />
     </div>
   );
@@ -260,7 +274,12 @@ function BlueprintGrid() {
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       <svg className="absolute inset-0 h-full w-full" aria-hidden="true">
         <defs>
-          <pattern id="hero-grid" width={CELL} height={CELL} patternUnits="userSpaceOnUse">
+          <pattern
+            id="hero-grid"
+            width={CELL}
+            height={CELL}
+            patternUnits="userSpaceOnUse"
+          >
             <path
               d={`M ${CELL} 0 L 0 0 0 ${CELL}`}
               fill="none"
@@ -301,8 +320,15 @@ function BlueprintGrid() {
           background: `linear-gradient(to bottom, transparent, ${PRIMARY}, transparent)`,
           opacity: 0.35,
         }}
-        animate={reduce ? undefined : { left: ["8%", "92%"], opacity: [0, 0.35, 0] }}
-        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", repeatDelay: 5 }}
+        animate={
+          reduce ? undefined : { left: ["8%", "92%"], opacity: [0, 0.35, 0] }
+        }
+        transition={{
+          duration: 9,
+          repeat: Infinity,
+          ease: "easeInOut",
+          repeatDelay: 5,
+        }}
       />
       {/* horizontal beam, slower and emerald */}
       <motion.div
@@ -311,8 +337,15 @@ function BlueprintGrid() {
           background: `linear-gradient(to right, transparent, ${ACCENT}, transparent)`,
           opacity: 0.3,
         }}
-        animate={reduce ? undefined : { top: ["18%", "86%"], opacity: [0, 0.3, 0] }}
-        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", repeatDelay: 7 }}
+        animate={
+          reduce ? undefined : { top: ["18%", "86%"], opacity: [0, 0.3, 0] }
+        }
+        transition={{
+          duration: 14,
+          repeat: Infinity,
+          ease: "easeInOut",
+          repeatDelay: 7,
+        }}
       />
 
       <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-white to-transparent" />
@@ -378,7 +411,11 @@ function FoldedCorner() {
         className="absolute inset-0 bg-slate-50"
         style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
       />
-      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 112 112" aria-hidden="true">
+      <svg
+        className="absolute inset-0 h-full w-full"
+        viewBox="0 0 112 112"
+        aria-hidden="true"
+      >
         <motion.line
           x1="112"
           y1="0"
@@ -425,7 +462,9 @@ function RevealLine({ text, delay = 0 }: { text: string; delay?: number }) {
               </motion.span>
             );
           })}
-          {wi < words.length - 1 && <span className="inline-block">&nbsp;</span>}
+          {wi < words.length - 1 && (
+            <span className="inline-block">&nbsp;</span>
+          )}
         </span>
       ))}
     </>
@@ -445,12 +484,54 @@ type Chip = {
 };
 
 const CHIPS: Chip[] = [
-  { label: "Critical CVE", icon: ShieldCheck, tint: PRIMARY, className: "left-[3%] top-[26%]", delay: 0.9, drift: 10 },
-  { label: "Repro steps", icon: Terminal, tint: SECONDARY, className: "left-[7%] bottom-[30%]", delay: 1.15, drift: -12 },
-  { label: "Bounty payout", icon: Bug, tint: ACCENT, className: "left-[16%] bottom-[15%]", delay: 1.35, drift: 8 },
-  { label: "Root cause", icon: Radar, tint: PRIMARY, className: "right-[5%] top-[22%]", delay: 1.0, drift: -9 },
-  { label: "Patch diff", icon: GitBranch, tint: ACCENT, className: "right-[9%] top-[46%]", delay: 1.25, drift: 11 },
-  { label: "Write-ups", icon: Layers, tint: SECONDARY, className: "right-[14%] bottom-[22%]", delay: 1.45, drift: -10 },
+  {
+    label: "Critical CVE",
+    icon: ShieldCheck,
+    tint: PRIMARY,
+    className: "left-[3%] top-[26%]",
+    delay: 0.9,
+    drift: 10,
+  },
+  {
+    label: "Repro steps",
+    icon: Terminal,
+    tint: SECONDARY,
+    className: "left-[7%] bottom-[30%]",
+    delay: 1.15,
+    drift: -12,
+  },
+  {
+    label: "Bounty payout",
+    icon: Bug,
+    tint: ACCENT,
+    className: "left-[16%] bottom-[15%]",
+    delay: 1.35,
+    drift: 8,
+  },
+  {
+    label: "Root cause",
+    icon: Radar,
+    tint: PRIMARY,
+    className: "right-[5%] top-[22%]",
+    delay: 1.0,
+    drift: -9,
+  },
+  {
+    label: "Patch diff",
+    icon: GitBranch,
+    tint: ACCENT,
+    className: "right-[9%] top-[46%]",
+    delay: 1.25,
+    drift: 11,
+  },
+  {
+    label: "Write-ups",
+    icon: Layers,
+    tint: SECONDARY,
+    className: "right-[14%] bottom-[22%]",
+    delay: 1.45,
+    drift: -10,
+  },
 ];
 
 function FloatingChip({ chip }: { chip: Chip }) {
@@ -461,12 +542,20 @@ function FloatingChip({ chip }: { chip: Chip }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.92, y: 14 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: chip.delay, ease: [0.22, 1, 0.36, 1] }}
+      transition={{
+        duration: 0.6,
+        delay: chip.delay,
+        ease: [0.22, 1, 0.36, 1],
+      }}
       className={`pointer-events-none absolute hidden xl:block ${chip.className}`}
     >
       <motion.div
         animate={reduce ? undefined : { y: [0, chip.drift, 0] }}
-        transition={{ duration: 6 + Math.abs(chip.drift) * 0.2, repeat: Infinity, ease: "easeInOut" }}
+        transition={{
+          duration: 6 + Math.abs(chip.drift) * 0.2,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
         className="flex items-center gap-2 rounded-full bg-white/90 px-3.5 py-2 text-sm font-medium text-slate-600 backdrop-blur-sm shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_2px_8px_rgba(30,41,59,0.06)]"
       >
         <Icon className="h-3.5 w-3.5" style={{ color: chip.tint }} />
@@ -563,9 +652,9 @@ function CommandBar() {
 
         <Search className="relative h-4 w-4 shrink-0 text-slate-400" />
 
-        <div className="relative flex-1 overflow-hidden text-base">
+        {/* <div className="relative flex-1 overflow-hidden text-base">
           <TypedQuery />
-        </div>
+        </div> */}
 
         <kbd className="relative hidden items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-500 sm:inline-flex">
           <Command className="h-3 w-3" />K
@@ -625,7 +714,9 @@ function PartnerMarquee() {
               className="flex shrink-0 items-center gap-2 text-slate-400 transition-colors hover:text-[#1E293B]"
             >
               <Icon className="h-5 w-5" strokeWidth={1.6} />
-              <span className="text-base font-semibold tracking-tight">{p.name}</span>
+              <span className="text-base font-semibold tracking-tight">
+                {p.name}
+              </span>
             </div>
           );
         })}
@@ -681,7 +772,13 @@ export function Hero() {
             <motion.span
               initial={{ opacity: 0, scale: 0.4 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 1.05, type: "spring", stiffness: 320, damping: 18 }}
+              transition={{
+                duration: 0.5,
+                delay: 1.05,
+                type: "spring",
+                stiffness: 320,
+                damping: 18,
+              }}
               className="ml-[-0.04em] inline-block"
               style={{ color: PRIMARY }}
             >
@@ -697,8 +794,9 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.75, ease: "easeOut" }}
           className="mt-6 max-w-xl text-center text-base leading-relaxed text-slate-500"
         >
-          Run reward-based bounty programs, triage real vulnerability reports, and turn
-          every fix into a validated solution the whole community can search.
+          Run reward-based bounty programs, triage real vulnerability reports,
+          and turn every fix into a validated solution the whole community can
+          search.
         </motion.p>
 
         {/* primary CTA */}
@@ -735,18 +833,19 @@ export function Hero() {
         </motion.div>
 
         {/* hint label above the command bar, like the reference */}
-        <motion.span
+        {/* <motion.span
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 1.0 }}
           className="mt-10 mb-3 rounded-full bg-white/85 px-3 py-1 text-sm text-slate-400 backdrop-blur-sm shadow-[0_0_0_1px_rgba(30,41,59,0.07)]"
         >
           Search 40,000+ validated solutions
-        </motion.span>
+        </motion.span> */}
+        <span className="mt-10 mb-3 rounded-full bg-white/85 px-3 py-1 text-sm text-slate-400 backdrop-blur-sm shadow-[0_0_0_1px_rgba(30,41,59,0.07)]"></span>
 
-        <div className="flex w-full justify-center">
+        {/* <div className="flex w-full justify-center">
           <CommandBar />
-        </div>
+        </div> */}
       </div>
 
       {/* trust strip pinned to the bottom of the fold */}

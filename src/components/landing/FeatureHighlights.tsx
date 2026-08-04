@@ -138,7 +138,10 @@ const ARC = { cx: -180, cy: 400, r: 560, a0: -38, a1: 38, w: 400, h: 800 };
 function arcPoint(f: number) {
   const deg = ARC.a0 + (ARC.a1 - ARC.a0) * f;
   const rad = (deg * Math.PI) / 180;
-  return { x: ARC.cx + ARC.r * Math.cos(rad), y: ARC.cy + ARC.r * Math.sin(rad) };
+  return {
+    x: ARC.cx + ARC.r * Math.cos(rad),
+    y: ARC.cy + ARC.r * Math.sin(rad),
+  };
 }
 
 /** Inset so the first and last dot never sit at the very ends of the sweep. */
@@ -157,7 +160,10 @@ export function FeatureHighlights() {
   const containerRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
 
-  const totalUnits = ACTS.reduce((sum, act) => sum + 0.6 + act.steps.length + 0.5, 0);
+  const totalUnits = ACTS.reduce(
+    (sum, act) => sum + 0.6 + act.steps.length + 0.5,
+    0,
+  );
 
   useGSAP(
     () => {
@@ -175,7 +181,9 @@ export function FeatureHighlights() {
         });
         act.steps.forEach((_, si) => {
           gsap.set(`.step-${ai}-${si}`, { opacity: si === 0 ? 1 : 0.16 });
-          gsap.set(`.num-${ai}-${si}`, { color: si === 0 ? act.accent : MUTED });
+          gsap.set(`.num-${ai}-${si}`, {
+            color: si === 0 ? act.accent : MUTED,
+          });
           gsap.set(`.dot-${ai}-${si}`, {
             scale: si === 0 ? 1 : 0.5,
             backgroundColor: si === 0 ? act.accent : MUTED,
@@ -194,7 +202,11 @@ export function FeatureHighlights() {
         },
       });
 
-      tl.to(".gsap-progress-bar", { scaleX: 1, ease: "none", duration: totalUnits }, 0);
+      tl.to(
+        ".gsap-progress-bar",
+        { scaleX: 1, ease: "none", duration: totalUnits },
+        0,
+      );
 
       let t = 0;
 
@@ -204,12 +216,21 @@ export function FeatureHighlights() {
 
         /* ── act enters ── */
         if (ai > 0) {
-          tl.to(`.act-${ai}`, { opacity: 1, duration: 0.4, ease: "power2.out" }, t);
+          tl.to(
+            `.act-${ai}`,
+            { opacity: 1, duration: 0.4, ease: "power2.out" },
+            t,
+          );
         }
 
         tl.to(
           `.tab-${ai}`,
-          { backgroundColor: SECONDARY, color: "#ffffff", borderColor: SECONDARY, duration: 0.3 },
+          {
+            backgroundColor: SECONDARY,
+            color: "#ffffff",
+            borderColor: SECONDARY,
+            duration: 0.3,
+          },
           t,
         );
 
@@ -242,23 +263,48 @@ export function FeatureHighlights() {
 
           tl.to(
             `.stack-${ai}`,
-            { y: -(si * STEP_H + STEP_H / 2), duration: 0.7, ease: "power2.inOut" },
+            {
+              y: -(si * STEP_H + STEP_H / 2),
+              duration: 0.7,
+              ease: "power2.inOut",
+            },
             st,
           );
           tl.to(`.step-${ai}-${si}`, { opacity: 1, duration: 0.45 }, st);
           tl.to(`.num-${ai}-${si}`, { color: act.accent, duration: 0.45 }, st);
           tl.to(
             `.dot-${ai}-${si}`,
-            { scale: 1, backgroundColor: act.accent, duration: 0.45, ease: "back.out(2)" },
+            {
+              scale: 1,
+              backgroundColor: act.accent,
+              duration: 0.45,
+              ease: "back.out(2)",
+            },
             st,
           );
-          tl.to(`.arcline-${ai}`, { strokeDashoffset: 1 - f, duration: 0.7, ease: "power2.inOut" }, st);
-          tl.to(`.counter-${ai}`, { innerText: si + 1, snap: { innerText: 1 }, duration: 0.4 }, st);
+          tl.to(
+            `.arcline-${ai}`,
+            { strokeDashoffset: 1 - f, duration: 0.7, ease: "power2.inOut" },
+            st,
+          );
+          tl.to(
+            `.counter-${ai}`,
+            { innerText: si + 1, snap: { innerText: 1 }, duration: 0.4 },
+            st,
+          );
 
           if (si > 0) {
-            tl.to(`.step-${ai}-${si - 1}`, { opacity: 0.16, duration: 0.45 }, st);
+            tl.to(
+              `.step-${ai}-${si - 1}`,
+              { opacity: 0.16, duration: 0.45 },
+              st,
+            );
             tl.to(`.num-${ai}-${si - 1}`, { color: MUTED, duration: 0.45 }, st);
-            tl.to(`.dot-${ai}-${si - 1}`, { scale: 0.5, backgroundColor: MUTED, duration: 0.45 }, st);
+            tl.to(
+              `.dot-${ai}-${si - 1}`,
+              { scale: 0.5, backgroundColor: MUTED, duration: 0.45 },
+              st,
+            );
           }
         });
 
@@ -266,13 +312,27 @@ export function FeatureHighlights() {
 
         /* ── act leaves ── */
         if (!isLast) {
-          tl.to(`.act-${ai}`, { opacity: 0, y: -36, duration: 0.4, ease: "power2.in" }, t);
           tl.to(
-            `.tab-${ai}`,
-            { backgroundColor: "#ffffff", color: "#94A3B8", borderColor: "#E2E8F0", duration: 0.3 },
+            `.act-${ai}`,
+            { opacity: 0, y: -36, duration: 0.4, ease: "power2.in" },
             t,
           );
-          tl.fromTo(`.act-${ai + 1}`, { y: 36 }, { y: 0, duration: 0.4, ease: "power2.out" }, t + 0.1);
+          tl.to(
+            `.tab-${ai}`,
+            {
+              backgroundColor: "#ffffff",
+              color: "#94A3B8",
+              borderColor: "#E2E8F0",
+              duration: 0.3,
+            },
+            t,
+          );
+          tl.fromTo(
+            `.act-${ai + 1}`,
+            { y: 36 },
+            { y: 0, duration: 0.4, ease: "power2.out" },
+            t + 0.1,
+          );
           t += 0.4;
         }
       });
@@ -293,7 +353,10 @@ export function FeatureHighlights() {
         />
       </div>
 
-      <div ref={pinRef} className="relative flex h-dvh w-full flex-col overflow-hidden">
+      <div
+        ref={pinRef}
+        className="relative flex h-dvh w-full flex-col overflow-hidden"
+      >
         {/* Editorial grid paper, drifting aurora and rising motes */}
         <SectionBackdrop seed={1} gridSize={88} />
 
@@ -317,9 +380,11 @@ export function FeatureHighlights() {
               {ACTS.map((act, ai) => (
                 <div
                   key={act.id}
-                  className={`tab-${ai} flex min-w-26 flex-col justify-center px-3 py-2.5 text-center sm:min-w-37.5 sm:px-4`}
+                  className={`tab-${ai} flex min-w-26 flex-col justify-center mt-8 px-3 py-2.5 text-center sm:min-w-37.5 sm:px-4`}
                 >
-                  <span className="text-sm font-semibold tracking-tight">{act.tab}</span>
+                  <span className="text-sm font-semibold tracking-tight">
+                    {act.tab}
+                  </span>
                   <span className="mt-0.5 hidden text-[11px] font-medium opacity-70 sm:block">
                     {act.tabSub}
                   </span>
@@ -386,7 +451,10 @@ export function FeatureHighlights() {
                 {/* LEFT — act title */}
                 <div className="relative flex flex-col justify-center pt-4 lg:pt-0">
                   <div className="mb-4 flex items-center gap-2.5">
-                    <span className="h-px w-8" style={{ backgroundColor: act.accent }} />
+                    <span
+                      className="h-px w-8"
+                      style={{ backgroundColor: act.accent }}
+                    />
                     <span
                       className="text-xs font-bold uppercase tracking-[0.22em]"
                       style={{ color: act.accent }}
@@ -397,7 +465,10 @@ export function FeatureHighlights() {
 
                   <h2
                     className={`act-title-${ai} font-bold leading-[1.02] tracking-[-0.045em]`}
-                    style={{ color: SECONDARY, fontSize: "clamp(34px, 4.2vw, 60px)" }}
+                    style={{
+                      color: SECONDARY,
+                      fontSize: "clamp(34px, 4.2vw, 60px)",
+                    }}
                   >
                     {act.title.map((line, li) => (
                       <span key={li} className="block">
@@ -413,7 +484,10 @@ export function FeatureHighlights() {
                         {li === act.title.length - 1 && (
                           <span
                             className="t-char inline-block"
-                            style={{ color: act.accent, willChange: "transform, opacity" }}
+                            style={{
+                              color: act.accent,
+                              willChange: "transform, opacity",
+                            }}
                           >
                             .
                           </span>
@@ -431,8 +505,12 @@ export function FeatureHighlights() {
                         1
                       </span>
                       <span className="text-lg">/</span>
-                      <span className="text-lg tabular-nums">{act.steps.length}</span>
-                      <span className="ml-1 text-xs uppercase tracking-[0.2em]">steps</span>
+                      <span className="text-lg tabular-nums">
+                        {act.steps.length}
+                      </span>
+                      <span className="ml-1 text-xs uppercase tracking-[0.2em]">
+                        steps
+                      </span>
                     </div>
 
                     <Link
