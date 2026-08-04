@@ -41,7 +41,7 @@ export function useSubmitReportForm() {
       title: "",
     });
 
-  const { data: programsResponse, isLoading: isProgramsLoading } =
+  const { data: programsData, isLoading: isProgramsLoading } =
     useGetProgramsQuery();
   const [submitReport, { isLoading: isSubmitting }] = useSubmitReportMutation();
 
@@ -110,9 +110,10 @@ export function useSubmitReportForm() {
       selectedProgram.inScopeAssets.length > 0
     ) {
       const currentAsset = watch("targetAsset");
-      const asset0 = selectedProgram.inScopeAssets[0];
-      const assetIdentifier = typeof asset0 === "string" ? asset0 : asset0?.identifier || "";
-      const defaultDomain = assetIdentifier.replace("*.", "api.");
+      const defaultDomain = selectedProgram.inScopeAssets[0].replace(
+        "*.",
+        "api.",
+      );
       if (
         !currentAsset ||
         currentAsset === "https://api.nexacloud.com/v1/invoices/1337"
@@ -241,14 +242,9 @@ export function useSubmitReportForm() {
   const onSubmit = async (values: SubmitReportFormValues) => {
     setSubmitError(null);
     const selectedProg = programs.find((p) => p.id === values.programId);
-    const programName: string = selectedProg
-      ? selectedProg.name || selectedProg.organizationName || selectedProg.companyName || "CloudVault Security Program"
+    const programName = selectedProg
+      ? selectedProg.companyName
       : "CloudVault Security Program";
-    const matchedAsset = selectedProg?.inScopeAssets?.find((asset) => {
-      const idStr = typeof asset === "string" ? asset : asset.identifier || "";
-      return values.targetAsset.includes(idStr.replace(/^\*\./, ""));
-    });
-    const assetId = typeof matchedAsset === "string" ? undefined : matchedAsset?.id;
 
     try {
       const res = await submitReport({

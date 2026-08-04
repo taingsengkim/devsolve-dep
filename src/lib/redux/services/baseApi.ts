@@ -1,3 +1,4 @@
+
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const baseApi = createApi({
@@ -5,6 +6,7 @@ export const baseApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL,
     prepareHeaders: (headers) => {
+      
       if (typeof window !== "undefined") {
         const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
         if (token) {
@@ -14,19 +16,6 @@ export const baseApi = createApi({
       return headers;
     },
   }),
-  tagTypes: [
-    "User",
-    "Post",
-    "Report",
-    "Program",
-    "CompanyVerification",
-    "ContentReport",
-    "ModerationItem",
-    "AdminUser",
-    "Notification",
-    "Bookmark",
-    "Profile",
-    "Discussion",
-  ],
+  tagTypes: ["Program"],
   endpoints: () => ({}),
 });
