@@ -5,22 +5,23 @@ import { LayoutGrid } from "lucide-react";
 import { motion } from "motion/react";
 
 import { PublicProgramCard } from "@/components/public-programs/PublicProgramCard";
-import { PublicProgramFilters } from "@/components/public-programs/PublicProgramFilters";
+import {
+  PublicProgramFilters,
+  type AssetFilter,
+  type StatusFilter,
+  type ProgramTypeFilter,
+} from "@/components/public-programs/PublicProgramFilters";
 import { PublicProgramFooter } from "@/components/public-programs/PublicProgramFooter";
 import { PublicProgramPagination } from "@/components/public-programs/PublicProgramPagination";
 import { ProgramDetailsModal } from "@/components/programs/ProgramDetailsModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MOCK_PROGRAMS } from "@/lib/types/programs/mock-data";
-import type { AssetCategory, ProgramItem, ProgramStatus, ProgramType } from "@/lib/types/programs/types";
-
-type TypeFilter = "All" | ProgramType;
-type AssetFilter = "All" | AssetCategory;
-type StatusFilter = "All" | ProgramStatus;
+import type { ProgramItem } from "@/lib/types/programs/types";
 
 export function PublicProgramMarketplacePage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>("All");
+  const [typeFilter, setTypeFilter] = useState<ProgramTypeFilter>("All");
   const [assetFilter, setAssetFilter] = useState<AssetFilter>("All");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
   const [showMoreFilters, setShowMoreFilters] = useState(false);
@@ -43,7 +44,7 @@ export function PublicProgramMarketplacePage() {
 
       const matchesType = typeFilter === "All" || program.type === typeFilter;
       const matchesAsset =
-        assetFilter === "All" || program.assetCategories.includes(assetFilter);
+        assetFilter === "All" || (program.assetCategories || []).includes(assetFilter);
       const matchesStatus =
         statusFilter === "All" || program.status === statusFilter;
 

@@ -98,3 +98,60 @@ export interface GetProgramsParams {
   engagementType?: string;
   state?: string;
 }
+
+export type AssetCategory = "Web" | "API" | "Mobile" | "Network" | "Other" | string;
+export type ProgramStatus = "Open" | "Done" | "Closed" | string;
+
+export interface ProgramsCounts {
+  all: number;
+  bounty: number;
+  response: number;
+  newCount: number;
+  privateCount: number;
+}
+
+export interface ProgramItemStats {
+  reportsSubmitted?: number;
+  avgPayout?: string;
+  responseTime?: string;
+}
+
+export interface ProgramBountyMatrixItem {
+  severity: string;
+  payoutRange?: string;
+  range?: string;
+  description?: string;
+}
+
+export interface ProgramItem {
+  id: string;
+  companyName: string;
+  companySlug: string;
+  logoUrl: string;
+  logoBgColor?: string;
+  type: "Bounty" | "Response";
+  status: "Open" | "Done" | "Closed" | string;
+  isNew?: boolean;
+  isPrivate?: boolean;
+  title: string;
+  description: string;
+  inScopeAssets: string[];
+  assetCategories?: string[];
+  rewardRange: string;
+  rewardType?: "bounty" | "points" | string;
+  maxReward?: string;
+  totalBountyPaid?: string;
+  researchersCount?: number;
+  activeResearchers?: number;
+  startDate?: string;
+  endDate?: string;
+  aboutSummary?: string;
+  pocRequirements?: string[];
+  rulesExclusions?: string[];
+  rulesOfEngagement?: string[];
+  exclusions?: string[];
+  inScopeTargets?: string[];
+  outOfScopeTargets?: string[];
+  bountyMatrix?: ProgramBountyMatrixItem[];
+  stats?: ProgramItemStats;
+}
