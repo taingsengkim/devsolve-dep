@@ -456,7 +456,6 @@ export function TechStackSection({
             </circle>
           </svg>
 
-          {/* Technology Nodes */}
           {TECH_FLOW.map((node, index) => {
             const isActive = activeNode === index;
             const isHovered = hoveredNode === node.id;
@@ -470,7 +469,7 @@ export function TechStackSection({
                 className="relative z-10 flex flex-col items-center justify-center shrink-0 min-w-[130px] md:min-w-[160px] py-4"
                 style={{
                   animation: "float 4s ease-in-out infinite",
-                  animationDelay: `${index * 0.4}s`,
+                  animationDelay: `${index * 0.5}s`,
                 }}
               >
                 {isActive && (
@@ -600,7 +599,7 @@ export function TechStackSection({
             transform: translateY(0px);
           }
           50% {
-            transform: translateY(-6px);
+            transform: translateY(-3px);
           }
         }
 
@@ -650,7 +649,6 @@ function TeamSection() {
         </p>
       </div>
 
-      {/* Mentors */}
       <div className="mb-14">
         <h3 className="text-2xl font-semibold text-center mb-6  color-pink-300" >
           Mentors
@@ -709,13 +707,13 @@ export function MemberCard({ member }: MemberCardProps) {
 
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
-        <div className="absolute bottom-4 left-4">
+        <div className="absolute bottom-4 left-2">
           <span className="px-4 py-2 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-bold tracking-wider border border-white/10">
             {member.subRole?.toUpperCase() || "FULL STACK"}
           </span>
         </div>
 
-        <div className="absolute bottom-4 right-4 flex gap-2">
+        <div className="absolute bottom-2 right-4 flex gap-1">
           {member.github && (
             <a
               href={member.github}
@@ -723,7 +721,7 @@ export function MemberCard({ member }: MemberCardProps) {
               rel="noopener noreferrer"
               className="w-9 h-9 rounded-full bg-black/80 text-white flex items-center justify-center hover:scale-110 hover:bg-black transition duration-200"
             >
-              <FaGithub size={15} />
+              <FaGithub size={13} />
             </a>
           )}
 
@@ -734,7 +732,7 @@ export function MemberCard({ member }: MemberCardProps) {
               rel="noopener noreferrer"
               className="w-9 h-9 rounded-full bg-black/80 text-white flex items-center justify-center hover:scale-110 hover:bg-black transition duration-200"
             >
-              <FaLinkedin size={15} />
+              <FaLinkedin size={13} />
             </a>
           )}
 
@@ -745,7 +743,7 @@ export function MemberCard({ member }: MemberCardProps) {
               rel="noopener noreferrer"
               className="w-9 h-9 rounded-full bg-black/80 text-white flex items-center justify-center hover:scale-110 hover:bg-black transition duration-200"
             >
-              <FaTelegram size={15} />
+              <FaTelegram size={13} />
             </a>
           )}
         </div>
@@ -922,8 +920,7 @@ function ContactSection() {
                   Address
                 </h4>
                 <p className="text-sm text-[#64748B] leading-relaxed">
-                  Innovation Hub, Campus West <br />
-                  Phnom Penh, Cambodia
+                  #40, Street 273, Sangkat Boeung Kak Ti Mouy, Khan Toul Kork, Phnom Penh
                 </p>
               </div>
             </div>
@@ -942,7 +939,7 @@ function ContactSection() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[#CBD5E1] bg-[#FFFFFF] p-6 shadow-sm flex items-start gap-4">
+            <div className="rounded-2xl border border-[#CBD5E1] bg-white p-6 shadow-xs flex items-start gap-4">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2B68F6]/10 text-[#2B68F6]">
                 <Phone className="w-5 h-5" />
               </div>
@@ -950,10 +947,20 @@ function ContactSection() {
                 <h4 className="text-[18px] font-bold text-[#1E2B45] mb-1">
                   Support HQ
                 </h4>
-                <p className="text-sm text-[#64748B] leading-relaxed ">
-                  #40, Street 273, Sangkat Boeung Kak Ti Mouy, Khan Toul Kork, Phnom Penh
-                </p>
-                <br></br>
+                <div className="text-sm text-[#64748B] space-y-1 flex flex-col">
+                  <a
+                    href="tel:096453972"
+                    className="hover:text-[#2B68F6] transition-colors"
+                  >
+                    (+855) 95-990-910
+                  </a>
+                  <a
+                    href="tel:0163392322"
+                    className="hover:text-[#2B68F6] transition-colors"
+                  >
+                    (+855) 93-990-910
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -972,7 +979,7 @@ function ContactSection() {
                   <FaFacebook className="w-5 h-5" />
                 </a>
                 <a
-                  href="https://www.linkedin.com/"
+                  href="https://www.linkedin./"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Visit our LinkedIn"
