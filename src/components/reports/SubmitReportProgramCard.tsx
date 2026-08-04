@@ -9,7 +9,7 @@ import { motion } from "motion/react";
 import { ProgramItem } from "@/lib/types/programs/types";
 
 interface SubmitReportProgramCardProps {
-  program?: ProgramItem | null;
+  program?: any | null;
   programName?: string;
   companyName?: string;
   maxBounty?: string;

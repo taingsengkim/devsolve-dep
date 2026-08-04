@@ -140,7 +140,7 @@ export function PublicProgramCard({
 
           <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-500">
             <Globe className="size-3" />
-            {program.assetCategories.join(" / ")}
+            {(program.assetCategories || []).join(" / ")}
           </div>
         </div>
 
