@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { UseFormReturn } from "react-hook-form";
-import { User, Mail, Key, Eye, EyeOff, Briefcase, ArrowRight } from "lucide-react";
+import { User, Mail, Key, Eye, EyeOff, Briefcase, ArrowRight, ShieldCheck } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ interface CompanyStep1FormProps {
 
 export function CompanyStep1Form({ form, onNext }: CompanyStep1FormProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const {
     register,
     watch,
@@ -30,6 +32,7 @@ export function CompanyStep1Form({ form, onNext }: CompanyStep1FormProps) {
   const jobTitle = watch("jobTitle");
   const email = watch("email");
   const password = watch("password");
+  const confirmPassword = watch("confirmPassword");
   const agreeTermsStep1 = watch("agreeTermsStep1");
 
   const isStep1Complete =
@@ -37,7 +40,9 @@ export function CompanyStep1Form({ form, onNext }: CompanyStep1FormProps) {
     Boolean(jobTitle) &&
     Boolean(email?.trim()) &&
     Boolean(password && password.length >= 8) &&
+    Boolean(confirmPassword && confirmPassword.length >= 8) &&
     Boolean(agreeTermsStep1);
+
 
   return (
     <motion.form
@@ -170,6 +175,40 @@ export function CompanyStep1Form({ form, onNext }: CompanyStep1FormProps) {
         </div>
         {errors.password && (
           <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+        )}
+      </div>
+
+      {/* Confirm Password */}
+      <div>
+        <Label
+          htmlFor="confirmPassword"
+          className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5 uppercase tracking-wide"
+        >
+          CONFIRM PASSWORD <span className="text-red-500">*</span>
+        </Label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <ShieldCheck className="w-4 h-4" />
+          </div>
+          <Input
+            id="confirmPassword"
+            type={showConfirmPassword ? "text" : "password"}
+            placeholder="Re-enter your password"
+            {...register("confirmPassword")}
+            className={`w-full h-11 pl-10 pr-10 bg-white border ${
+              errors.confirmPassword ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+            } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+          >
+            {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
+        {errors.confirmPassword && (
+          <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>
         )}
       </div>
 
