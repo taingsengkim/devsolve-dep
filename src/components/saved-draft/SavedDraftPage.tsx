@@ -18,6 +18,7 @@ import {
   pageEnterItem,
 } from "@/components/ui/page-enter-motion";
 import type { DraftCategory, SavedDraftItem } from "@/components/saved-draft/types";
+import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -46,12 +47,36 @@ function getUpdatedRank(updatedAt: string) {
 }
 
 export function SavedDraftPage() {
+  const { user } = useSidebarAuth();
+  const userRoles = (
+    user?.roles ??
+    (user?.role ? user.role.split(",") : ["USER"])
+  ).map((r) => r.trim().toUpperCase());
+
+  const isCompany = userRoles.includes("COMPANY");
+  const isUser = userRoles.includes("USER");
+
+  const ALL_TABS: DraftCategory[] = ["problem", "solution", "program", "report"];
+  const visibleTabs: DraftCategory[] = ALL_TABS.filter((tab) => {
+    if (tab === "program" && isUser && !isCompany) return false;
+    if (tab === "report" && isCompany && !isUser) return false;
+    return true;
+  });
+
   const [draftItems, setDraftItems] = useState<SavedDraftItem[]>(SAVED_DRAFT_ITEMS);
-  const [activeTab, setActiveTab] = useState<DraftCategory>("problem");
+  const [activeTab, setActiveTab] = useState<DraftCategory>(visibleTabs[0] ?? "problem");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "title">("recent");
   const [isLoading, setIsLoading] = useState(true);
+
+  // Reset activeTab if it is no longer visible (e.g. role change)
+  useEffect(() => {
+    if (!visibleTabs.includes(activeTab)) {
+      setActiveTab(visibleTabs[0] ?? "problem");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCompany, isUser]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -134,6 +159,7 @@ export function SavedDraftPage() {
               setActiveTab(category);
               setCurrentPage(1);
             }}
+            visibleTabs={visibleTabs}
           />
           <SavedDraftSearch
             value={searchTerm}
