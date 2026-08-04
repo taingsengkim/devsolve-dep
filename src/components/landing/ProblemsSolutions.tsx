@@ -70,6 +70,24 @@ const MINI_STATS = [
   { value: "128", label: "Regular contributors" },
 ];
 
+/* ─── Where the threads actually live ───────────────────────────────────
+   Counts sum to the 1,340 quoted above, so the breakdown and the headline
+   figure can never drift apart. Emerald-600 clears 3:1 as a fill, and every
+   bar carries its count in text beside it.
+   ──────────────────────────────────────────────────────────────────── */
+const TOPIC_MARK = "#059669";
+
+const TOPICS = [
+  { label: "Web & API security", count: 412 },
+  { label: "Cloud & infrastructure", count: 318 },
+  { label: "Auth & sessions", count: 246 },
+  { label: "Mobile", count: 174 },
+  { label: "Payments & webhooks", count: 121 },
+  { label: "Build & CI", count: 69 },
+];
+
+const TOPIC_MAX = Math.max(...TOPICS.map((t) => t.count));
+
 /* ─── State pill — icon + word, never colour alone ─────────────────── */
 function StatePill({ solved }: { solved: boolean }) {
   return solved ? (
@@ -94,7 +112,10 @@ export function ProblemsSolutions() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} className="relative overflow-hidden bg-white py-20 sm:py-24">
+    <section
+      ref={ref}
+      className="relative overflow-hidden bg-white py-20 sm:py-24"
+    >
       <SectionBackdrop seed={3} gridSize={88} />
 
       <div className="relative mx-auto w-full max-w-7xl px-6 sm:px-12">
@@ -135,13 +156,18 @@ export function ProblemsSolutions() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : undefined}
-            transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            transition={{
+              duration: 0.55,
+              delay: 0.1,
+              ease: [0.22, 1, 0.36, 1],
+            }}
             className="lg:col-span-4"
           >
             <p className="text-base leading-relaxed text-slate-500">
               Post the problem with the error, the stack and what you already
-              ruled out. Anyone can answer; the author marks what actually worked,
-              and that answer becomes the thread&apos;s permanent record.
+              ruled out. Anyone can answer; the author marks what actually
+              worked, and that answer becomes the thread&apos;s permanent
+              record.
             </p>
 
             <dl className="mt-8 grid grid-cols-2 gap-x-8 gap-y-6 border-t border-slate-200 pt-8">
@@ -168,6 +194,74 @@ export function ProblemsSolutions() {
               Open the discussions
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
+
+            {/* Topic breakdown — runs alongside the recent queue on the right */}
+            <div className="mt-10 border-t border-slate-200 pt-8">
+              <div className="flex items-baseline justify-between border-b border-slate-200 pb-3">
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Where they land
+                </span>
+                <span className="text-xs font-medium text-slate-400">Threads</span>
+              </div>
+
+              <ul className="mt-5 space-y-4">
+                {TOPICS.map((t, i) => (
+                  <motion.li
+                    key={t.label}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={inView ? { opacity: 1, y: 0 } : undefined}
+                    transition={{
+                      duration: 0.45,
+                      delay: 0.5 + i * 0.07,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                  >
+                    <Link href="/discussions" className="group block">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span
+                          className="text-sm font-semibold transition-colors group-hover:text-[#047857]"
+                          style={{ color: SECONDARY }}
+                        >
+                          {t.label}
+                        </span>
+                        <span className="text-sm font-semibold tabular-nums text-slate-400">
+                          {t.count}
+                        </span>
+                      </div>
+
+                      <div
+                        className="mt-2 h-1 w-full overflow-hidden rounded-full bg-slate-100"
+                        aria-hidden
+                      >
+                        <motion.div
+                          className="h-full"
+                          style={{
+                            backgroundColor: TOPIC_MARK,
+                            borderRadius: "0 4px 4px 0",
+                          }}
+                          initial={{ width: 0 }}
+                          animate={
+                            inView
+                              ? { width: `${(t.count / TOPIC_MAX) * 100}%` }
+                              : undefined
+                          }
+                          transition={{
+                            duration: 0.9,
+                            delay: 0.6 + i * 0.07,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                        />
+                      </div>
+                    </Link>
+                  </motion.li>
+                ))}
+              </ul>
+
+              <p className="mt-6 text-xs leading-relaxed text-slate-400">
+                Threads are tagged on post, so an answer stays findable from any
+                of the stacks it touches.
+              </p>
+            </div>
           </motion.div>
 
           {/* ── RIGHT: the worked thread, then the queue ── */}
@@ -187,7 +281,11 @@ export function ProblemsSolutions() {
               <motion.article
                 initial={{ opacity: 0, y: 22 }}
                 animate={inView ? { opacity: 1, y: 0 } : undefined}
-                transition={{ duration: 0.55, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                transition={{
+                  duration: 0.55,
+                  delay: 0.2,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 className="rounded-2xl bg-white p-6 shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_2px_10px_rgba(30,41,59,0.05)]"
               >
                 <div className="flex flex-wrap items-center gap-2">
@@ -202,7 +300,9 @@ export function ProblemsSolutions() {
                       {t}
                     </span>
                   ))}
-                  <span className="ml-auto text-xs text-slate-400">{PROBLEM.timeAgo}</span>
+                  <span className="ml-auto text-xs text-slate-400">
+                    {PROBLEM.timeAgo}
+                  </span>
                 </div>
 
                 <h3
@@ -211,7 +311,9 @@ export function ProblemsSolutions() {
                 >
                   {PROBLEM.title}
                 </h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-500">{PROBLEM.body}</p>
+                <p className="mt-3 text-sm leading-relaxed text-slate-500">
+                  {PROBLEM.body}
+                </p>
 
                 <div className="mt-5 flex items-center gap-4 text-xs text-slate-400">
                   <span className="flex items-center gap-1.5">
@@ -234,7 +336,11 @@ export function ProblemsSolutions() {
               <motion.article
                 initial={{ opacity: 0, y: 22 }}
                 animate={inView ? { opacity: 1, y: 0 } : undefined}
-                transition={{ duration: 0.55, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
+                transition={{
+                  duration: 0.55,
+                  delay: 0.75,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 className="ml-0 mt-6 rounded-2xl bg-white p-6 shadow-[0_0_0_1px_rgba(16,185,129,0.3),0_2px_10px_rgba(30,41,59,0.05)] sm:ml-12"
               >
                 <div className="flex flex-wrap items-center gap-2">
@@ -242,10 +348,14 @@ export function ProblemsSolutions() {
                   <span className="text-xs font-medium text-slate-400">
                     accepted by {PROBLEM.author}
                   </span>
-                  <span className="ml-auto text-xs text-slate-400">{SOLUTION.timeAgo}</span>
+                  <span className="ml-auto text-xs text-slate-400">
+                    {SOLUTION.timeAgo}
+                  </span>
                 </div>
 
-                <p className="mt-4 text-sm leading-relaxed text-slate-600">{SOLUTION.body}</p>
+                <p className="mt-4 text-sm leading-relaxed text-slate-600">
+                  {SOLUTION.body}
+                </p>
 
                 <pre className="mt-4 overflow-x-auto rounded-xl bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-600">
                   <code>{SOLUTION.snippet}</code>
@@ -268,7 +378,6 @@ export function ProblemsSolutions() {
                 </div>
               </motion.article>
             </div>
-
             {/* The queue */}
             <div className="mt-10">
               <div className="flex items-baseline justify-between border-b border-slate-200 pb-3">
@@ -288,7 +397,11 @@ export function ProblemsSolutions() {
                   key={t.title}
                   initial={{ opacity: 0, y: 16 }}
                   animate={inView ? { opacity: 1, y: 0 } : undefined}
-                  transition={{ duration: 0.45, delay: 0.9 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{
+                    duration: 0.45,
+                    delay: 0.9 + i * 0.1,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
                   className="border-b border-slate-200"
                 >
                   <Link
@@ -304,7 +417,10 @@ export function ProblemsSolutions() {
                       </p>
                       <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-400">
                         {t.tags.map((tag) => (
-                          <span key={tag} className="rounded-md bg-slate-100 px-2 py-0.5 text-slate-500">
+                          <span
+                            key={tag}
+                            className="rounded-md bg-slate-100 px-2 py-0.5 text-slate-500"
+                          >
                             {tag}
                           </span>
                         ))}
