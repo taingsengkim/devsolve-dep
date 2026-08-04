@@ -7,8 +7,15 @@ export const userRegisterSchema = z
       .string()
       .min(3, "Username must be at least 3 characters")
       .regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers, and underscores allowed"),
-    fullName: z.string().min(2, "Full name is required"),
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
     email: z.string().email("Please enter a valid email address"),
+    phone: z
+      .string()
+      .optional()
+      .refine((val) => !val || /^\d{7,15}$/.test(val), {
+        message: "Phone must be 7–15 digits",
+      }),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
     country: z.string().optional(),
