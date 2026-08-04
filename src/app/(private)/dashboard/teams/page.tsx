@@ -4,7 +4,6 @@ import { motion } from "motion/react";
 
 import { TeamsMembersSection } from "@/components/teams/TeamsMembersSection";
 import { TeamsPageHeader } from "@/components/teams/TeamsPageHeader";
-import { TeamsStatsGrid } from "@/components/teams/TeamsStatsGrid";
 import {
   pageEnterContainer,
   pageEnterItem,
@@ -15,6 +14,8 @@ export default function TeamsPage() {
   const {
     counts,
     filteredMembers,
+    searchTerm,
+    setSearchTerm,
     roleFilter,
     setRoleFilter,
     statusFilter,
@@ -28,15 +29,16 @@ export default function TeamsPage() {
       variants={pageEnterContainer}
       className="w-full space-y-7 pb-12"
     >
-      <motion.div variants={pageEnterItem} className="space-y-5">
+      <motion.div variants={pageEnterItem}>
         <TeamsPageHeader counts={counts} />
-        <TeamsStatsGrid counts={counts} />
       </motion.div>
 
       <motion.div variants={pageEnterItem}>
         <TeamsMembersSection
           counts={counts}
           filteredMembers={filteredMembers}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
           roleFilter={roleFilter}
           setRoleFilter={setRoleFilter}
           statusFilter={statusFilter}

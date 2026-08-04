@@ -11,29 +11,31 @@ type TeamsPageHeaderProps = {
 
 export function TeamsPageHeader({ counts }: TeamsPageHeaderProps) {
   return (
-    <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-      <div className="space-y-2">
+    <header className="flex flex-col gap-4 border-b border-slate-200/80 pb-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-          Organization Members
+          Team Management
         </h1>
-        <p className="text-sm leading-6 text-slate-500">
-          Access and invitation
+        <p className="text-base font-medium text-slate-500">
+          {counts.active} active members across {counts.managers} managers and {counts.members} collaborators
         </p>
-        <p className="text-sm leading-6 text-slate-400">
-          {counts.total} members
+        <p className="text-sm text-slate-400">
+          {counts.total} total members in this workspace
         </p>
       </div>
 
-      <Link
-        href="/dashboard/teams/invite-member"
-        className={cn(
-          buttonVariants({ variant: "default" }),
-          "h-11 rounded-full bg-[#2563EB] px-5 text-sm text-white shadow-[0_12px_24px_rgba(37,99,235,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1D4ED8]"
-        )}
-      >
-        <Plus data-icon="inline-start" />
-        Invite member
-      </Link>
+      <div className="flex shrink-0 items-center gap-3">
+        <Link
+          href="/dashboard/teams/invite-member"
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "h-11 rounded-xl border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900"
+          )}
+        >
+          <Plus data-icon="inline-start" />
+          Invite Member
+        </Link>
+      </div>
     </header>
   );
 }

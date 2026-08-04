@@ -25,24 +25,33 @@ function buildTeamCounts(): TeamCounts {
 }
 
 export function useTeamMembers() {
+  const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("All");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
 
   const filteredMembers = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+
     return TEAM_MEMBERS.filter((member) => {
+      const matchesSearch =
+        query.length === 0 ||
+        member.name.toLowerCase().includes(query) ||
+        member.email.toLowerCase().includes(query);
       const matchesRole = roleFilter === "All" || member.role === roleFilter;
       const matchesStatus =
         statusFilter === "All" || member.status === statusFilter;
 
-      return matchesRole && matchesStatus;
+      return matchesSearch && matchesRole && matchesStatus;
     });
-  }, [roleFilter, statusFilter]);
+  }, [roleFilter, searchTerm, statusFilter]);
 
   const counts = useMemo(() => buildTeamCounts(), []);
 
   return {
     counts,
     filteredMembers,
+    searchTerm,
+    setSearchTerm,
     roleFilter,
     setRoleFilter,
     statusFilter,

@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import {
   AlertTriangle,
   CalendarDays,
+  Check,
+  ChevronDown,
   Crown,
   Eye,
   MoreHorizontal,
   PencilLine,
   RefreshCcw,
+  Search,
   Trash2,
   UserRound,
 } from "lucide-react";
@@ -30,9 +33,12 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const CURRENT_TEAM_ACTOR = {
@@ -67,6 +73,18 @@ function getRoleBadgeVariant(role: MemberRole) {
   return "outline";
 }
 
+function getRoleBadgeClass(role: MemberRole) {
+  if (role === "Manager") {
+    return "border-slate-900 bg-slate-900 text-white hover:bg-slate-900";
+  }
+
+  if (role === "Member") {
+    return "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-50";
+  }
+
+  return "border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-100";
+}
+
 function getMemberPermissions(member: TeamMember) {
   const isCurrentUser = member.email === CURRENT_TEAM_ACTOR.email;
   const canManageTarget =
@@ -86,6 +104,8 @@ function getMemberPermissions(member: TeamMember) {
 type TeamsMembersSectionProps = {
   counts: TeamCounts;
   filteredMembers: TeamMember[];
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
   roleFilter: RoleFilter;
   setRoleFilter: (filter: RoleFilter) => void;
   statusFilter: StatusFilter;
@@ -95,6 +115,8 @@ type TeamsMembersSectionProps = {
 export function TeamsMembersSection({
   counts,
   filteredMembers,
+  searchTerm,
+  setSearchTerm,
   roleFilter,
   setRoleFilter,
   statusFilter,
@@ -150,82 +172,72 @@ export function TeamsMembersSection({
 
   return (
     <>
-      <div className="overflow-hidden rounded-[32px] border border-slate-200/80 bg-white shadow-[0_10px_30px_rgba(148,163,184,0.16)]">
-        <div className="border-b border-slate-200/80 bg-white px-5 py-4 sm:px-6">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="space-y-1">
-              <h2 className="text-xl font-bold tracking-[-0.03em] text-slate-950 sm:text-2xl">
-                Members
-                <span className="ml-2 text-slate-400">({counts.total})</span>
-              </h2>
-              <p className="text-sm leading-6 text-slate-400">
-                Showing {filteredMembers.length} of {counts.total} members
-              </p>
-            </div>
+      <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-xs sm:p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              type="text"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search by member name or email..."
+              className="h-10.5 w-full rounded-xl border-slate-200 bg-slate-50/50 pl-10 text-base focus-visible:ring-2 focus-visible:ring-blue-600/30"
+            />
+          </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row xl:items-center">
-              <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-1 shadow-[0_2px_8px_rgba(148,163,184,0.12)]">
-                {ROLE_FILTERS.map((filter) => (
-                  <button
-                    key={filter}
-                    type="button"
-                    onClick={() => setRoleFilter(filter)}
-                    className={cn(
-                      "rounded-full px-4 py-2 text-xs font-semibold transition-colors sm:text-sm",
-                      roleFilter === filter
-                        ? "bg-[#2563EB] text-white shadow-[0_10px_20px_rgba(37,99,235,0.16)]"
-                        : "text-slate-500 hover:text-slate-900"
-                    )}
-                  >
-                    {filter}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-1 shadow-[0_2px_8px_rgba(148,163,184,0.12)]">
-                {STATUS_FILTERS.map((filter) => (
-                  <button
-                    key={filter}
-                    type="button"
-                    onClick={() => setStatusFilter(filter)}
-                    className={cn(
-                      "rounded-full px-4 py-2 text-xs font-semibold transition-colors sm:text-sm",
-                      statusFilter === filter
-                        ? "bg-[#2563EB] text-white shadow-[0_10px_20px_rgba(37,99,235,0.16)]"
-                        : "text-slate-500 hover:text-slate-900"
-                    )}
-                  >
-                    {filter}
-                  </button>
-                ))}
-              </div>
-
-              {hasActiveFilters ? (
-                <Button
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center lg:w-auto">
+            <div className="flex items-center gap-1 rounded-xl border border-slate-200/50 bg-slate-100/80 p-1">
+              {ROLE_FILTERS.map((filter) => (
+                <button
+                  key={filter}
                   type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    setRoleFilter("All");
-                    setStatusFilter("All");
-                  }}
-                  className="h-10 rounded-full px-4 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                  onClick={() => setRoleFilter(filter)}
+                  className={cn(
+                    "flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition-all sm:flex-initial",
+                    roleFilter === filter
+                      ? "bg-white text-blue-600 shadow-xs"
+                      : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900"
+                  )}
                 >
-                  Reset
-                </Button>
-              ) : null}
+                  {filter}
+                </button>
+              ))}
             </div>
+
+            <StatusFilterSelect
+              value={statusFilter}
+              onChange={setStatusFilter}
+            />
+
+            {hasActiveFilters ? (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setSearchTerm("");
+                  setRoleFilter("All");
+                  setStatusFilter("All");
+                }}
+                className="h-10.5 rounded-xl px-4 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+              >
+                Reset
+              </Button>
+            ) : null}
           </div>
         </div>
+      </div>
 
+      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs">
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse text-left">
             <thead>
-              <tr className="border-b border-slate-200/80 bg-slate-50/60 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
-                <th className="px-5 py-4 sm:px-6">Member</th>
-                <th className="px-5 py-4 sm:px-6">Role</th>
-                <th className="px-5 py-4 sm:px-6">Status</th>
-                <th className="px-5 py-4 sm:px-6">Joined</th>
-                <th className="px-5 py-4 text-right sm:px-6">Action</th>
+              <tr className="border-b border-slate-200/80 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-600">
+                <th className="px-4 py-3.5 sm:px-6">Member</th>
+                <th className="px-4 py-3.5 sm:px-6">Email</th>
+                <th className="px-4 py-3.5 sm:px-6">Role</th>
+                <th className="px-4 py-3.5 sm:px-6">Status</th>
+                <th className="px-4 py-3.5 sm:px-6">Joined</th>
+                <th className="px-4 py-3.5 text-center sm:px-6">Action</th>
               </tr>
             </thead>
 
@@ -249,9 +261,9 @@ export function TeamsMembersSection({
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.2, delay: index * 0.04 }}
-                      className="group transition-colors duration-200 hover:bg-blue-50/40"
+                      className="group transition-colors duration-200 hover:bg-slate-50/70"
                     >
-                      <td className="px-5 py-5 sm:px-6">
+                      <td className="px-4 py-4 sm:px-6">
                         <div className="flex items-center gap-4">
                           <Avatar
                             size="lg"
@@ -277,31 +289,32 @@ export function TeamsMembersSection({
 
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="truncate text-base font-semibold tracking-[-0.02em] text-slate-950 sm:text-lg">
+                              <span className="truncate text-sm font-semibold tracking-[-0.03em] text-slate-900 sm:text-base">
                                 {member.name}
                               </span>
                               {member.role === "Manager" ? (
-                                <Crown className="size-4 text-[#2563EB]" />
+                                <Crown className="size-4 text-blue-600" />
                               ) : null}
                             </div>
-                            <p className="truncate text-sm leading-6 text-slate-500 sm:text-base">
-                              {member.email}
+                            <p className="truncate text-xs text-slate-500 sm:text-sm">
+                              Workspace collaborator
                             </p>
                           </div>
                         </div>
                       </td>
 
-                      <td className="px-5 py-5 whitespace-nowrap sm:px-6">
+                      <td className="px-4 py-4 whitespace-nowrap sm:px-6">
+                        <span className="text-sm font-medium text-slate-600">
+                          {member.email}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-4 whitespace-nowrap sm:px-6">
                         <Badge
                           variant={getRoleBadgeVariant(member.role)}
                           className={cn(
                             "rounded-full px-3 py-1 text-sm font-semibold",
-                            member.role === "Manager" &&
-                              "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-50",
-                            member.role === "Member" &&
-                              "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-50",
-                            member.role === "Viewer" &&
-                              "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-50"
+                            getRoleBadgeClass(member.role)
                           )}
                         >
                           {member.role === "Manager" ? (
@@ -315,21 +328,21 @@ export function TeamsMembersSection({
                         </Badge>
                       </td>
 
-                      <td className="px-5 py-5 whitespace-nowrap sm:px-6">
+                      <td className="px-4 py-4 whitespace-nowrap sm:px-6">
                         <Badge
                           variant={member.status === "Active" ? "secondary" : "outline"}
                           className={cn(
                             "rounded-full px-3 py-1 text-sm font-semibold",
                             member.status === "Active"
-                              ? "border-blue-200 bg-blue-50 text-blue-700"
-                              : "border-amber-200 bg-amber-50 text-amber-500"
+                              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                              : "border-amber-200 bg-amber-50 text-amber-600"
                           )}
                         >
                           <span
                             className={cn(
                               "size-2 rounded-full",
                               member.status === "Active"
-                                ? "bg-[#2563EB]"
+                                ? "bg-emerald-500"
                                 : "bg-amber-400"
                             )}
                           />
@@ -337,21 +350,21 @@ export function TeamsMembersSection({
                         </Badge>
                       </td>
 
-                      <td className="px-5 py-5 whitespace-nowrap sm:px-6">
+                      <td className="px-4 py-4 whitespace-nowrap sm:px-6">
                         <div className="inline-flex items-center gap-2 text-sm text-slate-500 sm:text-base">
                           <CalendarDays className="size-4 text-slate-300" />
                           {member.joined}
                         </div>
                       </td>
 
-                      <td className="px-5 py-5 text-right whitespace-nowrap sm:px-6">
+                      <td className="px-4 py-4 text-center whitespace-nowrap sm:px-6">
                         <DropdownMenu
                           open={openMenuMemberId === member.id}
                           onOpenChange={(open) => setOpenMenuMemberId(open ? member.id : null)}
                         >
                           <DropdownMenuTrigger
                             aria-label={`Open actions for ${member.name}`}
-                            className="inline-flex size-9 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-blue-50 hover:text-[#2563EB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30"
+                            className="inline-flex size-9 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20"
                           >
                             <MoreHorizontal className="size-4.5" />
                           </DropdownMenuTrigger>
@@ -365,7 +378,7 @@ export function TeamsMembersSection({
                             {permissions.canViewProfile ? (
                               <DropdownMenuItem
                                 onClick={() => handleMenuAction("view-profile", member)}
-                                className="rounded-[10px] px-3 py-2.5 text-slate-700 focus:bg-blue-50 focus:text-[#2563EB]"
+                                className="rounded-[10px] px-3 py-2.5 text-slate-700 focus:bg-slate-100 focus:text-slate-900"
                               >
                                 <Eye className="size-4" />
                                 View profile
@@ -375,7 +388,7 @@ export function TeamsMembersSection({
                             {permissions.canEditRole ? (
                               <DropdownMenuItem
                                 onClick={() => handleMenuAction("edit-role", member)}
-                                className="rounded-[10px] px-3 py-2.5 text-slate-700 focus:bg-blue-50 focus:text-[#2563EB]"
+                                className="rounded-[10px] px-3 py-2.5 text-slate-700 focus:bg-slate-100 focus:text-slate-900"
                               >
                                 <PencilLine className="size-4" />
                                 Edit role
@@ -394,7 +407,7 @@ export function TeamsMembersSection({
                                       member.status === "Active" ? "Pending" : "Active",
                                   })
                                 }
-                                className="rounded-[10px] px-3 py-2.5 text-slate-700 focus:bg-blue-50 focus:text-[#2563EB] data-disabled:text-slate-300"
+                                className="rounded-[10px] px-3 py-2.5 text-slate-700 focus:bg-slate-100 focus:text-slate-900 data-disabled:text-slate-300"
                               >
                                 <RefreshCcw className="size-4" />
                                 Change status
@@ -431,8 +444,13 @@ export function TeamsMembersSection({
           </table>
         </div>
 
-        <footer className="border-t border-slate-200/80 px-5 py-4 text-sm text-slate-400 sm:px-6">
-          Showing {filteredMembers.length} of {counts.total} members
+        <footer className="flex flex-col items-center justify-between gap-4 border-t border-slate-200/80 bg-slate-50/50 p-4 text-sm text-slate-500 sm:flex-row">
+          <span className="font-medium">
+            Showing {filteredMembers.length} of {counts.total} members
+          </span>
+          <span className="text-slate-400">
+            Filter by role or status to narrow the roster
+          </span>
         </footer>
       </div>
 
@@ -446,6 +464,49 @@ export function TeamsMembersSection({
         ) : null}
       </AnimatePresence>
     </>
+  );
+}
+
+function StatusFilterSelect({
+  value,
+  onChange,
+}: {
+  value: StatusFilter;
+  onChange: (value: StatusFilter) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className="inline-flex h-10.5 min-w-[160px] items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-3.5 text-sm font-semibold text-slate-800 shadow-2xs outline-none transition-all hover:border-slate-400 focus-visible:ring-2 focus-visible:ring-blue-600/20"
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="text-slate-500">Status:</span>
+          <span className="truncate">{value}</span>
+        </span>
+        <ChevronDown className="size-4 shrink-0 text-slate-400" />
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent
+        align="end"
+        sideOffset={8}
+        className="w-[180px] rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-xl"
+      >
+        <DropdownMenuRadioGroup value={value} onValueChange={(nextValue) => onChange(nextValue as StatusFilter)}>
+          {STATUS_FILTERS.map((filter) => (
+            <DropdownMenuRadioItem
+              key={filter}
+              value={filter}
+              className="rounded-xl px-3 py-2 text-sm text-slate-700 data-[checked]:bg-blue-50 data-[checked]:font-semibold data-[checked]:text-blue-700 focus:bg-slate-50 focus:text-slate-900"
+            >
+              <div className="flex w-full items-center justify-between gap-3">
+                <span>{filter}</span>
+                {value === filter ? <Check className="size-4 text-blue-600" /> : null}
+              </div>
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -487,7 +548,7 @@ function TeamMemberConfirmationDialog({
           <div
             className={cn(
               "flex size-10 shrink-0 items-center justify-center rounded-full",
-              isRemoval ? "bg-red-50 text-red-600" : "bg-blue-50 text-[#2563EB]"
+              isRemoval ? "bg-red-50 text-red-600" : "bg-slate-100 text-slate-700"
             )}
           >
             <AlertTriangle className="size-5" />
@@ -519,8 +580,7 @@ function TeamMemberConfirmationDialog({
             onClick={onConfirm}
             className={cn(
               "h-10 rounded-full px-4",
-              !isRemoval &&
-                "bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
+              !isRemoval && "bg-slate-900 text-white hover:bg-slate-800"
             )}
           >
             {isRemoval ? "Confirm removal" : "Confirm change"}
