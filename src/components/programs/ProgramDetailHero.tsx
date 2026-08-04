@@ -41,7 +41,7 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
     }
   };
 
-  const isBounty = program.offersBounties || program.engagementType === "MANAGED";
+  const isBounty = program.offersBounties || program.engagementType === "BOUNTY";
 
   const minBounty = program.minimumBounty ?? 0;
   const maxBounty = program.maximumBounty ?? 0;
