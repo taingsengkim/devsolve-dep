@@ -22,11 +22,12 @@ import {
   Play,
   Phone,
   X,
-
+  Star,
   MapPin,
   ChevronDown,
   ShieldCheck,
   Award,
+  TrendingUp,
 } from "lucide-react";
 import { AnimatedBeam } from "@/components/ui/animated-beam";
 
@@ -51,151 +52,196 @@ export default function AboutPage() {
 
 
 
-
-
-
 function AboutHeroSection() {
   return (
-    <section className="relative w-full py-12 sm:py-16 lg:py-24 px-4 sm:px-8 lg:px-12 bg-[#09131D] text-white overflow-hidden">
-      <div className="absolute top-0 left-1/4 w-[600px] h-[350px] bg-[#00D2B4]/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[500px] h-[350px] bg-blue-600/10 rounded-full blur-[130px] pointer-events-none" />
+    <div className="relative w-full bg-slate-50 dark:bg-[#080E17] text-slate-900 dark:text-white transition-colors duration-300 overflow-hidden">
+      <div className="absolute top-12 left-1/4 w-[500px] h-[500px] bg-[#00D2B4]/15 dark:bg-[#00D2B4]/10 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute top-1/3 right-10 w-[600px] h-[600px] bg-blue-500/10 dark:bg-blue-600/10 rounded-full blur-[160px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto space-y-12 sm:space-y-16">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20 lg:pt-20 lg:pb-28">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="lg:col-span-7 space-y-5"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="lg:col-span-6 space-y-6 lg:space-y-8 z-10"
           >
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs sm:text-sm">
-              <span className="w-2 h-2 rounded-full bg-[#00D2B4] animate-pulse" />
-              <span className="text-slate-400 font-light uppercase tracking-wider">Established</span>
-              <span className="font-bold text-white tracking-widest">2026</span>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00D2B4]/10 border border-[#00D2B4]/30 text-[#00a890] dark:text-[#00D2B4] text-xs sm:text-sm font-medium tracking-wide">
+              <span>The next-gen security platform</span>
+              <span className="text-[#00D2B4]/60">•</span>
+              <span className="font-semibold text-slate-900 dark:text-white">Est. 2026</span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.08]">
-              We Are{" "}
-              <span className="text-[#00D2B4] font-normal italic font-serif">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.08]">
+              We Are <br />
+              <span className="text-[#00a890] dark:text-[#00D2B4] relative inline-block">
                 Next-Gen
+                <svg
+                  className="absolute -bottom-2 left-0 w-full text-[#00a890]/30 dark:text-[#00D2B4]/40"
+                  height="10"
+                  viewBox="0 0 200 10"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M2 8C50 2 150 2 198 8"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                  />
+                </svg>
               </span>{" "}
-              <br className="hidden sm:inline" />
-              Security Platform
+              Security <br /> Platform
             </h1>
-          </motion.div>
 
-          <div className="hidden lg:block lg:col-span-1 justify-self-center">
-            <div className="w-[1px] h-36 bg-gradient-to-b from-transparent via-slate-700 to-transparent" />
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className="lg:col-span-4 space-y-6 sm:space-y-8"
-          >
-            <p className="text-sm sm:text-base text-slate-300 font-normal leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg leading-relaxed max-w-xl font-normal">
               DevSolve connects organizations with top security researchers and developers to solve real-world technical challenges, fix vulnerabilities, and build resilient software.
             </p>
 
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-4 border-t border-slate-800/80">
-              <div>
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight">
-                  150+
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <Link
+                href="/programs"
+                className="inline-flex items-center gap-2.5 px-7 py-4 rounded-full bg-slate-900 hover:bg-slate-800 dark:bg-[#00D2B4] dark:hover:bg-[#00c0a5] text-white dark:text-slate-950 font-bold text-sm sm:text-base transition-all duration-300 shadow-lg shadow-slate-900/10 dark:shadow-[#00D2B4]/25 hover:shadow-xl hover:scale-105"
+              >
+                <span>Explore Programs</span>
+                <ArrowRight className="w-4 h-4 text-[#00D2B4] dark:text-slate-950" />
+              </Link>
+
+              <button
+                type="button"
+                className="inline-flex items-center gap-3 px-5 py-4 rounded-full text-slate-700 dark:text-white hover:text-[#00a890] dark:hover:text-[#00D2B4] font-semibold text-sm sm:text-base transition-colors duration-200 group"
+              >
+                <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-sm flex items-center justify-center text-[#00a890] dark:text-[#00D2B4] group-hover:scale-110 group-hover:border-[#00D2B4]/50 transition-all">
+                  <Play className="w-4 h-4 fill-current ml-0.5" />
                 </div>
-                <div className="text-[11px] sm:text-xs text-slate-400 font-medium leading-tight mt-1">
-                  Active Programs
+                <span>Watch Demo</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-4 pt-4 border-t border-slate-200 dark:border-slate-800/80 max-w-md">
+              <div className="flex -space-x-2.5 overflow-hidden">
+                <div className="inline-block h-10 w-10 rounded-full ring-2 ring-slate-50 dark:ring-[#080E17] bg-slate-200 dark:bg-slate-700 overflow-hidden relative">
+                  <Image src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="User" fill className="object-cover" />
+                </div>
+                <div className="inline-block h-10 w-10 rounded-full ring-2 ring-slate-50 dark:ring-[#080E17] bg-slate-200 dark:bg-slate-700 overflow-hidden relative">
+                  <Image src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" alt="User" fill className="object-cover" />
+                </div>
+                <div className="inline-block h-10 w-10 rounded-full ring-2 ring-slate-50 dark:ring-[#080E17] bg-slate-200 dark:bg-slate-700 overflow-hidden relative">
+                  <Image src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" alt="User" fill className="object-cover" />
+                </div>
+                <div className="inline-block h-10 w-10 rounded-full ring-2 ring-slate-50 dark:ring-[#080E17] bg-slate-200 dark:bg-slate-700 overflow-hidden relative">
+                  <Image src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80" alt="User" fill className="object-cover" />
                 </div>
               </div>
 
-              <div>
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight">
-                  2.5K+
+              <div className="space-y-1">
+                <div className="flex items-center gap-1 text-amber-500 dark:text-amber-400">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-500 dark:fill-amber-400" />
+                  ))}
                 </div>
-                <div className="text-[11px] sm:text-xs text-slate-400 font-medium leading-tight mt-1">
-                  Top Developers
-                </div>
-              </div>
-
-              <div>
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight">
-                  5.0K+
-                </div>
-                <div className="text-[11px] sm:text-xs text-slate-400 font-medium leading-tight mt-1">
-                  Solutions Fixed
-                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Join <span className="text-slate-900 dark:text-white font-semibold">2,500+</span> vetted security researchers
+                </p>
               </div>
             </div>
           </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="lg:col-span-6 relative flex items-center justify-center lg:justify-end"
+          >
+            <div className="absolute w-[320px] h-[320px] sm:w-[480px] sm:h-[480px] rounded-full bg-gradient-to-tr from-cyan-400/20 to-blue-500/20 dark:from-cyan-500/20 dark:to-blue-600/20 blur-3xl pointer-events-none" />
+
+            <div className="absolute -top-4 right-12 w-6 h-6 rounded-full bg-amber-400/80 blur-[1px] animate-bounce" style={{ animationDuration: '3s' }} />
+            <div className="absolute bottom-12 left-2 w-8 h-8 rounded-full bg-[#00D2B4]/40 blur-[2px]" />
+            <div className="absolute top-1/2 -left-6 w-5 h-5 rotate-45 bg-blue-400/50" />
+
+            <div className="relative w-full max-w-[750px] h-[500px] sm:h-[580px] rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900/60">
+              <Image
+                src="/teams/team.jpg"
+                alt="DevSolve Engineering & Security Team"
+                fill
+                priority
+                className="object-cover object-top"
+                sizes="(max-width: 1280px) 100vw, 600px"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 dark:from-[#080E17]/80 via-transparent to-transparent" />
+            </div>
+
+            {/* <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="absolute -top-2 right-2 sm:right-6 bg-white/90 dark:bg-slate-900/85 backdrop-blur-md border border-slate-200 dark:border-slate-700/70 p-3.5 sm:p-4 rounded-2xl shadow-xl flex items-center gap-3 z-20 max-w-[220px]"
+            >
+              <div className="p-2 rounded-xl bg-[#00D2B4]/15 text-[#00a890] dark:text-[#00D2B4]">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-900 dark:text-white">Zero-Trust Flow</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400">Enterprise grade security</p>
+              </div>
+            </motion.div> */}
+
+            {/* <motion.div
+              initial={{ x: 30, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="absolute top-1/3 -right-2 sm:-right-6 bg-white/90 dark:bg-slate-900/85 backdrop-blur-md border border-slate-200 dark:border-slate-700/70 p-4 rounded-2xl shadow-xl z-20 hidden sm:block w-44"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Bounties Paid</span>
+                <TrendingUp className="w-3.5 h-3.5 text-[#00a890] dark:text-[#00D2B4]" />
+              </div>
+              <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">$875,000+</p>
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">↑ 28% active this month</p>
+            </motion.div> */}
+
+            {/* <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="absolute -bottom-4 left-2 sm:-left-6 bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-700/70 p-4 rounded-2xl shadow-2xl z-20 max-w-[280px] sm:max-w-[320px]"
+            >
+              <div className="flex items-start gap-3">
+                <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0">
+                  <Image
+                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+                    alt="Security Lead"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-700 dark:text-slate-200 leading-snug">
+                    &quot;DevSolve helped us find critical vulnerabilities before launch.&quot;
+                  </p>
+                  <div className="flex items-center justify-between pt-1">
+                    <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">— Jenna B., Lead SecOps</p>
+                    <div className="flex text-amber-500 dark:text-amber-400">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-2.5 h-2.5 fill-amber-500 dark:fill-amber-400" />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div> */}
+          </motion.div>
+
         </div>
+      </section>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.25 }}
-          className="relative w-full h-[360px] sm:h-[480px] lg:h-[540px] rounded-2xl sm:rounded-3xl lg:rounded-[36px] overflow-hidden group shadow-2xl border border-slate-800/80"
-        >
-          <Image
-            src="/about-hero-team.jpg"
-            alt="DevSolve Engineering & Security Team"
-            fill
-            priority
-            className="object-cover object-center group-hover:scale-105 transition-transform duration-1000 ease-out"
-            sizes="(max-width: 1280px) 100vw, 1280px"
-          />
-
-          <div className="absolute inset-0 bg-gradient-to-t from-[#09131D] via-[#09131D]/40 to-transparent z-10" />
-
-          <div className="absolute inset-x-0 bottom-0 z-20 p-6 sm:p-10 lg:p-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl">
-              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700/50">
-                <div className="p-2 rounded-lg bg-[#00D2B4]/10 text-[#00D2B4]">
-                  <Bug className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-semibold text-white">Bug Bounty</h4>
-                  <p className="text-[10px] text-slate-400">Continuous Audits</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700/50">
-                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-semibold text-white">Verified Pros</h4>
-                  <p className="text-[10px] text-slate-400">Vetted Engineers</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700/50">
-                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
-                  <Lock className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-semibold text-white">Encrypted</h4>
-                  <p className="text-[10px] text-slate-400">Zero Trust Flow</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="shrink-0">
-              <Link
-                href="/programs"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#00D2B4] hover:bg-[#00c0a5] text-slate-950 font-semibold text-sm transition-all duration-300 shadow-lg shadow-[#00D2B4]/25 hover:shadow-xl hover:scale-105"
-              >
-                <span>Explore Programs</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </section>
+     
+    </div>
   );
 }
+
+
 
 const ICON_MAP = {
   Bug,

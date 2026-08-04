@@ -84,8 +84,9 @@ export const STUDENT_DEVELOPERS: TeamMember[] = [
     linkedin: "https://linkedin.com",
     telegram: "https://t.me",
   },
+   
   {
-    name: "Chamreun Molikatevy",
+    name: "ChamreunMolikatevy",
     badge: "Member",
     badgeColor: "blue",
     subRole: "Full Stack",
