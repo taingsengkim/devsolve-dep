@@ -1,13 +1,12 @@
 
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect} from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { FaGithub, FaLinkedin, FaTelegram, FaGlobe } from "react-icons/fa6";
 import { FaFacebook, FaTwitter } from "react-icons/fa";
 import Link from "next/link";
-
 
 import {
   ArrowRight,
@@ -37,7 +36,7 @@ import {
   TECHNOLOGIES,
   OFFERINGS,
 } from "@/lib/types/about/mock-data";
-import { TeamMember } from "@/lib/types/about/type";
+import { TeamMember, Technology } from "@/lib/types/about/type";
 
 export default function AboutPage() {
   return (
@@ -269,163 +268,571 @@ function OfferSection() {
 
 
 
-function TechStackSection() {
+// function TechStackSection() {
+//   const containerRef = useRef<HTMLDivElement>(null);
+//   const centerRef = useRef<HTMLDivElement>(null);
+//   const techRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+//   const [rotation, setRotation] = useState(0);
+//   const [isHovered, setIsHovered] = useState(false);
+
+//   const [radius, setRadius] = useState(250);
+
+//   useEffect(() => {
+//     const updateRadius = () => {
+//       if (window.innerWidth < 640) {
+//         setRadius(130); // Mobile
+//       } else if (window.innerWidth < 1024) {
+//         setRadius(200); // Tablet
+//       } else {
+//         setRadius(260); // Desktop
+//       }
+//     };
+
+//     updateRadius();
+//     window.addEventListener("resize", updateRadius);
+//     return () => window.removeEventListener("resize", updateRadius);
+//   }, []);
+
+//   useEffect(() => {
+//     let frameId: number;
+//     let lastTime = performance.now();
+
+//     const animate = (time: number) => {
+//       const delta = time - lastTime;
+//       lastTime = time;
+
+//       if (!isHovered) {
+//         setRotation((prev) => (prev + delta * 0.0003) % (2 * Math.PI));
+//       }
+
+//       frameId = window.requestAnimationFrame(animate);
+//     };
+
+//     frameId = window.requestAnimationFrame(animate);
+//     return () => window.cancelAnimationFrame(frameId);
+//   }, [isHovered]);
+
+//   return (
+//     <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+//       <div className="text-center mb-12">
+//         <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">
+//           Built with Modern Technologies
+//         </h2>
+//         <p className="text-slate-500 text-xs sm:text-sm max-w-xl mx-auto mt-3 leading-relaxed">
+//           A carefully chosen, battle-tested stack for security, scalability, and developer experience.
+//         </p>
+//       </div>
+
+//       <div
+//         ref={containerRef}
+//         onMouseEnter={() => setIsHovered(true)}
+//         onMouseLeave={() => setIsHovered(false)}
+//         className="relative flex min-h-[580px] sm:min-h-[680px] lg:min-h-[750px] w-full items-center justify-center overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-b from-slate-50 via-white to-slate-100/80 p-6 sm:p-12 shadow-sm"
+//       >
+//         <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-30 pointer-events-none" />
+
+//         <div
+//           style={{ width: radius * 2, height: radius * 2 }}
+//           className="absolute rounded-full border border-slate-200/80 pointer-events-none transition-all duration-300"
+//         />
+//         <div
+//           style={{ width: radius * 1.3, height: radius * 1.3 }}
+//           className="absolute rounded-full border border-dashed border-slate-300/50 pointer-events-none transition-all duration-300"
+//         />
+
+//         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-tr from-purple-500/15 via-blue-500/15 to-pink-500/15 rounded-full blur-3xl pointer-events-none" />
+
+       
+//         <div
+//           ref={centerRef}
+//           className="relative z-20 flex flex-col items-center justify-center w-36 h-36 sm:w-48 sm:h-48 lg:w-56 lg:h-56 rounded-full bg-white/90 backdrop-blur-xl border-4 border-slate-100 shadow-[0_10px_40px_rgba(59,130,246,0.18)] text-center group transition-transform duration-300 hover:scale-105"
+//         >
+//           <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 opacity-20 blur-sm group-hover:opacity-40 transition-opacity" />
+
+//           <div className="w-14 h-14 sm:w-20 sm:h-20 lg:w-24 lg:h-24 relative flex items-center justify-center overflow-hidden rounded-full">
+//             <Image
+//               src="/devsolve-logo.png"
+//               alt="DevSolve Logo"
+//               fill
+//               className="object-contain p-2"
+//             />
+//           </div>
+
+//           <span className="text-[10px] sm:text-xs font-black text-slate-800 tracking-wider uppercase mt-1">
+//             DevSolve Hub
+//           </span>
+//           <span className="text-[9px] sm:text-[10px] text-blue-600 font-semibold uppercase tracking-widest mt-0.5">
+//             Architecture
+//           </span>
+//         </div>
+
+        
+//         {TECHNOLOGIES.map((tech, idx) => {
+//           const total = TECHNOLOGIES.length;
+//           const baseAngle = (idx / total) * 2 * Math.PI - Math.PI / 2;
+//           const currentAngle = baseAngle + rotation;
+
+//           const x = Math.cos(currentAngle) * radius;
+//           const y = Math.sin(currentAngle) * radius;
+
+//           return (
+//             <div
+//               key={idx}
+//               ref={(el) => {
+//                 techRefs.current[idx] = el;
+//               }}
+//               style={{
+//                 position: "absolute",
+//                 transform: `translate3d(${x}px, ${y}px, 0px)`,
+//               }}
+//               className="z-20 transition-transform duration-75 ease-linear"
+//             >
+//               <div className="flex flex-col items-center justify-center p-3 sm:p-4 w-28 sm:w-36 lg:w-40 rounded-2xl bg-white/85 backdrop-blur-md border border-white/80 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08)] text-center group cursor-pointer hover:shadow-xl hover:border-slate-300 hover:scale-105 transition-all duration-200">
+//                 <div
+//                   className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl ${tech.bgColor} border ${tech.borderColor} p-2 flex items-center justify-center shrink-0 overflow-hidden relative shadow-inner group-hover:scale-105 transition-transform duration-200 mb-2`}
+//                 >
+//                   <Image
+//                     src={tech.image}
+//                     alt={`${tech.name} logo`}
+//                     fill
+//                     className="object-contain p-1.5"
+//                   />
+//                 </div>
+
+//                 <h3 className="text-xs sm:text-sm font-bold text-slate-900 truncate w-full">
+//                   {tech.name}
+//                 </h3>
+//                 <p className="text-slate-400 text-[10px] sm:text-[11px] font-medium truncate w-full hidden sm:block mt-0.5">
+//                   {tech.description}
+//                 </p>
+//               </div>
+//             </div>
+//           );
+//         })}
+
+//         {TECHNOLOGIES.map((tech, idx) => (
+//           <AnimatedBeam
+//             key={`beam-${idx}`}
+//             containerRef={containerRef}
+//             fromRef={centerRef}
+//             toRef={{ current: techRefs.current[idx] }}
+//             curvature={0}
+//             gradientStartColor="#3b82f6"
+//             gradientStopColor={tech.color}
+//             duration={3 + (idx % 3) * 0.5}
+//             pathWidth={2.5}
+//           />
+//         ))}
+//       </div>
+//     </section>
+//   );
+// }
+
+
+
+
+
+
+interface TechStackSectionProps {
+  technologies?: Technology[];
+}
+
+const SUB_BADGE_PRESETS = [
+  ["UI", "Reactive"],
+  ["Security", "API"],
+  ["ACID", "Relational"],
+  ["Containers", "DevOps"],
+  ["Auth", "SSO"],
+  ["Utility", "CSS"],
+];
+
+export function TechStackSection({
+  technologies = TECHNOLOGIES,
+}: TechStackSectionProps) {
+  const [activeNode, setActiveNode] = useState(0);
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [ballPosition, setBallPosition] = useState({ x: 80, y: 100 });
+  const [containerWidth, setContainerWidth] = useState(1000);
+  const [isBallAtNode, setIsBallAtNode] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
-  const centerRef = useRef<HTMLDivElement>(null);
-  const techRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const [rotation, setRotation] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
+  const TECH_FLOW = useMemo(
+    () =>
+      (technologies || []).map((tech, index) => ({
+        id: `tech-${index + 1}`,
+        name: tech.name,
+        description: tech.description,
+        image: tech.image,
+        bgColor: tech.bgColor,
+        borderColor: tech.borderColor,
+        subBadges: SUB_BADGE_PRESETS[index % SUB_BADGE_PRESETS.length],
+      })),
+    [technologies]
+  );
 
-  const [radius, setRadius] = useState(250);
+  const flowLength = TECH_FLOW.length;
 
+  // Track responsive container width for precise ball coordinate alignment
   useEffect(() => {
-    const updateRadius = () => {
-      if (window.innerWidth < 640) {
-        setRadius(130); // Mobile
-      } else if (window.innerWidth < 1024) {
-        setRadius(200); // Tablet
-      } else {
-        setRadius(260); // Desktop
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth);
       }
     };
 
-    updateRadius();
-    window.addEventListener("resize", updateRadius);
-    return () => window.removeEventListener("resize", updateRadius);
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
   }, []);
 
+  // Compute curved SVG node locations based on total node count and container width
+  const positions = useMemo(() => {
+    const total = Math.max(flowLength, 1);
+    const nextPositions = [] as Array<{ x: number; y: number }>;
+    const width = containerWidth;
+    const padding = 80;
+    const usableWidth = width - padding * 2;
+
+    for (let i = 0; i < total; i++) {
+      const x = padding + (i / Math.max(total - 1, 1)) * usableWidth;
+      const y = 100 + Math.sin((i / Math.max(total - 1, 1)) * Math.PI) * 30;
+      nextPositions.push({ x, y });
+    }
+    return nextPositions;
+  }, [flowLength, containerWidth]);
+
+  // Synchronized pipeline flow timer (3 seconds per node)
   useEffect(() => {
-    let frameId: number;
-    let lastTime = performance.now();
+    if (hoveredNode !== null || flowLength === 0) return;
 
-    const animate = (time: number) => {
-      const delta = time - lastTime;
-      lastTime = time;
+    const interval = setInterval(() => {
+      setIsBallAtNode(false);
+      setActiveNode((prev) => (prev + 1) % flowLength);
+    }, 3000);
 
-      if (!isHovered) {
-        setRotation((prev) => (prev + delta * 0.0003) % (2 * Math.PI));
-      }
+    return () => clearInterval(interval);
+  }, [flowLength, hoveredNode]);
 
-      frameId = window.requestAnimationFrame(animate);
-    };
+  // Smooth ball movement & activation trigger
+  useEffect(() => {
+    if (flowLength === 0 || !positions[activeNode]) return;
 
-    frameId = window.requestAnimationFrame(animate);
-    return () => window.cancelAnimationFrame(frameId);
-  }, [isHovered]);
+    setBallPosition(positions[activeNode]);
+
+    const timer = setTimeout(() => {
+      setIsBallAtNode(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [activeNode, flowLength, positions]);
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+      {/* Section Header */}
       <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-sm font-semibold mb-4">
+          <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+          Tech Stack
+        </div>
+        <h2 className="text-3xl md:text-5xl font-extrabold text-[#0F172A] tracking-tight">
           Built with Modern Technologies
         </h2>
-        <p className="text-slate-500 text-xs sm:text-sm max-w-xl mx-auto mt-3 leading-relaxed">
-          A carefully chosen, battle-tested stack for security, scalability, and developer experience.
+        <p className="text-[#64748B] text-sm md:text-base max-w-xl mx-auto mt-3 leading-relaxed">
+          An end-to-end pipeline designed for security, scalability, and top-tier performance.
         </p>
       </div>
 
+      {/* Main Flow Container */}
       <div
         ref={containerRef}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className="relative flex min-h-[580px] sm:min-h-[680px] lg:min-h-[750px] w-full items-center justify-center overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-b from-slate-50 via-white to-slate-100/80 p-6 sm:p-12 shadow-sm"
+        className="relative overflow-visible rounded-[40px] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50 shadow-xl p-6 sm:p-10 md:p-14"
       >
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-30 pointer-events-none" />
-
-        <div
-          style={{ width: radius * 2, height: radius * 2 }}
-          className="absolute rounded-full border border-slate-200/80 pointer-events-none transition-all duration-300"
-        />
-        <div
-          style={{ width: radius * 1.3, height: radius * 1.3 }}
-          className="absolute rounded-full border border-dashed border-slate-300/50 pointer-events-none transition-all duration-300"
-        />
-
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-tr from-purple-500/15 via-blue-500/15 to-pink-500/15 rounded-full blur-3xl pointer-events-none" />
-
-       
-        <div
-          ref={centerRef}
-          className="relative z-20 flex flex-col items-center justify-center w-36 h-36 sm:w-48 sm:h-48 lg:w-56 lg:h-56 rounded-full bg-white/90 backdrop-blur-xl border-4 border-slate-100 shadow-[0_10px_40px_rgba(59,130,246,0.18)] text-center group transition-transform duration-300 hover:scale-105"
-        >
-          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 opacity-20 blur-sm group-hover:opacity-40 transition-opacity" />
-
-          <div className="w-14 h-14 sm:w-20 sm:h-20 lg:w-24 lg:h-24 relative flex items-center justify-center overflow-hidden rounded-full">
-            <Image
-              src="/devsolve-logo.png"
-              alt="DevSolve Logo"
-              fill
-              className="object-contain p-2"
-            />
-          </div>
-
-          <span className="text-[10px] sm:text-xs font-black text-slate-800 tracking-wider uppercase mt-1">
-            DevSolve Hub
-          </span>
-          <span className="text-[9px] sm:text-[10px] text-blue-600 font-semibold uppercase tracking-widest mt-0.5">
-            Architecture
-          </span>
+        {/* Background Blur Accents */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[40px]">
+          <div className="absolute w-[450px] h-[450px] bg-blue-400/10 blur-[120px] rounded-full -top-40 -left-32 animate-bgGlow" />
+          <div className="absolute w-[350px] h-[350px] bg-emerald-300/10 blur-[120px] rounded-full bottom-0 right-0 animate-bgGlow" />
         </div>
 
-        
-        {TECHNOLOGIES.map((tech, idx) => {
-          const total = TECHNOLOGIES.length;
-          const baseAngle = (idx / total) * 2 * Math.PI - Math.PI / 2;
-          const currentAngle = baseAngle + rotation;
+        {/* TOP Header Bar */}
+        <div className="relative z-10 flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="h-10 px-5 rounded-full bg-[#2B68F6] text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md shadow-blue-500/20">
+              Architecture Pipeline
+              <span className="animate-pulse">➔</span>
+            </div>
+          </div>
+          <div className="hidden sm:flex items-center gap-4 text-xs font-semibold text-slate-400 tracking-wider">
+            <span>CLIENT</span>
+            <span>›››</span>
+            <span>SERVICES</span>
+            <span>›››</span>
+            <span>PERSISTENCE</span>
+          </div>
+        </div>
 
-          const x = Math.cos(currentAngle) * radius;
-          const y = Math.sin(currentAngle) * radius;
+        {/* Process Track */}
+        <div className="relative py-16 my-4 flex items-center justify-between gap-4 md:gap-8 overflow-x-auto no-scrollbar">
+          {/* Animated Wave Path & Flowing Particles */}
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none z-0 min-w-[700px]"
+            preserveAspectRatio="none"
+            viewBox="0 0 1000 200"
+          >
+            <defs>
+              <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
 
-          return (
-            <div
-              key={idx}
-              ref={(el) => {
-                techRefs.current[idx] = el;
-              }}
-              style={{
-                position: "absolute",
-                transform: `translate3d(${x}px, ${y}px, 0px)`,
-              }}
-              className="z-20 transition-transform duration-75 ease-linear"
-            >
-              <div className="flex flex-col items-center justify-center p-3 sm:p-4 w-28 sm:w-36 lg:w-40 rounded-2xl bg-white/85 backdrop-blur-md border border-white/80 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08)] text-center group cursor-pointer hover:shadow-xl hover:border-slate-300 hover:scale-105 transition-all duration-200">
-                <div
-                  className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl ${tech.bgColor} border ${tech.borderColor} p-2 flex items-center justify-center shrink-0 overflow-hidden relative shadow-inner group-hover:scale-105 transition-transform duration-200 mb-2`}
-                >
-                  <Image
-                    src={tech.image}
-                    alt={`${tech.name} logo`}
-                    fill
-                    className="object-contain p-1.5"
+            {/* Base Path Line */}
+            <path
+              id="techPath"
+              d="M 80,100 C 220,20 340,180 500,100 C 660,20 780,180 920,100"
+              fill="none"
+              stroke="#CBD5E1"
+              strokeWidth="2"
+              strokeDasharray="7 7"
+            />
+
+            {/* Glowing Electric Flow Line */}
+            <path
+              d="M 80,100 C 220,20 340,180 500,100 C 660,20 780,180 920,100"
+              fill="none"
+              stroke="#60A5FA"
+              strokeWidth="4"
+              opacity="0.3"
+              filter="url(#glow)"
+              strokeDasharray="30 170"
+              style={{ animation: "dash 4s linear infinite" }}
+            />
+
+            {/* Active Moving Flow Line */}
+            <path
+              d="M 80,100 C 220,20 340,180 500,100 C 660,20 780,180 920,100"
+              fill="none"
+              stroke="#2B68F6"
+              strokeWidth="3"
+              strokeDasharray="20 180"
+              style={{ animation: "dash 4s linear infinite" }}
+            />
+
+            {/* Primary Tracking Orb */}
+            <circle
+              cx={ballPosition.x}
+              cy={ballPosition.y}
+              r={isBallAtNode ? "12" : "6"}
+              fill="#2B68F6"
+              className="transition-all duration-700 ease-in-out"
+            />
+
+            {/* Energy Arrival Ripple Outer Ring */}
+            <circle
+              cx={ballPosition.x}
+              cy={ballPosition.y}
+              r={isBallAtNode ? "24" : "0"}
+              fill="#2B68F6"
+              opacity={isBallAtNode ? "0.2" : "0"}
+              className="transition-all duration-700 ease-in-out"
+            />
+
+            {/* Background Particle Trails */}
+            <circle r="3" fill="#10B981">
+              <animateMotion begin="0s" dur="6s" repeatCount="indefinite">
+                <mpath href="#techPath" />
+              </animateMotion>
+            </circle>
+            <circle r="2.5" fill="#F59E0B">
+              <animateMotion begin="2s" dur="6s" repeatCount="indefinite">
+                <mpath href="#techPath" />
+              </animateMotion>
+            </circle>
+            <circle r="2" fill="#60A5FA">
+              <animateMotion begin="4s" dur="6s" repeatCount="indefinite">
+                <mpath href="#techPath" />
+              </animateMotion>
+            </circle>
+          </svg>
+
+          {/* Technology Nodes */}
+          {TECH_FLOW.map((node, index) => {
+            const isActive = activeNode === index;
+            const isHovered = hoveredNode === node.id;
+            const shouldHighlight = isActive || isHovered;
+
+            return (
+              <div
+                key={node.id}
+                onMouseEnter={() => setHoveredNode(node.id)}
+                onMouseLeave={() => setHoveredNode(null)}
+                className="relative z-10 flex flex-col items-center justify-center shrink-0 min-w-[130px] md:min-w-[160px] py-4"
+                style={{
+                  animation: "float 4s ease-in-out infinite",
+                  animationDelay: `${index * 0.4}s`,
+                }}
+              >
+                {/* Active Impact Wave Pulse */}
+                {isActive && (
+                  <>
+                    <div className="absolute inset-0 rounded-full bg-blue-500/20 animate-ping pointer-events-none" />
+                    <div className="absolute inset-0 rounded-full bg-cyan-400/10 animate-pulse pointer-events-none" />
+                  </>
+                )}
+
+                {/* Sub Badges */}
+                {node.subBadges && (
+                  <div className="absolute -top-3 left-0 right-0 pointer-events-none flex justify-between z-20 px-1">
+                    {node.subBadges.map((badge, bIdx) => (
+                      <span
+                        key={bIdx}
+                        className={`px-2 py-0.5 bg-white border rounded-full text-[10px] font-bold shadow-xs transition-all duration-500 ${
+                          shouldHighlight
+                            ? "border-[#2B68F6] text-[#2B68F6] scale-110 shadow-md"
+                            : "border-slate-200 text-slate-500 opacity-80"
+                        }`}
+                      >
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Interactive Node Container */}
+                <div className="relative flex items-center justify-center my-2">
+                  {/* Rotating Gradient Ring on Active Node */}
+                  <div
+                    className={`absolute -inset-2 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400 blur-xs transition-all duration-500 ${
+                      isActive
+                        ? "opacity-100 animate-spinSlow scale-110"
+                        : isHovered
+                        ? "opacity-75 scale-105"
+                        : "opacity-0 scale-90"
+                    }`}
                   />
+
+                  {/* Node Card Circle */}
+                  <div
+                    className={`relative flex flex-col items-center justify-center rounded-full bg-white border-2 transition-all duration-500 cursor-pointer shadow-md ${
+                      shouldHighlight
+                        ? "w-28 h-28 md:w-32 md:h-32 border-[#2B68F6] scale-125 -translate-y-2 shadow-2xl shadow-blue-500/30 z-30"
+                        : "w-24 h-24 md:w-26 md:h-26 border-slate-200 scale-100 z-10"
+                    }`}
+                  >
+                    <div
+                      className={`relative transition-all duration-500 mb-1 z-10 ${
+                        shouldHighlight
+                          ? "w-9 h-9 md:w-11 md:h-11 rotate-6 scale-110"
+                          : "w-8 h-8 md:w-9 md:h-9"
+                      }`}
+                    >
+                      <Image
+                        src={node.image}
+                        alt={`${node.name} logo`}
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+
+                    <h3
+                      className={`font-bold text-center px-1 leading-tight z-10 transition-colors duration-300 ${
+                        shouldHighlight
+                          ? "text-xs md:text-sm text-[#0F172A]"
+                          : "text-[11px] md:text-xs text-[#1E2B45]"
+                      }`}
+                    >
+                      {node.name}
+                    </h3>
+
+                    <span className="text-[9px] text-[#64748B] text-center leading-tight font-medium px-2 mt-0.5 block z-10">
+                      {node.description}
+                    </span>
+
+                    {/* Active Status Badge */}
+                    {isActive && (
+                      <div className="absolute -bottom-5 flex items-center gap-1 text-[8px] font-extrabold text-[#2B68F6] uppercase tracking-widest z-20 bg-white/90 px-2 py-0.5 rounded-full border border-blue-200 shadow-xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#2B68F6] animate-pulse" />
+                        Active
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <h3 className="text-xs sm:text-sm font-bold text-slate-900 truncate w-full">
-                  {tech.name}
-                </h3>
-                <p className="text-slate-400 text-[10px] sm:text-[11px] font-medium truncate w-full hidden sm:block mt-0.5">
-                  {tech.description}
-                </p>
+                {/* Connection Arrow */}
+                {index < TECH_FLOW.length - 1 && (
+                  <div
+                    className={`absolute right-[-14px] md:right-[-20px] top-1/2 -translate-y-1/2 z-0 hidden sm:block font-bold text-sm transition-all duration-500 ${
+                      isActive
+                        ? "text-[#2B68F6] translate-x-1 scale-125"
+                        : "text-slate-300"
+                    }`}
+                  >
+                    ➜
+                  </div>
+                )}
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
 
-        {TECHNOLOGIES.map((tech, idx) => (
-          <AnimatedBeam
-            key={`beam-${idx}`}
-            containerRef={containerRef}
-            fromRef={centerRef}
-            toRef={{ current: techRefs.current[idx] }}
-            curvature={0}
-            gradientStartColor="#3b82f6"
-            gradientStopColor={tech.color}
-            duration={3 + (idx % 3) * 0.5}
-            pathWidth={2.5}
-          />
-        ))}
+        {/* BOTTOM Footer Line */}
+        <div className="relative z-10 flex items-center justify-between mt-8">
+          <div className="hidden sm:flex items-center gap-4 text-xs font-semibold text-slate-400 tracking-wider">
+            <span>DATA INTEGRITY</span>
+            <span>‹‹‹</span>
+            <span>SECURITY FIRST</span>
+            <span>‹‹‹</span>
+            <span>STABLE INFRASTRUCTURE</span>
+          </div>
+
+          <div className="flex items-center gap-3 ml-auto">
+            <div className="h-10 px-5 rounded-full bg-[#10B981] text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md shadow-emerald-500/20">
+              <span className="animate-pulse">◀</span>
+              Continuous Security Feedback
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Embedded Animations */}
+      <style jsx>{`
+        @keyframes dash {
+          to {
+            stroke-dashoffset: -400;
+          }
+        }
+
+        @keyframes float {
+          0%,
+          100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-6px);
+          }
+        }
+
+        @keyframes spinSlow {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        .animate-spinSlow {
+          animation: spinSlow 8s linear infinite;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </section>
   );
 }
@@ -917,4 +1324,19 @@ function ContactSection() {
       </div>
     </section>
   );
+}
+
+function useMemo<T>(factory: () => T, deps: readonly unknown[]): T {
+  const ref = useRef<{ deps: readonly unknown[]; value: T } | null>(null);
+
+  const hasChanged =
+    !ref.current ||
+    deps.length !== ref.current.deps.length ||
+    deps.some((dep, index) => dep !== ref.current!.deps[index]);
+
+  if (hasChanged) {
+    ref.current = { deps, value: factory() };
+  }
+
+  return ref.current!.value;
 }
