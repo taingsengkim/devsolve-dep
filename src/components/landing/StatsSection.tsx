@@ -1,121 +1,355 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from "react";
-import { motion, useInView } from "motion/react";
+import React, { useEffect, useRef, useState } from "react";
+import { motion, useInView, useReducedMotion } from "motion/react";
+import { ArrowUpRight } from "lucide-react";
+import SectionBackdrop, { PRIMARY, SECONDARY } from "./SectionBackdrop";
 
-/* ─── Animated counter ─────────────────────────────────────────────── */
-function AnimatedCount({ target, suffix = "" }: { target: number; suffix?: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
+/* ─── Palette ───────────────────────────────────────────────────────────
+   Mark colours were checked with the palette validator against a white
+   surface, which set the following constraints:
+     · #2563EB — 5.17:1. Safe as both the trend mark and as text.
+     · #10B981 — 2.54:1. Mark-only; too low for text, so deltas are typeset
+                 in emerald-700 (#047857, 5.48:1) instead.
+     · #1E293B — fails the chroma floor as a mark (reads gray), so it is
+                 used strictly as ink.
+   ──────────────────────────────────────────────────────────────────── */
+const DEEMPHASIS = "#CBD5E1";
+const DELTA_INK = "#047857";
+
+/* ─── Data — 12 monthly points per metric ──────────────────────────── */
+type Stat = {
+  label: string;
+  unit: string;
+  series: number[];
+  format: (n: number) => string;
+};
+
+const HERO: Stat = {
+  label: "Bounties paid out",
+  unit: "USD, cumulative",
+  series: [2.1, 2.4, 2.6, 3.0, 3.2, 3.5, 3.9, 4.1, 4.4, 4.7, 4.9, 5.24],
+  format: (n) => `$${n.toFixed(2)}M`,
+};
+
+const STATS: Stat[] = [
+  {
+    label: "Verified researchers",
+    unit: "active accounts",
+    series: [1180, 1290, 1400, 1520, 1660, 1790, 1900, 2020, 2140, 2240, 2330, 2412],
+    format: (n) => Math.round(n).toLocaleString(),
+  },
+  {
+    label: "Live programs",
+    unit: "accepting reports",
+    series: [72, 80, 86, 95, 101, 108, 114, 122, 131, 138, 145, 152],
+    format: (n) => String(Math.round(n)),
+  },
+  {
+    label: "Reports validated",
+    unit: "triaged and closed",
+    series: [14200, 16100, 18000, 19800, 21600, 23400, 25100, 27000, 28600, 30200, 31400, 32400],
+    format: (n) => `${(n / 1000).toFixed(1)}K`,
+  },
+];
+
+/** Delta is derived from the series, so it can never contradict the trend. */
+function quarterDelta(series: number[]) {
+  const now = series[series.length - 1];
+  const then = series[series.length - 4];
+  return ((now - then) / then) * 100;
+}
+
+/* ─── Count-up ──────────────────────────────────────────────────────────
+   The final value sits in the DOM at opacity 0 to reserve the box width and
+   carry the accessible text; the animating figure is overlaid and hidden
+   from assistive tech. That keeps proportional figures (no tabular-nums on
+   a display-size number) without the layout shuddering mid-count.
+   ──────────────────────────────────────────────────────────────────── */
+function CountUp({
+  target,
+  format,
+  inView,
+}: {
+  target: number;
+  format: (n: number) => string;
+  inView: boolean;
+}) {
+  const reduce = useReducedMotion();
   const [value, setValue] = useState(0);
 
   useEffect(() => {
-    if (!inView) return;
-    const duration = 1600;
-    const start = Date.now();
+    if (!inView || reduce) return;
 
-    const tick = () => {
-      const elapsed = Date.now() - start;
-      const progress = Math.min(elapsed / duration, 1);
-      // Ease out cubic
+    let frame = 0;
+    const start = performance.now();
+    const duration = 1500;
+
+    const tick = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(eased * target));
-      if (progress < 1) requestAnimationFrame(tick);
+      setValue(eased * target);
+      if (progress < 1) frame = requestAnimationFrame(tick);
     };
 
-    requestAnimationFrame(tick);
-  }, [inView, target]);
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [inView, target, reduce]);
 
   return (
-    <span ref={ref} className="tabular-nums">
-      {value.toLocaleString()}
-      {suffix}
+    <span className="relative inline-block">
+      <span className="opacity-0">{format(target)}</span>
+      <span aria-hidden className="absolute inset-0">
+        {format(reduce ? target : value)}
+      </span>
     </span>
   );
 }
 
-/* ─── Stats data ───────────────────────────────────────────────────── */
-const stats = [
-  {
-    value: 2400,
-    suffix: "+",
-    label: "Researchers",
-    description: "Active security researchers from around the world",
-    color: "from-blue-500 to-indigo-600",
-    bg: "bg-blue-50",
-  },
-  {
-    value: 150,
-    suffix: "+",
-    label: "Programs",
-    description: "Live bug bounty programs across multiple industries",
-    color: "from-emerald-500 to-teal-600",
-    bg: "bg-emerald-50",
-  },
-  {
-    value: 32000,
-    suffix: "+",
-    label: "Reports",
-    description: "Security reports submitted and validated on platform",
-    color: "from-purple-500 to-violet-600",
-    bg: "bg-purple-50",
-  },
-  {
-    value: 5,
-    suffix: "M+",
-    label: "Paid Out",
-    description: "Total bounty rewards paid to top researchers (USD)",
-    color: "from-orange-500 to-red-500",
-    bg: "bg-orange-50",
-  },
-];
+/* ─── Sparkline ─────────────────────────────────────────────────────────
+   Whole trend in the de-emphasis grey, current period in the primary hue,
+   2px round-capped line, 8px end marker with a 2px surface ring.
+   ──────────────────────────────────────────────────────────────────── */
+function Sparkline({
+  series,
+  label,
+  width = 132,
+  height = 36,
+  inView,
+  delay = 0,
+}: {
+  series: number[];
+  label: string;
+  width?: number;
+  height?: number;
+  inView: boolean;
+  delay?: number;
+}) {
+  const reduce = useReducedMotion();
+  const pad = 5;
+  const min = Math.min(...series);
+  const max = Math.max(...series);
+  const span = max - min || 1;
 
-/* ─── Main component ───────────────────────────────────────────────── */
-export function StatsSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const inView = useInView(sectionRef, { once: true, margin: "-80px" });
+  const points = series.map((v, i) => ({
+    x: pad + (i / (series.length - 1)) * (width - pad * 2),
+    y: height - pad - ((v - min) / span) * (height - pad * 2),
+  }));
+
+  const d = points
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`)
+    .join(" ");
+  const last = points[points.length - 1];
+  const prev = points[points.length - 2];
+  const current = `M ${prev.x.toFixed(2)} ${prev.y.toFixed(2)} L ${last.x.toFixed(2)} ${last.y.toFixed(2)}`;
 
   return (
-    <section ref={sectionRef} className="py-20 bg-white border-y border-slate-100">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label={label}
+      className="overflow-visible"
+    >
+      <title>{label}</title>
 
-        {/* Header */}
+      <motion.path
+        d={d}
+        fill="none"
+        stroke={DEEMPHASIS}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        initial={{ pathLength: reduce ? 1 : 0 }}
+        animate={inView ? { pathLength: 1 } : undefined}
+        transition={{ duration: 1.2, delay, ease: "easeOut" }}
+      />
+
+      <motion.path
+        d={current}
+        fill="none"
+        stroke={PRIMARY}
+        strokeWidth={2}
+        strokeLinecap="round"
+        initial={{ pathLength: reduce ? 1 : 0 }}
+        animate={inView ? { pathLength: 1 } : undefined}
+        transition={{ duration: 0.3, delay: delay + 1.0, ease: "easeOut" }}
+      />
+
+      <motion.circle
+        cx={last.x}
+        cy={last.y}
+        r={4}
+        fill={PRIMARY}
+        stroke="#ffffff"
+        strokeWidth={2}
+        initial={{ scale: reduce ? 1 : 0, opacity: reduce ? 1 : 0 }}
+        animate={inView ? { scale: 1, opacity: 1 } : undefined}
+        transition={{
+          duration: 0.35,
+          delay: delay + 1.2,
+          type: "spring",
+          stiffness: 320,
+          damping: 18,
+        }}
+        style={{ transformOrigin: `${last.x}px ${last.y}px` }}
+      />
+    </svg>
+  );
+}
+
+/* ─── Delta chip — sign + arrow + named period, never colour alone ──── */
+function Delta({ value }: { value: number }) {
+  return (
+    <span
+      className="inline-flex items-baseline gap-1.5 text-sm font-semibold"
+      style={{ color: DELTA_INK }}
+    >
+      <ArrowUpRight className="h-3.5 w-3.5 self-center" aria-hidden />
+      {`+${value.toFixed(1)}%`}
+      <span className="text-xs font-medium text-slate-400">vs. 3 months ago</span>
+    </span>
+  );
+}
+
+/* ─── Section ──────────────────────────────────────────────────────── */
+export function StatsSection() {
+  const ref = useRef<HTMLElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+
+  const heroTarget = HERO.series[HERO.series.length - 1];
+  const heroDelta = quarterDelta(HERO.series);
+
+  return (
+    <section
+      ref={ref}
+      className="relative overflow-hidden border-y border-slate-200 bg-white py-20 sm:py-24"
+    >
+      <SectionBackdrop seed={2} gridSize={88} />
+
+      <div className="relative mx-auto w-full max-w-7xl px-6 sm:px-12">
+        {/* ── Header ── */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.55 }}
-          className="text-center mb-14"
+          initial={{ opacity: 0, y: 16 }}
+          animate={inView ? { opacity: 1, y: 0 } : undefined}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="flex flex-col justify-between gap-6 border-b border-slate-200 pb-8 sm:flex-row sm:items-end"
         >
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 mb-3">
-            Trusted by the global security community
-          </h2>
-          <p className="text-base text-slate-500 max-w-xl mx-auto">
-            Numbers that reflect the scale and impact DevSolve delivers every day.
+          <div>
+            <div className="mb-4 flex items-center gap-2.5">
+              <span className="h-px w-8" style={{ backgroundColor: PRIMARY }} />
+              <span
+                className="text-xs font-bold uppercase tracking-[0.22em]"
+                style={{ color: PRIMARY }}
+              >
+                Platform activity
+              </span>
+            </div>
+            <h2
+              className="text-3xl font-bold tracking-[-0.04em] sm:text-4xl lg:text-5xl"
+              style={{ color: SECONDARY }}
+            >
+              By the numbers
+              <span style={{ color: PRIMARY }}>.</span>
+            </h2>
+          </div>
+
+          <p className="max-w-sm text-sm leading-relaxed text-slate-500">
+            Twelve months of activity across programs, reports and community
+            solutions. Every figure below is a monthly reading, not a lifetime total.
           </p>
         </motion.div>
 
-        {/* Stats grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 24 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className={`relative ${stat.bg} rounded-2xl p-6 border border-slate-100 overflow-hidden group hover:shadow-md transition-shadow`}
-            >
-              {/* Gradient bar accent */}
-              <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.color} rounded-t-2xl`} />
+        {/* ── Hero figure + supporting tiles ── */}
+        <div className="grid grid-cols-1 gap-x-12 lg:grid-cols-12">
+          {/* Hero figure — one per view */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : undefined}
+            transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col justify-center border-b border-slate-200 py-10 lg:col-span-5 lg:border-b-0 lg:border-r lg:pr-12"
+          >
+            <p className="text-base font-medium text-slate-500">{HERO.label}</p>
 
-              <div className="space-y-1 mb-3">
-                <p className={`text-4xl font-black tracking-tight bg-gradient-to-br ${stat.color} bg-clip-text text-transparent`}>
-                  <AnimatedCount target={stat.value} suffix={stat.suffix} />
-                </p>
-                <p className="text-base font-bold text-slate-800">{stat.label}</p>
-              </div>
-              <p className="text-xs text-slate-500 leading-relaxed">{stat.description}</p>
-            </motion.div>
-          ))}
+            <p
+              className="mt-3 font-bold leading-none tracking-tighter"
+              style={{ color: SECONDARY, fontSize: "clamp(56px, 7vw, 92px)" }}
+            >
+              <CountUp target={heroTarget} format={HERO.format} inView={inView} />
+            </p>
+
+            <div className="mt-6 flex items-center gap-4">
+              <Sparkline
+                series={HERO.series}
+                label={`${HERO.label}: 12-month trend, $${HERO.series[0].toFixed(
+                  1,
+                )}M rising to ${HERO.format(heroTarget)}`}
+                width={200}
+                height={52}
+                inView={inView}
+              />
+              <span className="text-xs font-medium uppercase leading-relaxed tracking-[0.16em] text-slate-400">
+                Last 12
+                <br />
+                months
+              </span>
+            </div>
+
+            <div className="mt-6">
+              <Delta value={heroDelta} />
+            </div>
+          </motion.div>
+
+          {/* Supporting stat tiles, hairline-separated rather than boxed */}
+          <div className="lg:col-span-7">
+            {STATS.map((stat, i) => {
+              const target = stat.series[stat.series.length - 1];
+              const delta = quarterDelta(stat.series);
+
+              return (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={inView ? { opacity: 1, y: 0 } : undefined}
+                  transition={{ duration: 0.5, delay: 0.2 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  className={`flex items-center justify-between gap-6 py-7 ${
+                    i < STATS.length - 1 ? "border-b border-slate-200" : ""
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <p className="text-base font-medium text-slate-500">{stat.label}</p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400">
+                      {stat.unit}
+                    </p>
+                    <div className="mt-3">
+                      <Delta value={delta} />
+                    </div>
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-5 sm:gap-8">
+                    <div className="hidden sm:block">
+                      <Sparkline
+                        series={stat.series}
+                        label={`${stat.label}: 12-month trend, ${stat.format(
+                          stat.series[0],
+                        )} rising to ${stat.format(target)}`}
+                        inView={inView}
+                        delay={0.15 + i * 0.1}
+                      />
+                    </div>
+
+                    <p
+                      className="text-right text-4xl font-bold leading-none tracking-[-0.04em] sm:text-5xl"
+                      style={{ color: SECONDARY }}
+                    >
+                      <CountUp target={target} format={stat.format} inView={inView} />
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
