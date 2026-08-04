@@ -20,6 +20,19 @@ export interface RegisterUserResponse {
   };
 }
 
+// Real response shape of POST /api/v1/auth/register (per the live OpenAPI spec).
+// Note: `country` isn't accepted by this endpoint — the backend's RegisterRequest
+// has no such field, so it's dropped here (settable later via profile edit).
+interface RegisterApiResponse {
+  userId: string;
+  username: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  accountType?: "USER" | "COMPANY" | "ADMIN";
+}
+
 export interface RegisterCompanyRequest {
   fullName: string;
   jobTitle: string;
@@ -46,22 +59,32 @@ export interface RegisterCompanyResponse {
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     registerUser: builder.mutation<RegisterUserResponse, RegisterUserRequest>({
-      queryFn: async (body) => {
-        // Mock successful user registration
-        await new Promise((resolve) => setTimeout(resolve, 800));
+      query: (body) => {
+        const [firstName, ...rest] = body.fullName.trim().split(/\s+/).filter(Boolean);
         return {
-          data: {
-            success: true,
-            message: "User account registered successfully!",
-            user: {
-              id: `usr_${Date.now()}`,
-              username: body.username,
-              email: body.email,
-              fullName: body.fullName,
-            },
+          url: `/auth/register`,
+          method: "POST",
+          body: {
+            username: body.username,
+            email: body.email,
+            password: body.password,
+            confirmPassword: body.password,
+            firstName: firstName || body.fullName,
+            lastName: rest.join(" ") || undefined,
+            accountType: body.role === "company" ? "COMPANY" : "USER",
           },
         };
       },
+      transformResponse: (raw: RegisterApiResponse): RegisterUserResponse => ({
+        success: true,
+        message: "User account registered successfully!",
+        user: {
+          id: raw.userId,
+          username: raw.username,
+          email: raw.email,
+          fullName: [raw.firstName, raw.lastName].filter(Boolean).join(" ") || raw.username,
+        },
+      }),
       invalidatesTags: ["User"],
     }),
     registerCompany: builder.mutation<RegisterCompanyResponse, RegisterCompanyRequest>({

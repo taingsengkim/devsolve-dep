@@ -1,4 +1,6 @@
-export const pageEnterContainer = {
+import type { Variants } from "motion/react";
+
+export const pageEnterContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -9,7 +11,7 @@ export const pageEnterContainer = {
   },
 };
 
-export const pageEnterItem = {
+export const pageEnterItem: Variants = {
   hidden: { opacity: 0, y: 18 },
   visible: {
     opacity: 1,

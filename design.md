@@ -92,6 +92,8 @@ Scale:
 - **Feature sections:** Zig-zag alternating text+image rows. No 3-equal-columns.
 - **Mobile collapse:** All multi-column layouts collapse below 768px. No horizontal overflow.
 - **z-index contract:** base (0) / sticky-nav (100) / overlay (200) / modal (300) / toast (500).
+- **Detail Page Asymmetric Grid:** 2-column main content (`lg:col-span-2 space-y-8`) + 1-column sidebar (`aside space-y-6`) using `grid grid-cols-1 lg:grid-cols-3 gap-8 items-start`.
+- **Hero Header Section:** Top full-width card (`bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xs`) with back nav link, header metadata bar, logo/avatar, action buttons, title, description tags, and 4-column metric list (`dl`).
 
 
 ## Elevation & Depth
@@ -99,7 +101,9 @@ Scale:
 Shadow-as-border: box-shadow 0px 0px 0px 1px rgba(0,0,0,0.08) substituindo bordas tradicionais. Multi-layer shadow stacks para cards (border + elevation + ambient + inner highlight). Geist Sans com letter-spacing extremo negativo (-2.4px a -2.88px em display). Ligatures (liga) habilitadas globalmente. Cores de workflow: Ship Red, Preview Pink, Develop Blue. Canvas quase branco puro com texto #171717.
 
 - **Physics:** Ease-out curves, 200-300ms duration. Smooth and predictable.
-- **Entry animations:** Fade + translate-Y (16px → 0) over 420ms ease-out. Staggered cascades for lists: 80ms between items.
+- **Entry animations:** Mount animation with `motion.div` (`initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: "easeOut" }}`). Staggered cascades for lists: 80ms between items.
+- **Tab navigation indicator:** Active tab underline indicator using `motion.div` with `layoutId` spring animation (`transition={{ type: "spring", stiffness: 400, damping: 35 }}`).
+- **Tab transition mode:** Wrap dynamic tab components inside `<AnimatePresence mode="wait">` to prevent UI content jumps.
 - **Hover states:** Subtle color shift + shadow adjustment over 200ms.
 - **Page transitions:** Fade only (200ms).
 - **Performance:** Only transform and opacity animated. No layout-triggering properties.
@@ -107,18 +111,21 @@ Shadow-as-border: box-shadow 0px 0px 0px 1px rgba(0,0,0,0.08) substituindo borda
 
 ## Shapes
 
-Base corner radius: 6px. See rounded tokens in front matter for the full scale.
+- **Card / Surface Corner Radius:** `rounded-2xl` (16px / 1rem) for main page sections, hero headers, sidebar widgets, and modal dialogs.
+- **Button & Control Corner Radius:** `rounded-xl` (12px / 0.75rem) for interactive buttons, navigation tabs, and inputs.
+- **Tag & Badge Corner Radius:** `rounded-lg` (8px / 0.5rem) for status indicators, categories, and tag chips.
 
 
 ## Components
 
-- **Primary Button:** Pill-shaped (9999px) shape. Accent color fill. Hover: 8% darken + subtle lift shadow. Active: -1px translate tactile press. Font weight 600. No outer glows.
-- **Secondary / Ghost Button:** Outline variant. 1.5px border in muted color. Text in primary color. Hover: subtle background fill.
-- **Cards:** Pill-shaped (9999px) corners. Surface background. Subtle shadow (0 2px 12px rgba(0,0,0,0.06)). 1px border stroke.
-- **Inputs:** Label above input. 1px border stroke. Focus ring: 2px accent color offset 2px. Error text below in semantic red. No floating labels.
-- **Navigation:** Primary surface background. Active item: accent color indicator. Font weight 500 when active.
-- **Skeletons:** Shimmer animation matching component dimensions. No circular spinners.
-- **Empty States:** Icon-based composition with descriptive text and action button.
+- **Primary Button:** Pill/Rounded shape (`rounded-xl` or `rounded-full`). Accent color fill (`bg-blue-600 hover:bg-blue-700`). Active: -1px translate tactile press. Font weight 600.
+- **Secondary / Ghost Button:** Outline variant (`border-slate-300 hover:bg-slate-50`). 1.5px border in muted color. Text in primary color (`text-slate-700`).
+- **Tab Navigation (`ProgramDetailTabNav`):** Elevated tab bar (`bg-white rounded-xl border-b border-slate-200 px-2 pt-2 shadow-2xs`) with animated active underline (`motion.div` `layoutId`).
+- **Sidebar Widgets:** Structured cards (`bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4`) for timeline/stats metadata, plus dark gradient CTA cards (`bg-gradient-to-br from-blue-900 via-slate-900 to-slate-900 text-white p-6 rounded-2xl shadow-md`).
+- **Cards:** `rounded-2xl` surface cards (`bg-white border border-slate-200 shadow-xs`).
+- **Inputs:** Label above input (`border-slate-300 bg-white`). Focus ring: 2px accent color offset 2px. Error text below in semantic red.
+- **Loading Skeleton State:** Page layout mirroring `animate-pulse` containers (`h-64 bg-slate-200 rounded-2xl`, 2:1 column split placeholders) avoiding circular spinners.
+- **Error / Empty State:** Centered card (`bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-4`) with rounded icon container (`w-14 h-14 bg-slate-100 rounded-2xl text-slate-400`), title (`text-xl font-bold text-slate-800`), subtext, and back button.
 
 
 ## Do's and Don'ts

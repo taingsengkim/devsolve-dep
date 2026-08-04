@@ -73,10 +73,11 @@ export function ReportSeverityAdjustmentForm({
             <FieldLabel>Select correct severity</FieldLabel>
             <FieldContent>
               <ToggleGroup
-                value={selectedSeverity}
+                value={[selectedSeverity]}
                 onValueChange={(value) => {
-                  if (value) {
-                    setSelectedSeverity(value as SeverityOption);
+                  const next = value[value.length - 1];
+                  if (next) {
+                    setSelectedSeverity(next as SeverityOption);
                   }
                 }}
                 className="flex w-full flex-wrap gap-2"

@@ -64,3 +64,37 @@ export interface ReportDetail extends ReportItem {
   updates: ActivityUpdate[];
   retestHistory: RetestItem[];
 }
+
+export interface SubmitReportPayload {
+  programId: string;
+  programName: string;
+  targetAsset: string;
+  httpMethod?: string;
+  vulnerableParameter?: string;
+  environment?: string;
+  category: string;
+  severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO";
+  cweIdentifier?: string;
+  cvssScore?: string;
+  cvssVector?: string;
+  title: string;
+  summaryPoC: string;
+  reproduceStepsList?: string[];
+  impact?: string;
+  remediation?: string;
+  pocPayload?: string;
+  expectedResult?: string;
+  actualResult?: string;
+  attachments?: { name: string; size: string; type: string }[];
+  externalLinks?: string[];
+  agreeTerms?: boolean;
+}
+
+export interface SubmitReportResponse {
+  success: boolean;
+  reportId: string;
+  id: string;
+  message: string;
+  status: "TRIAGING";
+  createdAt: string;
+}

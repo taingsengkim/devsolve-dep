@@ -7,18 +7,10 @@ import { cn } from "@/lib/utils";
 export function ReportManagementHeader() {
   return (
     <header className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-      <div className="flex min-w-0 flex-1 flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-400">
-          <span>Admin</span>
-          <span className="text-slate-300">{">"}</span>
-          <span className="text-slate-600">Report Management</span>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <h1 className="text-[32px] font-semibold tracking-[-0.04em] text-[#0F172A] sm:text-[38px]">
-            Report Management
-          </h1>
-        </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <h1 className="text-[32px] font-semibold tracking-[-0.04em] text-[#0F172A] sm:text-[38px]">
+          Report Management
+        </h1>
       </div>
 
       <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:justify-end">

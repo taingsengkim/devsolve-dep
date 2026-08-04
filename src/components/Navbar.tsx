@@ -13,16 +13,17 @@ import { authClient } from '@/lib/auth/auth-client';
 
 const navLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Program', href: '/program' },
-    { name: 'Community', href: '/#community' },
-    { name: 'Leader board', href: '/#leaderboard' },
-    { name: 'Hacker activity', href: '/#activity' },
+    { name: 'Programs', href: '/programs' },
+    { name: 'Discussions', href: '/discussions' },
+    { name: 'Community', href: '/community' },
+    { name: 'Leaderboard', href: '/leaderboard' },
     { name: 'About', href: '/about' },
 ];
 
 const Navbar = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isLoggingIn, setIsLoggingIn] = useState(false);
+    const [hoveredPath, setHoveredPath] = useState<string | null>(null);
     const pathname = usePathname();
 
     useEffect(() => {
@@ -94,13 +95,32 @@ const Navbar = () => {
                     </Link>
 
                     {/* Desktop Nav */}
-                    <DynamicNavigation
-                        items={navLinks.map((link) => ({
-                            label: link.name,
-                            href: link.href,
-                        }))}
-                        pathname={pathname}
-                    />
+                    <nav className="hidden lg:flex items-center gap-1 relative" onMouseLeave={() => setHoveredPath(null)}>
+                        {navLinks.map((link) => {
+                            const isActive = pathname === link.href;
+                            const isHovered = hoveredPath === link.name;
+                            return (
+                                <Link
+                                    key={link.name}
+                                    href={link.href}
+                                    onMouseEnter={() => setHoveredPath(link.name)}
+                                    className="relative text-base font-medium text-slate-600 hover:text-slate-900 px-3.5 py-2 rounded-full transition-colors duration-200"
+                                >
+                                    {isHovered && (
+                                        <motion.span
+                                            layoutId="navbar-hover"
+                                            className="absolute inset-0 bg-slate-100 rounded-full -z-10"
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                                        />
+                                    )}
+                                    <span className={isActive ? "text-slate-900 font-semibold" : ""}>{link.name}</span>
+                                </Link>
+                            );
+                        })}
+                    </nav>
 
                     {/* Right Actions */}
                     <div className="flex items-center gap-2.5">

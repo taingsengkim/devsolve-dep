@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,7 +11,6 @@ import {
   ArrowLeft,
   Eye,
   X,
-  ShieldAlert,
   CheckCircle2,
   Clock,
   AlertCircle,
@@ -125,7 +126,6 @@ export default function MyReportsPage() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
 
   // RTK Query data fetching
   const { data: reports = [], isLoading } = useGetReportsQuery({

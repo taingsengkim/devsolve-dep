@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import StoreProvider from "@/lib/redux/StoreProvider";
-import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "DevSolve",
@@ -19,15 +23,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      suppressHydrationWarning
-      className={cn("h-full", "antialiased", "font-sans", geist.variable)}
+      className={cn("h-full", "antialiased", inter.variable)}
     >
-      <body className="min-h-full bg-background text-foreground">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <StoreProvider>
-            {children}
-          </StoreProvider>
-        </ThemeProvider>
+      <body className={cn("h-full font-sans antialiased", inter.className)}>
+        <StoreProvider>
+          {children}
+          <Toaster />
+        </StoreProvider>
+        <Toaster />
       </body>
     </html>
   );
