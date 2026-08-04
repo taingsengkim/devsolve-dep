@@ -672,7 +672,6 @@ export function TechStackSection({
               className="transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)]"
             />
 
-            {/* Ball outer glow */}
             <circle
               cx={ballPosition.x}
               cy={ballPosition.y}
