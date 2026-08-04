@@ -1,0 +1,121 @@
+import { LeaderboardPeriod, SeverityLabel } from "@/lib/types/leaderboard/types";
+
+/* Brand palette — mirrors design.md and the landing page. */
+export const PRIMARY = "#2563EB";
+export const SECONDARY = "#1E293B";
+export const ACCENT = "#10B981";
+
+/** Medal tones for the top three — gold, violet-silver, coral-bronze.
+ *
+ *  Each place owns one hue across the whole feature: `podium.block` fills the
+ *  pedestal, `podium.edge` draws its rim and the avatar ring, `soft` / `ink`
+ *  tint the rank chip, and `ring` accents the table row. Saturation is pushed
+ *  well past a wash so the board actually reads as a podium, while every ink
+ *  pairing below still clears 4.5:1 on its own surface. Rank is stated in text
+ *  too, so colour is never the only carrier. */
+export const MEDALS = [
+  {
+    ring: "#D9A404",
+    soft: "#FEF3C7",
+    ink: "#7A5406",
+    label: "1st",
+    podium: {
+      block: "#FBDD7A",
+      edge: "#E9BE3F",
+      heading: "#7A5406",
+      figure: "#1E293B",
+      muted: "#6E5312",
+    },
+  },
+  {
+    ring: "#8B84D6",
+    soft: "#EEEBFB",
+    ink: "#453D80",
+    label: "2nd",
+    podium: {
+      block: "#C7C0F2",
+      edge: "#A79BE8",
+      heading: "#3F3583",
+      figure: "#1E293B",
+      muted: "#443A85",
+    },
+  },
+  {
+    ring: "#E4714F",
+    soft: "#FDE7E1",
+    ink: "#8E3520",
+    label: "3rd",
+    podium: {
+      block: "#FBC0B4",
+      edge: "#F09A87",
+      heading: "#8E3520",
+      figure: "#1E293B",
+      muted: "#85321E",
+    },
+  },
+] as const;
+
+/** Severity ink — text-safe on white (all ≥ 4.5:1). */
+export const SEVERITY_STYLES: Record<
+  SeverityLabel,
+  { text: string; chip: string }
+> = {
+  Critical: { text: "text-rose-700", chip: "bg-rose-50 text-rose-700 ring-rose-200" },
+  High: { text: "text-orange-700", chip: "bg-orange-50 text-orange-700 ring-orange-200" },
+  Medium: { text: "text-amber-700", chip: "bg-amber-50 text-amber-700 ring-amber-200" },
+  Low: { text: "text-slate-600", chip: "bg-slate-100 text-slate-600 ring-slate-200" },
+};
+
+export const PERIOD_OPTIONS: { value: LeaderboardPeriod; label: string }[] = [
+  { value: "all", label: "All time" },
+  { value: "month", label: "This month" },
+  { value: "week", label: "This week" },
+];
+
+/** Compact period wording for eyebrows and inline captions. */
+export const PERIOD_LABEL_SHORT: Record<LeaderboardPeriod, string> = {
+  all: "All-time",
+  month: "This month's",
+  week: "This week's",
+};
+
+/** Points earned inside the window vs. cumulative — worth saying out loud,
+ *  because the two answer different questions. */
+export const PERIOD_CAPTION: Record<LeaderboardPeriod, string> = {
+  all: "Cumulative reputation points earned since joining.",
+  month: "Reputation points earned in the last 30 days.",
+  week: "Reputation points earned in the last 7 days.",
+};
+
+export function formatNumber(n: number) {
+  return n.toLocaleString("en-US");
+}
+
+/** Stable tint per researcher so an avatar looks the same everywhere. */
+const AVATAR_TINTS = [
+  "bg-blue-50 text-blue-700 ring-blue-100",
+  "bg-emerald-50 text-emerald-700 ring-emerald-100",
+  "bg-indigo-50 text-indigo-700 ring-indigo-100",
+  "bg-teal-50 text-teal-700 ring-teal-100",
+  "bg-violet-50 text-violet-700 ring-violet-100",
+  "bg-sky-50 text-sky-700 ring-sky-100",
+  "bg-slate-100 text-slate-700 ring-slate-200",
+];
+
+export function tintFor(key: string) {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) | 0;
+  return AVATAR_TINTS[Math.abs(hash) % AVATAR_TINTS.length];
+}
+
+export function profileHref(username: string) {
+  return `/dashboard/profile/${username}`;
+}
+
+/** Rank movement, expressed as a sign so it never depends on colour alone. */
+export function rankDelta(rank: number, previousRank: number | null) {
+  if (previousRank == null) return { direction: "new" as const, value: 0 };
+  const value = previousRank - rank;
+  if (value === 0) return { direction: "flat" as const, value: 0 };
+  return { direction: value > 0 ? ("up" as const) : ("down" as const), value: Math.abs(value) };
+}
