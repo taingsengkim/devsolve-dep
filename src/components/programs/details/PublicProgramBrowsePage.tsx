@@ -17,6 +17,7 @@ export default function MarketplacePage() {
     searchTerm,
     setSearchTerm,
     quickFilter,
+    setQuickFilter,
     selectedType,
     setSelectedType,
     selectedCategory,
@@ -35,6 +36,8 @@ export default function MarketplacePage() {
     setRowsPerPage,
     handleSearchSubmit,
     handleClearSearch,
+    handleTypeChange,
+    handleQuickFilterClick,
     handleResetFilters,
     isFilterActive,
     queryProps,
@@ -51,7 +54,10 @@ export default function MarketplacePage() {
   // CLIENT-SIDE FILTERING LOGIC
   const filteredPrograms = useMemo(() => {
     return rawPrograms.filter((program: Program) => {
-      const isBounty = program.offersBounties || program.engagementType === "MANAGED";
+      const isBounty =
+        program.offersBounties ||
+
+        program.engagementType === "BOUNTY";
 
       // 0. SEARCH FILTER
       if (searchTerm && searchTerm.trim() !== "") {
@@ -70,9 +76,16 @@ export default function MarketplacePage() {
       if (selectedType === "Response" && isBounty) return false;
 
       // 2. FILTER BY QUICK STATS
-      if (quickFilter === "Bounty" && !isBounty) return false;
-      if (quickFilter === "Response" && isBounty) return false;
-      if (quickFilter === "Private" && program.visibility !== "PRIVATE") return false;
+      const normalizedQuickFilter = quickFilter?.toLowerCase?.() || "all";
+      const effectiveQuickFilter =
+        selectedType !== "All" &&
+        (normalizedQuickFilter === "bounty" || normalizedQuickFilter === "response")
+          ? "all"
+          : normalizedQuickFilter;
+
+      if (effectiveQuickFilter === "bounty" && !isBounty) return false;
+      if (effectiveQuickFilter === "response" && isBounty) return false;
+      if (effectiveQuickFilter === "private" && program.visibility !== "PRIVATE") return false;
 
       // 3. FILTER BY PROGRAM STATUS (All, Open, Done, Archived)
       if (selectedStatus && selectedStatus !== "All") {
@@ -84,28 +97,29 @@ export default function MarketplacePage() {
 
       // 4. FILTER BY REWARD / POINTS RANGE
       // 4. FILTER BY REWARD / POINTS RANGE (Strict Minimum & Maximum)
-const userMin = minReward !== "" && minReward !== undefined ? Number(minReward) : null;
-const userMax = maxReward !== "" && maxReward !== undefined ? Number(maxReward) : null;
+      const userMin = minReward !== "" && minReward !== undefined ? Number(minReward) : null;
+      const userMax = maxReward !== "" && maxReward !== undefined ? Number(maxReward) : null;
 
-if (userMin !== null || userMax !== null) {
-  if (isBounty) {
-    const progMin = program.minimumBounty ?? 0;
-    const progMax = program.maximumBounty ?? 0;
+      if (userMin !== null || userMax !== null) {
+        if (isBounty) {
+          const progMin = program.minimumBounty ?? 0;
+          const progMax = program.maximumBounty ?? 0;
 
-    // Filter out if starting bounty is less than the user's min input
-    if (userMin !== null && progMin < userMin) return false;
+          // Filter out if starting bounty is less than the user's min input
+          if (userMin !== null && progMin < userMin) return false;
 
-    // Filter out if maximum bounty is greater than the user's max input
-    if (userMax !== null && progMax > userMax) return false;
-  } else {
-    // Response (Points) Programs
-    const minPts = program.rewards?.[0]?.points ?? 0;
-    const maxPts = program.rewards?.[program.rewards.length - 1]?.points ?? 0;
+          // Filter out if maximum bounty is greater than the user's max input
+          if (userMax !== null && progMax > userMax) return false;
+        } else {
+          // Response (Points) Programs
+          const points = program.rewards?.map((r) => r.points ?? 0) || [];
+          const minPts = points.length > 0 ? Math.min(...points) : 20;
+          const maxPts = points.length > 0 ? Math.max(...points) : 80;
 
-    if (userMin !== null && minPts < userMin) return false;
-    if (userMax !== null && maxPts > userMax) return false;
-  }
-}
+          if (userMin !== null && minPts < userMin) return false;
+          if (userMax !== null && maxPts > userMax) return false;
+        }
+      }
 
       return true;
     });
@@ -144,10 +158,7 @@ if (userMin !== null || userMax !== null) {
           {/* DETAILED FILTER CONTROLS BAR */}
           <ProgramFiltersBar
             selectedType={selectedType}
-            onTypeChange={(t) => {
-              setSelectedType(t);
-              setCurrentPage(1);
-            }}
+            onTypeChange={handleTypeChange}
             selectedStatus={selectedStatus}
             // onStatusChange={(s) => {
             //   setSelectedStatus(s);

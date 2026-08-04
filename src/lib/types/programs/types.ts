@@ -1,4 +1,4 @@
-export type EngagementType = "RESPONSE" | "MANAGED" | "BOUNTY" | "DISCOVERY";
+export type EngagementType = "RESPONSE" |  "BOUNTY";
 export type ProgramState = "DRAFT" | "PUBLISHED" | "ARCHIVED" | "ACTIVE";
 export type ProgramType = "All" | "Bounty" | "Response";
 export type SubmissionState = "PENDING_REVIEW" | "APPROVED" | "REJECTED";

@@ -37,6 +37,13 @@ export function useProgramFilters() {
 
   const handleQuickFilterClick = (filterKey: string) => {
     setQuickFilter(filterKey);
+    setSelectedType("All");
+    setCurrentPage(1);
+  };
+
+  const handleTypeChange = (type: ProgramType | "All") => {
+    setSelectedType(type);
+    setQuickFilter("all");
     setCurrentPage(1);
   };
 
@@ -61,9 +68,9 @@ export function useProgramFilters() {
     minReward !== "" ||
     maxReward !== "";
 
-  // Map UI filter selections ("Bounty", "Response") to backend API params ("MANAGED", "RESPONSE")
+  // Map UI filter selections ("Bounty", "Response") to backend API params ("BOUNTY", "RESPONSE")
   const getBackendEngagementType = (type: ProgramType): string | undefined => {
-    if (type === "Bounty") return "MANAGED";
+    if (type === "Bounty") return "BOUNTY";
     if (type === "Response") return "RESPONSE";
     return undefined;
   };
@@ -81,6 +88,7 @@ export function useProgramFilters() {
     searchTerm,
     setSearchTerm,
     quickFilter,
+    setQuickFilter,
     selectedType,
     setSelectedType,
     selectedCategory,
@@ -100,6 +108,7 @@ export function useProgramFilters() {
     handleSearchSubmit,
     handleClearSearch,
     handleQuickFilterClick,
+    handleTypeChange,
     handleResetFilters,
     isFilterActive,
     queryProps,
