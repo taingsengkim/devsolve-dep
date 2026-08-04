@@ -21,7 +21,7 @@ export const mockFooterData: FooterData = {
     links: [
       { id: "p-1", label: "Home", href: "/" },
       { id: "p-2", label: "Programs", href: "/programs" },
-      { id: "p-3", label: "Community", href: "/community" },
+      { id: "p-3", label: "Community", href: "/discussions" },
       { id: "p-4", label: "Leaderboard", href: "/leaderboard" },
     ],
   },

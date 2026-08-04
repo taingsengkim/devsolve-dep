@@ -1,6 +1,7 @@
 import { baseApi } from "./baseApi";
 import {
   DiscussionPost,
+  DiscussionSort,
   TopicCount,
   TopicFilter,
 } from "@/lib/types/dicussion/types";
@@ -17,6 +18,7 @@ export interface DiscussionsFilterParams {
   topic?: string | null;
   tag?: string | null;
   searchQuery?: string;
+  sort?: DiscussionSort;
   page?: number;
   limit?: number;
 }
@@ -33,6 +35,32 @@ export interface DiscussionStats {
   problems: number;
   solutions: number;
   researchers: number;
+}
+
+// ─── Sorting helpers ──────────────────────────────────────────────────────────
+
+/** `createdAt` is a display string ("Jun 12, 2025" / "Just now"). Unparsable
+ *  values are treated as "now" so freshly created posts sort to the top. */
+function createdAtTime(value: string): number {
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? Date.now() : parsed;
+}
+
+function sortDiscussions<T extends DiscussionPost>(list: T[], sort: DiscussionSort): T[] {
+  const sorted = [...list];
+  switch (sort) {
+    case "oldest":
+      return sorted.sort((a, b) => createdAtTime(a.createdAt) - createdAtTime(b.createdAt));
+    case "top":
+      return sorted.sort((a, b) => b.votes - a.votes);
+    case "discussed":
+      return sorted.sort((a, b) => b.answersCount - a.answersCount);
+    case "viewed":
+      return sorted.sort((a, b) => b.viewsCount - a.viewsCount);
+    case "newest":
+    default:
+      return sorted.sort((a, b) => createdAtTime(b.createdAt) - createdAtTime(a.createdAt));
+  }
 }
 
 // ─── Mock vote state (module-level, real API will replace this) ───────────────
@@ -77,10 +105,13 @@ export const discussionsApi = baseApi.injectEndpoints({
           );
         }
 
+        results = sortDiscussions(results, params?.sort ?? "newest");
+
         const limit = params?.limit ?? 10;
-        const page = params?.page ?? 1;
         const totalCount = results.length;
         const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+        // Clamp so a stale page (e.g. after narrowing filters) never yields a blank feed.
+        const page = Math.min(Math.max(1, params?.page ?? 1), totalPages);
         const start = (page - 1) * limit;
         const paginatedData = results.slice(start, start + limit);
 

@@ -1,18 +1,17 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { ProgramItem } from "@/lib/types/programs/types";
+import { Program } from "@/lib/types/programs/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 interface ProgramCardProps {
-  program: ProgramItem;
+  program: Program;
   hrefPrefix?: string;
-  onSeeDetails?: (program: ProgramItem) => void;
+  onSeeDetails?: (program: Program) => void;
 }
 
 export const ProgramCard: React.FC<ProgramCardProps> = ({
@@ -21,7 +20,10 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
   onSeeDetails,
 }) => {
   const pathname = usePathname();
-  const isBounty = program.type === "Bounty";
+  const isBounty =
+    program.offersBounties ||
+    program.engagementType === "BOUNTY" ||
+    program.engagementType === "MANAGED";
 
   // Determine detail link target based on current path or explicit prop
   const defaultPrefix = pathname?.startsWith("/dashboard")
@@ -29,6 +31,20 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
     : "/programs";
   const targetPrefix = hrefPrefix ?? defaultPrefix;
   const detailUrl = `${targetPrefix}/${program.id}`;
+
+  const orgName = program.organizationName || program.handle || "Organization";
+
+  const renderRewards = () => {
+    if (isBounty) {
+      const min = program.minimumBounty ?? 0;
+      const max = program.maximumBounty ?? 0;
+      if (min === 0 && max === 0) return "$0";
+      return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
+    }
+    const minPts = program.rewards?.[0]?.points ?? 20;
+    const maxPts = program.rewards?.[program.rewards.length - 1]?.points ?? 80;
+    return `${minPts} - ${maxPts} pts`;
+  };
 
   return (
     <motion.article
@@ -41,47 +57,36 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
         {/* Header section */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-4 min-w-0">
-            {program.logoUrl ? (
-              <Image
-                src={program.logoUrl}
-                alt={program.companyName}
-                width={80}
-                height={80}
-                unoptimized
-                className="w-15 h-15 rounded-2xl object-contain shrink-0 bg-white p-1"
-              />
-            ) : (
-              <div
-                className={`w-20 h-20 rounded-2xl flex items-center justify-center font-bold text-2xl text-white shadow-xs shrink-0 ${
-                  program.logoBgColor || "bg-blue-600"
-                }`}
-              >
-                {program.companyName.slice(0, 2).toUpperCase()}
-              </div>
-            )}
+            <div
+              className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-xl text-white shadow-xs shrink-0 ${
+                isBounty ? "bg-blue-600" : "bg-emerald-600"
+              }`}
+            >
+              {orgName.slice(0, 2).toUpperCase()}
+            </div>
 
             <div className="min-w-0">
               <Link href={detailUrl}>
                 <h2 className="text-lg font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
-                  {program.companyName}
+                  {orgName}
                 </h2>
               </Link>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <Badge
                   variant="outline"
                   className={`font-medium text-xs ${
-                    program.type === "Bounty"
+                    isBounty
                       ? "bg-blue-100 text-blue-700 border-blue-200"
                       : "bg-emerald-100 text-emerald-700 border-emerald-200"
                   }`}
                 >
-                  {program.type}
+                  {isBounty ? "Bounty" : "Response"}
                 </Badge>
 
                 {/* Status indicator */}
-                <span className="text-xs text-slate-500 font-medium flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                  {program.status}
+                <span className="text-xs text-slate-500 font-medium flex items-center gap-1 capitalize">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  {program.state?.toLowerCase() || "open"}
                 </span>
               </div>
             </div>
@@ -92,7 +97,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
         <div>
           <Link href={detailUrl}>
             <h3 className="text-base font-bold text-slate-900 line-clamp-1 mb-1.5 group-hover:text-blue-600 transition-colors">
-              {program.title}
+              {program.name}
             </h3>
           </Link>
           <p className="text-sm text-slate-600 leading-relaxed line-clamp-2 min-h-[2.6rem]">
@@ -106,19 +111,29 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
             IN-SCOPE ASSETS
           </h4>
           <div className="flex flex-wrap gap-1.5">
-            {program.inScopeAssets.slice(0, 4).map((asset, idx) => (
-              <span
-                key={idx}
-                className="inline-block px-2.5 py-1 rounded-md bg-slate-100/90 text-slate-700 text-xs font-mono border border-slate-200/80 truncate max-w-[140px]"
-                title={asset}
-              >
-                {asset}
-              </span>
-            ))}
-            {program.inScopeAssets.length > 4 && (
-              <span className="inline-block px-2 py-1 rounded-md bg-slate-100 text-slate-500 text-xs font-medium">
-                +{program.inScopeAssets.length - 4} more
-              </span>
+            {program.inScopeAssets && program.inScopeAssets.length > 0 ? (
+              <>
+                {program.inScopeAssets.slice(0, 4).map((asset, idx) => {
+                  const assetName = typeof asset === "string" ? asset : asset.identifier;
+                  const key = typeof asset === "string" ? asset : asset.id || idx;
+                  return (
+                    <span
+                      key={key}
+                      className="inline-block px-2.5 py-1 rounded-md bg-slate-100/90 text-slate-700 text-xs font-mono border border-slate-200/80 truncate max-w-[140px]"
+                      title={assetName}
+                    >
+                      {assetName}
+                    </span>
+                  );
+                })}
+                {program.inScopeAssets.length > 4 && (
+                  <span className="inline-block px-2 py-1 rounded-md bg-slate-100 text-slate-500 text-xs font-medium">
+                    +{program.inScopeAssets.length - 4} more
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-xs text-slate-400 italic">No assets listed</span>
             )}
           </div>
         </div>
@@ -133,7 +148,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
               isBounty ? "text-emerald-600" : "text-indigo-600"
             }`}
           >
-            {program.rewardRange}
+            {renderRewards()}
           </p>
         </div>
 
