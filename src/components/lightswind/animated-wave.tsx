@@ -200,7 +200,7 @@ export const AnimatedWave: React.FC<AnimatedWaveProps> = ({
 
     // Simplex Noise Generator
     const noise2D = createNoise2D();
-    const clock = new THREE.Clock();
+    const clock = new THREE.Timer();
 
     // Mouse Tracking
     const mouse = new THREE.Vector2(0, 0);
@@ -237,7 +237,8 @@ export const AnimatedWave: React.FC<AnimatedWaveProps> = ({
     // Animation Loop
     let animationFrameId: number;
     const animate = () => {
-      const time = clock.getElapsedTime() * speed;
+      clock.update();
+      const time = clock.getElapsed() * speed;
 
       // Project Mouse to XZ Plane
       if (mouseInteraction) {
