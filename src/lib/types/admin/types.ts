@@ -94,6 +94,34 @@ export interface PaginatedResponse<T> {
 
 export type PendingOrganizationsResponse = PaginatedResponse<PendingOrganizationItem>;
 
+export interface OrganizationResponse {
+  id: string;
+  ownerId?: string;
+  name: string;
+  slug?: string;
+  domain?: string;
+  websiteUrl?: string;
+  logoUrl?: string;
+  description?: string;
+  industry?: string;
+  companySize?: string;
+  country?: string;
+  status: "PENDING" | "ACTIVE" | "REJECTED" | string;
+  verifiedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface OrganizationReviewHistoryItem {
+  id: string;
+  organizationId: string;
+  action: string;
+  reviewerId?: string;
+  reviewerName?: string;
+  notes?: string;
+  createdAt: string;
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 
 export interface CompanyVerificationItem {

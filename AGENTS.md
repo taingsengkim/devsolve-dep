@@ -52,5 +52,10 @@ Use **RTK Query** (via `@reduxjs/toolkit`) as the **only** approach for fetching
 
 
 
+# Documentation & Reference Sources
+
+- **Project Init & Architecture Guide**: Refer to [`project_init.md`](file:///c:/Users/tolsa/Documents/My%20project/devsolve-frontend/project_init.md) for directory structure, dashboard route map, design tokens, and project initialization standards.
+- **Backend OpenAPI Specifications**: Refer to [`api-docs.json`](file:///c:/Users/tolsa/Documents/My%20project/devsolve-frontend/api-docs.json) for authoritative backend API endpoints, payload DTO schemas, parameter definitions, and response formats.
+
 ***
-## If any change in the future please reflex change this instruction.
+## If any change in the future please reflex change this instruction.

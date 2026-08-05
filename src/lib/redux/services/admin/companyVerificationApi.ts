@@ -2,6 +2,8 @@ import { baseApi } from "../baseApi";
 import {
   CompanyVerificationItem,
   PendingOrganizationsResponse,
+  OrganizationResponse,
+  OrganizationReviewHistoryItem,
 } from "@/lib/types/admin/types";
 import {
   mockCompanyVerificationsStore,
@@ -10,7 +12,7 @@ import {
 
 export const companyVerificationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // ─── Real API endpoint ────────────────────────────────────────────────
+    // ─── Real API endpoints ───────────────────────────────────────────────
     getPendingOrganizations: builder.query<
       PendingOrganizationsResponse,
       { pageNumber?: number; pageSize?: number }
@@ -21,13 +23,51 @@ export const companyVerificationApi = baseApi.injectEndpoints({
       }),
       providesTags: ["CompanyVerification"],
     }),
-    // ─────────────────────────────────────────────────────────────────────
+
+    getOrganizationById: builder.query<OrganizationResponse, string>({
+      query: (id) => ({
+        url: `/organizations/${id}`,
+      }),
+      providesTags: (_result, _error, id) => [{ type: "CompanyVerification", id }],
+    }),
+
+    approveOrganization: builder.mutation<OrganizationResponse, { id: string; notes?: string }>({
+      query: ({ id }) => ({
+        url: `/organizations/${id}/approve`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "CompanyVerification", id },
+        "CompanyVerification",
+      ],
+    }),
+
+    rejectOrganization: builder.mutation<OrganizationResponse, { id: string; notes?: string }>({
+      query: ({ id }) => ({
+        url: `/organizations/${id}/reject`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "CompanyVerification", id },
+        "CompanyVerification",
+      ],
+    }),
+
+    getOrganizationReviewHistory: builder.query<OrganizationReviewHistoryItem[], string>({
+      query: (id) => ({
+        url: `/admin/organizations/${id}/review-history`,
+      }),
+      providesTags: (_result, _error, id) => [{ type: "CompanyVerification", id }],
+    }),
+
+    // ─── Legacy / Mock-fallback endpoints ────────────────────────────────
     getCompanyVerifications: builder.query<CompanyVerificationItem[], void>({
       queryFn: () => {
         return { data: mockCompanyVerificationsStore.map((c) => ({ ...c })) };
       },
       providesTags: ["CompanyVerification"],
     }),
+
     getCompanyVerificationById: builder.query<CompanyVerificationItem, string>({
       queryFn: (id) => {
         const found = mockCompanyVerificationsStore.find((c) => c.id === id);
@@ -36,6 +76,7 @@ export const companyVerificationApi = baseApi.injectEndpoints({
       },
       providesTags: (_result, _error, id) => [{ type: "CompanyVerification", id }],
     }),
+
     updateCompanyVerificationStatus: builder.mutation<
       CompanyVerificationItem,
       { id: string; status: "APPROVED" | "REJECTED" | "UNDER_REVIEW"; notes?: string }
@@ -48,13 +89,20 @@ export const companyVerificationApi = baseApi.injectEndpoints({
         const updated = mockCompanyVerificationsStore.find((c) => c.id === id);
         return { data: updated ? { ...updated } : { ...mockCompanyVerificationsStore[0] } };
       },
-      invalidatesTags: (_result, _error, { id }) => [{ type: "CompanyVerification", id }, "CompanyVerification"],
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "CompanyVerification", id },
+        "CompanyVerification",
+      ],
     }),
   }),
 });
 
 export const {
   useGetPendingOrganizationsQuery,
+  useGetOrganizationByIdQuery,
+  useApproveOrganizationMutation,
+  useRejectOrganizationMutation,
+  useGetOrganizationReviewHistoryQuery,
   useGetCompanyVerificationsQuery,
   useGetCompanyVerificationByIdQuery,
   useUpdateCompanyVerificationStatusMutation,
