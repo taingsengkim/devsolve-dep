@@ -9,21 +9,15 @@ import {
   NotificationKey,
   SocialLinksForm,
 } from "@/lib/types/profile/types";
-import { PasswordFormState } from "@/components/profile/settings/PasswordSection";
 
 interface UseEditProfileFormProps {
   initialData: EditProfileFormData;
-  onSave?: (data: EditProfileFormData & { passwords: PasswordFormState }) => Promise<void> | void;
+  onSave?: (data: EditProfileFormData) => Promise<void> | void;
 }
 
 export function useEditProfileForm({ initialData, onSave }: UseEditProfileFormProps) {
   const router = useRouter();
   const [form, setForm] = useState<EditProfileFormData>(initialData);
-  const [passwords, setPasswords] = useState<PasswordFormState>({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
   const [isSaving, setIsSaving] = useState(false);
 
   const updateField = (field: "fullName" | "username" | "email", value: string) => {
@@ -47,7 +41,7 @@ export function useEditProfileForm({ initialData, onSave }: UseEditProfileFormPr
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await onSave?.({ ...form, passwords });
+      await onSave?.(form);
       toast.success("Profile updated.");
     } catch {
       toast.error("Failed to update profile. Please try again.");
@@ -62,8 +56,6 @@ export function useEditProfileForm({ initialData, onSave }: UseEditProfileFormPr
   return {
     form,
     setForm,
-    passwords,
-    setPasswords,
     isSaving,
     updateField,
     updateSocialLink,
