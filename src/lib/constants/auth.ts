@@ -1,8 +1,8 @@
 import {
-  ShieldCheck,
-  Lock,
+  Bug,
+  MessagesSquare,
+  Lightbulb,
   Trophy,
-  Users,
   PlusCircle,
   Inbox,
   BarChart3,
@@ -72,11 +72,13 @@ export interface FeatureItem {
   text: string;
 }
 
+/* One line per pillar the platform actually runs on — bounty, problems,
+   solutions, showcase — rather than four ways of saying "security". */
 export const USER_FEATURES: FeatureItem[] = [
-  { icon: ShieldCheck, text: "Discover & report bug bounty programs" },
-  { icon: Lock, text: "Access private and public vulnerability programs" },
-  { icon: Trophy, text: "Build security reputation & earn financial rewards" },
-  { icon: Users, text: "Connect with a global security researcher community" },
+  { icon: Bug, text: "Hunt live bounty programs and get paid for what you find" },
+  { icon: MessagesSquare, text: "Post the problems you hit, with the stack and the error" },
+  { icon: Lightbulb, text: "Answer with solutions that stay searchable for the next person" },
+  { icon: Trophy, text: "Show the whole record — reputation, badges, leaderboard rank" },
 ];
 
 export const COMPANY_FEATURES: FeatureItem[] = [
