@@ -730,7 +730,9 @@ function PartnerMarquee() {
    ──────────────────────────────────────────────────────────────────── */
 export function Hero() {
   return (
-    <section className="relative flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center overflow-hidden bg-white">
+    // Cancels the layout's navbar padding so the backdrop runs to the very top
+    // and the island floats over it; the matching pt keeps content clear.
+    <section className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-white -mt-(--navbar-height) pt-(--navbar-height)">
       <AuroraField />
       <BlueprintGrid />
       <SilkBackdrop />
