@@ -23,11 +23,17 @@ import {
   FileText,
   Calendar,
   ShieldCheck,
+  History,
+  Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
+  useGetOrganizationByIdQuery,
+  useApproveOrganizationMutation,
+  useRejectOrganizationMutation,
+  useGetOrganizationReviewHistoryQuery,
   useGetCompanyVerificationByIdQuery,
   useUpdateCompanyVerificationStatusMutation,
 } from "@/lib/redux/services/adminApi";
@@ -63,10 +69,72 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
   const resolvedParams = use(params);
   const companyId = resolvedParams.id;
 
-  const { data: company, isLoading, isFetching } =
-    useGetCompanyVerificationByIdQuery(companyId);
-  const [updateStatus, { isLoading: isUpdating }] =
+  // Real backend queries & mutations
+  const {
+    data: realOrg,
+    isLoading: isRealLoading,
+    isFetching: isRealFetching,
+    isError: isRealError,
+  } = useGetOrganizationByIdQuery(companyId, { skip: !companyId });
+
+  const { data: reviewHistory } = useGetOrganizationReviewHistoryQuery(companyId, {
+    skip: !companyId || isRealError,
+  });
+
+  const [approveOrganization, { isLoading: isApproving }] = useApproveOrganizationMutation();
+  const [rejectOrganization, { isLoading: isRejecting }] = useRejectOrganizationMutation();
+
+  // Legacy/Mock queries & mutations as fallback
+  const {
+    data: mockOrg,
+    isLoading: isMockLoading,
+    isFetching: isMockFetching,
+  } = useGetCompanyVerificationByIdQuery(companyId, {
+    skip: !isRealError && !!realOrg,
+  });
+
+  const [updateMockStatus, { isLoading: isMockUpdating }] =
     useUpdateCompanyVerificationStatusMutation();
+
+  const isUpdating = isApproving || isRejecting || isMockUpdating;
+  const isLoading = isRealLoading || (isRealError && isMockLoading);
+  const isFetching = isRealFetching || isMockFetching;
+
+  // Unified company data object
+  const company = realOrg
+    ? {
+        id: realOrg.id,
+        companyName: realOrg.name,
+        contactName: realOrg.ownerId ? `Owner (${realOrg.ownerId.slice(0, 8)})` : "—",
+        jobTitle: "Organization Owner",
+        email: `${realOrg.slug || "contact"}@${realOrg.domain || "organization.com"}`,
+        phone: "—",
+        website: realOrg.websiteUrl,
+        domain: realOrg.domain,
+        country: realOrg.country ?? "—",
+        industry: realOrg.industry,
+        businessType: realOrg.industry ?? "Technology",
+        companySize: realOrg.companySize,
+        description: realOrg.description,
+        status: (realOrg.status === "ACTIVE"
+          ? "APPROVED"
+          : realOrg.status === "PENDING"
+            ? "PENDING"
+            : realOrg.status === "REJECTED"
+              ? "REJECTED"
+              : "UNDER_REVIEW") as "APPROVED" | "PENDING" | "REJECTED" | "UNDER_REVIEW",
+        submittedAt: realOrg.createdAt
+          ? new Date(realOrg.createdAt).toLocaleDateString()
+          : undefined,
+        registrationDate: realOrg.createdAt
+          ? new Date(realOrg.createdAt).toLocaleDateString()
+          : "—",
+        taxId: "—",
+        orgCode: realOrg.slug,
+        documentsCount: 0,
+        notes: undefined,
+      }
+    : mockOrg;
 
   const [adminNote, setAdminNote] = useState("");
 
@@ -105,7 +173,18 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
     status: "APPROVED" | "REJECTED" | "UNDER_REVIEW"
   ) => {
     try {
-      await updateStatus({ id: company.id, status, notes: adminNote });
+      if (realOrg) {
+        if (status === "APPROVED") {
+          await approveOrganization({ id: company.id, notes: adminNote }).unwrap();
+        } else if (status === "REJECTED") {
+          await rejectOrganization({ id: company.id, notes: adminNote }).unwrap();
+        } else {
+          await updateMockStatus({ id: company.id, status, notes: adminNote }).unwrap();
+        }
+      } else {
+        await updateMockStatus({ id: company.id, status, notes: adminNote }).unwrap();
+      }
+
       const label =
         status === "APPROVED"
           ? "approved"
@@ -122,11 +201,11 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
 
   const handleSaveNote = async () => {
     try {
-      await updateStatus({
+      await updateMockStatus({
         id: company.id,
         status: company.status as "APPROVED" | "REJECTED",
         notes: adminNote,
-      });
+      }).unwrap();
       toast.success("Admin note saved.");
     } catch {
       toast.error("Failed to save note.");
@@ -166,7 +245,6 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
             {company.companyName.charAt(0)}
           </div>
           <div className="space-y-1">
-
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               {company.companyName}
             </h1>
@@ -179,7 +257,7 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
                 <Tag className="w-3 h-3 text-slate-400" />
                 {company.industry ?? company.businessType}
               </Badge>
-              {(company.orgCode) && (
+              {company.orgCode && (
                 <span className="text-xs font-mono text-slate-400">
                   {company.orgCode}
                 </span>
@@ -199,10 +277,8 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
 
       {/* ── ASYMMETRIC GRID ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-
         {/* ══ MAIN COLUMN (2/3) ══════════════════════════════════════ */}
         <div className="lg:col-span-2 space-y-6">
-
           {/* COMPANY INFORMATION CARD */}
           <Card className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-2xs space-y-6">
             <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -214,11 +290,11 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
                 {displayValue(company.companyName)}
               </InfoField>
 
-              <InfoField icon={User} label="Contact Name">
+              <InfoField icon={User} label="Contact / Owner">
                 {displayValue(company.contactName)}
               </InfoField>
 
-              <InfoField icon={Briefcase} label="Job Title">
+              <InfoField icon={Briefcase} label="Role / Title">
                 {displayValue(company.jobTitle)}
               </InfoField>
 
@@ -238,7 +314,13 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
               <InfoField icon={Globe} label="Website">
                 {company.website || company.domain ? (
                   <a
-                    href={company.website ?? `https://${company.domain}`}
+                    href={
+                      company.website
+                        ? company.website.startsWith("http")
+                          ? company.website
+                          : `https://${company.website}`
+                        : `https://${company.domain}`
+                    }
                     target="_blank"
                     rel="noreferrer"
                     className="text-blue-600 dark:text-blue-400 hover:underline"
@@ -257,6 +339,12 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
               <InfoField icon={Activity} label="Industry">
                 {displayValue(company.industry ?? company.businessType)}
               </InfoField>
+
+              {company.companySize && (
+                <InfoField icon={Users} label="Company Size">
+                  {displayValue(company.companySize)}
+                </InfoField>
+              )}
             </div>
 
             {/* Description */}
@@ -279,7 +367,7 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
                 Admin Notes
               </h2>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                Internal — not visible to the applicant.
+                Internal notes for moderation and audit history.
               </p>
             </div>
 
@@ -311,7 +399,7 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
                   Make a Decision
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  The applicant will be notified by email.
+                  The organization status will be updated immediately.
                 </p>
               </div>
 
@@ -351,7 +439,6 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
 
         {/* ══ SIDEBAR COLUMN (1/3) ══════════════════════════════════ */}
         <aside className="space-y-6">
-
           {/* VERIFICATION METADATA CARD */}
           <Card className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-2xs space-y-4">
             <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
@@ -372,10 +459,10 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
               <div className="flex items-start justify-between gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
                 <dt className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium shrink-0">
                   <Hash className="w-3.5 h-3.5" />
-                  Tax ID
+                  Tax ID / Slug
                 </dt>
                 <dd className="font-mono font-semibold text-slate-900 dark:text-slate-100 text-right">
-                  {displayValue(company.taxId)}
+                  {displayValue(company.orgCode ?? company.taxId)}
                 </dd>
               </div>
 
@@ -411,6 +498,39 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
             </dl>
           </Card>
 
+          {/* REVIEW HISTORY CARD (IF AVAILABLE) */}
+          {reviewHistory && reviewHistory.length > 0 && (
+            <Card className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-2xs space-y-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                <History className="w-4 h-4 text-blue-500" />
+                Review History
+              </h3>
+              <div className="space-y-2.5">
+                {reviewHistory.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs space-y-1 border border-slate-100 dark:border-slate-800"
+                  >
+                    <div className="flex items-center justify-between font-semibold text-slate-800 dark:text-slate-200">
+                      <span>{item.action}</span>
+                      <span className="text-slate-400 text-[11px]">
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {item.reviewerName && (
+                      <p className="text-slate-500 dark:text-slate-400">By: {item.reviewerName}</p>
+                    )}
+                    {item.notes && (
+                      <p className="text-slate-600 dark:text-slate-300 italic pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                        &ldquo;{item.notes}&rdquo;
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
           {/* QUICK ACTIONS CARD */}
           <Card className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-2xs space-y-3">
             <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
@@ -418,17 +538,25 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
             </h3>
 
             <div className="space-y-2">
-              <a
-                href={`mailto:${company.email}`}
-                className="flex items-center gap-2.5 w-full rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-colors group"
-              >
-                <Send className="w-4 h-4 text-blue-500 group-hover:text-blue-600 transition-colors" />
-                Email Applicant
-              </a>
-
-              {(company.website ?? company.domain) && (
+              {company.email && company.email !== "—" && (
                 <a
-                  href={company.website ?? `https://${company.domain}`}
+                  href={`mailto:${company.email}`}
+                  className="flex items-center gap-2.5 w-full rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-colors group"
+                >
+                  <Send className="w-4 h-4 text-blue-500 group-hover:text-blue-600 transition-colors" />
+                  Email Applicant
+                </a>
+              )}
+
+              {(company.website || company.domain) && (
+                <a
+                  href={
+                    company.website
+                      ? company.website.startsWith("http")
+                        ? company.website
+                        : `https://${company.website}`
+                      : `https://${company.domain}`
+                  }
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-2.5 w-full rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-colors group"

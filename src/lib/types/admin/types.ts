@@ -143,6 +143,7 @@ export interface CompanyVerificationItem {
   website?: string;
   country?: string;
   industry?: string;
+  companySize?: string;
   description?: string;
   logoUrl?: string;
   riskIndicators?: {
