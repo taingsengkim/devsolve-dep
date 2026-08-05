@@ -138,6 +138,7 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ["Organization"],
     }),
   }),
+  overrideExisting: true,
 });
 
 export const { useRegisterUserMutation, useRegisterCompanyMutation } = authApi;
