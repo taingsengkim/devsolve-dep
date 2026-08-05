@@ -3,24 +3,31 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
+  animate,
+  AnimatePresence,
   motion,
   useMotionValue,
   useSpring,
+  useTransform,
   useReducedMotion,
 } from "motion/react";
 import {
-  ArrowRight,
   ArrowUpRight,
-  Bug,
-  Command,
-  Search,
-  ShieldCheck,
-  Terminal,
   Boxes,
-  GitBranch,
+  Check,
+  Code2,
   Cpu,
+  GitBranch,
+  Heart,
   Layers,
   Radar,
+  Rocket,
+  RotateCw,
+  ShieldCheck,
+  Star,
+  Target,
+  Terminal,
+  Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -43,9 +50,11 @@ function mulberry32(seed: number) {
   };
 }
 
-/* ────────────────────────────────────────────────────────────────────
-   Aurora field — slow drifting light in brand colors
-   ──────────────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════
+   BACKDROP — a white fold, so every layer stays a whisper: tinted
+   aurora, a survey grid that dissolves at the edges, and rising motes.
+   ════════════════════════════════════════════════════════════════════ */
+
 type Blob = {
   color: string;
   className: string;
@@ -57,21 +66,21 @@ type Blob = {
 const BLOBS: Blob[] = [
   {
     color: PRIMARY,
-    className: "left-[-12%] top-[8%] h-[34rem] w-[34rem]",
+    className: "left-[-14%] top-[4%] h-[36rem] w-[36rem]",
     path: { x: [0, 90, -40, 0], y: [0, -60, 50, 0], scale: [1, 1.12, 0.94, 1] },
     duration: 26,
-    opacity: 0.16,
-  },
-  {
-    color: ACCENT,
-    className: "right-[-10%] top-[22%] h-[30rem] w-[30rem]",
-    path: { x: [0, -70, 40, 0], y: [0, 70, -30, 0], scale: [1, 0.92, 1.14, 1] },
-    duration: 32,
     opacity: 0.14,
   },
   {
-    color: SECONDARY,
-    className: "bottom-[-8%] left-1/3 h-[26rem] w-[40rem]",
+    color: ACCENT,
+    className: "right-[-12%] top-[16%] h-[32rem] w-[32rem]",
+    path: { x: [0, -70, 40, 0], y: [0, 70, -30, 0], scale: [1, 0.92, 1.14, 1] },
+    duration: 32,
+    opacity: 0.13,
+  },
+  {
+    color: "#6366F1",
+    className: "bottom-[-10%] left-1/4 h-[28rem] w-[44rem]",
     path: { x: [0, 60, -60, 0], y: [0, -40, 20, 0], scale: [1, 1.08, 0.96, 1] },
     duration: 38,
     opacity: 0.1,
@@ -86,7 +95,7 @@ function AuroraField() {
       {BLOBS.map((blob, i) => (
         <motion.div
           key={i}
-          className={`absolute rounded-full blur-[110px] ${blob.className}`}
+          className={`absolute rounded-full blur-[120px] ${blob.className}`}
           style={{ backgroundColor: blob.color, opacity: blob.opacity }}
           animate={reduce ? undefined : blob.path}
           transition={{
@@ -100,174 +109,11 @@ function AuroraField() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────
-   Silk backdrop — layered bezier strands that drift like fabric.
-   Three tinted layers cross-fade to give the ribbon its iridescence.
-   ──────────────────────────────────────────────────────────────────── */
-function useSilkStrands(count: number, seed: number, squeeze = 1) {
-  return useMemo(
-    () =>
-      Array.from({ length: count }, (_, i) => {
-        const t = i / (count - 1);
-        const y = 90 + t * 360 + seed;
-        const amp = (140 - t * 96) * squeeze;
-        return [
-          `M -160 ${y + 210}`,
-          `C 240 ${y - amp}, 540 ${y + amp * 1.55}, 820 ${y - amp * 0.35}`,
-          `S 1320 ${y + amp * 0.9}, 1640 ${y - 150}`,
-        ].join(" ");
-      }),
-    [count, seed, squeeze],
-  );
-}
+/* Survey grid — the "this surface is being scanned" texture, with two
+   beams sweeping it like a scanner pass. */
+const CELL = 64;
 
-function SilkBackdrop() {
-  const reduce = useReducedMotion();
-  const base = useSilkStrands(26, 130, 0.72);
-  const blue = useSilkStrands(40, 0, 1);
-  const emerald = useSilkStrands(30, 60, 0.86);
-
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <svg
-        className="absolute inset-0 h-full w-full"
-        viewBox="0 0 1440 720"
-        preserveAspectRatio="xMidYMid slice"
-        aria-hidden="true"
-      >
-        <defs>
-          <radialGradient id="silk-fade" cx="62%" cy="52%" r="62%">
-            <stop offset="0%" stopColor="#fff" stopOpacity="1" />
-            <stop offset="68%" stopColor="#fff" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="#fff" stopOpacity="0" />
-          </radialGradient>
-          <mask id="silk-mask">
-            <rect width="1440" height="720" fill="url(#silk-fade)" />
-          </mask>
-
-          <linearGradient id="silk-primary" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={PRIMARY} stopOpacity="0" />
-            <stop offset="45%" stopColor={PRIMARY} stopOpacity="0.85" />
-            <stop offset="100%" stopColor={SECONDARY} stopOpacity="0.15" />
-          </linearGradient>
-          <linearGradient id="silk-accent" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={SECONDARY} stopOpacity="0.1" />
-            <stop offset="55%" stopColor={ACCENT} stopOpacity="0.8" />
-            <stop offset="100%" stopColor={ACCENT} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-
-        <g mask="url(#silk-mask)">
-          {/* structural layer — dark slate, sets the fold */}
-          <motion.g
-            style={{ filter: "blur(1.4px)", transformOrigin: "60% 50%" }}
-            animate={
-              reduce
-                ? undefined
-                : { rotate: [0, 1.4, 0], y: [0, 22, 0], scaleY: [1, 1.06, 1] }
-            }
-            transition={{ duration: 34, repeat: Infinity, ease: "easeInOut" }}
-          >
-            {base.map((d, i) => (
-              <path
-                key={`s-${i}`}
-                d={d}
-                fill="none"
-                stroke={SECONDARY}
-                strokeOpacity={0.07}
-                strokeWidth={1}
-              />
-            ))}
-          </motion.g>
-
-          {/* primary-blue sheen */}
-          <motion.g
-            style={{ transformOrigin: "55% 50%" }}
-            animate={
-              reduce
-                ? undefined
-                : {
-                    rotate: [0, -1.8, 0],
-                    y: [0, -26, 0],
-                    scaleY: [1, 0.94, 1],
-                    opacity: [0.5, 1, 0.5],
-                  }
-            }
-            transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
-          >
-            {blue.map((d, i) => (
-              <path
-                key={`p-${i}`}
-                d={d}
-                fill="none"
-                stroke="url(#silk-primary)"
-                strokeWidth={1}
-                strokeOpacity={0.22}
-              />
-            ))}
-          </motion.g>
-
-          {/* emerald sheen — phase-shifted so the colour travels along the silk */}
-          <motion.g
-            style={{ transformOrigin: "48% 52%" }}
-            animate={
-              reduce
-                ? undefined
-                : {
-                    rotate: [0, 2.2, 0],
-                    y: [0, 34, 0],
-                    scaleY: [1, 1.08, 1],
-                    opacity: [0.9, 0.35, 0.9],
-                  }
-            }
-            transition={{ duration: 21, repeat: Infinity, ease: "easeInOut" }}
-          >
-            {emerald.map((d, i) => (
-              <path
-                key={`a-${i}`}
-                d={d}
-                fill="none"
-                stroke="url(#silk-accent)"
-                strokeWidth={1}
-                strokeOpacity={0.2}
-              />
-            ))}
-          </motion.g>
-        </g>
-      </svg>
-
-      {/* highlight sheen that sweeps across the fabric */}
-      <motion.div
-        className="absolute inset-y-0 -left-1/3 w-1/2 bg-[linear-gradient(100deg,transparent,rgba(255,255,255,0.85),transparent)]"
-        animate={reduce ? undefined : { x: ["0%", "260%"] }}
-        transition={{
-          duration: 11,
-          repeat: Infinity,
-          ease: "easeInOut",
-          repeatDelay: 3,
-        }}
-      />
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────
-   Blueprint grid — static rules, pulsing cells, and a scanning beam
-   ──────────────────────────────────────────────────────────────────── */
-const CELL = 56;
-
-const GRID_CELLS = (() => {
-  const rand = mulberry32(7);
-  return Array.from({ length: 12 }, () => ({
-    col: Math.floor(rand() * 24),
-    row: Math.floor(rand() * 12),
-    color: rand() > 0.5 ? PRIMARY : ACCENT,
-    delay: rand() * 8,
-    duration: 3.5 + rand() * 3,
-  }));
-})();
-
-function BlueprintGrid() {
+function SurveyGrid() {
   const reduce = useReducedMotion();
 
   return (
@@ -284,44 +130,34 @@ function BlueprintGrid() {
               d={`M ${CELL} 0 L 0 0 0 ${CELL}`}
               fill="none"
               stroke={SECONDARY}
-              strokeOpacity="0.06"
+              strokeOpacity="0.07"
               strokeWidth="1"
             />
           </pattern>
+          <radialGradient id="hero-grid-fade" cx="50%" cy="40%" r="72%">
+            <stop offset="0%" stopColor="#fff" stopOpacity="1" />
+            <stop offset="62%" stopColor="#fff" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+          </radialGradient>
+          <mask id="hero-grid-mask">
+            <rect width="100%" height="100%" fill="url(#hero-grid-fade)" />
+          </mask>
         </defs>
-        <rect width="100%" height="100%" fill="url(#hero-grid)" />
-
-        {/* cells that light up and fade, snapped to the grid */}
-        {GRID_CELLS.map((cell, i) => (
-          <motion.rect
-            key={i}
-            x={cell.col * CELL + 1}
-            y={cell.row * CELL + 1}
-            width={CELL - 2}
-            height={CELL - 2}
-            fill={cell.color}
-            initial={{ opacity: 0 }}
-            animate={reduce ? undefined : { opacity: [0, 0.07, 0] }}
-            transition={{
-              duration: cell.duration,
-              repeat: Infinity,
-              delay: cell.delay,
-              ease: "easeInOut",
-              repeatDelay: 4,
-            }}
-          />
-        ))}
+        <rect
+          width="100%"
+          height="100%"
+          fill="url(#hero-grid)"
+          mask="url(#hero-grid-mask)"
+        />
       </svg>
 
-      {/* vertical beam sweeping the blueprint */}
       <motion.div
         className="absolute inset-y-0 w-px"
         style={{
           background: `linear-gradient(to bottom, transparent, ${PRIMARY}, transparent)`,
-          opacity: 0.35,
         }}
         animate={
-          reduce ? undefined : { left: ["8%", "92%"], opacity: [0, 0.35, 0] }
+          reduce ? undefined : { left: ["6%", "94%"], opacity: [0, 0.4, 0] }
         }
         transition={{
           duration: 9,
@@ -330,15 +166,13 @@ function BlueprintGrid() {
           repeatDelay: 5,
         }}
       />
-      {/* horizontal beam, slower and emerald */}
       <motion.div
         className="absolute inset-x-0 h-px"
         style={{
           background: `linear-gradient(to right, transparent, ${ACCENT}, transparent)`,
-          opacity: 0.3,
         }}
         animate={
-          reduce ? undefined : { top: ["18%", "86%"], opacity: [0, 0.3, 0] }
+          reduce ? undefined : { top: ["16%", "88%"], opacity: [0, 0.35, 0] }
         }
         transition={{
           duration: 14,
@@ -350,52 +184,47 @@ function BlueprintGrid() {
 
       <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-white to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-white to-transparent" />
-      <div className="absolute inset-y-0 left-0 w-40 bg-linear-to-r from-white to-transparent" />
-      <div className="absolute inset-y-0 right-0 w-40 bg-linear-to-l from-white to-transparent" />
     </div>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────
-   Ambient particles rising through the fold
-   ──────────────────────────────────────────────────────────────────── */
-const PARTICLES = (() => {
+const MOTES = (() => {
   const rand = mulberry32(23);
-  return Array.from({ length: 16 }, () => ({
-    left: 4 + rand() * 92,
+  return Array.from({ length: 18 }, () => ({
+    left: 3 + rand() * 94,
     size: 2 + rand() * 3,
-    delay: rand() * 14,
-    duration: 14 + rand() * 12,
-    drift: (rand() - 0.5) * 60,
-    color: rand() > 0.55 ? ACCENT : PRIMARY,
+    delay: rand() * 16,
+    duration: 16 + rand() * 14,
+    drift: (rand() - 0.5) * 70,
+    emerald: rand() > 0.55,
   }));
 })();
 
-function ParticleField() {
+function MoteField() {
   const reduce = useReducedMotion();
   if (reduce) return null;
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {PARTICLES.map((p, i) => (
+      {MOTES.map((m, i) => (
         <motion.span
           key={i}
           className="absolute bottom-0 rounded-full"
           style={{
-            left: `${p.left}%`,
-            width: p.size,
-            height: p.size,
-            backgroundColor: p.color,
+            left: `${m.left}%`,
+            width: m.size,
+            height: m.size,
+            backgroundColor: m.emerald ? ACCENT : PRIMARY,
           }}
           animate={{
-            y: ["0%", "-1400%"],
-            x: [0, p.drift, 0],
-            opacity: [0, 0.55, 0.55, 0],
+            y: ["0%", "-1600%"],
+            x: [0, m.drift, 0],
+            opacity: [0, 0.5, 0.5, 0],
           }}
           transition={{
-            duration: p.duration,
+            duration: m.duration,
             repeat: Infinity,
-            delay: p.delay,
+            delay: m.delay,
             ease: "linear",
           }}
         />
@@ -404,38 +233,102 @@ function ParticleField() {
   );
 }
 
-function FoldedCorner() {
+/* ════════════════════════════════════════════════════════════════════
+   SMALL ANIMATED PRIMITIVES
+   ════════════════════════════════════════════════════════════════════ */
+
+/* Numbers that tick up once the fold settles — a static figure on a card
+   reads as a screenshot, a counting one reads as live. */
+function CountUp({
+  to,
+  prefix = "",
+  suffix = "",
+  decimals = 0,
+  delay = 0,
+}: {
+  to: number;
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+  delay?: number;
+}) {
+  const reduce = useReducedMotion();
+  const value = useMotionValue(0);
+  const text = useTransform(
+    value,
+    (v) =>
+      `${prefix}${v.toLocaleString("en-US", {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      })}${suffix}`,
+  );
+
+  useEffect(() => {
+    if (reduce) {
+      value.set(to);
+      return;
+    }
+
+    const controls = animate(value, to, {
+      duration: 1.4,
+      delay,
+      ease: [0.22, 1, 0.36, 1],
+    });
+
+    return () => controls.stop();
+  }, [to, delay, reduce, value]);
+
+  return <motion.span>{text}</motion.span>;
+}
+
+function Sparkline() {
+  const reduce = useReducedMotion();
+
   return (
-    <div className="pointer-events-none absolute left-0 top-0 hidden h-28 w-28 sm:block">
-      <div
-        className="absolute inset-0 bg-slate-50"
-        style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
+    <svg viewBox="0 0 120 34" className="h-8 w-full" aria-hidden="true">
+      <motion.polyline
+        points="0,28 16,22 32,25 48,14 64,17 80,8 96,11 120,2"
+        fill="none"
+        stroke={ACCENT}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: reduce ? 0 : 1.4, delay: 1.5, ease: "easeOut" }}
       />
-      <svg
-        className="absolute inset-0 h-full w-full"
-        viewBox="0 0 112 112"
-        aria-hidden="true"
-      >
-        <motion.line
-          x1="112"
-          y1="0"
-          x2="0"
-          y2="112"
-          stroke={SECONDARY}
-          strokeOpacity="0.16"
-          strokeWidth="1"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-        />
-      </svg>
-    </div>
+    </svg>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────
-   Headline with per-character reveal
-   ──────────────────────────────────────────────────────────────────── */
+function MeterBar({
+  value,
+  color,
+  delay,
+}: {
+  value: number;
+  color: string;
+  delay: number;
+}) {
+  const reduce = useReducedMotion();
+
+  return (
+    <span className="block h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+      <motion.span
+        className="block h-full rounded-full"
+        style={{ backgroundColor: color }}
+        initial={{ width: 0 }}
+        animate={{ width: `${value}%` }}
+        transition={{ duration: reduce ? 0 : 1, delay, ease: "easeOut" }}
+      />
+    </span>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   HEADLINE
+   ════════════════════════════════════════════════════════════════════ */
+
 function RevealLine({ text, delay = 0 }: { text: string; delay?: number }) {
   const words = text.split(" ");
   let charIndex = 0;
@@ -449,11 +342,14 @@ function RevealLine({ text, delay = 0 }: { text: string; delay?: number }) {
             return (
               <motion.span
                 key={`${char}-${i}`}
-                initial={{ opacity: 0, y: "0.4em", filter: "blur(10px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                /* No blur filter: it would settle at blur(0px) and leave
+                   every character on its own raster layer, softening the
+                   headline for good. Offset and opacity carry the reveal. */
+                initial={{ opacity: 0, y: "0.55em" }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{
                   duration: 0.7,
-                  delay: delay + i * 0.028,
+                  delay: delay + i * 0.026,
                   ease: [0.22, 1, 0.36, 1],
                 }}
                 className="inline-block"
@@ -462,222 +358,656 @@ function RevealLine({ text, delay = 0 }: { text: string; delay?: number }) {
               </motion.span>
             );
           })}
-          {wi < words.length - 1 && (
-            <span className="inline-block">&nbsp;</span>
-          )}
+          {wi < words.length - 1 && <span className="inline-block">&nbsp;</span>}
         </span>
       ))}
     </>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────
-   Floating labels scattered around the fold
-   ──────────────────────────────────────────────────────────────────── */
-type Chip = {
-  label: string;
+/* ════════════════════════════════════════════════════════════════════
+   THE SDLC PIPELINE
+   Seven stages the platform touches. The rail cycles endlessly, because
+   a lifecycle that stops is just a checklist.
+   ════════════════════════════════════════════════════════════════════ */
+
+type Stage = {
+  name: string;
   icon: LucideIcon;
-  tint: string;
-  className: string;
-  delay: number;
-  drift: number;
+  caption: string;
 };
 
-const CHIPS: Chip[] = [
+const STAGES: Stage[] = [
   {
-    label: "Critical CVE",
-    icon: ShieldCheck,
-    tint: PRIMARY,
-    className: "left-[3%] top-[26%]",
-    delay: 0.9,
-    drift: 10,
+    name: "Plan",
+    icon: Target,
+    caption: "Scope your assets, set reward tiers, publish the program.",
   },
   {
-    label: "Repro steps",
-    icon: Terminal,
-    tint: SECONDARY,
-    className: "left-[7%] bottom-[30%]",
-    delay: 1.15,
-    drift: -12,
+    name: "Build",
+    icon: Code2,
+    caption: "Your team ships — DevSolve keeps watching the attack surface.",
   },
   {
-    label: "Bounty payout",
-    icon: Bug,
-    tint: ACCENT,
-    className: "left-[16%] bottom-[15%]",
-    delay: 1.35,
-    drift: 8,
-  },
-  {
-    label: "Root cause",
+    name: "Test",
     icon: Radar,
-    tint: PRIMARY,
-    className: "right-[5%] top-[22%]",
-    delay: 1.0,
-    drift: -9,
+    caption: "Researchers probe every in-scope asset and file real findings.",
   },
   {
-    label: "Patch diff",
-    icon: GitBranch,
-    tint: ACCENT,
-    className: "right-[9%] top-[46%]",
-    delay: 1.25,
-    drift: 11,
+    name: "Triage",
+    icon: ShieldCheck,
+    caption: "Reports get validated, scored on CVSS, and rewarded in hours.",
   },
   {
-    label: "Write-ups",
-    icon: Layers,
-    tint: SECONDARY,
-    className: "right-[14%] bottom-[22%]",
-    delay: 1.45,
-    drift: -10,
+    name: "Fix",
+    icon: Wrench,
+    caption: "Root cause becomes a patch, reviewed in the open.",
+  },
+  {
+    name: "Deploy",
+    icon: Rocket,
+    caption: "The fix ships and the finding is verified closed.",
+  },
+  {
+    name: "Share",
+    icon: Heart,
+    caption: "Write-ups and showcases turn one fix into public knowledge.",
   },
 ];
 
-function FloatingChip({ chip }: { chip: Chip }) {
+function SdlcRail() {
   const reduce = useReducedMotion();
-  const Icon = chip.icon;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.92, y: 14 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{
-        duration: 0.6,
-        delay: chip.delay,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      className={`pointer-events-none absolute hidden xl:block ${chip.className}`}
-    >
-      <motion.div
-        animate={reduce ? undefined : { y: [0, chip.drift, 0] }}
-        transition={{
-          duration: 6 + Math.abs(chip.drift) * 0.2,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className="flex items-center gap-2 rounded-full bg-white/90 px-3.5 py-2 text-sm font-medium text-slate-600 backdrop-blur-sm shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_2px_8px_rgba(30,41,59,0.06)]"
-      >
-        <Icon className="h-3.5 w-3.5" style={{ color: chip.tint }} />
-        {chip.label}
-      </motion.div>
-    </motion.div>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────
-   Command bar with a rotating typed query
-   ──────────────────────────────────────────────────────────────────── */
-const QUERIES = [
-  "SQL injection in /api/auth …",
-  "How do I fix a CORS preflight 403?",
-  "Race condition on payment retry …",
-  "XSS bypass in the markdown sanitizer …",
-];
-
-function TypedQuery() {
-  const reduce = useReducedMotion();
-  const [index, setIndex] = useState(0);
-  const [len, setLen] = useState(0);
-  const [erasing, setErasing] = useState(false);
+  const [active, setActive] = useState(0);
 
   useEffect(() => {
     if (reduce) return;
-    const full = QUERIES[index];
 
-    if (!erasing && len < full.length) {
-      const id = setTimeout(() => setLen((l) => l + 1), 42);
-      return () => clearTimeout(id);
-    }
-    if (!erasing && len === full.length) {
-      const id = setTimeout(() => setErasing(true), 1900);
-      return () => clearTimeout(id);
-    }
-    if (erasing && len > 0) {
-      const id = setTimeout(() => setLen((l) => l - 1), 18);
-      return () => clearTimeout(id);
-    }
-    const id = setTimeout(() => {
-      setErasing(false);
-      setIndex((i) => (i + 1) % QUERIES.length);
-    }, 250);
-    return () => clearTimeout(id);
-  }, [len, erasing, index, reduce]);
+    const id = setInterval(
+      () => setActive((current) => (current + 1) % STAGES.length),
+      1800,
+    );
 
-  return (
-    <span className="truncate text-slate-400">
-      {reduce ? QUERIES[0] : QUERIES[index].slice(0, len)}
-      {!reduce && (
-        <motion.span
-          animate={{ opacity: [1, 0, 1] }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="ml-px inline-block h-[1.1em] w-px translate-y-[0.18em]"
-          style={{ backgroundColor: PRIMARY }}
-        />
-      )}
-    </span>
-  );
-}
+    return () => clearInterval(id);
+  }, [reduce]);
 
-function CommandBar() {
-  const ref = useRef<HTMLDivElement>(null);
-  const glowX = useSpring(useMotionValue(0), { stiffness: 180, damping: 26 });
-
-  const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    glowX.set(e.clientX - rect.left);
-  };
+  const progress = (active / (STAGES.length - 1)) * 100;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 22 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, delay: 0.85, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full max-w-2xl"
+      transition={{ duration: 0.7, delay: 1.5, ease: [0.22, 1, 0.36, 1] }}
+      className="mt-4 w-full"
     >
-      <div
-        ref={ref}
-        onMouseMove={handleMove}
-        className="group relative flex items-center gap-3 overflow-hidden rounded-full bg-white/95 py-2.5 pl-5 pr-2.5 backdrop-blur-md shadow-[0_0_0_1px_rgba(30,41,59,0.09),0_8px_24px_-12px_rgba(30,41,59,0.28)] transition-shadow hover:shadow-[0_0_0_1px_rgba(37,99,235,0.35),0_14px_36px_-14px_rgba(37,99,235,0.35)]"
-      >
-        {/* cursor-tracked sheen */}
-        <motion.div
-          style={{
-            x: glowX,
-            background: `radial-gradient(circle, ${PRIMARY}1f, transparent 70%)`,
-          }}
-          className="pointer-events-none absolute inset-y-0 -left-24 w-48 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        />
+      {/* Narrow screens scroll the rail rather than shrink the labels past
+          readability. `overflow-x-auto` also computes overflow-y to auto, so
+          the vertical padding is what keeps the active node's halo from being
+          sliced off at the top. */}
+      <div className="relative overflow-x-auto px-2 pb-2 pt-7 scrollbar-none [&::-webkit-scrollbar]:hidden">
+        <div className="relative mx-auto min-w-155 max-w-4xl px-6">
+          {/* Track runs first node centre to last node centre — 1.5rem of
+              padding plus half of a 5rem stage column. */}
+          <div className="absolute inset-x-16 top-5 h-0.5 rounded-full bg-slate-200/90" />
 
-        <Search className="relative h-4 w-4 shrink-0 text-slate-400" />
+          {/* completed run, redrawn as the cycle advances */}
+          <motion.div
+            className="absolute left-16 top-5 h-0.5 rounded-full"
+            style={{
+              background: `linear-gradient(to right, ${PRIMARY}, ${ACCENT})`,
+              maxWidth: "calc(100% - 8rem)",
+            }}
+            animate={{ width: `calc((100% - 8rem) * ${progress / 100})` }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          />
 
-        {/* <div className="relative flex-1 overflow-hidden text-base">
-          <TypedQuery />
-        </div> */}
+          {/* a pulse that never stops running the pipeline */}
+          {!reduce && (
+            <motion.span
+              className="absolute top-3.75 size-2 rounded-full"
+              style={{
+                backgroundColor: ACCENT,
+                boxShadow: `0 0 12px 3px ${ACCENT}66`,
+              }}
+              animate={{ left: ["4rem", "calc(100% - 4rem)"] }}
+              transition={{
+                duration: 5.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                repeatDelay: 1.2,
+              }}
+            />
+          )}
 
-        <kbd className="relative hidden items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-500 sm:inline-flex">
-          <Command className="h-3 w-3" />K
-        </kbd>
+          <ol className="relative flex items-start justify-between">
+            {STAGES.map((stage, i) => {
+              const Icon = stage.icon;
+              const isActive = i === active;
+              const isDone = i < active;
 
-        <motion.button
-          type="button"
-          whileHover={{ scale: 1.06 }}
-          whileTap={{ scale: 0.94 }}
-          aria-label="Search DevSolve"
-          className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white shadow-sm"
-          style={{ backgroundColor: PRIMARY }}
-        >
-          <ArrowUpRight className="h-4 w-4" />
-        </motion.button>
+              return (
+                <li
+                  key={stage.name}
+                  className="flex w-20 flex-col items-center gap-2"
+                >
+                  <span className="relative flex size-10 items-center justify-center">
+                    {/* halo, only on the stage currently running */}
+                    {isActive && !reduce && (
+                      <motion.span
+                        className="absolute inset-0 rounded-full"
+                        style={{ backgroundColor: PRIMARY }}
+                        initial={{ opacity: 0.35, scale: 1 }}
+                        animate={{ opacity: 0, scale: 1.9 }}
+                        transition={{
+                          duration: 1.6,
+                          repeat: Infinity,
+                          ease: "easeOut",
+                        }}
+                      />
+                    )}
+
+                    <motion.span
+                      className="relative flex size-10 items-center justify-center rounded-full ring-1 transition-colors duration-300"
+                      animate={{ scale: isActive ? 1.12 : 1 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 22,
+                      }}
+                      style={
+                        isActive
+                          ? {
+                              backgroundColor: PRIMARY,
+                              color: "#fff",
+                              boxShadow: `0 8px 20px -8px ${PRIMARY}`,
+                            }
+                          : isDone
+                            ? {
+                                backgroundColor: "#ECFDF5",
+                                color: ACCENT,
+                              }
+                            : { backgroundColor: "#fff", color: "#94A3B8" }
+                      }
+                    >
+                      <Icon className="size-4.5" />
+                    </motion.span>
+                  </span>
+
+                  <span
+                    className={`text-sm font-semibold transition-colors duration-300 ${
+                      isActive
+                        ? "text-slate-900"
+                        : isDone
+                          ? "text-emerald-600"
+                          : "text-slate-400"
+                    }`}
+                  >
+                    {stage.name}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
       </div>
+
+      {/* the running stage explains itself */}
+      <div className="relative mt-3 flex h-10 items-start justify-center px-4">
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={active}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="max-w-lg text-center text-base text-slate-500"
+          >
+            {STAGES[active].caption}
+          </motion.p>
+        </AnimatePresence>
+      </div>
+
+      <p className="flex items-center justify-center gap-1.5 text-sm font-medium text-slate-400">
+        <motion.span
+          animate={reduce ? undefined : { rotate: 360 }}
+          transition={{ duration: 9, repeat: Infinity, ease: "linear" }}
+          className="inline-flex"
+        >
+          <RotateCw className="size-3.5" />
+        </motion.span>
+        Every fix feeds the next cycle
+      </p>
     </motion.div>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────
-   Trust marquee
-   ──────────────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════
+   THE CARD ARC
+   One artefact per lifecycle stage, fanned along a curve.
+   ════════════════════════════════════════════════════════════════════ */
+
+type ArcCard = {
+  id: string;
+  stage: string;
+  /* Geometry along the fan, hand-tuned rather than derived so the dark
+     cards land where they balance the composition. */
+  x: number;
+  y: number;
+  rotate: number;
+  scale: number;
+  z: number;
+  dark?: boolean;
+  /* Outer cards drop away on narrow screens so the arc never crowds. */
+  visibility: string;
+  body: React.ReactNode;
+};
+
+const cardShell =
+  "relative flex h-42 w-44 cursor-default flex-col justify-between overflow-hidden rounded-2xl p-3.5 ring-1 transition-shadow duration-300";
+/* Opaque, and deliberately no backdrop-blur: a backdrop-filter resamples
+   whatever is behind it on every scroll frame, which is what made the cards
+   look smeared as the page moved. */
+const lightShell = `${cardShell} bg-white ring-slate-900/8 shadow-[0_20px_44px_-20px_rgba(15,23,42,0.45)] hover:shadow-[0_34px_64px_-22px_rgba(37,99,235,0.55)] hover:ring-blue-500/25`;
+const darkShell = `${cardShell} bg-slate-950 ring-white/10 shadow-[0_22px_48px_-18px_rgba(15,23,42,0.7)] hover:shadow-[0_34px_64px_-20px_rgba(15,23,42,0.95)] hover:ring-emerald-400/35`;
+const eyebrow =
+  "text-[0.7rem] font-bold uppercase tracking-[0.14em] text-slate-400";
+
+const ARC_CARDS: ArcCard[] = [
+  {
+    id: "plan",
+    stage: "Plan",
+    x: -430,
+    y: 58,
+    rotate: -13,
+    scale: 0.9,
+    z: 10,
+    visibility: "hidden lg:block",
+    body: (
+      <>
+        <div>
+          <p className={eyebrow}>Plan</p>
+          <p className="mt-1.5 text-sm font-semibold leading-tight text-slate-900">
+            Program scope
+          </p>
+        </div>
+        <div className="space-y-2">
+          <MeterBar value={100} color="#E11D48" delay={1.6} />
+          <MeterBar value={62} color={PRIMARY} delay={1.75} />
+          <MeterBar value={34} color={ACCENT} delay={1.9} />
+        </div>
+        <p className="text-xs text-slate-400">
+          12 assets · $500–$10k rewards
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "build",
+    stage: "Build",
+    x: -288,
+    y: 20,
+    rotate: -8,
+    scale: 0.96,
+    z: 20,
+    visibility: "hidden lg:block",
+    body: (
+      <>
+        <div>
+          <p className={eyebrow}>Build</p>
+          <p className="mt-1 text-sm font-semibold text-slate-900">
+            Build #2841
+          </p>
+        </div>
+        <div className="space-y-1.5">
+          {["lint", "unit", "e2e"].map((check, i) => (
+            <motion.p
+              key={check}
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.7 + i * 0.14, duration: 0.35 }}
+              className="flex items-center gap-1.5 text-xs font-medium text-slate-600"
+            >
+              <span className="flex size-3.5 items-center justify-center rounded-full bg-emerald-500 text-white">
+                <Check className="size-2" strokeWidth={4} />
+              </span>
+              {check}
+            </motion.p>
+          ))}
+        </div>
+        <p className="font-mono text-xs text-slate-400">a1f39c2</p>
+      </>
+    ),
+  },
+  {
+    id: "test",
+    stage: "Test",
+    x: -148,
+    y: 2,
+    rotate: -4,
+    scale: 1,
+    z: 30,
+    visibility: "block",
+    body: (
+      <>
+        <div>
+          <p className={eyebrow}>Test</p>
+          <p className="mt-1.5 text-sm font-semibold leading-snug text-slate-900">
+            Auth bypass via JWT
+          </p>
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="rounded-md bg-rose-50 px-2 py-0.5 text-xs font-bold text-rose-600">
+              CRITICAL
+            </span>
+            <span className="text-sm font-bold text-slate-900">
+              <CountUp to={9.8} decimals={1} delay={1.6} />
+            </span>
+          </div>
+          <MeterBar value={94} color="#E11D48" delay={1.6} />
+          <p className="text-xs text-slate-400">CVSS v3.1 · report #4821</p>
+        </div>
+      </>
+    ),
+  },
+  {
+    id: "triage",
+    stage: "Triage",
+    x: 0,
+    y: -18,
+    rotate: 0,
+    scale: 1.08,
+    z: 40,
+    dark: true,
+    visibility: "block",
+    body: (
+      <>
+        <div className="flex items-start justify-between">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-white/10 text-emerald-400 ring-1 ring-white/15">
+            <ShieldCheck className="size-5" />
+          </span>
+          <span className="rounded-md bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-400">
+            VALIDATED
+          </span>
+        </div>
+        <div>
+          <p className="text-2xl font-bold tracking-tight text-white">
+            <CountUp to={4500} prefix="$" delay={1.5} />
+          </p>
+          <p className="mt-0.5 text-xs text-slate-400">
+            bounty paid · triaged in 6h
+          </p>
+        </div>
+        <Sparkline />
+      </>
+    ),
+  },
+  {
+    id: "fix",
+    stage: "Fix",
+    x: 148,
+    y: 2,
+    rotate: 4,
+    scale: 1,
+    z: 30,
+    visibility: "block",
+    body: (
+      <>
+        <p className={eyebrow}>Fix</p>
+        <div className="space-y-1 font-mono text-xs leading-relaxed">
+          <motion.p
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1.7, duration: 0.4 }}
+            className="truncate rounded bg-rose-50 px-1.5 text-rose-600"
+          >
+            - verify(token)
+          </motion.p>
+          <motion.p
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1.9, duration: 0.4 }}
+            className="truncate rounded bg-emerald-50 px-1.5 text-emerald-700"
+          >
+            + verify(token, alg)
+          </motion.p>
+        </div>
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+          <GitBranch className="size-3.5" />
+          fix/jwt-alg-confusion
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "deploy",
+    stage: "Deploy",
+    x: 288,
+    y: 20,
+    rotate: 8,
+    scale: 0.96,
+    z: 20,
+    dark: true,
+    visibility: "hidden sm:block",
+    body: (
+      <>
+        <div>
+          <p className="text-[0.7rem] font-bold uppercase tracking-[0.14em] text-slate-500">
+            Deploy
+          </p>
+          <p className="mt-1 text-sm font-semibold text-white">
+            v2.4.1 shipped
+          </p>
+        </div>
+        <p className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+          <span className="flex size-4 items-center justify-center rounded-full bg-emerald-500 text-white">
+            <Check className="size-2.5" strokeWidth={3.5} />
+          </span>
+          Fix verified closed
+        </p>
+        <div className="space-y-1.5">
+          <span className="block h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+            <motion.span
+              className="block h-full rounded-full bg-emerald-400"
+              initial={{ width: 0 }}
+              animate={{ width: "99.9%" }}
+              transition={{ duration: 1, delay: 2, ease: "easeOut" }}
+            />
+          </span>
+          <p className="text-xs text-slate-500">99.9% uptime held</p>
+        </div>
+      </>
+    ),
+  },
+  {
+    id: "share",
+    stage: "Share",
+    x: 430,
+    y: 58,
+    rotate: 13,
+    scale: 0.9,
+    z: 10,
+    visibility: "hidden sm:block",
+    body: (
+      <>
+        <div className="relative h-12 w-full overflow-hidden rounded-lg bg-linear-to-br from-blue-500 to-indigo-600">
+          <div className="absolute inset-0 opacity-40 bg-[repeating-linear-gradient(45deg,transparent,transparent_6px,rgba(255,255,255,0.35)_6px,rgba(255,255,255,0.35)_7px)]" />
+        </div>
+        <div>
+          <p className={eyebrow}>Share</p>
+          <p className="mt-1 text-sm font-semibold leading-tight text-slate-900">
+            Realtime diff viewer
+          </p>
+        </div>
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+          <Heart className="size-3.5 fill-rose-500 text-rose-500" />
+          <CountUp to={1284} delay={1.8} /> likes
+        </p>
+      </>
+    ),
+  },
+];
+
+function CardArc() {
+  const reduce = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState<string | null>(null);
+
+  /* Pointer parallax: the whole fan banks toward the cursor, which is
+     what makes it read as a plane in space rather than a flat row. */
+  const pointerX = useMotionValue(0);
+  const pointerY = useMotionValue(0);
+  const spring = { stiffness: 110, damping: 20, mass: 0.6 };
+  const rotateY = useSpring(useTransform(pointerX, [-1, 1], [10, -10]), spring);
+  const rotateX = useSpring(useTransform(pointerY, [-1, 1], [-7, 7]), spring);
+
+  useEffect(() => {
+    if (reduce) return;
+
+    const handleMove = (event: PointerEvent) => {
+      const rect = ref.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const nx = (event.clientX - rect.left) / rect.width - 0.5;
+      const ny = (event.clientY - rect.top) / rect.height - 0.5;
+
+      pointerX.set(Math.max(-1, Math.min(1, nx * 2)));
+      pointerY.set(Math.max(-1, Math.min(1, ny * 2)));
+    };
+
+    window.addEventListener("pointermove", handleMove, { passive: true });
+    return () => window.removeEventListener("pointermove", handleMove);
+  }, [pointerX, pointerY, reduce]);
+
+  return (
+    <div
+      ref={ref}
+      className="relative mt-12 h-57.5 w-full sm:h-70 lg:h-76"
+      style={{ perspective: 1400 }}
+    >
+      {/* Glow pooled under the fan so white cards separate from white page */}
+      <div
+        className="pointer-events-none absolute left-1/2 top-6 h-56 w-208 max-w-[120vw] -translate-x-1/2 rounded-[50%] blur-3xl"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, rgba(37,99,235,0.16), rgba(16,185,129,0.12) 45%, transparent 72%)",
+        }}
+      />
+
+      <motion.div
+        className="absolute inset-0 origin-top scale-[0.58] sm:scale-[0.78] lg:scale-100"
+        style={{ rotateX, rotateY }}
+      >
+        {ARC_CARDS.map((card, i) => {
+          const isHovered = hovered === card.id;
+          const isDimmed = hovered !== null && !isHovered;
+
+          return (
+            <motion.div
+              key={card.id}
+              className="absolute left-1/2 top-0"
+              style={{ zIndex: isHovered ? 60 : card.z }}
+              initial={{ opacity: 0, y: 90, rotate: card.rotate * 2.2 }}
+              animate={{ opacity: 1, y: card.y, rotate: card.rotate }}
+              /* Lift clear of the fan and straighten toward level. */
+              whileHover={{ y: card.y - 22, rotate: card.rotate * 0.3 }}
+              onHoverStart={() => setHovered(card.id)}
+              onHoverEnd={() => setHovered(null)}
+              transition={{
+                duration: 0.9,
+                /* Deal outward from the centre, like a hand of cards. */
+                delay: 0.95 + Math.abs(i - 3) * 0.09,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
+              {/* Focus layer: the hovered card grows while its neighbours
+                  recede, so one artefact reads at a time. */}
+              <motion.div
+                style={{ marginLeft: card.x - 88 }}
+                className={card.visibility}
+                /* Recede with opacity and scale only — a blur filter here
+                   forces a raster layer and softens the text. */
+                animate={{
+                  scale: isHovered ? card.scale * 1.07 : card.scale * (isDimmed ? 0.96 : 1),
+                  opacity: isDimmed ? 0.45 : 1,
+                }}
+                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <motion.div
+                  className="relative"
+                  /* The idle drift pauses under the cursor — but it has to
+                     settle quickly, not over the drift's own 6s period. */
+                  animate={
+                    reduce || isHovered
+                      ? { y: 0 }
+                      : { y: [0, i % 2 === 0 ? -9 : 9, 0] }
+                  }
+                  transition={
+                    isHovered
+                      ? { duration: 0.35, ease: "easeOut" }
+                      : {
+                          duration: 6 + i * 0.45,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }
+                  }
+                >
+                  {/* Which lifecycle stage this artefact belongs to */}
+                  <motion.span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -top-9 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_8px_20px_-8px_rgba(15,23,42,0.6)]"
+                    style={{ backgroundColor: SECONDARY }}
+                    initial={false}
+                    animate={{
+                      opacity: isHovered ? 1 : 0,
+                      y: isHovered ? 0 : 10,
+                      scale: isHovered ? 1 : 0.8,
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 460,
+                      damping: 26,
+                    }}
+                  >
+                    {card.stage}
+                  </motion.span>
+
+                  <div className={`${card.dark ? darkShell : lightShell} flex`}>
+                    {card.body}
+
+                    {/* Light sweeping across the face on hover */}
+                    <motion.span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-y-0 left-0 w-1/2 -skew-x-12"
+                      style={{
+                        background: `linear-gradient(90deg, transparent, ${
+                          card.dark
+                            ? "rgba(255,255,255,0.16)"
+                            : "rgba(255,255,255,0.85)"
+                        }, transparent)`,
+                      }}
+                      initial={false}
+                      animate={{ x: isHovered ? "260%" : "-160%" }}
+                      /* Snap back instantly, so leaving never sweeps twice. */
+                      transition={{
+                        duration: isHovered ? 0.85 : 0,
+                        ease: "easeOut",
+                      }}
+                    />
+                  </div>
+                </motion.div>
+              </motion.div>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   TRUST MARQUEE
+   ════════════════════════════════════════════════════════════════════ */
+
 const PARTNERS: { name: string; icon: LucideIcon }[] = [
   { name: "Northwind", icon: Boxes },
   { name: "Railcore", icon: GitBranch },
@@ -689,17 +1019,17 @@ const PARTNERS: { name: string; icon: LucideIcon }[] = [
 
 function PartnerMarquee() {
   const reduce = useReducedMotion();
-  const row = [...PARTNERS, ...PARTNERS];
+  const row = useMemo(() => [...PARTNERS, ...PARTNERS], []);
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.6, delay: 1.1 }}
-      className="relative w-full overflow-hidden py-6"
+      transition={{ duration: 0.6, delay: 1.7 }}
+      className="relative w-full overflow-hidden py-8"
     >
-      <div className="absolute inset-y-0 left-0 z-10 w-24 bg-linear-to-r from-white to-transparent" />
-      <div className="absolute inset-y-0 right-0 z-10 w-24 bg-linear-to-l from-white to-transparent" />
+      <div className="absolute inset-y-0 left-0 z-10 w-28 bg-linear-to-r from-white to-transparent" />
+      <div className="absolute inset-y-0 right-0 z-10 w-28 bg-linear-to-l from-white to-transparent" />
 
       <motion.div
         className="flex w-max items-center gap-14"
@@ -725,52 +1055,48 @@ function PartnerMarquee() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────
-   Hero
-   ──────────────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════
+   HERO
+   ════════════════════════════════════════════════════════════════════ */
+
 export function Hero() {
   return (
-    // Cancels the layout's navbar padding so the backdrop runs to the very top
-    // and the island floats over it; the matching pt keeps content clear.
-    <section className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-white -mt-(--navbar-height) pt-(--navbar-height)">
+    // The negative margin cancels the layout's navbar padding so the
+    // backdrop runs to the very top and the nav island floats over it;
+    // the matching top padding keeps the eyebrow clear of the island.
+    <section className="relative -mt-(--navbar-height) overflow-hidden bg-white pt-(--navbar-height)">
       <AuroraField />
-      <BlueprintGrid />
-      <SilkBackdrop />
-      <ParticleField />
-      <FoldedCorner />
+      <SurveyGrid />
+      <MoteField />
 
-      {CHIPS.map((chip) => (
-        <FloatingChip key={chip.label} chip={chip} />
-      ))}
-
-      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-4 pt-16 pb-6 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-4 pb-4 pt-10 sm:px-6 sm:pt-14 lg:px-8">
         {/* eyebrow */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-8 inline-flex items-center gap-2 rounded-full bg-white/80 px-3.5 py-1.5 text-sm font-medium text-slate-600 backdrop-blur-sm shadow-[0_0_0_1px_rgba(30,41,59,0.08)]"
+          className="inline-flex items-center gap-2.5 rounded-full bg-white px-4 py-1.5 text-sm font-medium text-slate-600 shadow-[0_0_0_1px_rgba(30,41,59,0.08)]"
         >
-          <span className="relative flex h-1.5 w-1.5">
+          <span className="relative flex size-1.5">
             <span
-              className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-70"
+              className="absolute inline-flex size-full animate-ping rounded-full opacity-75"
               style={{ backgroundColor: ACCENT }}
             />
             <span
-              className="relative inline-flex h-1.5 w-1.5 rounded-full"
+              className="relative inline-flex size-1.5 rounded-full"
               style={{ backgroundColor: ACCENT }}
             />
           </span>
-          Bounties, problems and solutions in one place
+          Security across the whole development lifecycle
         </motion.div>
 
         {/* headline */}
-        <h1 className="max-w-4xl text-center text-[2.75rem] font-bold leading-[1.04] tracking-[-0.045em] text-[#1E293B] sm:text-6xl lg:text-[4.5rem]">
-          <span className="block">
-            <RevealLine text="Find Every Bug. Solve" delay={0.15} />
+        <h1 className="mt-6 max-w-4xl text-center text-[2.6rem] leading-[1.05] tracking-[-0.045em] text-[#1E293B] sm:text-6xl lg:text-[4.25rem]">
+          <span className="block font-bold">
+            <RevealLine text="Find every bug." delay={0.15} />
           </span>
-          <span className="block">
-            <RevealLine text="Every Problem. Faster" delay={0.42} />
+          <span className="block font-normal text-slate-500">
+            <RevealLine text="Solve every problem." delay={0.4} />
             <motion.span
               initial={{ opacity: 0, scale: 0.4 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -781,7 +1107,7 @@ export function Hero() {
                 stiffness: 320,
                 damping: 18,
               }}
-              className="ml-[-0.04em] inline-block"
+              className="ml-[-0.06em] inline-block font-bold"
               style={{ color: PRIMARY }}
             >
               .
@@ -793,33 +1119,33 @@ export function Hero() {
         <motion.p
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.75, ease: "easeOut" }}
-          className="mt-6 max-w-xl text-center text-base leading-relaxed text-slate-500"
+          transition={{ duration: 0.6, delay: 0.72, ease: "easeOut" }}
+          className="mt-5 max-w-xl text-center text-base leading-relaxed text-slate-500"
         >
-          Run reward-based bounty programs, triage real vulnerability reports,
-          and turn every fix into a validated solution the whole community can
-          search.
+          Reward-based bounty programs, real vulnerability triage, and a
+          searchable library of validated solutions — wired into every stage
+          of how your team already ships.
         </motion.p>
 
-        {/* primary CTA */}
+        {/* CTAs */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.9, ease: "easeOut" }}
-          className="mt-9 flex flex-wrap items-center justify-center gap-3"
+          transition={{ duration: 0.6, delay: 0.85, ease: "easeOut" }}
+          className="mt-8 flex flex-wrap items-center justify-center gap-3"
         >
           <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0, scale: 0.98 }}>
             <Link
               href="/account-type"
-              className="group inline-flex items-center gap-2.5 rounded-full py-3 pl-6 pr-3 text-base font-semibold text-white shadow-[0_8px_24px_-10px_rgba(37,99,235,0.8)] transition-colors hover:brightness-110"
+              className="group inline-flex items-center gap-2.5 rounded-full py-2.5 pl-6 pr-2.5 text-base font-semibold text-white shadow-[0_10px_30px_-10px_rgba(37,99,235,0.9)] transition-[filter] hover:brightness-110"
               style={{ backgroundColor: PRIMARY }}
             >
               Get started free
               <span
-                className="flex h-7 w-7 items-center justify-center rounded-full"
+                className="flex size-8 items-center justify-center rounded-full text-white"
                 style={{ backgroundColor: ACCENT }}
               >
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                <ArrowUpRight className="size-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </span>
             </Link>
           </motion.div>
@@ -827,31 +1153,48 @@ export function Hero() {
           <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0, scale: 0.98 }}>
             <Link
               href="/programs"
-              className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-base font-semibold text-[#1E293B] shadow-[0_0_0_1px_rgba(30,41,59,0.12)] transition-colors hover:bg-slate-50"
+              className="inline-flex items-center rounded-full bg-white px-6 py-3 text-base font-semibold text-[#1E293B] shadow-[0_0_0_1px_rgba(30,41,59,0.12)] transition-colors hover:bg-slate-50"
             >
               Explore programs
             </Link>
           </motion.div>
         </motion.div>
 
-        {/* hint label above the command bar, like the reference */}
-        {/* <motion.span
+        {/* social proof */}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 1.0 }}
-          className="mt-10 mb-3 rounded-full bg-white/85 px-3 py-1 text-sm text-slate-400 backdrop-blur-sm shadow-[0_0_0_1px_rgba(30,41,59,0.07)]"
+          className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1"
         >
-          Search 40,000+ validated solutions
-        </motion.span> */}
-        <span className="mt-10 mb-3 rounded-full bg-white/85 px-3 py-1 text-sm text-slate-400 backdrop-blur-sm shadow-[0_0_0_1px_rgba(30,41,59,0.07)]"></span>
+          <span className="flex items-center gap-1">
+            {Array.from({ length: 5 }, (_, i) => (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, scale: 0.3 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  delay: 1.1 + i * 0.07,
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 16,
+                }}
+              >
+                <Star className="size-4 fill-amber-400 text-amber-400" />
+              </motion.span>
+            ))}
+          </span>
+          <span className="text-sm font-medium text-slate-500">
+            <span className="font-bold text-slate-900">4.9/5</span> from 4,900+
+            researchers and 120+ security teams
+          </span>
+        </motion.div>
 
-        {/* <div className="flex w-full justify-center">
-          <CommandBar />
-        </div> */}
+        <CardArc />
+        <SdlcRail />
       </div>
 
-      {/* trust strip pinned to the bottom of the fold */}
-      <div className="relative z-10 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <PartnerMarquee />
       </div>
     </section>
