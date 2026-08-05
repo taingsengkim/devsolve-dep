@@ -33,27 +33,63 @@ interface RegisterApiResponse {
   accountType?: "USER" | "COMPANY" | "ADMIN";
 }
 
+export type IndustryEnum =
+  | "TECHNOLOGY"
+  | "FINANCE"
+  | "HEALTHCARE"
+  | "ECOMMERCE"
+  | "GOVERNMENT"
+  | "EDUCATION"
+  | "OTHER";
+
+export type CompanySizeEnum =
+  | "1-10"
+  | "11-50"
+  | "51-200"
+  | "201-500"
+  | "501-1000"
+  | "1000+";
+
 export interface RegisterCompanyRequest {
   fullName: string;
   jobTitle: string;
   email: string;
-  password?: string;
+  password: string;
+  confirmPassword: string;
   companyName: string;
   companyWebsite: string;
-  industry: string;
+  industry: IndustryEnum;
+  companySize: CompanySizeEnum;
+  country: string;
+  joiningReason: string;
+}
+
+/** Shape returned by POST /api/v1/organizations/register */
+export interface RegisterCompanyApiResponse {
+  id: string;
+  ownerId: string;
+  name: string;
+  slug: string;
+  domain: string;
+  websiteUrl: string;
+  logoUrl: string;
+  description: string;
+  industry: IndustryEnum;
   companySize: string;
   country: string;
-  reason: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  submissionVersion: number;
+  rejectionReason: string | null;
+  reviewedAt: string | null;
+  verifiedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface RegisterCompanyResponse {
   success: boolean;
   message?: string;
-  company?: {
-    id: string;
-    companyName: string;
-    email: string;
-  };
+  organization?: RegisterCompanyApiResponse;
 }
 
 export const authApi = baseApi.injectEndpoints({
@@ -88,22 +124,17 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ["User"],
     }),
     registerCompany: builder.mutation<RegisterCompanyResponse, RegisterCompanyRequest>({
-      queryFn: async (body) => {
-        // Mock successful company registration
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        return {
-          data: {
-            success: true,
-            message: "Company registration submitted successfully!",
-            company: {
-              id: `cmp_${Date.now()}`,
-              companyName: body.companyName,
-              email: body.email,
-            },
-          },
-        };
-      },
-      invalidatesTags: ["User"],
+      query: (body) => ({
+        url: "/v1/organizations/register",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (raw: RegisterCompanyApiResponse): RegisterCompanyResponse => ({
+        success: true,
+        message: "Company registration submitted successfully! Your application is under review.",
+        organization: raw,
+      }),
+      invalidatesTags: ["Organization"],
     }),
   }),
 });
