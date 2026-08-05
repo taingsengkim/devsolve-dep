@@ -438,9 +438,9 @@ export function FeatureHighlights() {
                       key={step.n}
                       className={`dot-${ai}-${si} absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full`}
                       style={{
-                        left: `${(p.x / ARC.w) * 100}%`,
-                        top: `${(p.y / ARC.h) * 100}%`,
-                        backgroundColor: MUTED,
+                        left: `${((p.x / ARC.w) * 100).toFixed(4)}%`,
+                        top: `${((p.y / ARC.h) * 100).toFixed(4)}%`,
+                        backgroundColor: "rgb(203, 213, 225)",
                       }}
                     />
                   );

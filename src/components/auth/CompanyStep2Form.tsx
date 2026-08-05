@@ -14,7 +14,9 @@ import {
   ArrowLeft,
   Loader2,
   HelpCircle,
+  AlertCircle,
 } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -33,14 +35,18 @@ interface CompanyStep2FormProps {
   onBack: () => void;
   onSubmit: (data: CompanyRegisterFormValues) => void;
   isApiLoading: boolean;
+  apiError?: string | null;
 }
+
 
 export function CompanyStep2Form({
   form,
   onBack,
   onSubmit,
   isApiLoading,
+  apiError,
 }: CompanyStep2FormProps) {
+
   const {
     register,
     handleSubmit,
@@ -54,8 +60,9 @@ export function CompanyStep2Form({
   const industry = watch("industry");
   const companySize = watch("companySize");
   const country = watch("country");
-  const reason = watch("reason");
+  const joiningReason = watch("joiningReason");
   const agreeTermsStep2 = watch("agreeTermsStep2");
+
 
   const handleCountryDetect = React.useCallback(
     (name: string) => {
@@ -73,8 +80,9 @@ export function CompanyStep2Form({
     Boolean(industry) &&
     Boolean(companySize) &&
     Boolean(country) &&
-    Boolean(reason) &&
+    Boolean(joiningReason) &&
     Boolean(agreeTermsStep2);
+
 
   return (
     <motion.form
@@ -216,21 +224,21 @@ export function CompanyStep2Form({
       {/* Primary Goal / Reason */}
       <div>
         <Label
-          htmlFor="reason"
+          htmlFor="joiningReason"
           className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5 uppercase tracking-wide"
         >
           WHY ARE YOU JOINING DEVSOLVE? <span className="text-red-500">*</span>
         </Label>
         <CustomSelect
-          value={reason}
+          value={joiningReason}
           options={REASONS}
           placeholder="Select primary goal"
           icon={<HelpCircle className="w-4 h-4" />}
-          error={Boolean(errors.reason)}
-          onSelect={(val) => setValue("reason", val, { shouldValidate: true })}
+          error={Boolean(errors.joiningReason)}
+          onSelect={(val) => setValue("joiningReason", val, { shouldValidate: true })}
         />
-        {errors.reason && (
-          <p className="text-xs text-red-500 mt-1">{errors.reason.message}</p>
+        {errors.joiningReason && (
+          <p className="text-xs text-red-500 mt-1">{errors.joiningReason.message}</p>
         )}
       </div>
 
@@ -259,6 +267,14 @@ export function CompanyStep2Form({
           </p>
         )}
       </div>
+
+      {/* API Error Banner */}
+      {apiError && (
+        <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <AlertCircle className="mt-0.5 w-4 h-4 shrink-0" />
+          <p>{apiError}</p>
+        </div>
+      )}
 
       {/* Action Buttons: Back + Complete Registration */}
       <div className="flex items-center gap-3 pt-4">

@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-type ProgramTypeFilter = "All" | "Bounty" | "Response";
-type AssetFilter = "All" | "Web" | "API" | "Mobile" | "Network";
-type StatusFilter = "All" | "Open" | "Done" | "Archived";
+export type ProgramTypeFilter = "All" | "Bounty" | "Response";
+export type AssetFilter = "All" | "Web" | "API" | "Mobile" | "Network";
+export type StatusFilter = "All" | "Open" | "Done" | "Archived";
 
 type PublicProgramFiltersProps = {
   totalCount: number;

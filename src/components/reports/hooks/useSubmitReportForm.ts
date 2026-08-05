@@ -46,6 +46,7 @@ export function useSubmitReportForm() {
   const [submitReport, { isLoading: isSubmitting }] = useSubmitReportMutation();
 
   const programs = programsData?.content || [];
+  const programs = programsData?.content || [];
 
   const form = useForm<SubmitReportFormValues>({
     resolver: zodResolver(submitReportSchema),
@@ -84,20 +85,15 @@ export function useSubmitReportForm() {
   const selectedSeverity = watch("severity");
 
   const selectedProgram =
-    programs.find((p) => p.id === selectedProgramId) || programs[0] || null;
+    programs.find((p: any) => p.id === selectedProgramId) || programs[0] || null;
 
   // Synchronize preselected program ID when programs arrive asynchronously.
-  // Links into this form from a program's page (ProgramDetailHero/Sidebar)
-  // still carry that page's mock program id, which will never match a real
-  // program from useGetSubmittableProgramsQuery — so a match is required,
-  // not just a non-empty id, or the field gets stuck on an invalid id that
-  // silently fails at submit time.
   useEffect(() => {
     if (programs.length === 0) return;
-    const found = programs.find((p) => p.id === preselectedProgramId);
+    const found = programs.find((p: any) => p.id === preselectedProgramId);
     if (found) {
       setValue("programId", found.id);
-    } else if (!programs.some((p) => p.id === selectedProgramId)) {
+    } else if (!programs.some((p: any) => p.id === selectedProgramId)) {
       setValue("programId", programs[0].id);
     }
   }, [preselectedProgramId, programs, setValue, selectedProgramId]);
@@ -241,7 +237,7 @@ export function useSubmitReportForm() {
 
   const onSubmit = async (values: SubmitReportFormValues) => {
     setSubmitError(null);
-    const selectedProg = programs.find((p) => p.id === values.programId);
+    const selectedProg = programs.find((p: any) => p.id === values.programId);
     const programName = selectedProg
       ? selectedProg.organizationName
       : "CloudVault Security Program";

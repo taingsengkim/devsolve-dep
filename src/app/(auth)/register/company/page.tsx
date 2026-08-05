@@ -7,6 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, ShieldCheck, Sparkles } from "lucide-react";
 
 import { useRegisterCompanyMutation } from "@/lib/redux/services/authApi";
+import type { IndustryEnum, CompanySizeEnum } from "@/lib/redux/services/authApi";
+
 import { AuthHeroPanel, type HeroBadge } from "@/components/auth/AuthHeroPanel";
 import { CompanyRegisterStepper } from "@/components/auth/CompanyRegisterStepper";
 import { CompanyStep1Form } from "@/components/auth/CompanyStep1Form";
@@ -40,7 +42,9 @@ const COMPANY_HERO_BADGES: HeroBadge[] = [
 
 export default function CompanyRegisterPage() {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [registerCompany, { isLoading: isApiLoading }] = useRegisterCompanyMutation();
+
 
   const form = useForm<CompanyRegisterFormValues>({
     resolver: zodResolver(companyRegisterSchema),
@@ -50,6 +54,7 @@ export default function CompanyRegisterPage() {
       jobTitle: "",
       email: "",
       password: "",
+      confirmPassword: "",
       agreeTermsStep1: false,
 
       companyName: "",
@@ -57,7 +62,7 @@ export default function CompanyRegisterPage() {
       industry: "",
       companySize: "",
       country: "Cambodia",
-      reason: "",
+      joiningReason: "",
       agreeTermsStep2: false,
     },
   });
@@ -68,6 +73,7 @@ export default function CompanyRegisterPage() {
       "jobTitle",
       "email",
       "password",
+      "confirmPassword",
       "agreeTermsStep1",
     ]);
     if (isValidStep1) {
@@ -75,26 +81,52 @@ export default function CompanyRegisterPage() {
     }
   };
 
+  // Map UI display labels → backend enum values
+  const INDUSTRY_MAP: Record<string, IndustryEnum> = {
+    "Software & Technology": "TECHNOLOGY",
+    "Financial Services": "FINANCE",
+    "Healthcare & Biotech": "HEALTHCARE",
+    "E-Commerce & Retail": "ECOMMERCE",
+    "Government & Public Sector": "GOVERNMENT",
+    "Education": "EDUCATION",
+    Other: "OTHER",
+  };
+
+  const COMPANY_SIZE_MAP: Record<string, CompanySizeEnum> = {
+    "1-10 employees": "1-10",
+    "11-50 employees": "11-50",
+    "51-200 employees": "51-200",
+    "201-500 employees": "201-500",
+    "500+ employees": "501-1000",
+  };
+
   const onSubmit = async (data: CompanyRegisterFormValues) => {
+    setApiError(null);
     try {
       const res = await registerCompany({
         fullName: data.fullName,
         jobTitle: data.jobTitle,
         email: data.email,
         password: data.password,
+        confirmPassword: data.confirmPassword,
         companyName: data.companyName,
         companyWebsite: data.companyWebsite,
-        industry: data.industry,
-        companySize: data.companySize,
+        industry: INDUSTRY_MAP[data.industry] ?? "OTHER",
+        companySize: COMPANY_SIZE_MAP[data.companySize] ?? (data.companySize as CompanySizeEnum),
         country: data.country,
-        reason: data.reason,
+        joiningReason: data.joiningReason,
       }).unwrap();
 
       if (res.success) {
         setCurrentStep(3);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to submit company registration:", error);
+      const err = error as { data?: { message?: string }; status?: number };
+      const message =
+        err?.data?.message ??
+        "Registration failed. Please check your details and try again.";
+      setApiError(message);
     }
   };
 
@@ -128,6 +160,7 @@ export default function CompanyRegisterPage() {
                 onBack={() => setCurrentStep(1)}
                 onSubmit={onSubmit}
                 isApiLoading={isApiLoading}
+                apiError={apiError}
               />
             )}
 

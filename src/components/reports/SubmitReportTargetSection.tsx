@@ -35,9 +35,9 @@ interface SubmitReportTargetSectionProps {
   errors: FieldErrors<SubmitReportFormValues>;
   setValue: UseFormSetValue<SubmitReportFormValues>;
   watch: UseFormWatch<SubmitReportFormValues>;
-  programs: Program[];
+  programs: any[];
   isLoading: boolean;
-  selectedProgram?: Program | null;
+  selectedProgram?: any | null;
 }
 
 const HTTP_METHOD_STYLES: Record<string, { badge: string }> = {
@@ -166,7 +166,7 @@ export function SubmitReportTargetSection({
           In-Scope Targets ({inScopeList.length})
         </h3>
         <div className="flex flex-wrap gap-3 py-1">
-          {inScopeList.map((target) => (
+          {inScopeList.map((target: string) => (
             <Badge
               key={target}
               variant="outline"
@@ -185,7 +185,7 @@ export function SubmitReportTargetSection({
           Out-of-Scope Rules & Exclusions
         </h3>
         <div className="flex flex-wrap gap-3 py-1">
-          {outOfScopeList.map((target) => (
+          {outOfScopeList.map((target: string) => (
             <Badge
               key={target}
               variant="secondary"
