@@ -52,195 +52,6 @@ export default function AboutPage() {
 
 
 
-// function AboutHeroSection() {
-//   return (
-//     <div className="relative w-full bg-slate-50 dark:bg-[#080E17] text-slate-900 dark:text-white transition-colors duration-300 overflow-hidden">
-//       <div className="absolute top-12 left-1/4 w-[500px] h-[500px] bg-[#00D2B4]/15 dark:bg-[#00D2B4]/10 rounded-full blur-[150px] pointer-events-none" />
-//       <div className="absolute top-1/3 right-10 w-[600px] h-[600px] bg-blue-500/10 dark:bg-blue-600/10 rounded-full blur-[160px] pointer-events-none" />
-
-//       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20 lg:pt-20 lg:pb-28">
-//         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-          
-//           <motion.div
-//             initial={{ opacity: 0, x: -30 }}
-//             animate={{ opacity: 1, x: 0 }}
-//             transition={{ duration: 0.6, ease: "easeOut" }}
-//             className="lg:col-span-6 space-y-6 lg:space-y-8 z-10"
-//           >
-//             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00D2B4]/10 border border-[#00D2B4]/30 text-[#00a890] dark:text-[#00D2B4] text-xs sm:text-sm font-medium tracking-wide">
-//               <span>The next-gen security platform</span>
-//               <span className="text-[#00D2B4]/60">•</span>
-//               <span className="font-semibold text-slate-900 dark:text-white">Est. 2026</span>
-//             </div>
-
-//             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.08]">
-//               We Are <br />
-//               <span className="text-[#00a890] dark:text-[#00D2B4] relative inline-block">
-//                 Next-Gen
-//                 <svg
-//                   className="absolute -bottom-2 left-0 w-full text-[#00a890]/30 dark:text-[#00D2B4]/40"
-//                   height="10"
-//                   viewBox="0 0 200 10"
-//                   fill="none"
-//                   xmlns="http://www.w3.org/2000/svg"
-//                 >
-//                   <path
-//                     d="M2 8C50 2 150 2 198 8"
-//                     stroke="currentColor"
-//                     strokeWidth="4"
-//                     strokeLinecap="round"
-//                   />
-//                 </svg>
-//               </span>{" "}
-//               Security <br /> Platform
-//             </h1>
-
-//             <p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg leading-relaxed max-w-xl font-normal">
-//               DevSolve connects organizations with top security researchers and developers to solve real-world technical challenges, fix vulnerabilities, and build resilient software.
-//             </p>
-
-//             <div className="flex flex-wrap items-center gap-4 pt-2">
-//               <Link
-//                 href="/programs"
-//                 className="inline-flex items-center gap-2.5 px-7 py-4 rounded-full bg-slate-900 hover:bg-slate-800 dark:bg-[#00D2B4] dark:hover:bg-[#00c0a5] text-white dark:text-slate-950 font-bold text-sm sm:text-base transition-all duration-300 shadow-lg shadow-slate-900/10 dark:shadow-[#00D2B4]/25 hover:shadow-xl hover:scale-105"
-//               >
-//                 <span>Explore Programs</span>
-//                 <ArrowRight className="w-4 h-4 text-[#00D2B4] dark:text-slate-950" />
-//               </Link>
-
-//               <button
-//                 type="button"
-//                 className="inline-flex items-center gap-3 px-5 py-4 rounded-full text-slate-700 dark:text-white hover:text-[#00a890] dark:hover:text-[#00D2B4] font-semibold text-sm sm:text-base transition-colors duration-200 group"
-//               >
-//                 <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-sm flex items-center justify-center text-[#00a890] dark:text-[#00D2B4] group-hover:scale-110 group-hover:border-[#00D2B4]/50 transition-all">
-//                   <Play className="w-4 h-4 fill-current ml-0.5" />
-//                 </div>
-//                 <span>Watch Demo</span>
-//               </button>
-//             </div>
-
-//             <div className="flex items-center gap-4 pt-4 border-t border-slate-200 dark:border-slate-800/80 max-w-md">
-//               <div className="flex -space-x-2.5 overflow-hidden">
-//                 <div className="inline-block h-10 w-10 rounded-full ring-2 ring-slate-50 dark:ring-[#080E17] bg-slate-200 dark:bg-slate-700 overflow-hidden relative">
-//                   <Image src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="User" fill className="object-cover" />
-//                 </div>
-//                 <div className="inline-block h-10 w-10 rounded-full ring-2 ring-slate-50 dark:ring-[#080E17] bg-slate-200 dark:bg-slate-700 overflow-hidden relative">
-//                   <Image src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" alt="User" fill className="object-cover" />
-//                 </div>
-//                 <div className="inline-block h-10 w-10 rounded-full ring-2 ring-slate-50 dark:ring-[#080E17] bg-slate-200 dark:bg-slate-700 overflow-hidden relative">
-//                   <Image src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" alt="User" fill className="object-cover" />
-//                 </div>
-//                 <div className="inline-block h-10 w-10 rounded-full ring-2 ring-slate-50 dark:ring-[#080E17] bg-slate-200 dark:bg-slate-700 overflow-hidden relative">
-//                   <Image src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80" alt="User" fill className="object-cover" />
-//                 </div>
-//               </div>
-
-//               <div className="space-y-1">
-//                 <div className="flex items-center gap-1 text-amber-500 dark:text-amber-400">
-//                   {[...Array(5)].map((_, i) => (
-//                     <Star key={i} className="w-4 h-4 fill-amber-500 dark:fill-amber-400" />
-//                   ))}
-//                 </div>
-//                 <p className="text-xs text-slate-500 dark:text-slate-400">
-//                   Join <span className="text-slate-900 dark:text-white font-semibold">2,500+</span> vetted security researchers
-//                 </p>
-//               </div>
-//             </div>
-//           </motion.div>
-
-//           <motion.div
-//             initial={{ opacity: 0, scale: 0.95 }}
-//             animate={{ opacity: 1, scale: 1 }}
-//             transition={{ duration: 0.7, delay: 0.2 }}
-//             className="lg:col-span-6 relative flex items-center justify-center lg:justify-end"
-//           >
-//             <div className="absolute w-[320px] h-[320px] sm:w-[480px] sm:h-[480px] rounded-full bg-gradient-to-tr from-cyan-400/20 to-blue-500/20 dark:from-cyan-500/20 dark:to-blue-600/20 blur-3xl pointer-events-none" />
-
-//             <div className="absolute -top-4 right-12 w-6 h-6 rounded-full bg-amber-400/80 blur-[1px] animate-bounce" style={{ animationDuration: '3s' }} />
-//             <div className="absolute bottom-12 left-2 w-8 h-8 rounded-full bg-[#00D2B4]/40 blur-[2px]" />
-//             <div className="absolute top-1/2 -left-6 w-5 h-5 rotate-45 bg-blue-400/50" />
-
-//             <div className="relative w-full max-w-[750px] h-[500px] sm:h-[580px] rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900/60">
-//               <Image
-//                 src="/teams/team.jpg"
-//                 alt="DevSolve Engineering & Security Team"
-//                 fill
-//                 priority
-//                 className="object-cover object-top"
-//                 sizes="(max-width: 1280px) 100vw, 600px"
-//               />
-//               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 dark:from-[#080E17]/80 via-transparent to-transparent" />
-//             </div>
-
-//             {/* <motion.div
-//               initial={{ y: 20, opacity: 0 }}
-//               animate={{ y: 0, opacity: 1 }}
-//               transition={{ delay: 0.4, duration: 0.5 }}
-//               className="absolute -top-2 right-2 sm:right-6 bg-white/90 dark:bg-slate-900/85 backdrop-blur-md border border-slate-200 dark:border-slate-700/70 p-3.5 sm:p-4 rounded-2xl shadow-xl flex items-center gap-3 z-20 max-w-[220px]"
-//             >
-//               <div className="p-2 rounded-xl bg-[#00D2B4]/15 text-[#00a890] dark:text-[#00D2B4]">
-//                 <ShieldCheck className="w-5 h-5" />
-//               </div>
-//               <div>
-//                 <p className="text-xs font-semibold text-slate-900 dark:text-white">Zero-Trust Flow</p>
-//                 <p className="text-[10px] text-slate-500 dark:text-slate-400">Enterprise grade security</p>
-//               </div>
-//             </motion.div> */}
-
-//             {/* <motion.div
-//               initial={{ x: 30, opacity: 0 }}
-//               animate={{ x: 0, opacity: 1 }}
-//               transition={{ delay: 0.5, duration: 0.5 }}
-//               className="absolute top-1/3 -right-2 sm:-right-6 bg-white/90 dark:bg-slate-900/85 backdrop-blur-md border border-slate-200 dark:border-slate-700/70 p-4 rounded-2xl shadow-xl z-20 hidden sm:block w-44"
-//             >
-//               <div className="flex items-center justify-between mb-1">
-//                 <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Bounties Paid</span>
-//                 <TrendingUp className="w-3.5 h-3.5 text-[#00a890] dark:text-[#00D2B4]" />
-//               </div>
-//               <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">$875,000+</p>
-//               <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">↑ 28% active this month</p>
-//             </motion.div> */}
-
-//             {/* <motion.div
-//               initial={{ y: 30, opacity: 0 }}
-//               animate={{ y: 0, opacity: 1 }}
-//               transition={{ delay: 0.6, duration: 0.5 }}
-//               className="absolute -bottom-4 left-2 sm:-left-6 bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-700/70 p-4 rounded-2xl shadow-2xl z-20 max-w-[280px] sm:max-w-[320px]"
-//             >
-//               <div className="flex items-start gap-3">
-//                 <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0">
-//                   <Image
-//                     src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-//                     alt="Security Lead"
-//                     fill
-//                     className="object-cover"
-//                   />
-//                 </div>
-//                 <div className="space-y-1">
-//                   <p className="text-xs text-slate-700 dark:text-slate-200 leading-snug">
-//                     &quot;DevSolve helped us find critical vulnerabilities before launch.&quot;
-//                   </p>
-//                   <div className="flex items-center justify-between pt-1">
-//                     <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">— Jenna B., Lead SecOps</p>
-//                     <div className="flex text-amber-500 dark:text-amber-400">
-//                       {[...Array(5)].map((_, i) => (
-//                         <Star key={i} className="w-2.5 h-2.5 fill-amber-500 dark:fill-amber-400" />
-//                       ))}
-//                     </div>
-//                   </div>
-//                 </div>
-//               </div>
-//             </motion.div> */}
-//           </motion.div>
-
-//         </div>
-//       </section>
-
-     
-//     </div>
-//   );
-// }
-
 
 function AboutHeroSection() {
   const gridNodes = [
@@ -490,7 +301,6 @@ function OfferSection() {
 
 
 
-
 interface TechStackSectionProps {
   technologies?: Technology[];
 }
@@ -498,8 +308,8 @@ interface TechStackSectionProps {
 const SUB_BADGE_PRESETS = [
   ["UI", "Reactive"],
   ["Security", "API"],
-  ["ACID", " Relational"],
-  ["Containers ", "DevOps"],
+  ["ACID", "Relational"],
+  ["Containers", "DevOps"],
   ["Auth", "SSO"],
   ["Utility", "CSS"],
 ];
@@ -547,7 +357,7 @@ export function TechStackSection({
     const total = Math.max(flowLength, 1);
     const nextPositions = [] as Array<{ x: number; y: number }>;
     const width = containerWidth;
-    const padding = 120;
+    const padding = Math.max(80, Math.min(120, width * 0.1));
     const usableWidth = width - padding * 2;
 
     for (let i = 0; i < total; i++) {
@@ -583,37 +393,37 @@ export function TechStackSection({
   }, [activeNode, flowLength, positions]);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-12 md:py-16">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-sm font-semibold mb-3">
-          <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
+      <div className="text-center mb-6 sm:mb-8">
+        <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-xs sm:text-sm font-semibold mb-2 sm:mb-3">
+          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-600 animate-pulse" />
           Tech Stack
         </div>
-        <h2 className="text-3xl md:text-4xl font-extrabold text-[#0F172A] tracking-tight">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#0F172A] tracking-tight">
           Built with Modern Technologies
         </h2>
-        <p className="text-[#64748B] text-sm md:text-base max-w-xl mx-auto mt-2 leading-relaxed">
+        <p className="text-sm sm:text-base text-[#64748B] max-w-xl mx-auto mt-2 leading-relaxed px-2">
           An end-to-end pipeline designed for security, scalability, and top-tier performance.
         </p>
       </div>
 
       <div
         ref={containerRef}
-        className="relative overflow-visible rounded-[32px] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50 shadow-xl p-6 md:p-10"
+        className="relative overflow-visible rounded-2xl sm:rounded-3xl md:rounded-[32px] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50 shadow-lg sm:shadow-xl p-4 sm:p-6 md:p-10"
       >
-        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[32px]">
-          <div className="absolute w-[450px] h-[450px] bg-blue-400/10 blur-[120px] rounded-full -top-40 -left-32" />
-          <div className="absolute w-[350px] h-[350px] bg-emerald-300/10 blur-[120px] rounded-full bottom-0 right-0" />
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl sm:rounded-3xl md:rounded-[32px]">
+          <div className="absolute w-[250px] sm:w-[350px] md:w-[450px] h-[250px] sm:h-[350px] md:h-[450px] bg-blue-400/10 blur-[80px] sm:blur-[100px] md:blur-[120px] rounded-full -top-40 -left-32" />
+          <div className="absolute w-[200px] sm:w-[300px] md:w-[350px] h-[200px] sm:h-[300px] md:h-[350px] bg-emerald-300/10 blur-[80px] sm:blur-[100px] md:blur-[120px] rounded-full bottom-0 right-0" />
         </div>
 
-        <div className="relative z-10 flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="h-8 px-4 rounded-full bg-[#2B68F6] text-white font-bold text-[10px] uppercase tracking-wider flex items-center gap-2 shadow-md shadow-blue-500/20">
+        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="h-7 sm:h-8 px-3 sm:px-4 rounded-full bg-[#2B68F6] text-white font-bold text-[8px] sm:text-[10px] uppercase tracking-wider flex items-center gap-1.5 sm:gap-2 shadow-md shadow-blue-500/20">
               Architecture Pipeline
-              <span className="animate-pulse">➔</span>
+              <span className="animate-pulse text-[10px] sm:text-xs">➔</span>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-3 text-[10px] font-semibold text-slate-400 tracking-wider">
+          <div className="hidden sm:flex items-center gap-2 sm:gap-3 text-[8px] sm:text-[10px] font-semibold text-slate-400 tracking-wider">
             <span>CLIENT</span>
             <span className="text-slate-300">›››</span>
             <span>SERVICES</span>
@@ -622,9 +432,9 @@ export function TechStackSection({
           </div>
         </div>
 
-        <div className="relative py-14 px-10 my-2 flex items-center justify-between gap-4 md:gap-6 overflow-x-auto no-scrollbar">
+        <div className="relative py-8 sm:py-10 md:py-14 px-2 sm:px-4 md:px-10 my-1 sm:my-2 flex items-center justify-start sm:justify-between gap-3 sm:gap-4 md:gap-6 overflow-x-auto overflow-y-visible no-scrollbar">
           <svg
-            className="absolute inset-0 w-full h-full pointer-events-none z-0 min-w-[700px]"
+            className="absolute inset-0 w-full h-full pointer-events-none z-0 min-w-[500px] sm:min-w-[700px]"
             preserveAspectRatio="none"
             viewBox="0 0 1000 200"
           >
@@ -681,7 +491,6 @@ export function TechStackSection({
               className="transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)]"
             />
 
-            {/* Ripple effect */}
             {isBallAtNode && (
               <circle
                 key={rippleKey}
@@ -737,7 +546,7 @@ export function TechStackSection({
                 key={node.id}
                 onMouseEnter={() => setHoveredNode(node.id)}
                 onMouseLeave={() => setHoveredNode(null)}
-                className="relative z-10 flex flex-col items-center justify-center shrink-0 min-w-[100px] md:min-w-[120px] pt-3 pb-3"
+                className="relative z-10 flex flex-col items-center justify-center shrink-0 min-w-[80px] sm:min-w-[100px] md:min-w-[120px] pt-6 sm:pt-8 pb-4 sm:pb-6"
                 style={{
                   animation: "float 4s ease-in-out infinite",
                   animationDelay: `${index * 0.5}s`,
@@ -745,11 +554,11 @@ export function TechStackSection({
               >
                 {/* Sub-badges */}
                 {node.subBadges && (
-                  <div className="absolute -top-4 left-0 right-0 pointer-events-none flex justify-between z-20 px-2">
+                  <div className="absolute -top-5 sm:-top-6 left-0 right-0 pointer-events-none flex justify-between z-20 px-1 sm:px-2">
                     {node.subBadges.map((badge, bIdx) => (
                       <span
                         key={bIdx}
-                        className={`px-2 py-0.5 bg-white border rounded-full text-[9px] font-bold shadow-sm transition-all duration-300 ${
+                        className={`px-1.5 sm:px-2 py-0.5 bg-white border rounded-full text-[7px] sm:text-[9px] font-bold shadow-sm transition-all duration-300 whitespace-nowrap ${
                           shouldHighlight
                             ? "border-[#2B68F6] text-[#2B68F6] scale-105 shadow-md shadow-blue-500/20"
                             : "border-slate-200 text-slate-500 opacity-80"
@@ -761,9 +570,9 @@ export function TechStackSection({
                   </div>
                 )}
 
-                <div className="relative flex items-center justify-center mt-4">
+                <div className="relative flex items-center justify-center mt-3 sm:mt-4">
                   <div
-                    className={`absolute inset-0 scale-110 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400 blur-md transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] ${
+                    className={`absolute inset-0 scale-110 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400 blur-sm sm:blur-md transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] ${
                       isActive
                         ? "opacity-60 animate-spinSlow"
                         : isHovered
@@ -775,15 +584,15 @@ export function TechStackSection({
                   <div
                     className={`relative flex flex-col items-center justify-center rounded-full bg-white border-2 transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] cursor-pointer shadow-md ${
                       shouldHighlight
-                        ? "w-[104px] h-[104px] md:w-[112px] h-[112px] border-[#2B68F6] scale-[1.03] shadow-xl shadow-blue-500/25 z-30"
-                        : "w-24 h-24 md:w-28 h-28 border-slate-200 scale-100 z-10"
+                        ? "w-[76px] h-[76px] sm:w-[92px] sm:h-[92px] md:w-[104px] md:h-[104px] border-[#2B68F6] scale-[1.03] shadow-xl shadow-blue-500/25 z-30"
+                        : "w-[64px] h-[64px] sm:w-[80px] sm:h-[80px] md:w-24 md:h-24 border-slate-200 scale-100 z-10"
                     }`}
                   >
                     <div
                       className={`relative transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] mb-0.5 z-10 ${
                         shouldHighlight
-                          ? "w-8 h-8 md:w-9 h-9 rotate-3 scale-105"
-                          : "w-7 h-7 md:w-8 h-8"
+                          ? "w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rotate-3 scale-105"
+                          : "w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7"
                       }`}
                     >
                       <Image
@@ -797,20 +606,20 @@ export function TechStackSection({
                     <h3
                       className={`font-bold text-center px-1 leading-tight z-10 transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] ${
                         shouldHighlight
-                          ? "text-[10px] md:text-xs text-[#0F172A]"
-                          : "text-[9px] md:text-[10px] text-[#1E2B45]"
+                          ? "text-[8px] sm:text-[9px] md:text-[10px] text-[#0F172A]"
+                          : "text-[7px] sm:text-[8px] md:text-[9px] text-[#1E2B45]"
                       }`}
                     >
                       {node.name}
                     </h3>
 
-                    <span className="text-[7px] md:text-[8px] text-[#64748B] text-center leading-tight font-medium px-2 mt-0.5 block z-10">
+                    <span className="text-[6px] sm:text-[7px] md:text-[8px] text-[#64748B] text-center leading-tight font-medium px-1 sm:px-2 mt-0.5 block z-10">
                       {node.description}
                     </span>
                   </div>
 
                   {isActive && (
-                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1 text-[7px] md:text-[8px] font-extrabold text-[#2B68F6] uppercase tracking-widest z-20 bg-white/95 px-2.5 py-0.5 rounded-full border border-blue-200 shadow-md shadow-blue-500/10 whitespace-nowrap animate-fadeIn">
+                    <div className="absolute -bottom-5 sm:-bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 text-[6px] sm:text-[7px] md:text-[8px] font-extrabold text-[#2B68F6] uppercase tracking-widest z-20 bg-white/95 px-2 sm:px-2.5 py-0.5 rounded-full border border-blue-200 shadow-md shadow-blue-500/10 whitespace-nowrap animate-fadeIn">
                       <span className="w-1 h-1 rounded-full bg-[#2B68F6] animate-pulse" />
                       Active
                     </div>
@@ -819,7 +628,7 @@ export function TechStackSection({
 
                 {index < TECH_FLOW.length - 1 && (
                   <div
-                    className={`absolute right-[-16px] md:right-[-20px] top-1/2 -translate-y-1/2 z-0 hidden md:block font-bold text-base transition-all duration-300 ${
+                    className={`absolute right-[-12px] sm:right-[-16px] md:right-[-20px] top-1/2 -translate-y-1/2 z-0 hidden sm:block font-bold text-xs sm:text-sm md:text-base transition-all duration-300 ${
                       isActive
                         ? "text-[#2B68F6] translate-x-1 scale-125"
                         : "text-slate-300"
@@ -833,8 +642,8 @@ export function TechStackSection({
           })}
         </div>
 
-        <div className="relative z-10 flex items-center justify-between mt-6">
-          <div className="hidden md:flex items-center gap-3 text-[10px] font-semibold text-slate-400 tracking-wider">
+        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mt-4 sm:mt-6">
+          <div className="hidden md:flex items-center gap-2 sm:gap-3 text-[8px] sm:text-[10px] font-semibold text-slate-400 tracking-wider">
             <span>DATA INTEGRITY</span>
             <span className="text-slate-300">‹‹‹</span>
             <span>SECURITY FIRST</span>
@@ -842,10 +651,11 @@ export function TechStackSection({
             <span>STABLE INFRASTRUCTURE</span>
           </div>
 
-          <div className="flex items-center gap-3 ml-auto">
-            <div className="h-8 px-4 rounded-full bg-[#10B981] text-white font-bold text-[10px] uppercase tracking-wider flex items-center gap-2 shadow-md shadow-emerald-500/20">
-              <span className="animate-pulse">◀</span>
-              Continuous Security Feedback
+          <div className="flex items-center gap-2 sm:gap-3 ml-0 sm:ml-auto w-full sm:w-auto">
+            <div className="h-6 sm:h-8 px-3 sm:px-4 rounded-full bg-[#10B981] text-white font-bold text-[7px] sm:text-[10px] uppercase tracking-wider flex items-center gap-1.5 sm:gap-2 shadow-md shadow-emerald-500/20 w-full sm:w-auto justify-center">
+              <span className="animate-pulse text-[8px] sm:text-[10px]">◀</span>
+              <span className="hidden xs:inline">Continuous Security Feedback</span>
+              <span className="xs:hidden">Security</span>
             </div>
           </div>
         </div>
@@ -903,6 +713,15 @@ export function TechStackSection({
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
+
+        @media (max-width: 480px) {
+          .xs\\:inline {
+            display: inline;
+          }
+          .xs\\:hidden {
+            display: none;
+          }
+        }
       `}</style>
     </section>
   );
@@ -911,59 +730,57 @@ export function TechStackSection({
 
 
 
+
+
 function TeamSection() {
   return (
-    <section id="team" className="max-w-6xl mx-auto px-6 py-2">
-
-      <div className="text-center mb-10">
-        <span className="text-blue-600 uppercase tracking-[0.3em] text-sm font-semibold">
+    <section id="team" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
+      <div className="text-center mb-8 sm:mb-10 md:mb-12">
+        <span className="text-blue-600 uppercase tracking-[0.2em] sm:tracking-[0.3em] text-xs sm:text-sm font-semibold">
           OUR TEAM
         </span>
 
-        <h2 className="mt-3 text-4xl font-bold text-gray-900">
+        <h2 className="mt-2 sm:mt-3 text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
           Meet the People Behind DevSolve
         </h2>
 
-        <p className="mt-3 text-gray-500 max-w-xl mx-auto text-sm">
+        <p className="mt-2 sm:mt-3 text-sm sm:text-base text-gray-500 max-w-xl mx-auto px-4">
           Our mentors and developers work together to build secure,
           innovative, and scalable software solutions.
         </p>
       </div>
 
-      <div className="mb-14">
-        <h3 className="text-2xl font-semibold text-center mb-6  color-pink-300" >
+      {/* Mentors Section */}
+      <div className="mb-12 sm:mb-14">
+        <h3 className="text-xl sm:text-2xl font-semibold text-center mb-4 sm:mb-6 text-pink-400">
           Mentors
         </h3>
 
-        <div className="flex justify-center gap-8">
+        <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8">
           {SUPERVISORS.map((mentor) => (
-            <div key={mentor.name} className="w-64">
-              <MemberCard member={mentor}  />
+            <div key={mentor.name} className="w-48 sm:w-56 md:w-64">
+              <MemberCard member={mentor} />
             </div>
           ))}
         </div>
       </div>
 
       <div>
-        <h3 className="text-2xl font-semibold text-center mb-6">
+        <h3 className="text-xl sm:text-2xl font-semibold text-center mb-4 sm:mb-6">
           Developers
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10 justify-items-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 lg:gap-8 justify-items-center">
           {STUDENT_DEVELOPERS.map((member) => (
-            <div key={member.name} className="w-64">
+            <div key={member.name} className="w-full max-w-[300px] sm:max-w-[260px] lg:max-w-[280px]">
               <MemberCard member={member} />
             </div>
           ))}
         </div>
       </div>
-
     </section>
   );
 }
-
-
-
 
 interface MemberCardProps {
   member: TeamMember;
@@ -977,32 +794,32 @@ export function MemberCard({ member }: MemberCardProps) {
       transition={{ duration: 0.3 }}
       className="group w-full"
     >
-      <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-gray-100 shadow-xs border border-gray-200 transition-all duration-300 group-hover:shadow-xl">
+      <div className="relative aspect-[3/4] overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100 shadow-sm border border-gray-200 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-blue-500/10">
         <Image
           src={member.image}
           alt={member.name}
           fill
           className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 768px) 100vw, 25vw"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
 
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-24 sm:h-28 md:h-32 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
-        <div className="absolute bottom-4 left-2">
-          <span className="px-4 py-2 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-bold tracking-wider border border-white/10">
+        <div className="absolute bottom-3 sm:bottom-4 left-2 sm:left-3">
+          <span className="px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-full bg-black/60 backdrop-blur-md text-white text-[8px] sm:text-[10px] md:text-[11px] font-bold tracking-wider border border-white/10 truncate max-w-[100px] sm:max-w-[130px] md:max-w-[150px] block">
             {member.subRole?.toUpperCase() || "FULL STACK"}
           </span>
         </div>
 
-        <div className="absolute bottom-2 right-4 flex gap-1">
+        <div className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 flex gap-1 sm:gap-1.5">
           {member.github && (
             <a
               href={member.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-9 h-9 rounded-full bg-black/80 text-white flex items-center justify-center hover:scale-110 hover:bg-black transition duration-200"
+              className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9 rounded-full bg-black/80 text-white flex items-center justify-center hover:scale-110 hover:bg-black transition duration-200"
             >
-              <FaGithub size={13} />
+              <FaGithub size={10} className="sm:text-xs md:text-sm" />
             </a>
           )}
 
@@ -1011,9 +828,9 @@ export function MemberCard({ member }: MemberCardProps) {
               href={member.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-9 h-9 rounded-full bg-black/80 text-white flex items-center justify-center hover:scale-110 hover:bg-black transition duration-200"
+              className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9 rounded-full bg-black/80 text-white flex items-center justify-center hover:scale-110 hover:bg-black transition duration-200"
             >
-              <FaLinkedin size={13} />
+              <FaLinkedin size={10} className="sm:text-xs md:text-sm" />
             </a>
           )}
 
@@ -1022,27 +839,27 @@ export function MemberCard({ member }: MemberCardProps) {
               href={member.telegram}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-9 h-9 rounded-full bg-black/80 text-white flex items-center justify-center hover:scale-110 hover:bg-black transition duration-200"
+              className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9 rounded-full bg-black/80 text-white flex items-center justify-center hover:scale-110 hover:bg-black transition duration-200"
             >
-              <FaTelegram size={13} />
+              <FaTelegram size={10} className="sm:text-xs md:text-sm" />
             </a>
           )}
         </div>
       </div>
 
-      <div className="mt-4 px-1">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-gray-900">
+      <div className="mt-2.5 sm:mt-3 md:mt-4 px-1">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-1 md:gap-2">
+          <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 truncate">
             {member.name}
           </h3>
 
-          <span className="text-[10px] px-3 py-1 rounded-full border border-blue-200 text-blue-600 font-semibold bg-blue-50">
+          <span className="text-[7px] sm:text-[8px] md:text-[10px] px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 rounded-full border border-blue-200 text-blue-600 font-semibold bg-blue-50 self-start sm:self-center whitespace-nowrap">
             {member.badge || "MEMBER"}
           </span>
         </div>
 
         {member.quote && (
-          <p className="mt-2 text-sm italic text-gray-500 leading-relaxed">
+          <p className="mt-1 sm:mt-1.5 md:mt-2 text-[10px] sm:text-xs md:text-sm italic text-gray-500 leading-relaxed line-clamp-2">
             "{member.quote.replace(/['"]+/g, "")}"
           </p>
         )}
@@ -1110,7 +927,7 @@ function ContactSection() {
                   <input
                     type="text"
                     required
-                    placeholder="Kumara Sangy"
+                    placeholder="Dim Pathea"
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
@@ -1126,7 +943,7 @@ function ContactSection() {
                   <input
                     type="email"
                     required
-                    placeholder="Kumara.Sangy@gmail.com"
+                    placeholder="pathea.dim@gmail.com"
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
@@ -1233,13 +1050,13 @@ function ContactSection() {
                     href="tel:096453972"
                     className="hover:text-[#2B68F6] transition-colors"
                   >
-                    (+855) 95-990-910
+                    (+855) 70-654-951
                   </a>
                   <a
-                    href="tel:0163392322"
+                    href="tel:16234432"
                     className="hover:text-[#2B68F6] transition-colors"
                   >
-                    (+855) 93-990-910
+                    (+855) 16-234-432
                   </a>
                 </div>
               </div>
