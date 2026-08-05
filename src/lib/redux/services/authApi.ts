@@ -64,7 +64,7 @@ export interface RegisterCompanyRequest {
   joiningReason: string;
 }
 
-/** Shape returned by POST /api/v1/organizations/register */
+/** Shape returned by POST /api/v1/organizations/register (OrganizationResponse schema) */
 export interface RegisterCompanyApiResponse {
   id: string;
   ownerId: string;
@@ -72,12 +72,13 @@ export interface RegisterCompanyApiResponse {
   slug: string;
   domain: string;
   websiteUrl: string;
-  logoUrl: string;
-  description: string;
+  logoUrl: string | null;
+  description: string | null;
   industry: IndustryEnum;
   companySize: string;
   country: string;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  /** API returns ACTIVE (not APPROVED) once approved */
+  status: "PENDING" | "ACTIVE" | "REJECTED";
   submissionVersion: number;
   rejectionReason: string | null;
   reviewedAt: string | null;
@@ -125,7 +126,7 @@ export const authApi = baseApi.injectEndpoints({
     }),
     registerCompany: builder.mutation<RegisterCompanyResponse, RegisterCompanyRequest>({
       query: (body) => ({
-        url: "/v1/organizations/register",
+        url: "/organizations/register",
         method: "POST",
         body,
       }),
@@ -137,6 +138,7 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ["Organization"],
     }),
   }),
+  overrideExisting: true,
 });
 
 export const { useRegisterUserMutation, useRegisterCompanyMutation } = authApi;

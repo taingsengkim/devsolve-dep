@@ -47,7 +47,7 @@ export const INDUSTRIES = [
   "Healthcare & Biotech",
   "E-Commerce & Retail",
   "Government & Public Sector",
-  "Telecommunications",
+  "Education",
   "Other",
 ];
 
