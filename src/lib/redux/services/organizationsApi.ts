@@ -29,6 +29,7 @@ export const organizationsApi = baseApi.injectEndpoints({
       invalidatesTags: ["Organization", "OrganizationMember"],
     }),
   }),
+  overrideExisting: true,
 });
 
 export const { useInviteOrganizationMemberMutation } = organizationsApi;
