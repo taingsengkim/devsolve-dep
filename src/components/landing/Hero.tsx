@@ -1,441 +1,42 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
+  animate,
+  AnimatePresence,
   motion,
   useMotionValue,
   useSpring,
+  useTransform,
   useReducedMotion,
+  type MotionValue,
 } from "motion/react";
 import {
   ArrowRight,
   ArrowUpRight,
-  Bug,
-  Command,
-  Search,
-  ShieldCheck,
-  Terminal,
-  Boxes,
-  GitBranch,
-  Cpu,
-  Layers,
+  Code2,
+  Heart,
   Radar,
+  Rocket,
+  RotateCw,
+  ShieldCheck,
+  Target,
+  Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import SectionBackdrop, { ACCENT, PRIMARY, SECONDARY } from "./SectionBackdrop";
 
-/* ────────────────────────────────────────────────────────────────────
-   Brand palette (design.md)
-   ──────────────────────────────────────────────────────────────────── */
-const PRIMARY = "#2563EB"; // Primary Blue  — key actions, highlights
-const SECONDARY = "#1E293B"; // Dark Slate  — dark surfaces, headings
-const ACCENT = "#10B981"; // Emerald      — status, accent highlights
+const MUTED = "#CBD5E1";
 
-/* Deterministic PRNG so server and client render identical positions. */
-function mulberry32(seed: number) {
-  let a = seed;
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+/* Shared editorial vocabulary — hairline borders, square corners, and
+   uppercase micro-labels, the same language the rest of the landing page
+   is written in. */
+const CARD =
+  "rounded-lg border border-slate-200 bg-white shadow-[0_18px_40px_-24px_rgba(15,23,42,0.4)] transition-shadow duration-300 hover:shadow-[0_26px_54px_-26px_rgba(37,99,235,0.5)]";
+const LABEL = "text-xs font-bold uppercase tracking-[0.16em] text-slate-400";
 
-/* ────────────────────────────────────────────────────────────────────
-   Aurora field — slow drifting light in brand colors
-   ──────────────────────────────────────────────────────────────────── */
-type Blob = {
-  color: string;
-  className: string;
-  path: { x: number[]; y: number[]; scale: number[] };
-  duration: number;
-  opacity: number;
-};
-
-const BLOBS: Blob[] = [
-  {
-    color: PRIMARY,
-    className: "left-[-12%] top-[8%] h-[34rem] w-[34rem]",
-    path: { x: [0, 90, -40, 0], y: [0, -60, 50, 0], scale: [1, 1.12, 0.94, 1] },
-    duration: 26,
-    opacity: 0.16,
-  },
-  {
-    color: ACCENT,
-    className: "right-[-10%] top-[22%] h-[30rem] w-[30rem]",
-    path: { x: [0, -70, 40, 0], y: [0, 70, -30, 0], scale: [1, 0.92, 1.14, 1] },
-    duration: 32,
-    opacity: 0.14,
-  },
-  {
-    color: SECONDARY,
-    className: "bottom-[-8%] left-1/3 h-[26rem] w-[40rem]",
-    path: { x: [0, 60, -60, 0], y: [0, -40, 20, 0], scale: [1, 1.08, 0.96, 1] },
-    duration: 38,
-    opacity: 0.1,
-  },
-];
-
-function AuroraField() {
-  const reduce = useReducedMotion();
-
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {BLOBS.map((blob, i) => (
-        <motion.div
-          key={i}
-          className={`absolute rounded-full blur-[110px] ${blob.className}`}
-          style={{ backgroundColor: blob.color, opacity: blob.opacity }}
-          animate={reduce ? undefined : blob.path}
-          transition={{
-            duration: blob.duration,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────
-   Silk backdrop — layered bezier strands that drift like fabric.
-   Three tinted layers cross-fade to give the ribbon its iridescence.
-   ──────────────────────────────────────────────────────────────────── */
-function useSilkStrands(count: number, seed: number, squeeze = 1) {
-  return useMemo(
-    () =>
-      Array.from({ length: count }, (_, i) => {
-        const t = i / (count - 1);
-        const y = 90 + t * 360 + seed;
-        const amp = (140 - t * 96) * squeeze;
-        return [
-          `M -160 ${y + 210}`,
-          `C 240 ${y - amp}, 540 ${y + amp * 1.55}, 820 ${y - amp * 0.35}`,
-          `S 1320 ${y + amp * 0.9}, 1640 ${y - 150}`,
-        ].join(" ");
-      }),
-    [count, seed, squeeze],
-  );
-}
-
-function SilkBackdrop() {
-  const reduce = useReducedMotion();
-  const base = useSilkStrands(26, 130, 0.72);
-  const blue = useSilkStrands(40, 0, 1);
-  const emerald = useSilkStrands(30, 60, 0.86);
-
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <svg
-        className="absolute inset-0 h-full w-full"
-        viewBox="0 0 1440 720"
-        preserveAspectRatio="xMidYMid slice"
-        aria-hidden="true"
-      >
-        <defs>
-          <radialGradient id="silk-fade" cx="62%" cy="52%" r="62%">
-            <stop offset="0%" stopColor="#fff" stopOpacity="1" />
-            <stop offset="68%" stopColor="#fff" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="#fff" stopOpacity="0" />
-          </radialGradient>
-          <mask id="silk-mask">
-            <rect width="1440" height="720" fill="url(#silk-fade)" />
-          </mask>
-
-          <linearGradient id="silk-primary" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={PRIMARY} stopOpacity="0" />
-            <stop offset="45%" stopColor={PRIMARY} stopOpacity="0.85" />
-            <stop offset="100%" stopColor={SECONDARY} stopOpacity="0.15" />
-          </linearGradient>
-          <linearGradient id="silk-accent" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={SECONDARY} stopOpacity="0.1" />
-            <stop offset="55%" stopColor={ACCENT} stopOpacity="0.8" />
-            <stop offset="100%" stopColor={ACCENT} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-
-        <g mask="url(#silk-mask)">
-          {/* structural layer — dark slate, sets the fold */}
-          <motion.g
-            style={{ filter: "blur(1.4px)", transformOrigin: "60% 50%" }}
-            animate={
-              reduce
-                ? undefined
-                : { rotate: [0, 1.4, 0], y: [0, 22, 0], scaleY: [1, 1.06, 1] }
-            }
-            transition={{ duration: 34, repeat: Infinity, ease: "easeInOut" }}
-          >
-            {base.map((d, i) => (
-              <path
-                key={`s-${i}`}
-                d={d}
-                fill="none"
-                stroke={SECONDARY}
-                strokeOpacity={0.07}
-                strokeWidth={1}
-              />
-            ))}
-          </motion.g>
-
-          {/* primary-blue sheen */}
-          <motion.g
-            style={{ transformOrigin: "55% 50%" }}
-            animate={
-              reduce
-                ? undefined
-                : {
-                    rotate: [0, -1.8, 0],
-                    y: [0, -26, 0],
-                    scaleY: [1, 0.94, 1],
-                    opacity: [0.5, 1, 0.5],
-                  }
-            }
-            transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
-          >
-            {blue.map((d, i) => (
-              <path
-                key={`p-${i}`}
-                d={d}
-                fill="none"
-                stroke="url(#silk-primary)"
-                strokeWidth={1}
-                strokeOpacity={0.22}
-              />
-            ))}
-          </motion.g>
-
-          {/* emerald sheen — phase-shifted so the colour travels along the silk */}
-          <motion.g
-            style={{ transformOrigin: "48% 52%" }}
-            animate={
-              reduce
-                ? undefined
-                : {
-                    rotate: [0, 2.2, 0],
-                    y: [0, 34, 0],
-                    scaleY: [1, 1.08, 1],
-                    opacity: [0.9, 0.35, 0.9],
-                  }
-            }
-            transition={{ duration: 21, repeat: Infinity, ease: "easeInOut" }}
-          >
-            {emerald.map((d, i) => (
-              <path
-                key={`a-${i}`}
-                d={d}
-                fill="none"
-                stroke="url(#silk-accent)"
-                strokeWidth={1}
-                strokeOpacity={0.2}
-              />
-            ))}
-          </motion.g>
-        </g>
-      </svg>
-
-      {/* highlight sheen that sweeps across the fabric */}
-      <motion.div
-        className="absolute inset-y-0 -left-1/3 w-1/2 bg-[linear-gradient(100deg,transparent,rgba(255,255,255,0.85),transparent)]"
-        animate={reduce ? undefined : { x: ["0%", "260%"] }}
-        transition={{
-          duration: 11,
-          repeat: Infinity,
-          ease: "easeInOut",
-          repeatDelay: 3,
-        }}
-      />
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────
-   Blueprint grid — static rules, pulsing cells, and a scanning beam
-   ──────────────────────────────────────────────────────────────────── */
-const CELL = 56;
-
-const GRID_CELLS = (() => {
-  const rand = mulberry32(7);
-  return Array.from({ length: 12 }, () => ({
-    col: Math.floor(rand() * 24),
-    row: Math.floor(rand() * 12),
-    color: rand() > 0.5 ? PRIMARY : ACCENT,
-    delay: rand() * 8,
-    duration: 3.5 + rand() * 3,
-  }));
-})();
-
-function BlueprintGrid() {
-  const reduce = useReducedMotion();
-
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <svg className="absolute inset-0 h-full w-full" aria-hidden="true">
-        <defs>
-          <pattern
-            id="hero-grid"
-            width={CELL}
-            height={CELL}
-            patternUnits="userSpaceOnUse"
-          >
-            <path
-              d={`M ${CELL} 0 L 0 0 0 ${CELL}`}
-              fill="none"
-              stroke={SECONDARY}
-              strokeOpacity="0.06"
-              strokeWidth="1"
-            />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#hero-grid)" />
-
-        {/* cells that light up and fade, snapped to the grid */}
-        {GRID_CELLS.map((cell, i) => (
-          <motion.rect
-            key={i}
-            x={cell.col * CELL + 1}
-            y={cell.row * CELL + 1}
-            width={CELL - 2}
-            height={CELL - 2}
-            fill={cell.color}
-            initial={{ opacity: 0 }}
-            animate={reduce ? undefined : { opacity: [0, 0.07, 0] }}
-            transition={{
-              duration: cell.duration,
-              repeat: Infinity,
-              delay: cell.delay,
-              ease: "easeInOut",
-              repeatDelay: 4,
-            }}
-          />
-        ))}
-      </svg>
-
-      {/* vertical beam sweeping the blueprint */}
-      <motion.div
-        className="absolute inset-y-0 w-px"
-        style={{
-          background: `linear-gradient(to bottom, transparent, ${PRIMARY}, transparent)`,
-          opacity: 0.35,
-        }}
-        animate={
-          reduce ? undefined : { left: ["8%", "92%"], opacity: [0, 0.35, 0] }
-        }
-        transition={{
-          duration: 9,
-          repeat: Infinity,
-          ease: "easeInOut",
-          repeatDelay: 5,
-        }}
-      />
-      {/* horizontal beam, slower and emerald */}
-      <motion.div
-        className="absolute inset-x-0 h-px"
-        style={{
-          background: `linear-gradient(to right, transparent, ${ACCENT}, transparent)`,
-          opacity: 0.3,
-        }}
-        animate={
-          reduce ? undefined : { top: ["18%", "86%"], opacity: [0, 0.3, 0] }
-        }
-        transition={{
-          duration: 14,
-          repeat: Infinity,
-          ease: "easeInOut",
-          repeatDelay: 7,
-        }}
-      />
-
-      <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-white to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-white to-transparent" />
-      <div className="absolute inset-y-0 left-0 w-40 bg-linear-to-r from-white to-transparent" />
-      <div className="absolute inset-y-0 right-0 w-40 bg-linear-to-l from-white to-transparent" />
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────
-   Ambient particles rising through the fold
-   ──────────────────────────────────────────────────────────────────── */
-const PARTICLES = (() => {
-  const rand = mulberry32(23);
-  return Array.from({ length: 16 }, () => ({
-    left: 4 + rand() * 92,
-    size: 2 + rand() * 3,
-    delay: rand() * 14,
-    duration: 14 + rand() * 12,
-    drift: (rand() - 0.5) * 60,
-    color: rand() > 0.55 ? ACCENT : PRIMARY,
-  }));
-})();
-
-function ParticleField() {
-  const reduce = useReducedMotion();
-  if (reduce) return null;
-
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {PARTICLES.map((p, i) => (
-        <motion.span
-          key={i}
-          className="absolute bottom-0 rounded-full"
-          style={{
-            left: `${p.left}%`,
-            width: p.size,
-            height: p.size,
-            backgroundColor: p.color,
-          }}
-          animate={{
-            y: ["0%", "-1400%"],
-            x: [0, p.drift, 0],
-            opacity: [0, 0.55, 0.55, 0],
-          }}
-          transition={{
-            duration: p.duration,
-            repeat: Infinity,
-            delay: p.delay,
-            ease: "linear",
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-function FoldedCorner() {
-  return (
-    <div className="pointer-events-none absolute left-0 top-0 hidden h-28 w-28 sm:block">
-      <div
-        className="absolute inset-0 bg-slate-50"
-        style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
-      />
-      <svg
-        className="absolute inset-0 h-full w-full"
-        viewBox="0 0 112 112"
-        aria-hidden="true"
-      >
-        <motion.line
-          x1="112"
-          y1="0"
-          x2="0"
-          y2="112"
-          stroke={SECONDARY}
-          strokeOpacity="0.16"
-          strokeWidth="1"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-        />
-      </svg>
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────
-   Headline with per-character reveal
-   ──────────────────────────────────────────────────────────────────── */
+/* ─── Kinetic headline — per-character rise ────────────────────────── */
 function RevealLine({ text, delay = 0 }: { text: string; delay?: number }) {
   const words = text.split(" ");
   let charIndex = 0;
@@ -449,12 +50,14 @@ function RevealLine({ text, delay = 0 }: { text: string; delay?: number }) {
             return (
               <motion.span
                 key={`${char}-${i}`}
-                initial={{ opacity: 0, y: "0.4em", filter: "blur(10px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                /* No blur filter: it settles at blur(0px) and leaves every
+                   character on its own raster layer for good. */
+                initial={{ opacity: 0, y: "0.62em" }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{
-                  duration: 0.7,
+                  duration: 0.62,
                   delay: delay + i * 0.028,
-                  ease: [0.22, 1, 0.36, 1],
+                  ease: [0.34, 1.4, 0.64, 1],
                 }}
                 className="inline-block"
               >
@@ -462,397 +65,826 @@ function RevealLine({ text, delay = 0 }: { text: string; delay?: number }) {
               </motion.span>
             );
           })}
-          {wi < words.length - 1 && (
-            <span className="inline-block">&nbsp;</span>
-          )}
+          {wi < words.length - 1 && <span className="inline-block">&nbsp;</span>}
         </span>
       ))}
     </>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────
-   Floating labels scattered around the fold
-   ──────────────────────────────────────────────────────────────────── */
-type Chip = {
-  label: string;
-  icon: LucideIcon;
-  tint: string;
-  className: string;
+/* ─── Counting numerals ────────────────────────────────────────────── */
+function CountUp({
+  to,
+  prefix = "",
+  decimals = 0,
+  delay = 0,
+}: {
+  to: number;
+  prefix?: string;
+  decimals?: number;
+  delay?: number;
+}) {
+  const reduce = useReducedMotion();
+  const value = useMotionValue(0);
+  const text = useTransform(
+    value,
+    (v) =>
+      `${prefix}${v.toLocaleString("en-US", {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      })}`,
+  );
+
+  useEffect(() => {
+    if (reduce) {
+      value.set(to);
+      return;
+    }
+
+    const controls = animate(value, to, {
+      duration: 1.4,
+      delay,
+      ease: [0.22, 1, 0.36, 1],
+    });
+
+    return () => controls.stop();
+  }, [to, delay, reduce, value]);
+
+  return <motion.span>{text}</motion.span>;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   THE FLOATING CLUSTER
+   Product surfaces, shown rather than claimed. Parallax is translate-only
+   — a 3D rotation would rasterise the subtree and soften the text.
+   ════════════════════════════════════════════════════════════════════ */
+
+function FloatCard({
+  px,
+  py,
+  depth,
+  position,
+  delay,
+  drift,
+  duration,
+  children,
+}: {
+  px: MotionValue<number>;
+  py: MotionValue<number>;
+  depth: number;
+  position: string;
   delay: number;
   drift: number;
-};
-
-const CHIPS: Chip[] = [
-  {
-    label: "Critical CVE",
-    icon: ShieldCheck,
-    tint: PRIMARY,
-    className: "left-[3%] top-[26%]",
-    delay: 0.9,
-    drift: 10,
-  },
-  {
-    label: "Repro steps",
-    icon: Terminal,
-    tint: SECONDARY,
-    className: "left-[7%] bottom-[30%]",
-    delay: 1.15,
-    drift: -12,
-  },
-  {
-    label: "Bounty payout",
-    icon: Bug,
-    tint: ACCENT,
-    className: "left-[16%] bottom-[15%]",
-    delay: 1.35,
-    drift: 8,
-  },
-  {
-    label: "Root cause",
-    icon: Radar,
-    tint: PRIMARY,
-    className: "right-[5%] top-[22%]",
-    delay: 1.0,
-    drift: -9,
-  },
-  {
-    label: "Patch diff",
-    icon: GitBranch,
-    tint: ACCENT,
-    className: "right-[9%] top-[46%]",
-    delay: 1.25,
-    drift: 11,
-  },
-  {
-    label: "Write-ups",
-    icon: Layers,
-    tint: SECONDARY,
-    className: "right-[14%] bottom-[22%]",
-    delay: 1.45,
-    drift: -10,
-  },
-];
-
-function FloatingChip({ chip }: { chip: Chip }) {
+  duration: number;
+  children: React.ReactNode;
+}) {
   const reduce = useReducedMotion();
-  const Icon = chip.icon;
+  const [isHovered, setIsHovered] = useState(false);
+  const x = useTransform(px, (v) => v * depth);
+  const y = useTransform(py, (v) => v * depth * 0.7);
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.92, y: 14 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{
-        duration: 0.6,
-        delay: chip.delay,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      className={`pointer-events-none absolute hidden xl:block ${chip.className}`}
+      className={`absolute ${position}`}
+      initial={{ opacity: 0, y: 36, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      whileHover={{ y: -12 }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      transition={{ duration: 0.85, delay, ease: [0.22, 1, 0.36, 1] }}
     >
-      <motion.div
-        animate={reduce ? undefined : { y: [0, chip.drift, 0] }}
-        transition={{
-          duration: 6 + Math.abs(chip.drift) * 0.2,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className="flex items-center gap-2 rounded-full bg-white/90 px-3.5 py-2 text-sm font-medium text-slate-600 backdrop-blur-sm shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_2px_8px_rgba(30,41,59,0.06)]"
-      >
-        <Icon className="h-3.5 w-3.5" style={{ color: chip.tint }} />
-        {chip.label}
+      {/* parallax lives on its own layer so it never fights the entrance */}
+      <motion.div style={{ x, y }}>
+        <motion.div
+          /* Idle drift pauses under the cursor, and has to settle quickly
+             rather than over the drift's own period. */
+          animate={reduce || isHovered ? { y: 0 } : { y: [0, drift, 0] }}
+          transition={
+            isHovered
+              ? { duration: 0.3, ease: "easeOut" }
+              : { duration, repeat: Infinity, ease: "easeInOut" }
+          }
+        >
+          {children}
+        </motion.div>
       </motion.div>
     </motion.div>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────
-   Command bar with a rotating typed query
-   ──────────────────────────────────────────────────────────────────── */
-const QUERIES = [
-  "SQL injection in /api/auth …",
-  "How do I fix a CORS preflight 403?",
-  "Race condition on payment retry …",
-  "XSS bypass in the markdown sanitizer …",
+/* ── Findings by lifecycle stage ─────────────────────────────────── */
+const STAGE_BARS = [
+  { label: "Plan", value: 14 },
+  { label: "Build", value: 30 },
+  { label: "Test", value: 95, peak: true },
+  { label: "Triage", value: 68 },
+  { label: "Fix", value: 44 },
+  { label: "Ship", value: 18 },
 ];
 
-function TypedQuery() {
+function StageBarsCard() {
   const reduce = useReducedMotion();
-  const [index, setIndex] = useState(0);
-  const [len, setLen] = useState(0);
-  const [erasing, setErasing] = useState(false);
+
+  return (
+    <div className={`${CARD} w-71.5 p-4`}>
+      <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+        <p
+          className="text-sm font-bold tracking-tight"
+          style={{ color: SECONDARY }}
+        >
+          Findings by stage
+          <span style={{ color: PRIMARY }}>.</span>
+        </p>
+        <span className="font-mono text-xs tracking-[0.16em] text-slate-400">
+          [ 30D ]
+        </span>
+      </div>
+
+      <div className="relative mt-5 flex h-30 items-end justify-between gap-2">
+        {STAGE_BARS.map((bar, i) => (
+          <div
+            key={bar.label}
+            className="relative flex h-full flex-1 flex-col justify-end"
+          >
+            {bar.peak && (
+              <motion.span
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.5, duration: 0.4, ease: "easeOut" }}
+                className="absolute -top-1 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md px-2 py-1 text-xs font-bold tabular-nums text-white"
+                style={{ backgroundColor: SECONDARY }}
+              >
+                38 found
+              </motion.span>
+            )}
+
+            <motion.span
+              className="block w-full rounded-t-sm"
+              style={{ backgroundColor: bar.peak ? PRIMARY : "#E2E8F0" }}
+              initial={{ height: 0 }}
+              animate={{ height: `${bar.value}%` }}
+              transition={{
+                duration: reduce ? 0 : 0.9,
+                delay: 0.9 + i * 0.08,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-2 flex justify-between gap-2">
+        {STAGE_BARS.map((bar) => (
+          <span
+            key={bar.label}
+            className={`flex-1 text-center text-xs font-medium ${
+              bar.peak ? "text-slate-900" : "text-slate-400"
+            }`}
+          >
+            {bar.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Live triage status ──────────────────────────────────────────── */
+function TriageCard() {
+  return (
+    <div
+      className="w-59 rounded-lg border border-white/10 p-4 shadow-[0_22px_50px_-24px_rgba(15,23,42,0.85)] transition-shadow duration-300 hover:shadow-[0_30px_62px_-26px_rgba(15,23,42,0.95)]"
+      style={{ backgroundColor: "#0F172A" }}
+    >
+      <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
+        <span className="flex items-center gap-2 text-sm font-bold text-white">
+          <ShieldCheck className="size-4 text-emerald-400" />
+          Report #4821
+        </span>
+      </div>
+
+      <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+        Rewarded
+      </p>
+      <div className="mt-1 flex items-end justify-between gap-2">
+        <p className="text-3xl font-bold tabular-nums tracking-[-0.04em] text-white">
+          <CountUp to={4500} prefix="$" delay={1.3} />
+        </p>
+        <span className="mb-1 flex items-center gap-0.5 rounded-md bg-emerald-500/15 px-1.5 py-0.5 text-xs font-bold tabular-nums text-emerald-400">
+          9.8
+          <ArrowUpRight className="size-3" />
+        </span>
+      </div>
+
+      <p className="mt-3 font-mono text-xs tracking-[0.12em] text-slate-500">
+        CRITICAL · TRIAGED 6H
+      </p>
+    </div>
+  );
+}
+
+/* ── Severity mix ────────────────────────────────────────────────── */
+const R = 46;
+const CIRC = 2 * Math.PI * R;
+
+/* Arc lengths and start rotations resolved up front — walking a running
+   total during render would mutate across re-renders. */
+const SEGMENTS = (() => {
+  let travelled = 0;
+
+  return [
+    { label: "Critical", fraction: 0.18, color: "#E11D48" },
+    { label: "High", fraction: 0.26, color: "#F59E0B" },
+    { label: "Medium", fraction: 0.34, color: PRIMARY },
+    { label: "Low", fraction: 0.22, color: ACCENT },
+  ].map((seg) => {
+    const length = seg.fraction * CIRC;
+    const rotation = (travelled / CIRC) * 360;
+    travelled += length;
+
+    return { ...seg, length, rotation };
+  });
+})();
+
+function SeverityCard() {
+  const reduce = useReducedMotion();
+
+  return (
+    <div className={`${CARD} w-67 p-4`}>
+      <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+        <p
+          className="text-sm font-bold tracking-tight"
+          style={{ color: SECONDARY }}
+        >
+          Severity mix
+          <span style={{ color: ACCENT }}>.</span>
+        </p>
+        <span className="font-mono text-xs tracking-[0.16em] text-slate-400">
+          [ OPEN ]
+        </span>
+      </div>
+
+      <div className="relative mx-auto mt-4 size-32">
+        <svg viewBox="0 0 120 120" className="size-full -rotate-90">
+          <circle
+            cx="60"
+            cy="60"
+            r={R}
+            fill="none"
+            stroke="#F1F5F9"
+            strokeWidth="13"
+          />
+          {SEGMENTS.map((seg) => (
+            <motion.circle
+              key={seg.label}
+              cx="60"
+              cy="60"
+              r={R}
+              fill="none"
+              stroke={seg.color}
+              strokeWidth="13"
+              strokeLinecap="round"
+              strokeDasharray={`${Math.max(seg.length - 5, 1)} ${CIRC}`}
+              transform={`rotate(${seg.rotation} 60 60)`}
+              initial={{ strokeDashoffset: seg.length }}
+              animate={{ strokeDashoffset: 0 }}
+              transition={{
+                duration: reduce ? 0 : 1.1,
+                delay: 1.2,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            />
+          ))}
+        </svg>
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span
+            className="text-3xl font-bold tabular-nums tracking-tighter"
+            style={{ color: SECONDARY }}
+          >
+            <CountUp to={128} delay={1.3} />
+          </span>
+          <span className={LABEL}>reports</span>
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-x-2 gap-y-1.5 border-t border-slate-100 pt-3">
+        {SEGMENTS.map((seg) => (
+          <span
+            key={seg.label}
+            className="flex items-center gap-1.5 text-xs font-medium text-slate-500"
+          >
+            <span
+              className="size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: seg.color }}
+            />
+            {seg.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── The build artefact: a slowly turning isometric block ────────── */
+function PrismBlock() {
+  const reduce = useReducedMotion();
+
+  return (
+    <motion.div
+      animate={reduce ? undefined : { rotate: [0, 4, 0, -4, 0] }}
+      transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+      className="relative size-32"
+    >
+      <span className="absolute bottom-1 left-1/2 h-4 w-20 -translate-x-1/2 rounded-[50%] bg-slate-900/20 blur-md" />
+      <svg viewBox="0 0 120 120" className="relative size-full">
+        <defs>
+          <linearGradient id="prism-top" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#F8FAFC" />
+            <stop offset="100%" stopColor="#CBD5E1" />
+          </linearGradient>
+          <linearGradient id="prism-left" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#94A3B8" />
+            <stop offset="100%" stopColor="#475569" />
+          </linearGradient>
+          <linearGradient id="prism-right" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#CBD5E1" />
+            <stop offset="100%" stopColor="#64748B" />
+          </linearGradient>
+        </defs>
+
+        <polygon points="60,12 104,38 60,64 16,38" fill="url(#prism-top)" />
+        <polygon points="16,38 60,64 60,108 16,82" fill="url(#prism-left)" />
+        <polygon points="104,38 60,64 60,108 104,82" fill="url(#prism-right)" />
+
+        {!reduce && (
+          <motion.polygon
+            points="60,12 104,38 60,64 16,38"
+            fill="#fff"
+            animate={{ opacity: [0, 0.55, 0] }}
+            transition={{
+              duration: 4.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              repeatDelay: 2.5,
+            }}
+          />
+        )}
+      </svg>
+    </motion.div>
+  );
+}
+
+function ShowcaseCluster() {
+  const reduce = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const spring = { stiffness: 90, damping: 20, mass: 0.5 };
+  const px = useSpring(rawX, spring);
+  const py = useSpring(rawY, spring);
 
   useEffect(() => {
     if (reduce) return;
-    const full = QUERIES[index];
 
-    if (!erasing && len < full.length) {
-      const id = setTimeout(() => setLen((l) => l + 1), 42);
-      return () => clearTimeout(id);
-    }
-    if (!erasing && len === full.length) {
-      const id = setTimeout(() => setErasing(true), 1900);
-      return () => clearTimeout(id);
-    }
-    if (erasing && len > 0) {
-      const id = setTimeout(() => setLen((l) => l - 1), 18);
-      return () => clearTimeout(id);
-    }
-    const id = setTimeout(() => {
-      setErasing(false);
-      setIndex((i) => (i + 1) % QUERIES.length);
-    }, 250);
-    return () => clearTimeout(id);
-  }, [len, erasing, index, reduce]);
+    const handleMove = (event: PointerEvent) => {
+      const rect = ref.current?.getBoundingClientRect();
+      if (!rect) return;
 
-  return (
-    <span className="truncate text-slate-400">
-      {reduce ? QUERIES[0] : QUERIES[index].slice(0, len)}
-      {!reduce && (
-        <motion.span
-          animate={{ opacity: [1, 0, 1] }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="ml-px inline-block h-[1.1em] w-px translate-y-[0.18em]"
-          style={{ backgroundColor: PRIMARY }}
-        />
-      )}
-    </span>
-  );
-}
+      rawX.set(
+        Math.max(
+          -1,
+          Math.min(1, ((event.clientX - rect.left) / rect.width - 0.5) * 2),
+        ),
+      );
+      rawY.set(
+        Math.max(
+          -1,
+          Math.min(1, ((event.clientY - rect.top) / rect.height - 0.5) * 2),
+        ),
+      );
+    };
 
-function CommandBar() {
-  const ref = useRef<HTMLDivElement>(null);
-  const glowX = useSpring(useMotionValue(0), { stiffness: 180, damping: 26 });
-
-  const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    glowX.set(e.clientX - rect.left);
-  };
+    window.addEventListener("pointermove", handleMove, { passive: true });
+    return () => window.removeEventListener("pointermove", handleMove);
+  }, [rawX, rawY, reduce]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 22 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, delay: 0.85, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full max-w-2xl"
-    >
+    <div ref={ref} className="relative h-100 w-full sm:h-117.5 lg:h-135">
+      {/* glow pooled behind the cluster so white cards read on white */}
       <div
-        ref={ref}
-        onMouseMove={handleMove}
-        className="group relative flex items-center gap-3 overflow-hidden rounded-full bg-white/95 py-2.5 pl-5 pr-2.5 backdrop-blur-md shadow-[0_0_0_1px_rgba(30,41,59,0.09),0_8px_24px_-12px_rgba(30,41,59,0.28)] transition-shadow hover:shadow-[0_0_0_1px_rgba(37,99,235,0.35),0_14px_36px_-14px_rgba(37,99,235,0.35)]"
-      >
-        {/* cursor-tracked sheen */}
-        <motion.div
-          style={{
-            x: glowX,
-            background: `radial-gradient(circle, ${PRIMARY}1f, transparent 70%)`,
-          }}
-          className="pointer-events-none absolute inset-y-0 -left-24 w-48 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        />
+        className="pointer-events-none absolute left-1/2 top-1/2 size-120 max-w-[130vw] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(37,99,235,0.13), rgba(16,185,129,0.09) 45%, transparent 70%)",
+        }}
+      />
 
-        <Search className="relative h-4 w-4 shrink-0 text-slate-400" />
-
-        {/* <div className="relative flex-1 overflow-hidden text-base">
-          <TypedQuery />
-        </div> */}
-
-        <kbd className="relative hidden items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-500 sm:inline-flex">
-          <Command className="h-3 w-3" />K
-        </kbd>
-
-        <motion.button
-          type="button"
-          whileHover={{ scale: 1.06 }}
-          whileTap={{ scale: 0.94 }}
-          aria-label="Search DevSolve"
-          className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white shadow-sm"
-          style={{ backgroundColor: PRIMARY }}
+      {/* Fixed canvas, scaled as a unit so the composition never reflows */}
+      <div className="absolute left-1/2 top-1/2 h-130 w-140 -translate-x-1/2 -translate-y-1/2 scale-[0.6] sm:scale-[0.78] lg:scale-100">
+        <FloatCard
+          px={px}
+          py={py}
+          depth={10}
+          position="left-0 top-28"
+          delay={0.75}
+          drift={-10}
+          duration={7}
         >
-          <ArrowUpRight className="h-4 w-4" />
-        </motion.button>
+          <StageBarsCard />
+        </FloatCard>
+
+        <FloatCard
+          px={px}
+          py={py}
+          depth={22}
+          position="right-2 top-0"
+          delay={0.95}
+          drift={11}
+          duration={6.2}
+        >
+          <TriageCard />
+        </FloatCard>
+
+        <FloatCard
+          px={px}
+          py={py}
+          depth={16}
+          position="bottom-4 right-0"
+          delay={1.1}
+          drift={-9}
+          duration={7.6}
+        >
+          <SeverityCard />
+        </FloatCard>
+
+        <FloatCard
+          px={px}
+          py={py}
+          depth={34}
+          position="bottom-0 left-[36%]"
+          delay={1.25}
+          drift={-14}
+          duration={5.4}
+        >
+          <PrismBlock />
+        </FloatCard>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────
-   Trust marquee
-   ──────────────────────────────────────────────────────────────────── */
-const PARTNERS: { name: string; icon: LucideIcon }[] = [
-  { name: "Northwind", icon: Boxes },
-  { name: "Railcore", icon: GitBranch },
-  { name: "Vertex", icon: Cpu },
-  { name: "Mintwave", icon: Layers },
-  { name: "Trigger", icon: Radar },
-  { name: "Airplane", icon: Terminal },
+/* ════════════════════════════════════════════════════════════════════
+   THE SDLC RAIL
+   ════════════════════════════════════════════════════════════════════ */
+
+type Stage = { name: string; icon: LucideIcon; caption: string };
+
+const STAGES: Stage[] = [
+  {
+    name: "Plan",
+    icon: Target,
+    caption: "Scope your assets, set reward tiers, publish the program.",
+  },
+  {
+    name: "Build",
+    icon: Code2,
+    caption: "Your team ships — DevSolve keeps watching the attack surface.",
+  },
+  {
+    name: "Test",
+    icon: Radar,
+    caption: "Researchers probe every in-scope asset and file real findings.",
+  },
+  {
+    name: "Triage",
+    icon: ShieldCheck,
+    caption: "Reports get validated, scored on CVSS, and rewarded.",
+  },
+  {
+    name: "Fix",
+    icon: Wrench,
+    caption: "Root cause becomes a patch, reviewed in the open.",
+  },
+  {
+    name: "Deploy",
+    icon: Rocket,
+    caption: "The fix ships and the finding is verified closed.",
+  },
+  {
+    name: "Share",
+    icon: Heart,
+    caption: "Write-ups and showcases turn one fix into public knowledge.",
+  },
 ];
 
-function PartnerMarquee() {
+function SdlcRail() {
   const reduce = useReducedMotion();
-  const row = [...PARTNERS, ...PARTNERS];
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    if (reduce) return;
+
+    const id = setInterval(
+      () => setActive((current) => (current + 1) % STAGES.length),
+      1800,
+    );
+
+    return () => clearInterval(id);
+  }, [reduce]);
+
+  const progress = (active / (STAGES.length - 1)) * 100;
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.6, delay: 1.1 }}
-      className="relative w-full overflow-hidden py-6"
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.7, delay: 1.35, ease: [0.22, 1, 0.36, 1] }}
+      className="border-t border-slate-200 pb-6 pt-5"
     >
-      <div className="absolute inset-y-0 left-0 z-10 w-24 bg-linear-to-r from-white to-transparent" />
-      <div className="absolute inset-y-0 right-0 z-10 w-24 bg-linear-to-l from-white to-transparent" />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p
+          className="text-sm font-bold tracking-tight"
+          style={{ color: SECONDARY }}
+        >
+          Wired into your development lifecycle
+          <span style={{ color: PRIMARY }}>.</span>
+        </p>
+        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+          <motion.span
+            animate={reduce ? undefined : { rotate: 360 }}
+            transition={{ duration: 9, repeat: Infinity, ease: "linear" }}
+            className="inline-flex"
+          >
+            <RotateCw className="size-3.5" />
+          </motion.span>
+          Every fix feeds the next cycle
+        </p>
+      </div>
 
-      <motion.div
-        className="flex w-max items-center gap-14"
-        animate={reduce ? undefined : { x: ["0%", "-50%"] }}
-        transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
-      >
-        {row.map((p, i) => {
-          const Icon = p.icon;
-          return (
-            <div
-              key={`${p.name}-${i}`}
-              className="flex shrink-0 items-center gap-2 text-slate-400 transition-colors hover:text-[#1E293B]"
-            >
-              <Icon className="h-5 w-5" strokeWidth={1.6} />
-              <span className="text-base font-semibold tracking-tight">
-                {p.name}
-              </span>
-            </div>
-          );
-        })}
-      </motion.div>
+      {/* Narrow screens scroll the rail rather than shrink the labels past
+          readability. `overflow-x-auto` also computes overflow-y to auto, so
+          the vertical padding is what keeps the active node's halo from
+          being sliced off at the top. */}
+      <div className="relative overflow-x-auto pb-1 pt-7 scrollbar-none [&::-webkit-scrollbar]:hidden">
+        <div className="relative mx-auto min-w-155 max-w-4xl px-6">
+          {/* Track spans first node centre to last — 1.5rem of padding plus
+              half of a 5rem stage column. */}
+          <div className="absolute inset-x-16 top-5 h-0.5 rounded-full bg-slate-200/90" />
+
+          <motion.div
+            className="absolute left-16 top-5 h-0.5 rounded-full"
+            style={{
+              background: `linear-gradient(to right, ${PRIMARY}, ${ACCENT})`,
+              maxWidth: "calc(100% - 8rem)",
+            }}
+            animate={{ width: `calc((100% - 8rem) * ${progress / 100})` }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          />
+
+          {!reduce && (
+            <motion.span
+              className="absolute top-3.75 size-2 rounded-full"
+              style={{
+                backgroundColor: ACCENT,
+                boxShadow: `0 0 12px 3px ${ACCENT}66`,
+              }}
+              animate={{ left: ["4rem", "calc(100% - 4rem)"] }}
+              transition={{
+                duration: 5.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                repeatDelay: 1.2,
+              }}
+            />
+          )}
+
+          <ol className="relative flex items-start justify-between">
+            {STAGES.map((stage, i) => {
+              const Icon = stage.icon;
+              const isActive = i === active;
+              const isDone = i < active;
+
+              return (
+                <li
+                  key={stage.name}
+                  className="flex w-20 flex-col items-center gap-2"
+                >
+                  <span className="relative flex size-10 items-center justify-center">
+                    {isActive && !reduce && (
+                      <motion.span
+                        className="absolute inset-0 rounded-full"
+                        style={{ backgroundColor: PRIMARY }}
+                        initial={{ opacity: 0.35, scale: 1 }}
+                        animate={{ opacity: 0, scale: 1.9 }}
+                        transition={{
+                          duration: 1.6,
+                          repeat: Infinity,
+                          ease: "easeOut",
+                        }}
+                      />
+                    )}
+
+                    <motion.span
+                      className="relative flex size-10 items-center justify-center rounded-full ring-1 transition-colors duration-300"
+                      animate={{ scale: isActive ? 1.12 : 1 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 22,
+                      }}
+                      style={
+                        isActive
+                          ? {
+                              backgroundColor: PRIMARY,
+                              color: "#fff",
+                              boxShadow: `0 8px 20px -8px ${PRIMARY}`,
+                            }
+                          : isDone
+                            ? { backgroundColor: "#ECFDF5", color: ACCENT }
+                            : { backgroundColor: "#fff", color: MUTED }
+                      }
+                    >
+                      <Icon className="size-4.5" />
+                    </motion.span>
+                  </span>
+
+                  <span
+                    className={`text-sm font-semibold transition-colors duration-300 ${
+                      isActive
+                        ? "text-slate-900"
+                        : isDone
+                          ? "text-emerald-600"
+                          : "text-slate-400"
+                    }`}
+                  >
+                    {stage.name}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      </div>
+
+      <div className="flex h-10 items-start justify-center pt-2">
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={active}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="max-w-lg text-center text-sm leading-[1.8] text-slate-500 sm:text-[15px]"
+          >
+            {STAGES[active].caption}
+          </motion.p>
+        </AnimatePresence>
+      </div>
     </motion.div>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────
-   Hero
-   ──────────────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════
+   WHO IT IS FOR — shown, rather than a traction number we do not have.
+   ════════════════════════════════════════════════════════════════════ */
+
+const ROLES = [
+  { label: "Hackers", text: "hunt bugs, earn bounties" },
+  { label: "Companies", text: "run programs, ship fixes" },
+  { label: "Community", text: "solve problems, showcase work" },
+];
+
+/* ════════════════════════════════════════════════════════════════════
+   HERO
+   ════════════════════════════════════════════════════════════════════ */
+
 export function Hero() {
   return (
-    // Cancels the layout's navbar padding so the backdrop runs to the very top
-    // and the island floats over it; the matching pt keeps content clear.
-    <section className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-white -mt-(--navbar-height) pt-(--navbar-height)">
-      <AuroraField />
-      <BlueprintGrid />
-      <SilkBackdrop />
-      <ParticleField />
-      <FoldedCorner />
+    // Full bleed, square to the viewport edges. The negative margin cancels
+    // the layout's navbar padding so the backdrop runs to the very top and
+    // the nav island floats over it.
+    <section className="relative -mt-(--navbar-height) bg-white">
+      <div className="relative flex min-h-dvh w-full flex-col overflow-hidden">
+        <SectionBackdrop seed={2} gridSize={88} />
 
-      {CHIPS.map((chip) => (
-        <FloatingChip key={chip.label} chip={chip} />
-      ))}
-
-      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-4 pt-16 pb-6 sm:px-6 lg:px-8">
-        {/* eyebrow */}
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8 inline-flex items-center gap-2 rounded-full bg-white/80 px-3.5 py-1.5 text-sm font-medium text-slate-600 backdrop-blur-sm shadow-[0_0_0_1px_rgba(30,41,59,0.08)]"
-        >
-          <span className="relative flex h-1.5 w-1.5">
-            <span
-              className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-70"
-              style={{ backgroundColor: ACCENT }}
-            />
-            <span
-              className="relative inline-flex h-1.5 w-1.5 rounded-full"
-              style={{ backgroundColor: ACCENT }}
-            />
-          </span>
-          Bounties, problems and solutions in one place
-        </motion.div>
-
-        {/* headline */}
-        <h1 className="max-w-4xl text-center text-[2.75rem] font-bold leading-[1.04] tracking-[-0.045em] text-[#1E293B] sm:text-6xl lg:text-[4.5rem]">
-          <span className="block">
-            <RevealLine text="Find Every Bug. Solve" delay={0.15} />
-          </span>
-          <span className="block">
-            <RevealLine text="Every Problem. Faster" delay={0.42} />
-            <motion.span
-              initial={{ opacity: 0, scale: 0.4 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{
-                duration: 0.5,
-                delay: 1.05,
-                type: "spring",
-                stiffness: 320,
-                damping: 18,
-              }}
-              className="ml-[-0.04em] inline-block"
-              style={{ color: PRIMARY }}
-            >
-              .
-            </motion.span>
-          </span>
-        </h1>
-
-        {/* subtext */}
-        <motion.p
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.75, ease: "easeOut" }}
-          className="mt-6 max-w-xl text-center text-base leading-relaxed text-slate-500"
-        >
-          Run reward-based bounty programs, triage real vulnerability reports,
-          and turn every fix into a validated solution the whole community can
-          search.
-        </motion.p>
-
-        {/* primary CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.9, ease: "easeOut" }}
-          className="mt-9 flex flex-wrap items-center justify-center gap-3"
-        >
-          <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0, scale: 0.98 }}>
-            <Link
-              href="/account-type"
-              className="group inline-flex items-center gap-2.5 rounded-full py-3 pl-6 pr-3 text-base font-semibold text-white shadow-[0_8px_24px_-10px_rgba(37,99,235,0.8)] transition-colors hover:brightness-110"
-              style={{ backgroundColor: PRIMARY }}
-            >
-              Get started free
+        <div className="relative z-10 mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 items-center gap-8 px-6 pb-6 pt-(--navbar-height) sm:px-12 lg:grid-cols-[0.95fr_1.1fr] lg:gap-12">
+          {/* ── the pitch ── */}
+          <div className="pt-8 lg:pt-0">
+            <div className="mb-4 flex items-center gap-2.5">
+              <motion.span
+                className="h-px"
+                style={{ backgroundColor: PRIMARY }}
+                initial={{ width: 0 }}
+                animate={{ width: 32 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              />
               <span
-                className="flex h-7 w-7 items-center justify-center rounded-full"
-                style={{ backgroundColor: ACCENT }}
+                className="text-xs font-bold uppercase tracking-[0.22em]"
+                style={{ color: PRIMARY }}
               >
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                Bug bounty · Problems · Showcases
               </span>
-            </Link>
-          </motion.div>
+            </div>
 
-          <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0, scale: 0.98 }}>
-            <Link
-              href="/programs"
-              className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-base font-semibold text-[#1E293B] shadow-[0_0_0_1px_rgba(30,41,59,0.12)] transition-colors hover:bg-slate-50"
+            <h1
+              className="font-bold leading-[1.02] tracking-[-0.045em]"
+              style={{ color: SECONDARY, fontSize: "clamp(40px, 5vw, 72px)" }}
             >
-              Explore programs
-            </Link>
-          </motion.div>
-        </motion.div>
+              <span className="block">
+                <RevealLine text="Find bugs" delay={0.12} />
+                <span style={{ color: PRIMARY }}>.</span>
+              </span>
+              <span className="block">
+                <RevealLine text="Share fixes" delay={0.3} />
+                <span style={{ color: ACCENT }}>.</span>
+              </span>
+              <span className="block">
+                <RevealLine text="Ship secure" delay={0.5} />
+                <span style={{ color: PRIMARY }}>.</span>
+              </span>
+            </h1>
 
-        {/* hint label above the command bar, like the reference */}
-        {/* <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 1.0 }}
-          className="mt-10 mb-3 rounded-full bg-white/85 px-3 py-1 text-sm text-slate-400 backdrop-blur-sm shadow-[0_0_0_1px_rgba(30,41,59,0.07)]"
-        >
-          Search 40,000+ validated solutions
-        </motion.span> */}
-        <span className="mt-10 mb-3 rounded-full bg-white/85 px-3 py-1 text-sm text-slate-400 backdrop-blur-sm shadow-[0_0_0_1px_rgba(30,41,59,0.07)]"></span>
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.78, ease: "easeOut" }}
+              className="mt-7 max-w-md text-sm leading-[1.8] text-slate-500 sm:text-[15px]"
+            >
+              DevSolve joins reward-based bounty programs to a developer
+              community that solves problems in the open — so a finding becomes
+              a patch, and a patch becomes knowledge anyone can search.
+            </motion.p>
 
-        {/* <div className="flex w-full justify-center">
-          <CommandBar />
-        </div> */}
-      </div>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.9, ease: "easeOut" }}
+              className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4"
+            >
+              <Link
+                href="/account-type"
+                className="group inline-flex items-center gap-2 rounded-lg px-6 py-3.5 text-sm font-semibold text-white transition-[filter] hover:brightness-110"
+                style={{
+                  backgroundColor: PRIMARY,
+                  boxShadow: "0 12px 30px -14px rgba(37,99,235,0.95)",
+                }}
+              >
+                Get started free
+                <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
+              </Link>
 
-      {/* trust strip pinned to the bottom of the fold */}
-      <div className="relative z-10 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <PartnerMarquee />
+              <Link
+                href="/programs"
+                className="group inline-flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-70"
+                style={{ color: SECONDARY }}
+              >
+                Browse live programs
+                <ArrowUpRight className="size-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </Link>
+            </motion.div>
+
+            <motion.ul
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: {},
+                visible: {
+                  transition: { delayChildren: 1.05, staggerChildren: 0.1 },
+                },
+              }}
+              className="mt-9 flex flex-wrap gap-x-6 gap-y-2.5 border-t border-slate-200 pt-5"
+            >
+              {ROLES.map((role) => (
+                <motion.li
+                  key={role.label}
+                  variants={{
+                    hidden: { opacity: 0, y: 10 },
+                    visible: { opacity: 1, y: 0 },
+                  }}
+                  transition={{ duration: 0.45, ease: "easeOut" }}
+                  className="flex items-baseline gap-2"
+                >
+                  <span
+                    className="text-xs font-bold uppercase tracking-[0.18em]"
+                    style={{ color: SECONDARY }}
+                  >
+                    {role.label}
+                  </span>
+                  <span className="text-sm text-slate-400">{role.text}</span>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </div>
+
+          {/* ── product surfaces ── */}
+          <ShowcaseCluster />
+        </div>
+
+        {/* ── the lifecycle rail ── */}
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-6 sm:px-12">
+          <SdlcRail />
+        </div>
       </div>
     </section>
   );
