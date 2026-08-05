@@ -204,7 +204,9 @@ export default function CreateProgramPage() {
       };
 
       const result = await createProgram(payload).unwrap();
-      toast.success("Program created successfully.");
+      toast.success("Success!", {
+        description: "Program created successfully. Redirecting now...",
+      });
       if (result?.id) {
         router.push(`/dashboard/programs/${result.id}`);
       } else {
