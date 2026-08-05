@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import {
   FileText,
   Target,
   BookOpen,
   DollarSign,
-  Calendar,
   ChevronLeft,
   ChevronRight,
   Plus,
@@ -16,9 +16,6 @@ import {
   Save,
   Send,
   Info,
-  Clock,
-  Play,
-  FileEdit,
   Eye,
   CheckCircle2,
   HelpCircle,
@@ -26,9 +23,13 @@ import {
   ArrowRight,
   Shield,
 } from "lucide-react";
+import { toast } from "sonner";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useCreateProgramMutation } from "@/lib/redux/services/program/programsApi";
+import type { Asset } from "@/lib/types/programs/types";
 
 export type ProgramType = "RESPONSE" | "BOUNTY";
 export type ProgramVisibility = "PUBLIC" | "PRIVATE";
@@ -60,16 +61,14 @@ export default function CreateProgramPage() {
   const [outOfScopeTargets, setOutOfScopeTargets] = useState<ScopeTarget[]>([
     { id: "1", type: "WEB", target: "", description: "" },
   ]);
-  const [openScope, setOpenScope] = useState(false);
-
   // Rules State
   const [rulesOfEngagement, setRulesOfEngagement] = useState(
-    "• Automated scanning is allowed up to 5 req/sec\n• DoS attacks are strictly prohibited\n• Social engineering is not allowed\n• Test only on your own test accounts"
+    "• Automated scanning is allowed up to 5 req/sec\n• DoS attacks are strictly prohibited\n• Social engineering is not allowed\n• Test only on your own test accounts",
   );
   const [excludedTypes, setExcludedTypes] = useState<string[]>([]);
   const [newExcludedInput, setNewExcludedInput] = useState("");
   const [pocRequirements, setPocRequirements] = useState(
-    "• Step-by-step reproduction guide\n• The exact HTTP request / payload\n• Screenshot or video recording"
+    "• Step-by-step reproduction guide\n• The exact HTTP request / payload\n• Screenshot or video recording",
   );
 
   // Bounty / Reward Matrix State
@@ -88,10 +87,212 @@ export default function CreateProgramPage() {
     low: { min: "5", max: "20" },
   });
 
-  // Timing State
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [initialState, setInitialState] = useState<ProgramStatus>("DRAFT");
+  const router = useRouter();
+  const [createProgram, { isLoading: isCreating }] = useCreateProgramMutation();
+
+  type AssetType = "URL" | "IP" | "MOBILE" | "OTHER";
+
+  const mapAssetType = (type: string): AssetType => {
+    if (type === "MOBILE") return "MOBILE";
+    if (type === "OTHER") return "OTHER";
+    if (type === "IP") return "IP";
+    return "URL";
+  };
+
+  const buildRuleSection = (text: string, description: string) => ({
+    description,
+    rules: text
+      .split(/\r?\n/)
+      .map((line) => line.replace(/^[•\-\s]+/, "").trim())
+      .filter(Boolean),
+  });
+
+  const buildAssets = (): Asset[] => {
+    const inScopeAssets: Asset[] = inScopeTargets
+      .filter((item) => item.target.trim() !== "")
+      .map((item) => ({
+        assetType: mapAssetType(item.type),
+        identifier: item.target.trim(),
+        description: item.description.trim() || item.target.trim(),
+        isInScope: true,
+        maxSeverity: "MEDIUM",
+      }));
+
+    const outOfScopeAssets: Asset[] = outOfScopeTargets
+      .filter((item) => item.target.trim() !== "")
+      .map((item) => ({
+        assetType: mapAssetType(item.type),
+        identifier: item.target.trim(),
+        description: item.description.trim() || item.target.trim(),
+        isInScope: false,
+        maxSeverity: "LOW",
+      }));
+
+    return [...inScopeAssets, ...outOfScopeAssets];
+  };
+
+  type RewardLevelKey = "critical" | "high" | "medium" | "low";
+
+  const buildRewards = () => {
+    const levels: Array<{
+      key: RewardLevelKey;
+      severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+    }> = [
+      { key: "critical", severity: "CRITICAL" },
+      { key: "high", severity: "HIGH" },
+      { key: "medium", severity: "MEDIUM" },
+      { key: "low", severity: "LOW" },
+    ];
+
+    return levels.map(({ key, severity }) => ({
+      severity,
+      minAmount: offerBounties ? parseInt(bountyMatrix[key].min || "0", 10) : 0,
+      maxAmount: offerBounties ? parseInt(bountyMatrix[key].max || "0", 10) : 0,
+      points: parseInt(pointsMatrix[key].max || "0", 10),
+    }));
+  };
+
+  const handleCreateProgram = async () => {
+    if (!programName.trim() || !handle.trim() || !description.trim()) {
+      toast.error("Program name, handle, and description are required.");
+      return;
+    }
+
+    const effectiveExcludedTypes = newExcludedInput.trim()
+      ? [...excludedTypes, newExcludedInput.trim()]
+      : excludedTypes;
+
+    if (effectiveExcludedTypes.length === 0) {
+      toast.error("Please add at least one exclusion rule.");
+      setActiveTab(3);
+      return;
+    }
+
+    if (buildAssets().length === 0) {
+      toast.error("Please add at least one in-scope or out-of-scope asset.");
+      setActiveTab(2);
+      return;
+    }
+
+    try {
+      const payload = {
+        handle,
+        name: programName,
+        description,
+        engagementType:
+          programType === "RESPONSE" ? ("VDP" as const) : ("BOUNTY" as const),
+        visibility,
+        policy,
+        proofOfConceptRequirements: pocRequirements,
+        rulesOfEngagement: buildRuleSection(
+          rulesOfEngagement,
+          "Rules of engagement",
+        ),
+        exclusions: {
+          description: "Excluded vulnerability types",
+          rules: effectiveExcludedTypes,
+        },
+        offersBounties: offerBounties,
+        minimumBounty: offerBounties
+          ? parseInt(bountyMatrix.low.min || "0", 10)
+          : 0,
+        maximumBounty: offerBounties
+          ? parseInt(bountyMatrix.critical.max || "0", 10)
+          : 0,
+        assets: buildAssets(),
+        rewards: buildRewards(),
+      };
+
+      const result = await createProgram(payload).unwrap();
+      toast.success("Program created successfully.");
+      if (result?.id) {
+        router.push(`/dashboard/programs/${result.id}`);
+      } else {
+        router.push("/dashboard/programs");
+      }
+    } catch (error) {
+      console.error("Create program failed", error);
+
+      const apiError = error as FetchBaseQueryError & {
+        data?:
+          | string
+          | {
+              message?: string;
+              error?: string;
+              details?: string;
+              title?: string;
+              violations?: Array<{ field?: string; message?: string }>;
+              errors?: Array<string | { message?: string }>;
+            };
+      };
+
+      const parseValidationMessage = () => {
+        if (typeof apiError.data === "string") {
+          return apiError.data;
+        }
+
+        const data = apiError.data ?? {};
+        const message =
+          typeof data.message === "string" ? data.message : undefined;
+        const errorText =
+          typeof data.error === "string" ? data.error : undefined;
+        const details =
+          typeof data.details === "string" ? data.details : undefined;
+        const title = typeof data.title === "string" ? data.title : undefined;
+        const errorDetails =
+          data && typeof data === "object" && "errorDetails" in data
+            ? (data as { errorDetails?: unknown }).errorDetails
+            : undefined;
+
+        const violations = Array.isArray(data.violations)
+          ? data.violations
+              .map((item) =>
+                item && typeof item === "object"
+                  ? item.message || item.field || JSON.stringify(item)
+                  : String(item),
+              )
+              .filter(Boolean)
+          : [];
+
+        const errors = Array.isArray(data.errors)
+          ? data.errors
+              .map((item) =>
+                typeof item === "string"
+                  ? item
+                  : item && typeof item === "object"
+                    ? item.message || JSON.stringify(item)
+                    : String(item),
+              )
+              .filter(Boolean)
+          : [];
+
+        const errorDetailsMessages =
+          errorDetails && typeof errorDetails === "object"
+            ? Object.entries(errorDetails).map(
+                ([key, value]) =>
+                  `${key}: ${
+                    typeof value === "string" ? value : JSON.stringify(value)
+                  }`,
+              )
+            : [];
+
+        return (
+          message ||
+          errorText ||
+          details ||
+          title ||
+          violations.join(" \n") ||
+          errors.join(" \n") ||
+          errorDetailsMessages.join(" \n") ||
+          String(apiError.status) ||
+          "Unable to create program. Please check your details and try again."
+        );
+      };
+
+      const rawMessage = parseValidationMessage();
+      toast.error(rawMessage);
+    }
+  };
 
   // Handle Name Change & Auto Handle Generation
   const handleNameChange = (val: string) => {
@@ -100,7 +301,7 @@ export default function CreateProgramPage() {
       val
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-")
+        .replace(/\s+/g, "-"),
     );
   };
 
@@ -137,7 +338,6 @@ export default function CreateProgramPage() {
     { id: 2, label: "Scope", icon: Target },
     { id: 3, label: "Rules", icon: BookOpen },
     { id: 4, label: "Bounty Matrix", icon: DollarSign },
-    { id: 5, label: "Timing", icon: Calendar },
   ];
 
   // Helper for right sidebar tips based on step
@@ -161,14 +361,10 @@ export default function CreateProgramPage() {
       case 4:
         return {
           title: "Rewards Strategy",
-          text: programType === "BOUNTY" 
-            ? "Competitive cash bounties attract top researchers. You can adjust your range anytime." 
-            : "Points-based programs track reputation for researchers on vulnerability disclosure programs.",
-        };
-      case 5:
-        return {
-          title: "Launching & Timing",
-          text: "Drafts allow internal review before going live. Scheduled programs launch automatically on the chosen date.",
+          text:
+            programType === "BOUNTY"
+              ? "Competitive cash bounties attract top researchers. You can adjust your range anytime."
+              : "Points-based programs track reputation for researchers on vulnerability disclosure programs.",
         };
       default:
         return { title: "", text: "" };
@@ -179,7 +375,9 @@ export default function CreateProgramPage() {
   const getRewardRange = () => {
     if (programType === "BOUNTY") {
       const minVal = parseInt(bountyMatrix.low.min || "0").toLocaleString();
-      const maxVal = parseInt(bountyMatrix.critical.max || "0").toLocaleString();
+      const maxVal = parseInt(
+        bountyMatrix.critical.max || "0",
+      ).toLocaleString();
       return `$${minVal} - $${maxVal}`;
     } else {
       const minVal = pointsMatrix.low.min || "0";
@@ -223,8 +421,8 @@ export default function CreateProgramPage() {
                   isActive
                     ? "bg-blue-600 text-white shadow-xs"
                     : isCompleted
-                    ? "bg-blue-50 text-blue-600 hover:bg-blue-100/70"
-                    : "bg-slate-100 text-slate-500 hover:bg-slate-200/70"
+                      ? "bg-blue-50 text-blue-600 hover:bg-blue-100/70"
+                      : "bg-slate-100 text-slate-500 hover:bg-slate-200/70"
                 }`}
               >
                 {isCompleted ? (
@@ -301,11 +499,17 @@ export default function CreateProgramPage() {
                     </label>
                     <select
                       value={programType}
-                      onChange={(e) => setProgramType(e.target.value as ProgramType)}
+                      onChange={(e) =>
+                        setProgramType(e.target.value as ProgramType)
+                      }
                       className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-base font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="BOUNTY">Bounty (Offers Cash Rewards)</option>
-                      <option value="RESPONSE">Response (Points / Reputation Only)</option>
+                      <option value="BOUNTY">
+                        Bounty (Offers Cash Rewards)
+                      </option>
+                      <option value="RESPONSE">
+                        Response (Points / Reputation Only)
+                      </option>
                     </select>
                   </div>
 
@@ -315,7 +519,9 @@ export default function CreateProgramPage() {
                     </label>
                     <select
                       value={visibility}
-                      onChange={(e) => setVisibility(e.target.value as ProgramVisibility)}
+                      onChange={(e) =>
+                        setVisibility(e.target.value as ProgramVisibility)
+                      }
                       className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-base font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="PUBLIC">Public</option>
@@ -500,23 +706,6 @@ export default function CreateProgramPage() {
                     Add Out-Of-Scope Target
                   </Button>
                 </div>
-
-                {/* OPEN SCOPE CHECKBOX */}
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="openScope"
-                    checked={openScope}
-                    onChange={(e) => setOpenScope(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-                  />
-                  <label
-                    htmlFor="openScope"
-                    className="text-sm font-semibold text-slate-800 cursor-pointer"
-                  >
-                    Open Scope — all assets belonging to the organization are in scope
-                  </label>
-                </div>
               </div>
             )}
 
@@ -551,7 +740,10 @@ export default function CreateProgramPage() {
                       placeholder="e.g. DDoS attacks, Spam, Self-XSS"
                       value={newExcludedInput}
                       onChange={(e) => setNewExcludedInput(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddExcludedType())}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" &&
+                        (e.preventDefault(), handleAddExcludedType())
+                      }
                       className="h-11 rounded-xl border-slate-200 text-base focus-visible:ring-blue-500 flex-1"
                     />
                     <Button
@@ -573,7 +765,11 @@ export default function CreateProgramPage() {
                           {item}
                           <button
                             type="button"
-                            onClick={() => setExcludedTypes(excludedTypes.filter((_, i) => i !== idx))}
+                            onClick={() =>
+                              setExcludedTypes(
+                                excludedTypes.filter((_, i) => i !== idx),
+                              )
+                            }
                             className="hover:text-rose-600"
                           >
                             ✕
@@ -603,7 +799,9 @@ export default function CreateProgramPage() {
             {activeTab === 4 && (
               <div className="space-y-6">
                 <h2 className="text-lg font-bold text-slate-900">
-                  {programType === "BOUNTY" ? "Bounty Matrix" : "Response Matrix"}
+                  {programType === "BOUNTY"
+                    ? "Bounty Matrix"
+                    : "Response Matrix"}
                 </h2>
 
                 {/* Checkbox Offer Financial Bounties */}
@@ -661,12 +859,18 @@ export default function CreateProgramPage() {
                                 if (programType === "BOUNTY") {
                                   setBountyMatrix({
                                     ...bountyMatrix,
-                                    critical: { ...bountyMatrix.critical, min: val },
+                                    critical: {
+                                      ...bountyMatrix.critical,
+                                      min: val,
+                                    },
                                   });
                                 } else {
                                   setPointsMatrix({
                                     ...pointsMatrix,
-                                    critical: { ...pointsMatrix.critical, min: val },
+                                    critical: {
+                                      ...pointsMatrix.critical,
+                                      min: val,
+                                    },
                                   });
                                 }
                               }}
@@ -686,12 +890,18 @@ export default function CreateProgramPage() {
                                 if (programType === "BOUNTY") {
                                   setBountyMatrix({
                                     ...bountyMatrix,
-                                    critical: { ...bountyMatrix.critical, max: val },
+                                    critical: {
+                                      ...bountyMatrix.critical,
+                                      max: val,
+                                    },
                                   });
                                 } else {
                                   setPointsMatrix({
                                     ...pointsMatrix,
-                                    critical: { ...pointsMatrix.critical, max: val },
+                                    critical: {
+                                      ...pointsMatrix.critical,
+                                      max: val,
+                                    },
                                   });
                                 }
                               }}
@@ -779,12 +989,18 @@ export default function CreateProgramPage() {
                                 if (programType === "BOUNTY") {
                                   setBountyMatrix({
                                     ...bountyMatrix,
-                                    medium: { ...bountyMatrix.medium, min: val },
+                                    medium: {
+                                      ...bountyMatrix.medium,
+                                      min: val,
+                                    },
                                   });
                                 } else {
                                   setPointsMatrix({
                                     ...pointsMatrix,
-                                    medium: { ...pointsMatrix.medium, min: val },
+                                    medium: {
+                                      ...pointsMatrix.medium,
+                                      min: val,
+                                    },
                                   });
                                 }
                               }}
@@ -804,12 +1020,18 @@ export default function CreateProgramPage() {
                                 if (programType === "BOUNTY") {
                                   setBountyMatrix({
                                     ...bountyMatrix,
-                                    medium: { ...bountyMatrix.medium, max: val },
+                                    medium: {
+                                      ...bountyMatrix.medium,
+                                      max: val,
+                                    },
                                   });
                                 } else {
                                   setPointsMatrix({
                                     ...pointsMatrix,
-                                    medium: { ...pointsMatrix.medium, max: val },
+                                    medium: {
+                                      ...pointsMatrix.medium,
+                                      max: val,
+                                    },
                                   });
                                 }
                               }}
@@ -893,106 +1115,6 @@ export default function CreateProgramPage() {
               </div>
             )}
 
-            {/* STEP 5: TIMING & PUBLICATION */}
-            {activeTab === 5 && (
-              <div className="space-y-6">
-                <h2 className="text-lg font-bold text-slate-900">
-                  Timing & Publication
-                </h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">
-                      Start Date
-                    </label>
-                    <Input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="h-11 rounded-xl border-slate-200 text-base focus-visible:ring-blue-500"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">
-                      End Date / Deadline
-                    </label>
-                    <Input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="h-11 rounded-xl border-slate-200 text-base focus-visible:ring-blue-500"
-                    />
-                  </div>
-                </div>
-
-                {/* Initial State Selector */}
-                <div className="space-y-3">
-                  <label className="text-sm font-semibold text-slate-700">
-                    Initial State
-                  </label>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Draft */}
-                    <div
-                      onClick={() => setInitialState("DRAFT")}
-                      className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
-                        initialState === "DRAFT"
-                          ? "border-blue-600 bg-blue-50/40 ring-1 ring-blue-600"
-                          : "border-slate-200 hover:border-slate-300"
-                      }`}
-                    >
-                      <FileEdit className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="text-sm font-bold text-slate-900">Draft</h4>
-                        <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                          Save privately, keep editing
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Scheduled */}
-                    <div
-                      onClick={() => setInitialState("SCHEDULED")}
-                      className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
-                        initialState === "SCHEDULED"
-                          ? "border-blue-600 bg-blue-50/40 ring-1 ring-blue-600"
-                          : "border-slate-200 hover:border-slate-300"
-                      }`}
-                    >
-                      <Clock className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="text-sm font-bold text-slate-900">
-                          Scheduled
-                        </h4>
-                        <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                          Go live on start date
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Open */}
-                    <div
-                      onClick={() => setInitialState("OPEN")}
-                      className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
-                        initialState === "OPEN"
-                          ? "border-blue-600 bg-blue-50/40 ring-1 ring-blue-600"
-                          : "border-slate-200 hover:border-slate-300"
-                      }`}
-                    >
-                      <Play className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="text-sm font-bold text-slate-900">Open</h4>
-                        <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                          Publish immediately
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* FOOTER NAVIGATION BUTTONS */}
             <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
               <Button
@@ -1016,10 +1138,12 @@ export default function CreateProgramPage() {
                   Save as Draft
                 </Button>
 
-                {activeTab < 5 ? (
+                {activeTab < 4 ? (
                   <Button
                     type="button"
-                    onClick={() => setActiveTab((prev) => Math.min(prev + 1, 5))}
+                    onClick={() =>
+                      setActiveTab((prev) => Math.min(prev + 1, 4))
+                    }
                     className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm h-11 px-6 gap-1.5"
                   >
                     Next
@@ -1028,10 +1152,12 @@ export default function CreateProgramPage() {
                 ) : (
                   <Button
                     type="button"
+                    onClick={handleCreateProgram}
+                    disabled={isCreating}
                     className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm h-11 px-6 gap-2"
                   >
                     <Send className="w-4 h-4" />
-                    Create Program
+                    {isCreating ? "Creating..." : "Create Program"}
                   </Button>
                 )}
               </div>
@@ -1040,7 +1166,6 @@ export default function CreateProgramPage() {
 
           {/* RIGHT 1 COLUMN: LIVE PREVIEW & GUIDANCE SIDEBAR */}
           <div className="space-y-6 lg:sticky lg:top-6">
-            
             {/* 1. EXACT IMAGE PREVIEW CARD MATCH */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 px-1">
@@ -1074,15 +1199,20 @@ export default function CreateProgramPage() {
                             Response
                           </span>
                         )}
-                        <span className="text-xs text-slate-400 font-medium">•</span>
+                        <span className="text-xs text-slate-400 font-medium">
+                          •
+                        </span>
                         <span className="text-xs text-slate-500 font-medium capitalize">
-                          {initialState.toLowerCase()}
+                          {programType === "BOUNTY" ? "open" : "open"}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <button type="button" className="text-slate-400 hover:text-slate-600">
+                  <button
+                    type="button"
+                    className="text-slate-400 hover:text-slate-600"
+                  >
                     <Bookmark className="w-4 h-4" />
                   </button>
                 </div>
@@ -1135,7 +1265,9 @@ export default function CreateProgramPage() {
                     </span>
                     <span
                       className={`text-base font-extrabold ${
-                        programType === "BOUNTY" ? "text-emerald-600" : "text-blue-600"
+                        programType === "BOUNTY"
+                          ? "text-emerald-600"
+                          : "text-blue-600"
                       }`}
                     >
                       {getRewardRange()}
@@ -1206,15 +1338,19 @@ export default function CreateProgramPage() {
                             isCurrent
                               ? "text-blue-700"
                               : isDone
-                              ? "text-slate-800"
-                              : "text-slate-400"
+                                ? "text-slate-800"
+                                : "text-slate-400"
                           }`}
                         >
                           {s.label}
                         </span>
                       </div>
                       <span className="text-xs text-slate-400 font-medium">
-                        {isDone ? "Done" : isCurrent ? "In Progress" : "Pending"}
+                        {isDone
+                          ? "Done"
+                          : isCurrent
+                            ? "In Progress"
+                            : "Pending"}
                       </span>
                     </div>
                   );
