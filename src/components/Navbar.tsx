@@ -92,6 +92,7 @@ const Navbar = () => {
   const pathname = usePathname();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [communityMenuOpen, setCommunityMenuOpen] = useState(false);
   const [mobileCommunityOpen, setMobileCommunityOpen] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -103,6 +104,20 @@ const Navbar = () => {
   const logoSrc = isDarkLogo
     ? darkModeLogo
     : "/devsolve-logo-removebg-preview.png";
+
+  // The header floats as a pill inside a transparent gutter, so page content
+  // would otherwise scroll through the gap above and below it. Once the page
+  // moves at all, the gutter takes a translucent backdrop and a hairline.
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 4);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const handleResetLoading = () => {
@@ -153,14 +168,23 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-[100] w-full">
-      <div className="bg-transparent">
+      <div
+        className={cn(
+          "border-b transition-colors duration-300",
+          scrolled || mobileMenuOpen
+            ? "border-slate-200/70 bg-white/80 backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-950/80"
+            : "border-transparent bg-transparent",
+        )}
+      >
         <motion.div
           initial={{ opacity: 0, y: -14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
           className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6"
         >
-          <div className="flex min-h-[72px] items-center rounded-2xl border border-slate-200/80 bg-white px-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] sm:px-6 dark:border-slate-800/80 dark:bg-slate-950/95 dark:shadow-[0_10px_30px_rgba(2,6,23,0.28)]">
+          {/* Shadow-as-border, so the white pill still reads as a distinct
+              surface on pages whose background is also white. */}
+          <div className="flex min-h-[72px] items-center rounded-2xl border border-slate-200/80 bg-white px-4 shadow-[0_0_0_1px_rgba(30,41,59,0.04),0_8px_24px_-14px_rgba(15,23,42,0.35)] sm:px-6 dark:border-slate-800/80 dark:bg-slate-950/95 dark:shadow-[0_10px_30px_rgba(2,6,23,0.28)]">
             <div className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-4">
               <Link
                 href="/"
@@ -289,6 +313,12 @@ const Navbar = () => {
                           </AnimatePresence>
                         </div>
                       );
+                    }
+
+                    // A link is either a dropdown (handled above) or a plain
+                    // href — this narrows the optional away for both.
+                    if (!link.href) {
+                      return null;
                     }
 
                     return (
@@ -497,6 +527,10 @@ const Navbar = () => {
                           </AnimatePresence>
                         </div>
                       );
+                    }
+
+                    if (!link.href) {
+                      return null;
                     }
 
                     return (
