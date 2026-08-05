@@ -24,10 +24,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useVoteDiscussionMutation } from "@/lib/redux/services/discussionsApi";
 import {
-  useBookmarkDiscussionMutation,
-  useVoteDiscussionMutation,
-} from "@/lib/redux/services/discussionsApi";
+  useAddBookmarkMutation,
+  useRemoveBookmarkMutation,
+} from "@/lib/redux/services/bookmarksApi";
 import type { DiscussionPost } from "@/lib/types/dicussion/types";
 import { cn } from "@/lib/utils";
 
@@ -50,9 +51,12 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
   post,
   index = 0,
 }) => {
+  const bookmarkableType = post.category === "Showcase" ? "SHOWCASE" : "PROBLEM";
+
   const [voteDiscussion, { isLoading: isVoting }] = useVoteDiscussionMutation();
-  const [bookmarkDiscussion, { isLoading: isBookmarking }] =
-    useBookmarkDiscussionMutation();
+  const [addBookmark, { isLoading: isAddingBookmark }] = useAddBookmarkMutation();
+  const [removeBookmark, { isLoading: isRemovingBookmark }] = useRemoveBookmarkMutation();
+  const isBookmarking = isAddingBookmark || isRemovingBookmark;
 
   const [localVotes, setLocalVotes] = useState(post.votes);
   const [localUpvoted, setLocalUpvoted] = useState(post.isUpvoted ?? false);
@@ -77,16 +81,22 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
   const handleVote = async () => {
     if (isVoting) return;
 
+    const nextUpvoted = !localUpvoted;
     setLocalVotes((votes) => (localUpvoted ? votes - 1 : votes + 1));
-    setLocalUpvoted((upvoted) => !upvoted);
-    await voteDiscussion({ id: post.id });
+    setLocalUpvoted(nextUpvoted);
+    await voteDiscussion({ id: post.id, type: bookmarkableType, isUpvoted: nextUpvoted });
   };
 
   const handleBookmark = async () => {
     if (isBookmarking) return;
 
-    setLocalBookmarked((bookmarked) => !bookmarked);
-    await bookmarkDiscussion({ id: post.id });
+    const nextBookmarked = !localBookmarked;
+    setLocalBookmarked(nextBookmarked);
+    if (nextBookmarked) {
+      await addBookmark({ type: bookmarkableType, targetId: post.id });
+    } else {
+      await removeBookmark({ type: bookmarkableType, targetId: post.id });
+    }
   };
 
   const isShowcase = post.category === "Showcase";

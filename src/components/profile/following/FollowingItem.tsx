@@ -16,9 +16,6 @@ function formatFollowedSince(iso: string) {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-// The backend only returns the raw follow relationship (type + target id) —
-// there's no per-type lookup endpoint yet to resolve a display name or avatar
-// for the followed user/org/topic.
 export default function FollowingItem({ record }: FollowingItemProps) {
   const Icon = TYPE_ICON[record.followableType] ?? Hash;
 

@@ -2,13 +2,9 @@ export type DiscussionCategory = "All" | "Problems" | "Showcase";
 
 export type DiscussionSort = "newest" | "oldest" | "top" | "discussed" | "viewed";
 
-export type TopicFilter =
-  | "Authentication"
-  | "Server-Side"
-  | "JavaScript"
-  | "API Security"
-  | "Cryptography"
-  | "Program Design";
+// Topics are backend-driven categories (GET /categories) now, not a fixed
+// frontend list, so this is just a semantic alias for a category name.
+export type TopicFilter = string;
 
 export interface DiscussionPost {
   id: string;

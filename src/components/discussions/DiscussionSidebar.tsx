@@ -49,8 +49,7 @@ export function DiscussionSidebar({
   const totalTopics = topics.reduce((sum, topic) => sum + topic.count, 0);
   const metrics = [
     { label: "Problems", value: stats?.problems ?? 0 },
-    { label: "Solutions", value: stats?.solutions ?? 0 },
-    { label: "Researchers", value: stats?.researchers ?? 0 },
+    { label: "Showcases", value: stats?.showcases ?? 0 },
   ];
 
   return (

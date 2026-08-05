@@ -50,7 +50,7 @@ export const baseApi = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL,
-    prepareHeaders: (headers) => {
+    prepareHeaders: async (headers) => {
       if (typeof window !== "undefined") {
         const token = await getKeycloakAccessToken();
         if (token) {
@@ -60,6 +60,22 @@ export const baseApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Program"],
+  tagTypes: [
+    "Program",
+    "Report",
+    "Bounty",
+    "Discussion",
+    "Bookmark",
+    "Profile",
+    "User",
+    "Organization",
+    "OrganizationMember",
+    "Post",
+    "Notification",
+    "CompanyVerification",
+    "AdminUser",
+    "ModerationItem",
+    "ContentReport",
+  ],
   endpoints: () => ({}),
 });

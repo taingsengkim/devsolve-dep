@@ -45,7 +45,7 @@ export function useSubmitReportForm() {
     useGetProgramsQuery();
   const [submitReport, { isLoading: isSubmitting }] = useSubmitReportMutation();
 
-  const programs = programsResponse?.content || [];
+  const programs = programsData?.content || [];
 
   const form = useForm<SubmitReportFormValues>({
     resolver: zodResolver(submitReportSchema),
@@ -110,7 +110,7 @@ export function useSubmitReportForm() {
       selectedProgram.inScopeAssets.length > 0
     ) {
       const currentAsset = watch("targetAsset");
-      const defaultDomain = selectedProgram.inScopeAssets[0].replace(
+      const defaultDomain = selectedProgram.inScopeAssets[0].identifier.replace(
         "*.",
         "api.",
       );
@@ -243,8 +243,9 @@ export function useSubmitReportForm() {
     setSubmitError(null);
     const selectedProg = programs.find((p) => p.id === values.programId);
     const programName = selectedProg
-      ? selectedProg.companyName
+      ? selectedProg.organizationName
       : "CloudVault Security Program";
+    const assetId = selectedProg?.inScopeAssets?.[0]?.id;
 
     try {
       const res = await submitReport({

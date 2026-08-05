@@ -29,17 +29,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { MarkdownEditor } from "@/components/reports/MarkdownEditor";
-import { useCreateDiscussionMutation } from "@/lib/redux/services/discussionsApi";
-import type { TopicFilter } from "@/lib/types/dicussion/types";
-
-const TOPIC_OPTIONS: TopicFilter[] = [
-  "Authentication",
-  "Server-Side",
-  "JavaScript",
-  "API Security",
-  "Cryptography",
-  "Program Design",
-];
+import {
+  useCreateDiscussionMutation,
+  useGetDiscussionCategoriesQuery,
+} from "@/lib/redux/services/discussionsApi";
 
 const POPULAR_TAGS = [
   "#jwt",
@@ -59,9 +52,11 @@ interface CreateProblemFormProps {
 export function CreateProblemForm({ cancelHref = "/discussions" }: CreateProblemFormProps) {
   const router = useRouter();
   const [createDiscussion, { isLoading, error }] = useCreateDiscussionMutation();
+  const { data: categories = [], isLoading: isLoadingCategories } =
+    useGetDiscussionCategoriesQuery("PROBLEM");
 
   const [title, setTitle] = useState("");
-  const [topic, setTopic] = useState<TopicFilter>("Authentication");
+  const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
   const [description, setDescription] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>(["#jwt", "#oauth"]);
@@ -97,7 +92,7 @@ export function CreateProblemForm({ cancelHref = "/discussions" }: CreateProblem
       const res = await createDiscussion({
         title: title.trim(),
         category: "Problems",
-        topic,
+        categoryId,
         description: description.trim(),
         tags,
         codeSnippet: codeSnippet.trim() || undefined,
@@ -183,23 +178,24 @@ export function CreateProblemForm({ cancelHref = "/discussions" }: CreateProblem
             </CardHeader>
             <CardContent>
               <Select
-                value={topic}
-                onValueChange={(val) => {
-                  if (val) setTopic(val as TopicFilter);
-                }}
+                value={categoryId}
+                onValueChange={(val) => setCategoryId(val || undefined)}
+                disabled={isLoadingCategories || categories.length === 0}
               >
                 <SelectTrigger className="w-full rounded-xl border-slate-300 bg-white px-4 text-base font-semibold text-slate-800 h-12">
-                  <SelectValue placeholder="Select topic category" />
+                  <SelectValue
+                    placeholder={isLoadingCategories ? "Loading categories..." : "Select topic category"}
+                  />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200 shadow-md rounded-xl p-1">
                   <SelectGroup>
-                    {TOPIC_OPTIONS.map((opt) => (
+                    {categories.map((opt) => (
                       <SelectItem
-                        key={opt}
-                        value={opt}
+                        key={opt.id}
+                        value={opt.id}
                         className="text-base font-medium cursor-pointer rounded-lg py-2.5 px-3 hover:bg-slate-50 focus:bg-slate-50"
                       >
-                        {opt}
+                        {opt.name}
                       </SelectItem>
                     ))}
                   </SelectGroup>

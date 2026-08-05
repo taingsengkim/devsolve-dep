@@ -23,24 +23,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { MarkdownEditor } from "@/components/reports/MarkdownEditor";
-import { useCreateDiscussionMutation } from "@/lib/redux/services/discussionsApi";
-import type { TopicFilter } from "@/lib/types/dicussion/types";
-
-const TOPIC_OPTIONS: TopicFilter[] = [
-  "Program Design",
-  "Authentication",
-  "API Security",
-  "JavaScript",
-  "Server-Side",
-  "Cryptography",
-];
+import {
+  useCreateDiscussionMutation,
+  useGetDiscussionCategoriesQuery,
+} from "@/lib/redux/services/discussionsApi";
 
 export function CreateShowcaseForm() {
   const router = useRouter();
   const [createDiscussion, { isLoading, error }] = useCreateDiscussionMutation();
+  const { data: categories = [], isLoading: isLoadingCategories } =
+    useGetDiscussionCategoriesQuery("SHOWCASE");
 
   const [title, setTitle] = useState("");
-  const [topic, setTopic] = useState<TopicFilter>("Program Design");
+  const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
   const [description, setDescription] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState(
     "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&auto=format&fit=crop&q=80"
@@ -70,7 +65,7 @@ export function CreateShowcaseForm() {
       const res = await createDiscussion({
         title: title.trim(),
         category: "Showcase",
-        topic,
+        categoryId,
         description: description.trim(),
         tags: ["#showcase", ...techStack],
         techStack,
@@ -157,19 +152,18 @@ export function CreateShowcaseForm() {
             </CardHeader>
             <CardContent>
               <Select
-                value={topic}
-                onValueChange={(val) => {
-                  if (val) setTopic(val as TopicFilter);
-                }}
+                value={categoryId}
+                onValueChange={(val) => setCategoryId(val || undefined)}
+                disabled={isLoadingCategories || categories.length === 0}
               >
                 <SelectTrigger className="w-full rounded-xl border-slate-300 bg-white px-4 text-base font-semibold text-slate-800 h-12">
-                  <SelectValue placeholder="Select topic" />
+                  <SelectValue placeholder={isLoadingCategories ? "Loading topics..." : "Select topic"} />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200 shadow-md rounded-xl p-1">
                   <SelectGroup>
-                    {TOPIC_OPTIONS.map((opt) => (
-                      <SelectItem key={opt} value={opt} className="text-base font-medium cursor-pointer rounded-lg py-2.5 px-3">
-                        {opt}
+                    {categories.map((opt) => (
+                      <SelectItem key={opt.id} value={opt.id} className="text-base font-medium cursor-pointer rounded-lg py-2.5 px-3">
+                        {opt.name}
                       </SelectItem>
                     ))}
                   </SelectGroup>

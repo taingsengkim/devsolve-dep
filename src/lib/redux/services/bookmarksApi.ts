@@ -84,6 +84,19 @@ function toBookmarkItem(raw: BookmarkApiResponse): BookmarkItem {
   };
 }
 
+// Problems/showcases are also cached as DiscussionPost rows (discussionsApi),
+// which bake in their own `isBookmarked` snapshot at fetch time. Toggling a
+// bookmark only invalidates "Bookmark" tags, so without this the discussion
+// list/detail cache never re-syncs and can show a reverted bookmark state
+// after a remount. { type: "Discussion", id } matches the per-row tag both
+// getDiscussions and getDiscussionById already provide, so this refetches
+// both without needing to know which one is currently mounted.
+function bookmarkableDiscussionTags(type: BookmarkableType, targetId: string) {
+  return type === "PROBLEM" || type === "SHOWCASE"
+    ? [{ type: "Discussion" as const, id: targetId }]
+    : [];
+}
+
 export const bookmarksApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getBookmarks: builder.query<BookmarksResponse, BookmarkFilterParams | void>({
@@ -128,11 +141,14 @@ export const bookmarksApi = baseApi.injectEndpoints({
 
     getBookmarkStatus: builder.query<boolean, { type: BookmarkableType; targetId: string }>({
       async queryFn({ type, targetId }, _api, _extraOptions, fetchWithBQ) {
-        // Best-effort check: any failure (401 for a logged-out visitor, 404 for
-        // "never bookmarked", etc.) just means "not bookmarked" rather than a
-        // hard error — this only drives the initial state of a Save button.
+        // This endpoint always returns 200 (no 404-for-"not bookmarked" case) —
+        // the actual state lives in the response body's `bookmarked` field, not
+        // in whether the request succeeded. A request failure (401 for a
+        // logged-out visitor, network error, etc.) is treated as "not
+        // bookmarked" since this only drives a Save button's initial state.
         const result = await fetchWithBQ(`/bookmarks/${type}/${targetId}/status`);
-        return { data: !result.error };
+        if (result.error) return { data: false };
+        return { data: (result.data as { bookmarked: boolean }).bookmarked };
       },
       providesTags: (_result, _error, { type, targetId }) => [
         { type: "Bookmark", id: `${type}:${targetId}` },
@@ -147,6 +163,7 @@ export const bookmarksApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { type, targetId }) => [
         "Bookmark",
         { type: "Bookmark", id: `${type}:${targetId}` },
+        ...bookmarkableDiscussionTags(type, targetId),
       ],
     }),
 
@@ -158,6 +175,7 @@ export const bookmarksApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { type, targetId }) => [
         "Bookmark",
         { type: "Bookmark", id: `${type}:${targetId}` },
+        ...bookmarkableDiscussionTags(type, targetId),
       ],
     }),
   }),
