@@ -49,6 +49,8 @@ export const baseApi = createApi({
     "Notification",
     "Organization",
     "OrganizationMember",
+    "OrganizationMembers",
+    "OrganizationInvitations",
     "Profile",
     "Report",
     "Bookmark",

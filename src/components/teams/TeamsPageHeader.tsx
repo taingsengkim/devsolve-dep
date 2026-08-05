@@ -26,7 +26,7 @@ export function TeamsPageHeader({ counts }: TeamsPageHeaderProps) {
 
       <div className="flex shrink-0 items-center gap-3">
         <Link
-          href="/dashboard/teams/invite-member"
+          href="/dashboard/team-management/invite"
           className={cn(
             buttonVariants({ variant: "outline" }),
             "h-11 rounded-xl border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900"

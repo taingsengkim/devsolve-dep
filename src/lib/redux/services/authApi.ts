@@ -125,7 +125,7 @@ export const authApi = baseApi.injectEndpoints({
     }),
     registerCompany: builder.mutation<RegisterCompanyResponse, RegisterCompanyRequest>({
       query: (body) => ({
-        url: "/v1/organizations/register",
+        url: "/organizations/register",
         method: "POST",
         body,
       }),
