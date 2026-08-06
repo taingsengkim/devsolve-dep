@@ -15,10 +15,33 @@ import { DiscussionPagination } from "@/components/discussions/DiscussionPaginat
 import { DiscussionSidebar } from "@/components/discussions/DiscussionSidebar";
 import { DiscussionSkeleton } from "@/components/discussions/DiscussionSkeleton";
 import { useDiscussionFilters } from "@/hooks/useDiscussionFilters";
-import type { TopicFilter } from "@/lib/types/dicussion/types";
+import type {
+  DiscussionCategory,
+  TopicFilter,
+} from "@/lib/types/dicussion/types";
 import { cn } from "@/lib/utils";
 
-export default function DiscussionsPage() {
+interface DiscussionsFeedProps {
+  defaultCategory: DiscussionCategory;
+  breadcrumbLabel: string;
+  title: string;
+  badgeLabel: string;
+  description: string;
+  createHref: string;
+  createLabel: string;
+  emptyLabel: string;
+}
+
+export function DiscussionsFeed({
+  defaultCategory,
+  breadcrumbLabel,
+  title,
+  badgeLabel,
+  description,
+  createHref,
+  createLabel,
+  emptyLabel,
+}: DiscussionsFeedProps) {
   const {
     category,
     topic,
@@ -42,7 +65,7 @@ export default function DiscussionsPage() {
     topicsResult,
     tagsResult,
     statsResult,
-  } = useDiscussionFilters();
+  } = useDiscussionFilters(defaultCategory);
 
   const {
     data: discussions,
@@ -74,7 +97,14 @@ export default function DiscussionsPage() {
       className="min-h-[100dvh] bg-muted/30 text-foreground"
     >
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        <DiscussionHeader />
+        <DiscussionHeader
+          breadcrumbLabel={breadcrumbLabel}
+          title={title}
+          badgeLabel={badgeLabel}
+          description={description}
+          createHref={createHref}
+          createLabel={createLabel}
+        />
 
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-8 xl:grid-cols-[minmax(0,1fr)_20rem]">
           <section
@@ -96,10 +126,11 @@ export default function DiscussionsPage() {
             />
             <DiscussionActiveFilters
               category={category}
+              defaultCategory={defaultCategory}
               topic={topic}
               tag={tag}
               searchQuery={searchQuery}
-              onClearCategory={() => setCategory("All")}
+              onClearCategory={() => setCategory(defaultCategory)}
               onClearTopic={() => setTopic(null)}
               onClearTag={() => setTag(null)}
               onClearSearch={clearSearch}
@@ -165,6 +196,8 @@ export default function DiscussionsPage() {
                         <DiscussionEmptyState
                           onReset={resetFilters}
                           hasFilters={hasActiveFilters}
+                          createHref={createHref}
+                          emptyLabel={emptyLabel}
                         />
                       </motion.div>
                     )}
