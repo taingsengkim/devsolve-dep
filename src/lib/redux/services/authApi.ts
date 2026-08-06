@@ -1,6 +1,39 @@
 import { baseApi } from "./baseApi";
 
+// ── Request / Response shapes ──────────────────────────────────────────────
+
+/**
+ * POST /api/v1/auth/register — request body.
+ * Matches the backend RegisterRequest exactly.
+ */
 export interface RegisterUserRequest {
+  username: string;
+  password: string;
+  confirmPassword: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  accountType?: "USER" | "COMPANY" | "ADMIN";
+}
+
+/**
+ * POST /api/v1/auth/register — 201 response body.
+ */
+export interface RegisterUserResponse {
+  userId: string;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  accountType: "USER" | "COMPANY" | "ADMIN";
+}
+
+// ── Legacy interfaces kept for backward-compat with existing UI forms ──────
+
+/** @deprecated Use RegisterUserRequest directly */
+export interface RegisterUserFormData {
   username: string;
   fullName: string;
   email: string;
@@ -95,35 +128,19 @@ export interface RegisterCompanyResponse {
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    /**
+     * Register a new user account.
+     * POST /api/v1/auth/register
+     */
     registerUser: builder.mutation<RegisterUserResponse, RegisterUserRequest>({
-      query: (body) => {
-        const [firstName, ...rest] = body.fullName.trim().split(/\s+/).filter(Boolean);
-        return {
-          url: `/auth/register`,
-          method: "POST",
-          body: {
-            username: body.username,
-            email: body.email,
-            password: body.password,
-            confirmPassword: body.password,
-            firstName: firstName || body.fullName,
-            lastName: rest.join(" ") || undefined,
-            accountType: body.role === "company" ? "COMPANY" : "USER",
-          },
-        };
-      },
-      transformResponse: (raw: RegisterApiResponse): RegisterUserResponse => ({
-        success: true,
-        message: "User account registered successfully!",
-        user: {
-          id: raw.userId,
-          username: raw.username,
-          email: raw.email,
-          fullName: [raw.firstName, raw.lastName].filter(Boolean).join(" ") || raw.username,
-        },
+      query: (body) => ({
+        url: `/auth/register`,
+        method: "POST",
+        body,
       }),
       invalidatesTags: ["User"],
     }),
+
     registerCompany: builder.mutation<RegisterCompanyResponse, RegisterCompanyRequest>({
       query: (body) => ({
         url: "/organizations/register",

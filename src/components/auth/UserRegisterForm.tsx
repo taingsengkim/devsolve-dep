@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
@@ -15,7 +15,6 @@ import {
   EyeOff,
   UserPlus,
   Loader2,
-  CheckCircle2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,7 @@ export function UserRegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const [registerUser, { isLoading: isApiLoading }] = useRegisterUserMutation();
 
@@ -50,8 +49,10 @@ export function UserRegisterForm() {
     mode: "onChange",
     defaultValues: {
       username: "",
-      fullName: "",
+      firstName: "",
+      lastName: "",
       email: "",
+      phone: "",
       password: "",
       confirmPassword: "",
       country: "",
@@ -59,18 +60,16 @@ export function UserRegisterForm() {
     },
   });
 
-  const handleCountryDetect = React.useCallback(
-    (name: string) => {
-      setValue("country", name, { shouldValidate: true });
-    },
-    [setValue]
-  );
+  const handleCountryDetect = (name: string) => {
+    setValue("country", name, { shouldValidate: true });
+  };
 
   const { countriesList, countryCode, isDetecting, handleSetCountry } =
     useAutoDetectCountry(handleCountryDetect);
 
   const username = watch("username");
-  const fullName = watch("fullName");
+  const firstName = watch("firstName");
+  const lastName = watch("lastName");
   const email = watch("email");
   const password = watch("password");
   const confirmPassword = watch("confirmPassword");
@@ -79,7 +78,8 @@ export function UserRegisterForm() {
 
   const isFormComplete =
     Boolean(username?.trim()) &&
-    Boolean(fullName?.trim()) &&
+    Boolean(firstName?.trim()) &&
+    Boolean(lastName?.trim()) &&
     Boolean(email?.trim()) &&
     Boolean(password) &&
     Boolean(confirmPassword) &&
@@ -87,24 +87,26 @@ export function UserRegisterForm() {
     isValid;
 
   const onSubmit = async (data: UserRegisterFormValues) => {
+    setApiError(null);
     try {
-      const res = await registerUser({
+      await registerUser({
         username: data.username,
-        fullName: data.fullName,
+        firstName: data.firstName,
+        lastName: data.lastName,
         email: data.email,
+        phone: data.phone || undefined,
         password: data.password,
-        country: data.country,
-        role: "user",
+        confirmPassword: data.confirmPassword,
+        accountType: "USER",
       }).unwrap();
 
-      if (res.success) {
-        setRegistrationSuccess(true);
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 1500);
-      }
-    } catch (error) {
-      console.error("Failed to register user:", error);
+      router.push("/dashboard");
+    } catch (err: unknown) {
+      const message =
+        (err as { data?: { message?: string } })?.data?.message ??
+        "Something went wrong. Please try again.";
+      setApiError(message);
+      console.error("Failed to register user:", err);
     }
   };
 
@@ -197,69 +199,79 @@ export function UserRegisterForm() {
         </span>
       </div>
 
-      {/* Success State Overlay / Message */}
-      {registrationSuccess ? (
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="bg-white border border-emerald-200 rounded-2xl p-8 text-center shadow-lg shadow-emerald-500/5 my-4"
-        >
-          <CheckCircle2 className="w-16 h-16 text-emerald-500 mx-auto mb-4 animate-bounce" />
-          <h3 className="text-xl font-bold text-slate-900 mb-2">Account Created!</h3>
-          <p className="text-slate-600 text-sm">
-            Welcome aboard! Redirecting you to your security dashboard...
-          </p>
-        </motion.div>
-      ) : (
-        /* Registration Form */
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Row 1: Username & Full Name */}
+      {/* Registration Form */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Row 1: Username */}
+          <div>
+            <Label htmlFor="username" className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
+              Username <span className="text-red-500">*</span>
+            </Label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <User className="w-4 h-4" />
+              </div>
+              <Input
+                id="username"
+                type="text"
+                placeholder="e.g. tada122"
+                {...register("username")}
+                className={`w-full h-11 pl-10 pr-4 bg-white border ${
+                  errors.username ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+                } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
+              />
+            </div>
+            {errors.username && (
+              <p className="text-xs text-red-500 mt-1">{errors.username.message}</p>
+            )}
+          </div>
+
+          {/* Row 2: First Name & Last Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Username */}
+            {/* First Name */}
             <div>
-              <Label htmlFor="username" className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
-                Username <span className="text-red-500">*</span>
+              <Label htmlFor="firstName" className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
+                First Name <span className="text-red-500">*</span>
               </Label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <User className="w-4 h-4" />
                 </div>
                 <Input
-                  id="username"
+                  id="firstName"
                   type="text"
-                  placeholder="e.g. tada122"
-                  {...register("username")}
+                  placeholder="e.g. Data"
+                  {...register("firstName")}
                   className={`w-full h-11 pl-10 pr-4 bg-white border ${
-                    errors.username ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+                    errors.firstName ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
                   } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
                 />
               </div>
-              {errors.username && (
-                <p className="text-xs text-red-500 mt-1">{errors.username.message}</p>
+              {errors.firstName && (
+                <p className="text-xs text-red-500 mt-1">{errors.firstName.message}</p>
               )}
             </div>
 
-            {/* Full Name */}
+            {/* Last Name */}
             <div>
-              <Label htmlFor="fullName" className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
-                Full Name <span className="text-red-500">*</span>
+              <Label htmlFor="lastName" className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
+                Last Name <span className="text-red-500">*</span>
               </Label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <User className="w-4 h-4" />
                 </div>
                 <Input
-                  id="fullName"
+                  id="lastName"
                   type="text"
-                  placeholder="e.g. Data Battambang"
-                  {...register("fullName")}
+                  placeholder="e.g. Battambang"
+                  {...register("lastName")}
                   className={`w-full h-11 pl-10 pr-4 bg-white border ${
-                    errors.fullName ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+                    errors.lastName ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
                   } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
                 />
               </div>
-              {errors.fullName && (
-                <p className="text-xs text-red-500 mt-1">{errors.fullName.message}</p>
+              {errors.lastName && (
+                <p className="text-xs text-red-500 mt-1">{errors.lastName.message}</p>
               )}
             </div>
           </div>
@@ -353,7 +365,26 @@ export function UserRegisterForm() {
             </div>
           </div>
 
-          {/* Row 4: Country / Region */}
+          {/* Row 4: Phone (optional) */}
+          <div>
+            <Label htmlFor="phone" className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
+              Phone <span className="text-slate-400 font-normal">(optional)</span>
+            </Label>
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="e.g. 866484857384"
+              {...register("phone")}
+              className={`w-full h-11 px-4 bg-white border ${
+                errors.phone ? "border-red-400 focus:ring-red-400" : "border-slate-300 focus:border-blue-500"
+              } rounded-xl text-slate-900 text-sm placeholder:text-slate-400 transition-all`}
+            />
+            {errors.phone && (
+              <p className="text-xs text-red-500 mt-1">{errors.phone.message}</p>
+            )}
+          </div>
+
+          {/* Row 5: Country / Region */}
           <div>
             <Label htmlFor="country" className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
               Country / Region
@@ -369,7 +400,7 @@ export function UserRegisterForm() {
             />
           </div>
 
-          {/* Row 5: Checkbox Terms */}
+          {/* Row 6: Checkbox Terms */}
           <div className="pt-1">
             <label className="flex items-start gap-2.5 cursor-pointer group">
               <input
@@ -393,6 +424,18 @@ export function UserRegisterForm() {
             )}
           </div>
 
+          {/* API Error Banner */}
+          {apiError && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
+              <span className="mt-px shrink-0 text-red-500">⚠</span>
+              <span>{apiError}</span>
+            </motion.div>
+          )}
+
           {/* Submit Button */}
           <div className="pt-2">
             <Button
@@ -414,7 +457,6 @@ export function UserRegisterForm() {
             </Button>
           </div>
         </form>
-      )}
 
       {/* Bottom Login Link */}
       <div className="mt-6 text-center text-xs sm:text-sm text-slate-500">
