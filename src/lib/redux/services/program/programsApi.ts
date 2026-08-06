@@ -4,6 +4,7 @@ import {
   PaginatedResponse,
   GetProgramsParams,
   ProgramDetail,
+  CreateProgramRequest,
 } from "@/lib/types/programs/types";
 
 export * from "@/lib/types/programs/types";
@@ -46,9 +47,22 @@ export const programsApi = baseApi.injectEndpoints({
       query: (id) => `programs/${id}`,
       providesTags: (_result, _error, id) => [{ type: "Program", id }],
     }),
+
+    createProgram: builder.mutation<Program, CreateProgramRequest>({
+      query: (body) => ({
+        url: "/organizations/me/programs",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Program"],
+    }),
   }),
 
   overrideExisting: true,
 });
 
-export const { useGetProgramsQuery, useGetProgramByIdQuery } = programsApi;
+export const {
+  useGetProgramsQuery,
+  useGetProgramByIdQuery,
+  useCreateProgramMutation,
+} = programsApi;

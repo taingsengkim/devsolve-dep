@@ -64,7 +64,7 @@ export default function ReportManagementPage() {
       initial="hidden"
       animate="visible"
       variants={pageEnterContainer}
-      className="mx-auto flex w-full max-w-[1400px] flex-col gap-5 pb-12"
+      className="mx-auto flex w-full  flex-col gap-5 pb-12"
     >
       <motion.div variants={pageEnterItem}>
         <ReportManagementHeader />

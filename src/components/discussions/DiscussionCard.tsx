@@ -106,7 +106,7 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
         className="group relative gap-0 overflow-hidden rounded-2xl bg-card py-0 shadow-xs ring-1 ring-foreground/5 transition-shadow duration-200 hover:shadow-sm hover:ring-foreground/10 focus-within:ring-2 focus-within:ring-primary/40"
       >
         <Link
-          href={`/discussions/${post.id}`}
+          href={`/community/${post.id}`}
           className="absolute inset-0 rounded-2xl outline-none"
         >
           <span className="sr-only">Open discussion: {post.title}</span>

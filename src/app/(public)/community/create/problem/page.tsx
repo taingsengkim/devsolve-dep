@@ -17,10 +17,10 @@ export default function PublicCreateProblemPage() {
         <CreatePostHeader
           title="Create a Problem Post"
           subtitle="Describe the issue, environment, and error logs to get help from researchers."
-          backHref="/discussions/create"
+          backHref="/community/create"
           currentType="problem"
         />
-        <CreateProblemForm cancelHref="/discussions" />
+        <CreateProblemForm cancelHref="/problems" />
       </main>
     </motion.div>
   );

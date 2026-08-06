@@ -78,7 +78,7 @@ export function CreateShowcaseForm() {
       }).unwrap();
 
       if (res?.id) {
-        router.push("/discussions");
+        router.push("/showcases");
       }
     } catch (err) {
       console.error("Failed to create showcase post:", err);
@@ -305,7 +305,7 @@ export function CreateShowcaseForm() {
                 type="button"
                 variant="outline"
                 size="lg"
-                onClick={() => router.push("/discussions")}
+                onClick={() => router.push("/showcases")}
                 className="w-full h-11 rounded-xl border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 Cancel

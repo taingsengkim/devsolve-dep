@@ -11,8 +11,8 @@ interface CreatePostSelectionProps {
 }
 
 export function CreatePostSelection({
-  basePath = "/discussions/create",
-  backHref = "/discussions",
+  basePath = "/community/create",
+  backHref = "/community",
 }: CreatePostSelectionProps) {
   return (
     <div className="relative w-full rounded-3xl border border-slate-200/80 bg-slate-100/70 p-6 sm:p-8 lg:p-10 pb-6 sm:pb-8 lg:pb-60 shadow-xs transition-all">

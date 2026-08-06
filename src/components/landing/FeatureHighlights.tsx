@@ -83,8 +83,8 @@ const ACTS: Act[] = [
     kicker: "How it works",
     title: ["Problems,", "Answered"],
     accent: ACCENT,
-    href: "/discussions",
-    hrefLabel: "Open the discussions",
+    href: "/problems",
+    hrefLabel: "Open the problems feed",
     steps: [
       {
         n: "01",
