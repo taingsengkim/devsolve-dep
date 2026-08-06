@@ -59,9 +59,7 @@ export default function EditProfileSettingsPage() {
         accountStatus={accountStatus}
         onUsernameChange={setLiveUsername}
         onSave={async (data) => {
-          const { passwords, ...profileData } = data;
-          void passwords;
-          await updateProfile(profileData).unwrap();
+          await updateProfile(data).unwrap();
         }}
       />
     </motion.div>

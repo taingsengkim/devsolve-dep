@@ -11,11 +11,15 @@ import { cn } from "@/lib/utils";
 interface DiscussionEmptyStateProps {
   onReset: () => void;
   hasFilters: boolean;
+  createHref: string;
+  emptyLabel?: string;
 }
 
 export function DiscussionEmptyState({
   onReset,
   hasFilters,
+  createHref,
+  emptyLabel = "No discussions found",
 }: DiscussionEmptyStateProps) {
   return (
     <motion.div
@@ -29,7 +33,7 @@ export function DiscussionEmptyState({
       </div>
       <div className="flex max-w-sm flex-col gap-1.5">
         <h3 className="text-2xl font-bold tracking-tight text-foreground">
-          No discussions found
+          {emptyLabel}
         </h3>
         <p className="text-base leading-relaxed text-muted-foreground">
           {hasFilters
@@ -49,7 +53,7 @@ export function DiscussionEmptyState({
         </Button>
       ) : (
         <Link
-          href="/discussions/create"
+          href={createHref}
           className={cn(buttonVariants({ size: "lg" }), "rounded-xl")}
         >
           <Plus data-icon="inline-start" aria-hidden="true" />

@@ -29,7 +29,23 @@ interface DiscussionSearchProps {
   isSearching?: boolean;
 }
 
-export function DiscussionHeader() {
+interface DiscussionHeaderProps {
+  breadcrumbLabel: string;
+  title: string;
+  badgeLabel: string;
+  description: string;
+  createHref: string;
+  createLabel?: string;
+}
+
+export function DiscussionHeader({
+  breadcrumbLabel,
+  title,
+  badgeLabel,
+  description,
+  createHref,
+  createLabel = "Start a discussion",
+}: DiscussionHeaderProps) {
   return (
     <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
       <div className="flex max-w-3xl flex-col gap-2.5">
@@ -42,23 +58,22 @@ export function DiscussionHeader() {
           </Link>
           <ChevronRight aria-hidden="true" className="size-4" />
           <span aria-current="page" className="font-semibold text-foreground">
-            Community
+            {breadcrumbLabel}
           </span>
         </nav>
 
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            Community
+            {title}
           </h1>
           <Badge variant="tag" className="h-6 rounded-lg px-2.5 text-sm">
             <MessagesSquare data-icon="inline-start" aria-hidden="true" />
-            Problems · Solutions · Showcases
+            {badgeLabel}
           </Badge>
         </div>
 
         <p className="text-base leading-relaxed text-muted-foreground">
-          Ask focused questions, share practical solutions, and showcase what
-          you are building with other developers.
+          {description}
         </p>
       </div>
 
@@ -68,14 +83,14 @@ export function DiscussionHeader() {
         whileTap={{ scale: 0.97 }}
       >
         <Link
-          href="/discussions/create"
+          href={createHref}
           className={cn(
             buttonVariants({ size: "lg" }),
             "w-full rounded-xl bg-blue-600 px-5 font-semibold text-white shadow-xs hover:bg-blue-700 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700",
           )}
         >
           <Plus data-icon="inline-start" aria-hidden="true" />
-          Start a discussion
+          {createLabel}
         </Link>
       </motion.div>
     </header>
