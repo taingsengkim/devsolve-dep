@@ -1,21 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import * as z from "zod";
-import {
-  registerRequestSchema,
-  type RegisterResponseBody,
-} from "@/lib/validations/auth";
+import { registerCompanyRequestSchema } from "@/lib/validations/auth";
 
 /**
- * POST /api/auth/register — proxy for the backend's POST /api/v1/auth/register.
+ * POST /api/organizations/register — proxy for the backend's POST /api/v1/organizations/register.
  *
- * Registration runs server-side rather than straight from the browser so the
- * backend origin (and any future service credentials) never reach the client.
- * This sits alongside the better-auth catch-all at `api/auth/[...all]`; a static
- * segment wins over a catch-all in the App Router, and better-auth owns no
- * `register` path of its own, so the two don't collide.
+ * Company registration runs server-side rather than straight from the browser so the
+ * backend origin (and any future service credentials) never reach the client directly.
  */
 
-// Backend base URL already carries the `/api/v1` prefix (see .env.example).
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
 export async function POST(request: NextRequest) {
@@ -25,22 +18,22 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json(
       { message: "Request body must be valid JSON" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
-  const parsed = registerRequestSchema.safeParse(payload);
+  const parsed = registerCompanyRequestSchema.safeParse(payload);
   if (!parsed.success) {
     const { formErrors, fieldErrors } = z.flattenError(parsed.error);
     return NextResponse.json(
       { message: "Validation failed", formErrors, fieldErrors },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
   let upstream: Response;
   try {
-    upstream = await fetch(`${BACKEND_API_URL}/auth/register`, {
+    upstream = await fetch(`${BACKEND_API_URL}/organizations/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -50,14 +43,12 @@ export async function POST(request: NextRequest) {
       cache: "no-store",
     });
   } catch {
-    // Network-level failure — the backend never saw the request.
     return NextResponse.json(
-      { message: "Unable to reach the registration service. Please try again." },
-      { status: 502 },
+      { message: "Unable to reach the company registration service. Please try again." },
+      { status: 502 }
     );
   }
 
-  // The spec advertises `*/*`, so the body may not be JSON on error paths.
   const raw = await upstream.text();
   let body: unknown = null;
   if (raw) {
@@ -72,14 +63,14 @@ export async function POST(request: NextRequest) {
     const message =
       (body as { message?: string } | null)?.message ??
       (upstream.status === 409
-        ? "That username or email is already registered"
-        : "Registration failed. Please try again.");
+        ? "An organization with that email or name already exists"
+        : "Company registration failed. Please try again.");
 
     return NextResponse.json(
       { message, details: body },
-      { status: upstream.status },
+      { status: upstream.status }
     );
   }
 
-  return NextResponse.json(body as RegisterResponseBody, { status: 201 });
+  return NextResponse.json(body, { status: 201 });
 }
