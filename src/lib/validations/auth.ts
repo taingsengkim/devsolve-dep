@@ -6,18 +6,19 @@ export const userRegisterSchema = z
     username: z
       .string()
       .min(3, "Username must be at least 3 characters")
-      .regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers, and underscores allowed"),
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    email: z.string().email("Please enter a valid email address"),
+      .max(50, "Username must not exceed 50 characters")
+      .regex(/^[a-zA-Z0-9._-]+$/, "Only letters, numbers, dots, underscores, and hyphens allowed"),
+    firstName: z.string().min(1, "First name is required").max(70, "First name must not exceed 70 characters"),
+    lastName: z.string().min(1, "Last name is required").max(70, "Last name must not exceed 70 characters"),
+    email: z.string().email("Please enter a valid email address").max(255, "Email must not exceed 255 characters"),
     phone: z
       .string()
       .optional()
-      .refine((val) => !val || /^\d{7,15}$/.test(val), {
-        message: "Phone must be 7–15 digits",
+      .refine((val) => !val || /^\+?[0-9]{8,15}$/.test(val), {
+        message: "Phone must be 8-15 digits, optional leading +",
       }),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
+    password: z.string().min(8, "Password must be at least 8 characters").max(100, "Password must not exceed 100 characters"),
+    confirmPassword: z.string().min(1, "Please confirm your password").max(100, "Password must not exceed 100 characters"),
     country: z.string().optional(),
     agreeTerms: z.boolean().refine((val) => val === true, {
       message: "You must agree to the Terms of Service and Privacy Policy",

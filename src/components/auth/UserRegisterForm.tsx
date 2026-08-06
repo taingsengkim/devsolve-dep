@@ -15,7 +15,6 @@ import {
   EyeOff,
   UserPlus,
   Loader2,
-  CheckCircle2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,6 @@ export function UserRegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
   const [registerUser, { isLoading: isApiLoading }] = useRegisterUserMutation();
@@ -102,10 +100,7 @@ export function UserRegisterForm() {
         accountType: "USER",
       }).unwrap();
 
-      setRegistrationSuccess(true);
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 1500);
+      router.push("/dashboard");
     } catch (err: unknown) {
       const message =
         (err as { data?: { message?: string } })?.data?.message ??
@@ -204,22 +199,8 @@ export function UserRegisterForm() {
         </span>
       </div>
 
-      {/* Success State Overlay / Message */}
-      {registrationSuccess ? (
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="bg-white border border-emerald-200 rounded-2xl p-8 text-center shadow-lg shadow-emerald-500/5 my-4"
-        >
-          <CheckCircle2 className="w-16 h-16 text-emerald-500 mx-auto mb-4 animate-bounce" />
-          <h3 className="text-xl font-bold text-slate-900 mb-2">Account Created!</h3>
-          <p className="text-slate-600 text-sm">
-            Welcome aboard! Redirecting you to your security dashboard...
-          </p>
-        </motion.div>
-      ) : (
-        /* Registration Form */
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* Registration Form */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Row 1: Username */}
           <div>
             <Label htmlFor="username" className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
@@ -476,7 +457,6 @@ export function UserRegisterForm() {
             </Button>
           </div>
         </form>
-      )}
 
       {/* Bottom Login Link */}
       <div className="mt-6 text-center text-xs sm:text-sm text-slate-500">
