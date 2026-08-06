@@ -213,9 +213,9 @@ export default function CreateProgramPage() {
 
       // navigation after create the program success
       if (result?.id) {
-        // router.push(`/dashboard/programs/${result.id}`);
+        router.push(`/dashboard/programs/${result.id}`);
       } else {
-        // router.push("/dashboard/programs");
+        router.push("/dashboard/programs");
       }
     } catch (error) {
       console.error("Create program failed", error);
