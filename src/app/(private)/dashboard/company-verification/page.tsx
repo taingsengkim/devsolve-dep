@@ -4,42 +4,29 @@ export const dynamic = "force-dynamic";
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Building2 } from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { useGetCompanyVerificationsQuery } from "@/lib/redux/services/adminApi";
-import { OrganizationStatCards } from "@/components/admin/organizations/OrganizationStatCards";
-import { OrganizationFiltersBar } from "@/components/admin/organizations/OrganizationFiltersBar";
-import { OrganizationCard } from "@/components/admin/organizations/OrganizationCard";
+import { Button } from "@/components/ui/button";
+import { useGetPendingOrganizationsQuery } from "@/lib/redux/services/adminApi";
+import { PendingOrganizationCard } from "@/components/admin/organizations/PendingOrganizationCard";
 
-type StatusFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED" | "UNDER_REVIEW";
+const PAGE_SIZE = 20;
 
 export default function OrganizationVerificationPage() {
-  const { data: verifications = [], isLoading, isFetching } =
-    useGetCompanyVerificationsQuery();
+  const [pageNumber, setPageNumber] = useState(0);
 
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
-  const [searchQuery, setSearchQuery] = useState("");
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isError,
+  } = useGetPendingOrganizationsQuery({ pageNumber, pageSize: PAGE_SIZE });
 
-  const counts = {
-    all: verifications.length,
-    pending: verifications.filter((v) => v.status === "PENDING").length,
-    approved: verifications.filter((v) => v.status === "APPROVED").length,
-    rejected: verifications.filter((v) => v.status === "REJECTED").length,
-    underReview: verifications.filter((v) => v.status === "UNDER_REVIEW").length,
-  };
-
-  const filteredItems = verifications.filter((item) => {
-    const matchesFilter = statusFilter === "ALL" || item.status === statusFilter;
-    const q = searchQuery.toLowerCase().trim();
-    const matchesSearch =
-      !q ||
-      item.companyName.toLowerCase().includes(q) ||
-      item.domain.toLowerCase().includes(q) ||
-      item.taxId.toLowerCase().includes(q) ||
-      item.businessType.toLowerCase().includes(q) ||
-      item.email.toLowerCase().includes(q);
-    return matchesFilter && matchesSearch;
-  });
+  const items = data?.content ?? [];
+  const totalElements = data?.totalElements ?? 0;
+  const totalPages = data?.totalPages ?? 0;
+  const isFirst = data?.first ?? true;
+  const isLast = data?.last ?? true;
 
   return (
     <motion.div
@@ -54,30 +41,21 @@ export default function OrganizationVerificationPage() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             Organization Verification
           </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Review and manage pending company KYB / KYC requests.
+          </p>
         </div>
 
-        {/* Pending badge call-to-action */}
-        {counts.pending > 0 && (
+        {/* Pending badge */}
+        {totalElements > 0 && (
           <div className="shrink-0 flex items-center gap-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-2.5">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
             <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">
-              {counts.pending} pending review{counts.pending > 1 ? "s" : ""}
+              {totalElements} pending review{totalElements !== 1 ? "s" : ""}
             </span>
           </div>
         )}
       </header>
-
-      {/* STAT CARDS */}
-      <OrganizationStatCards verifications={verifications} />
-
-      {/* FILTERS */}
-      <OrganizationFiltersBar
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        searchQuery={searchQuery}
-        onSearchQueryChange={setSearchQuery}
-        counts={counts}
-      />
 
       {/* LIST */}
       <main className="space-y-3">
@@ -90,31 +68,81 @@ export default function OrganizationVerificationPage() {
               />
             ))}
           </div>
-        ) : filteredItems.length === 0 ? (
+        ) : isError ? (
+          <Card className="rounded-2xl border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/30 p-12 text-center space-y-4 shadow-2xs">
+            <div className="w-14 h-14 rounded-2xl bg-rose-100 dark:bg-rose-900/40 text-rose-500 mx-auto flex items-center justify-center">
+              <Building2 className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                Failed to Load Verifications
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
+                Could not reach the server. Please check your connection and try again.
+              </p>
+            </div>
+          </Card>
+        ) : items.length === 0 ? (
           <Card className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center space-y-4 shadow-2xs">
             <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center">
               <Building2 className="w-7 h-7" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                No Organizations Found
+                No Pending Organizations
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
-                No records match your current filter or search criteria.
+                There are no organizations awaiting verification at this time.
               </p>
             </div>
           </Card>
         ) : (
           <div className="grid grid-cols-1 gap-3">
             <AnimatePresence mode="popLayout">
-              {filteredItems.map((item) => (
-                <OrganizationCard key={item.id} item={item} />
+              {items.map((item) => (
+                <PendingOrganizationCard key={item.id} item={item} />
               ))}
             </AnimatePresence>
           </div>
         )}
       </main>
+
+      {/* PAGINATION */}
+      {!isLoading && !isError && totalPages > 1 && (
+        <nav className="flex items-center justify-between gap-4 pt-2">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Page <span className="font-semibold text-slate-700 dark:text-slate-300">{pageNumber + 1}</span> of{" "}
+            <span className="font-semibold text-slate-700 dark:text-slate-300">{totalPages}</span>
+            {" "}·{" "}
+            <span className="font-semibold text-slate-700 dark:text-slate-300">{totalElements}</span> total
+          </p>
+
+          <div className="flex items-center gap-2">
+            <Button
+              id="pagination-prev"
+              variant="outline"
+              size="sm"
+              disabled={isFirst || isFetching}
+              onClick={() => setPageNumber((p) => Math.max(0, p - 1))}
+              className="rounded-xl h-9 px-3 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Previous
+            </Button>
+            <Button
+              id="pagination-next"
+              variant="outline"
+              size="sm"
+              disabled={isLast || isFetching}
+              onClick={() => setPageNumber((p) => p + 1)}
+              className="rounded-xl h-9 px-3 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40"
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        </nav>
+      )}
     </motion.div>
   );
 }
-
