@@ -50,7 +50,7 @@ export const programsApi = baseApi.injectEndpoints({
 
     createProgram: builder.mutation<Program, CreateProgramRequest>({
       query: (body) => ({
-        url: "organizations/me/programs",
+        url: "/organizations/me/programs",
         method: "POST",
         body,
       }),

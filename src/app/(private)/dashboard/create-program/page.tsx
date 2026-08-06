@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
+import { ChevronDown } from "lucide-react";
 import {
   FileText,
   Target,
@@ -207,10 +208,14 @@ export default function CreateProgramPage() {
       toast.success("Success!", {
         description: "Program created successfully. Redirecting now...",
       });
+
+
+
+      // navigation after create the program success
       if (result?.id) {
-        router.push(`/dashboard/programs/${result.id}`);
+        // router.push(`/dashboard/programs/${result.id}`);
       } else {
-        router.push("/dashboard/programs");
+        // router.push("/dashboard/programs");
       }
     } catch (error) {
       console.error("Create program failed", error);
@@ -494,7 +499,7 @@ export default function CreateProgramPage() {
                 </div>
 
                 {/* Program Type & Visibility */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700">
                       Program Type
@@ -530,7 +535,53 @@ export default function CreateProgramPage() {
                       <option value="PRIVATE">Private</option>
                     </select>
                   </div>
-                </div>
+                </div> */}
+
+
+
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+  {/* Program Type */}
+  <div className="space-y-2">
+    <label className="text-sm font-semibold text-slate-700">
+      Program Type
+    </label>
+    <div className="relative">
+      <select
+        value={programType}
+        onChange={(e) => setProgramType(e.target.value as ProgramType)}
+        className="w-full h-11 pl-3.5 pr-10 appearance-none rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer"
+      >
+        <option value="BOUNTY">Bounty (Offers Cash Rewards)</option>
+        <option value="RESPONSE">Response (Points / Reputation Only)</option>
+      </select>
+      <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+    </div>
+  </div>
+
+  {/* Visibility */}
+  <div className="space-y-2">
+    <label className="text-sm font-semibold text-slate-700">
+      Visibility
+    </label>
+    <div className="relative">
+      <select
+        value={visibility}
+        onChange={(e) => setVisibility(e.target.value as ProgramVisibility)}
+        className="w-full h-11 pl-3.5 pr-10 appearance-none rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer"
+      >
+        <option value="PUBLIC">Public</option>
+        <option value="PRIVATE">Private</option>
+      </select>
+      <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+    </div>
+  </div>
+
+</div>
+
+
+
 
                 {/* Policy */}
                 <div className="space-y-2">
@@ -1158,7 +1209,7 @@ export default function CreateProgramPage() {
                     disabled={isCreating}
                     className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm h-11 px-6 gap-2"
                   >
-                    <Send className="w-4 h-4" />
+                    {/* <Send className="w-4 h-4" /> */}
                     {isCreating ? "Creating..." : "Create Program"}
                   </Button>
                 )}
