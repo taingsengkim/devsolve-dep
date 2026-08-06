@@ -55,6 +55,12 @@ export async function getAccessToken(): Promise<string | null> {
 
   inFlight = (async () => {
     try {
+      const sessionRes = await authClient.getSession();
+      if (!sessionRes?.data) {
+        cached = null;
+        return null;
+      }
+
       const res = (await authClient.getAccessToken({
         providerId: PROVIDER_ID,
       })) as AccessTokenResponse;

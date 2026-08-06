@@ -12,6 +12,7 @@ import type {
 
 interface DiscussionActiveFiltersProps {
   category: DiscussionCategory;
+  defaultCategory: DiscussionCategory;
   topic: TopicFilter | null;
   tag: string | null;
   searchQuery: string;
@@ -31,6 +32,7 @@ interface FilterChip {
 
 export function DiscussionActiveFilters({
   category,
+  defaultCategory,
   topic,
   tag,
   searchQuery,
@@ -42,7 +44,7 @@ export function DiscussionActiveFilters({
 }: DiscussionActiveFiltersProps) {
   const chips: FilterChip[] = [];
 
-  if (category !== "All") {
+  if (category !== defaultCategory) {
     chips.push({
       key: "category",
       label: "Category",

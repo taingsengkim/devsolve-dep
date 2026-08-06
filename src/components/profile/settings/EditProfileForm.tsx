@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { toast } from "sonner";
 
 import {
@@ -11,6 +11,7 @@ import {
   Bell,
   HelpCircle,
   KeyRound,
+  ExternalLink,
   LogOut,
   Check,
   Camera,
@@ -19,7 +20,6 @@ import {
 } from "lucide-react";
 import { EditProfileFormData, AccountStatus, NotificationKey } from "@/lib/types/profile/types";
 import { useEditProfileForm } from "@/hooks/profile/useEditProfileForm";
-import PasswordSection, { PasswordFormState } from "./PasswordSection";
 import AdditionalDetailsSection from "./AdditionalDetailsSection";
 import BioSocialSection from "./BioSocialSection";
 import Toggle from "./Toggle";
@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button";
 interface EditProfileFormProps {
   initialData: EditProfileFormData;
   accountStatus: AccountStatus;
-  onSave?: (data: EditProfileFormData & { passwords: PasswordFormState }) => Promise<void> | void;
+  onSave?: (data: EditProfileFormData) => Promise<void> | void;
   onUsernameChange?: (username: string) => void;
 }
 
@@ -54,14 +54,11 @@ function readFileAsDataUrl(file: File): Promise<string> {
 }
 
 export default function EditProfileForm({ initialData, accountStatus, onSave, onUsernameChange }: EditProfileFormProps) {
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [avatarError, setAvatarError] = useState<string | null>(null);
   const [avatarPreviewDataUrl, setAvatarPreviewDataUrl] = useState<string | null>(null);
   const {
     form,
     setForm,
-    passwords,
-    setPasswords,
     isSaving,
     updateField,
     updateSocialLink,
@@ -73,6 +70,16 @@ export default function EditProfileForm({ initialData, accountStatus, onSave, on
   useEffect(() => {
     onUsernameChange?.(form.username);
   }, [form.username, onUsernameChange]);
+
+  const handleManagePassword = () => {
+    const issuer = process.env.NEXT_PUBLIC_KEYCLOAK_ISSUER;
+    if (!issuer) {
+      toast.error("Password management is unavailable right now.");
+      return;
+    }
+    const accountUrl = `${issuer.replace(/\/+$/, "")}/account`;
+    window.open(accountUrl, "_blank", "noopener,noreferrer");
+  };
 
   const handleLocalFilePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -297,29 +304,16 @@ export default function EditProfileForm({ initialData, accountStatus, onSave, on
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => setShowPasswordForm((prev) => !prev)}
+                onClick={handleManagePassword}
                 className="h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold px-6 text-sm cursor-pointer shadow-2xs transition-all"
               >
                 <KeyRound size={15} className="mr-2" />
-                {showPasswordForm ? "Hide Password Form" : "Change Password"}
+                Change Password
+                <ExternalLink size={13} className="ml-2 opacity-60" />
               </Button>
-
-              <AnimatePresence>
-                {showPasswordForm && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden pt-3"
-                  >
-                    <PasswordSection
-                      value={passwords}
-                      onChange={(field, val) => setPasswords((prev) => ({ ...prev, [field]: val }))}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <p className="text-xs text-slate-400 dark:text-slate-500">
+                Opens your secure Keycloak account page in a new tab — DevSolve never stores your password.
+              </p>
             </div>
 
             {/* Enable Secure Login / 2FA Toggle */}
