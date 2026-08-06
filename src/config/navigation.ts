@@ -57,5 +57,6 @@ export const NAV_ITEMS: NavItem[] = [
   { name: "Organization Verification", href: "/dashboard/company-verification", icon: ShieldCheck, roles: ["ADMIN"], category: "Administration" },
   { name: "Report Confirmation", href: "/dashboard/report-confirmation", icon: FileCheck, roles: ["ADMIN"], category: "Administration" },
   { name: "Users", href: "/dashboard/users", icon: UserCheck, roles: ["ADMIN"], category: "Administration" },
+  { name: "Program management", href: "/dashboard/users", icon: UserCheck, roles: ["ADMIN"], category: "Administration" },
   { name: "Content Reports", href: "/dashboard/content-moderation", icon: ShieldAlert, roles: ["ADMIN"], category: "Administration" },
 ];

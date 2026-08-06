@@ -144,7 +144,7 @@ export function SavedDraftPage() {
       initial="hidden"
       animate="visible"
       variants={pageEnterContainer}
-      className="mx-auto w-full max-w-[1400px] space-y-5 pb-12"
+      className="mx-auto w-full  space-y-5 pb-12"
     >
       <motion.div variants={pageEnterItem}>
         <SavedDraftHeader totalDrafts={draftItems.length} />
