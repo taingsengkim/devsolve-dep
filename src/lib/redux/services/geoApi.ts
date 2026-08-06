@@ -18,16 +18,16 @@ export const geoApi = baseApi.injectEndpoints({
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 4000);
           const res = await fetch(
-            "https://restcountries.com/v3.1/all?fields=name,cca2",
+            "https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/index.json",
             { signal: controller.signal }
           );
           clearTimeout(timeoutId);
           if (!res.ok) throw new Error("Failed to fetch countries");
           const data = await res.json();
           const formatted: CountryOption[] = data
-            .map((item: { name: { common: string }; cca2: string }) => ({
-              name: item.name?.common || "",
-              code: item.cca2 ? item.cca2.toLowerCase() : "",
+            .map((item: { name: string; code: string }) => ({
+              name: item.name || "",
+              code: item.code ? item.code.toLowerCase() : "",
             }))
             .filter((c: CountryOption) => Boolean(c.name && c.code))
             .sort((a: CountryOption, b: CountryOption) =>
