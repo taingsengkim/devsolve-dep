@@ -147,7 +147,7 @@ src/
 
 ---
 
-## 🔐 Auth Flow Summary
+## 🔐 Auth Flow & API Proxy Pattern Summary
 
 ```
 User → "/" → (unauthenticated) → landing page
@@ -159,6 +159,11 @@ User → "/dashboard/*" → middleware checks better-auth session cookie
 
 - Keycloak PKCE flow via `better-auth` `genericOAuth`
 - Session cookie read in `src/proxy.ts` via `getSessionCookie()`
+- **Mandatory Pattern for ALL Code & Endpoints**:
+  - UI components call RTK Query hooks exclusively (`src/lib/redux/services/*`).
+  - `baseApi` automatically retrieves Keycloak Bearer token via `getAccessToken()` (`src/lib/auth/access-token.ts`) from `better-auth` session.
+  - Next.js server-side API proxy routes (`src/app/api/...`) validate Zod schemas, check session authentication via `auth.api.getSession()`, and relay requests server-to-server to `${BACKEND_API_URL}` with `Authorization: Bearer <token>`.
+  - Direct browser calls to `${BACKEND_API_URL}` or raw `fetch`/`axios` inside components are strictly prohibited.
 
 ---
 
