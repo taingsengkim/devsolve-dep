@@ -13,7 +13,6 @@ import * as z from "zod";
 
 // Backend base URL already carries the `/api/v1` prefix (see .env.example).
 const BACKEND_API_URL =
-  process.env.BACKEND_API_URL ??
   process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
 /** Mirrors the backend `RegisterRequest` schema exactly. */
