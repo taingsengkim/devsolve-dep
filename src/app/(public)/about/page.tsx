@@ -82,8 +82,8 @@ function AboutHeroSection() {
   ];
 
   return (
-    <div className="relative w-full bg-slate-50 dark:bg-[#080E17] text-slate-900 dark:text-white transition-colors duration-300 overflow-hidden">
-      
+    // <div className="relative w-full bg-slate-50 dark:bg-[#080E17] text-slate-900 dark:text-white transition-colors duration-300 overflow-hidden mb-4">
+      <div className="relative w-full bg-slate-50 dark:bg-[#080E17] text-slate-900 dark:text-white transition-colors duration-300 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-60 dark:opacity-40">
         
         <svg
@@ -320,10 +320,11 @@ function OfferSection() {
 
  function DevSolveOverview() {
   return (
-    <section className="bg-slate-50/50 py-16 sm:py-24 px-4 sm:px-6 lg:px-8 font-sans">
+    // <section className="bg-slate-50/50 py-16 sm:py-24 px-4 sm:px-6 lg:px-8 font-sans mb-12">
+    <section className="bg-slate-50/50 py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 font-sans">
+
       <div className="max-w-7xl mx-auto space-y-20">
         <div>
-          {/* Section Header */}
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               What Drives DevSolve
@@ -479,13 +480,6 @@ function OfferSection() {
             </div>
           </div>
 
-          {/* Bottom Badge Link */}
-          <div className="mt-12 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sky-50 border border-sky-200 text-sky-600 text-xs font-bold uppercase tracking-wider shadow-xs">
-              <Layers className="w-3.5 h-3.5" />
-              Technology Stack
-            </div>
-          </div>
         </div>
       </div>
     </section>
@@ -501,9 +495,8 @@ export function TechStackSection({
   technologies = TECHNOLOGIES,
 }: TechStackSectionProps) {
   return (
-    <section className="bg-slate-50/60 py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div className="max-w-3xl mx-auto text-center mb-10 sm:mb-14">
+    <section className="bg-slate-50/60 py-10 sm:py-14 md:py-16 px-4 sm:px-6 lg:px-8 mb-12">
+      <div className="max-w-3xl mx-auto text-center mb-10 sm:mb-12">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 text-xs sm:text-sm font-semibold mb-3">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           Tech Stack
@@ -540,14 +533,6 @@ export function TechStackSection({
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed mb-6 flex-grow">
               {tech.description}
             </p>
-
-            {/* Read More / Explore Link */}
-            <div className="mt-auto inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-emerald-500 group-hover:text-emerald-600 transition-colors">
-              <span>Read More</span>
-              <span className="transition-transform duration-300 group-hover:translate-x-1">
-                →
-              </span>
-            </div>
           </div>
         ))}
       </div>
@@ -560,8 +545,9 @@ export function TechStackSection({
 
 function TeamSection() {
   return (
-    <section id="team" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
-      <div className="text-center mb-8 sm:mb-10 md:mb-12">
+    // <section id="team" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:px-6 lg:px-8 py-6 sm:py-10 md:py-14  ">
+      <div className="text-center mb-6 sm:mb-8 md:mb-10">
         <span className="text-blue-600 uppercase tracking-[0.2em] sm:tracking-[0.3em] text-xs sm:text-sm font-semibold">
           OUR TEAM
         </span>
@@ -723,7 +709,7 @@ function ContactSection() {
   };
 
   return (
-    <section id="contact" className="py-24 bg-[#FFFFFF] text-[#0F172A]">
+       <div id="contact" className="py-14 sm:py-16 lg:py-20 bg-[#FFFFFF] text-[#0F172A]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center mb-12">
@@ -926,7 +912,7 @@ function ContactSection() {
 
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
