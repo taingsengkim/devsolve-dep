@@ -201,6 +201,7 @@ export const REPORT_DETAIL: ReportManagementDetail = {
   programLogo: "/tiktok.png",
   submitter: "Lor Vengroth",
   submitterInitials: "LV",
+  submitterEmail: "lor@devsolve.io",
   type: "Bounty",
   status: "Open",
   severity: "Critical",
@@ -249,28 +250,56 @@ export const REPORT_DETAIL: ReportManagementDetail = {
   relatedReport: "#RPT-2025-00982 - Similar IDOR in /v1/users",
 };
 
+function buildDisplayReportId(report: ManagedReport) {
+  if (report.reportId?.trim()) return report.reportId;
+
+  const rawId = String(report.id);
+  if (/^\d+$/.test(rawId)) {
+    return `RPT-2026-${rawId.padStart(5, "0")}`;
+  }
+
+  return `RPT-${rawId.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
+}
+
+export function findManagedReportByRouteId(
+  reports: ManagedReport[],
+  id: string,
+) {
+  return reports.find(
+    (report) =>
+      String(report.id) === id ||
+      report.reportId === id ||
+      buildDisplayReportId(report) === id,
+  );
+}
+
+export function buildReportDetailFromManagedReport(
+  report: ManagedReport,
+): ReportManagementDetail {
+  return {
+    ...REPORT_DETAIL,
+    id: report.id,
+    reportId: buildDisplayReportId(report),
+    title: report.title,
+    programLogo: report.programLogo,
+    submitter: report.author,
+    submitterInitials: report.authorInitials,
+    submitterEmail: report.authorEmail,
+    type: report.type,
+    status: report.status,
+    severity: report.severity,
+    submittedDate: report.submittedAt,
+    summary: report.summary,
+    assets: report.assets,
+  };
+}
+
 export function getReportDetailById(id: string): ReportManagementDetail {
-  const matchedReport = MANAGED_REPORTS.find((report) => report.id.toString() === id);
+  const matchedReport = findManagedReportByRouteId(MANAGED_REPORTS, id);
 
   if (!matchedReport) {
     return REPORT_DETAIL;
   }
 
-  return {
-    ...REPORT_DETAIL,
-    id: matchedReport.id,
-    reportId:
-      matchedReport.reportId ??
-      `RPT-2026-${matchedReport.id.toString().padStart(5, "0")}`,
-    title: matchedReport.title,
-    programLogo: matchedReport.programLogo,
-    submitter: matchedReport.author,
-    submitterInitials: matchedReport.authorInitials,
-    type: matchedReport.type,
-    status: matchedReport.status,
-    severity: matchedReport.severity,
-    submittedDate: matchedReport.submittedAt,
-    summary: matchedReport.summary,
-    assets: matchedReport.assets,
-  };
+  return buildReportDetailFromManagedReport(matchedReport);
 }

@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
 
-import { MANAGED_REPORTS } from "@/components/report-management/mock-data";
 import { reportListGridClass } from "@/components/report-management/report-list-layout";
 import type {
   PriorityReviewItem,
@@ -152,20 +151,10 @@ export function ReviewQueuePriorityList({
 
       <div className="overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.03)]">
         {items.map((item) => {
-          const reportId = `RPT-2026-${item.id.toString().padStart(5, "0")}`;
-          const matchedReport = MANAGED_REPORTS.find((report) => report.id === item.id);
-          const reportType = matchedReport?.type ?? "Response";
-          const authorInitials = matchedReport?.authorInitials ?? "TT";
-          const logoSrc = matchedReport?.programLogo ?? "/tiktok.png";
-
           return (
             <ReviewQueueReportRow
               key={item.id}
               item={item}
-              reportId={reportId}
-              reportType={reportType}
-              authorInitials={authorInitials}
-              logoSrc={logoSrc}
               isLast={items.indexOf(item) === items.length - 1}
             />
           );
@@ -177,17 +166,9 @@ export function ReviewQueuePriorityList({
 
 function ReviewQueueReportRow({
   item,
-  reportId,
-  reportType,
-  authorInitials,
-  logoSrc,
   isLast,
 }: {
   item: PriorityReviewItem;
-  reportId: string;
-  reportType: "Bounty" | "Response";
-  authorInitials: string;
-  logoSrc: string;
   isLast: boolean;
 }) {
   const visibleAssets = item.assets.slice(0, 2);
@@ -213,9 +194,9 @@ function ReviewQueueReportRow({
           <div className="min-w-0">
             <div className="flex items-start gap-4">
               <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
-                {logoSrc ? (
+                {item.logoSrc ? (
                   <Image
-                    src={logoSrc}
+                    src={item.logoSrc}
                     alt={`${item.title} logo`}
                     width={48}
                     height={48}
@@ -223,7 +204,7 @@ function ReviewQueueReportRow({
                   />
                 ) : (
                   <span className="text-sm font-semibold text-slate-700">
-                    {authorInitials}
+                    {item.authorInitials}
                   </span>
                 )}
               </div>
@@ -234,7 +215,7 @@ function ReviewQueueReportRow({
                     {item.title}
                   </h3>
                   <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-slate-500">
-                    <span>{reportId}</span>
+                    <span>{item.reportId}</span>
                     <span className="text-slate-300">&bull;</span>
                     <span className="truncate">{item.reporter}</span>
                     <span className="text-slate-300">&bull;</span>
@@ -269,9 +250,9 @@ function ReviewQueueReportRow({
           <div className="flex items-center justify-center">
             <Badge
               variant="outline"
-              className={cn(badgeBaseClass, getTypeBadgeClass(reportType))}
+              className={cn(badgeBaseClass, getTypeBadgeClass(item.reportType))}
             >
-              {reportType}
+              {item.reportType}
             </Badge>
           </div>
 
@@ -303,9 +284,9 @@ function ReviewQueueReportRow({
         <div className="space-y-3 lg:hidden">
           <div className="flex items-start gap-3">
             <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
-              {logoSrc ? (
+              {item.logoSrc ? (
                 <Image
-                  src={logoSrc}
+                  src={item.logoSrc}
                   alt={`${item.title} logo`}
                   width={44}
                   height={44}
@@ -313,7 +294,7 @@ function ReviewQueueReportRow({
                 />
               ) : (
                 <span className="text-sm font-semibold text-slate-700">
-                  {authorInitials}
+                  {item.authorInitials}
                 </span>
               )}
             </div>
@@ -324,7 +305,7 @@ function ReviewQueueReportRow({
                   {item.title}
                 </h3>
                 <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-slate-500">
-                  <span>{reportId}</span>
+                  <span>{item.reportId}</span>
                   <span className="text-slate-300">&bull;</span>
                   <span className="truncate">{item.reporter}</span>
                   <span className="text-slate-300">&bull;</span>
@@ -339,9 +320,9 @@ function ReviewQueueReportRow({
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
                   variant="outline"
-                  className={cn(badgeBaseClass, getTypeBadgeClass(reportType))}
+                  className={cn(badgeBaseClass, getTypeBadgeClass(item.reportType))}
                 >
-                  {reportType}
+                  {item.reportType}
                 </Badge>
                 <Badge
                   variant="outline"

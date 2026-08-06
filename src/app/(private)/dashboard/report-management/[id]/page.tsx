@@ -8,12 +8,22 @@ import { ReportDetailClassification } from "@/components/report-management/Repor
 import { ReportDetailHeader } from "@/components/report-management/ReportDetailHeader";
 import { ReportDetailProofOfConcept } from "@/components/report-management/ReportDetailProofOfConcept";
 import { ReportDetailReferences } from "@/components/report-management/ReportDetailReferences";
-import { getReportDetailById } from "@/components/report-management/mock-data";
+import {
+  buildReportDetailFromManagedReport,
+  findManagedReportByRouteId,
+  getReportDetailById,
+} from "@/components/report-management/mock-data";
 import { ReportDetailTargetScope } from "@/components/report-management/ReportDetailTargetScope";
+import { useGetManagedReportsQuery } from "@/lib/redux/services/reportsApi";
 
 export default function ReportManagementDetailPage() {
   const params = useParams<{ id: string }>();
-  const detail = getReportDetailById(params.id);
+  const { data: managedReports = [] } = useGetManagedReportsQuery();
+
+  const liveReport = findManagedReportByRouteId(managedReports, params.id);
+  const detail = liveReport
+    ? buildReportDetailFromManagedReport(liveReport)
+    : getReportDetailById(params.id);
 
   return (
     <motion.section

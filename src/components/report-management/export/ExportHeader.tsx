@@ -43,10 +43,12 @@ export function ExportHeader() {
         href="/dashboard/report-management"
         className={cn(
           buttonVariants({ variant: "outline", size: "sm" }),
-          "inline-flex items-center gap-2 h-9 rounded-lg border-slate-200 bg-white/80 backdrop-blur-sm px-3.5 text-xs font-semibold text-slate-700 shadow-xs transition-all duration-200 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900"
+          "h-10 items-center justify-center gap-2.5 rounded-full border-slate-300 bg-white px-4 font-semibold text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.03)] transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:text-slate-700 hover:shadow-[0_8px_18px_rgba(15,23,42,0.06)]"
         )}
       >
-        <ArrowLeft className="size-3.5" />
+        <span className="flex size-4 items-center justify-center">
+          <ArrowLeft className="size-4" />
+        </span>
         Back
       </Link>
     </header>

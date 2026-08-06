@@ -16,17 +16,19 @@ export type ManagedReport = {
   severity: ReportSeverity;
   queueState?: ReportWorkflowState;
   submittedAt: string;
+  submittedAtIso?: string;
   summary: string;
   assets: string[];
 };
 
 export type ReportManagementDetail = {
-  id: number;
+  id: string | number;
   reportId: string;
   title: string;
   programLogo?: string;
   submitter: string;
   submitterInitials: string;
+  submitterEmail?: string;
   type: ReportType;
   status: ReportStatus;
   severity: ReportSeverity;

@@ -28,6 +28,7 @@ type ApiState = "NEW" | "TRIAGING" | "NEEDS_MORE_INFO" | "VALID_CONFIRMED" | "RE
 interface ReportApiResponse {
   id: string;
   programId: string;
+  reporterId?: string;
   title: string;
   reportedSeverity?: ApiSeverity;
   triageSeverity?: ApiSeverity;
@@ -58,6 +59,7 @@ interface ReportApiResponse {
   researcherEmail?: string;
   userName?: string;
   reporter?: {
+    id?: string;
     name?: string;
     email?: string;
     username?: string;
@@ -82,6 +84,12 @@ interface ReportsEnvelope<T> {
   content?: T[];
   items?: T[];
   data?: T[];
+}
+
+interface UserProfileApiResponse {
+  id: string;
+  fullName?: string | null;
+  avatarUrl?: string | null;
 }
 
 // severity/triageSeverity are only set once a report has been triaged, so
@@ -264,8 +272,16 @@ function toInitials(name: string): string {
     .slice(0, 2);
 }
 
-function toAuthorName(report: ReportApiResponse): string {
+function reporterIdOf(report: ReportApiResponse): string | undefined {
+  return report.reporterId ?? report.reporter?.id;
+}
+
+function toAuthorName(
+  report: ReportApiResponse,
+  reporterProfile?: UserProfileApiResponse,
+): string {
   return (
+    reporterProfile?.fullName?.trim() ??
     report.submitterName ??
     report.researcherName ??
     report.authorName ??
@@ -343,8 +359,9 @@ function toAssets(
 function toManagedReport(
   report: ReportApiResponse,
   program?: ProgramApiResponse,
+  reporterProfile?: UserProfileApiResponse,
 ): ManagedReport {
-  const author = toAuthorName(report);
+  const author = toAuthorName(report, reporterProfile);
 
   return {
     id: report.id,
@@ -359,6 +376,7 @@ function toManagedReport(
     severity: toManagedSeverity(report),
     queueState: toWorkflowState(report.state),
     submittedAt: toSubmittedDate(report),
+    submittedAtIso: report.submittedAt ?? report.createdAt ?? report.updatedAt,
     summary: toSummary(report),
     assets: toAssets(report, program),
   };
@@ -453,6 +471,13 @@ export const reportsApi = baseApi.injectEndpoints({
           programIds.map((id) => fetchWithBQ(`/programs/${id}`)),
         );
         const programMap = new Map<string, ProgramApiResponse>();
+        const reporterIds = Array.from(
+          new Set(raw.map((report) => reporterIdOf(report)).filter(Boolean)),
+        );
+        const reporterResults = await Promise.all(
+          reporterIds.map((id) => fetchWithBQ(`/user-profiles/${id}`)),
+        );
+        const reporterMap = new Map<string, UserProfileApiResponse>();
 
         programIds.forEach((id, index) => {
           const result = programResults[index];
@@ -460,10 +485,20 @@ export const reportsApi = baseApi.injectEndpoints({
             programMap.set(id, result.data as ProgramApiResponse);
           }
         });
+        reporterIds.forEach((id, index) => {
+          const result = reporterResults[index];
+          if (!result.error && result.data) {
+            reporterMap.set(id, result.data as UserProfileApiResponse);
+          }
+        });
 
         return {
           data: raw.map((report) =>
-            toManagedReport(report, programMap.get(report.programId)),
+            toManagedReport(
+              report,
+              programMap.get(report.programId),
+              reporterMap.get(reporterIdOf(report) ?? ""),
+            ),
           ),
         };
       },

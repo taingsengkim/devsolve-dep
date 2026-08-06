@@ -3,14 +3,24 @@
 import { motion } from "motion/react";
 import { useParams } from "next/navigation";
 
-import { getReportDetailById } from "@/components/report-management/mock-data";
+import {
+  buildReportDetailFromManagedReport,
+  findManagedReportByRouteId,
+  getReportDetailById,
+} from "@/components/report-management/mock-data";
 import { ReportSeverityAdjustmentForm } from "@/components/report-management/severity-review/ReportSeverityAdjustmentForm";
 import { ReportSeverityReviewHeader } from "@/components/report-management/severity-review/ReportSeverityReviewHeader";
 import { ReportSeverityReviewSidebar } from "@/components/report-management/severity-review/ReportSeverityReviewSidebar";
+import { useGetManagedReportsQuery } from "@/lib/redux/services/reportsApi";
 
 export default function ReportSeverityReviewPage() {
   const params = useParams<{ id: string }>();
-  const detail = getReportDetailById(params.id);
+  const { data: managedReports = [] } = useGetManagedReportsQuery();
+
+  const liveReport = findManagedReportByRouteId(managedReports, params.id);
+  const detail = liveReport
+    ? buildReportDetailFromManagedReport(liveReport)
+    : getReportDetailById(params.id);
 
   return (
     <motion.section
