@@ -17,8 +17,8 @@ const DEFAULT_LIMIT = 3;
 const DEFAULT_SORT: DiscussionSort = "newest";
 const SEARCH_DEBOUNCE_MS = 300;
 
-export function useDiscussionFilters() {
-  const [category, setCategory] = useState<DiscussionCategory>("All");
+export function useDiscussionFilters(defaultCategory: DiscussionCategory = "All") {
+  const [category, setCategory] = useState<DiscussionCategory>(defaultCategory);
   const [topic, setTopic] = useState<TopicFilter | null>(null);
   const [tag, setTag] = useState<string | null>(null);
   const [sort, setSort] = useState<DiscussionSort>(DEFAULT_SORT);
@@ -77,14 +77,14 @@ export function useDiscussionFilters() {
   }, []);
 
   const handleResetFilters = useCallback(() => {
-    setCategory("All");
+    setCategory(defaultCategory);
     setTopic(null);
     setTag(null);
     setSearchInput("");
     setSearchQuery("");
     setSort(DEFAULT_SORT);
     setPage(1);
-  }, []);
+  }, [defaultCategory]);
 
   // RTK Query hooks
   const discussionsResult = useGetDiscussionsQuery({
@@ -102,7 +102,10 @@ export function useDiscussionFilters() {
   const statsResult = useGetDiscussionStatsQuery();
 
   const hasActiveFilters =
-    category !== "All" || topic !== null || tag !== null || searchQuery !== "";
+    category !== defaultCategory ||
+    topic !== null ||
+    tag !== null ||
+    searchQuery !== "";
 
   return {
     // Filter state

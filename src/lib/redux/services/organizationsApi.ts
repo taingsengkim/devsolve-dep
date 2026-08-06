@@ -22,13 +22,14 @@ export const organizationsApi = baseApi.injectEndpoints({
       InviteOrganizationMemberRequest
     >({
       query: (body) => ({
-        url: "/v1/organizations/me/members/invitations",
+        url: "/organizations/me/members/invitations",
         method: "POST",
         body,
       }),
       invalidatesTags: ["Organization", "OrganizationMember"],
     }),
   }),
+  overrideExisting: true,
 });
 
 export const { useInviteOrganizationMemberMutation } = organizationsApi;

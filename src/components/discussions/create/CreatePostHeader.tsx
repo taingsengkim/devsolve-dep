@@ -22,14 +22,14 @@ export function CreatePostHeader({
   subtitle = "Describe your problem or showcase to collaborate with the community.",
   badgeText,
   badgeColor,
-  backHref = "/discussions",
+  backHref = "/community",
   currentType,
 }: CreatePostHeaderProps) {
   const pathname = usePathname();
 
   const isDashboard = pathname.startsWith("/dashboard") || backHref.startsWith("/dashboard");
-  const problemHref = isDashboard ? "/dashboard/discussions/create/problem" : "/discussions/create/problem";
-  const showcaseHref = isDashboard ? "/dashboard/discussions/create/showcase" : "/discussions/create/showcase";
+  const problemHref = isDashboard ? "/dashboard/discussions/create/problem" : "/community/create/problem";
+  const showcaseHref = isDashboard ? "/dashboard/discussions/create/showcase" : "/community/create/showcase";
 
   const activeType = currentType ?? (pathname.includes("/showcase") ? "showcase" : "problem");
   const activeBadgeColor = badgeColor ?? (activeType === "showcase" ? "purple" : "blue");

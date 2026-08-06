@@ -287,7 +287,8 @@ export default function HacktivityFeature() {
           </div>
 
           {/* Right Sidebar */}
-          <div className="space-y-6 sticky top-8">
+          {/* Clears the sticky navbar, otherwise the widgets pin underneath it */}
+          <div className="space-y-6 sticky top-[calc(var(--navbar-height)+1.5rem)]">
             {/* Top Hackers Widget */}
             <div className="rounded-2xl bg-white p-5 border border-slate-200/80 shadow-xs">
               <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
