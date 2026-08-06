@@ -31,11 +31,10 @@ export const companyVerificationApi = baseApi.injectEndpoints({
       providesTags: (_result, _error, id) => [{ type: "CompanyVerification", id }],
     }),
 
-    approveOrganization: builder.mutation<OrganizationResponse, { id: string; notes?: string }>({
-      query: ({ id, notes }) => ({
+    approveOrganization: builder.mutation<OrganizationResponse, { id: string }>({
+      query: ({ id }) => ({
         url: `/admin/organizations/${id}/approve`,
         method: "PATCH",
-        ...(notes ? { body: { notes } } : {}),
       }),
       invalidatesTags: (_result, _error, { id }) => [
         { type: "CompanyVerification", id },
@@ -43,11 +42,11 @@ export const companyVerificationApi = baseApi.injectEndpoints({
       ],
     }),
 
-    rejectOrganization: builder.mutation<OrganizationResponse, { id: string; notes?: string }>({
-      query: ({ id, notes }) => ({
+    rejectOrganization: builder.mutation<OrganizationResponse, { id: string; reason: string }>({
+      query: ({ id, reason }) => ({
         url: `/admin/organizations/${id}/reject`,
         method: "PATCH",
-        ...(notes ? { body: { notes } } : {}),
+        body: { reason },
       }),
       invalidatesTags: (_result, _error, { id }) => [
         { type: "CompanyVerification", id },

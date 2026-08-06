@@ -97,6 +97,15 @@ export type PendingOrganizationsResponse = PaginatedResponse<PendingOrganization
 export interface OrganizationResponse {
   id: string;
   ownerId?: string;
+  ownerFullName?: string;
+  ownerEmail?: string;
+  ownerJobTitle?: string;
+  joiningReason?: string;
+  emailVerified?: boolean;
+  submissionVersion?: number;
+  reviewedBy?: string;
+  reviewedAt?: string | null;
+  rejectionReason?: string | null;
   name: string;
   slug?: string;
   domain?: string;
@@ -114,12 +123,16 @@ export interface OrganizationResponse {
 
 export interface OrganizationReviewHistoryItem {
   id: string;
-  organizationId: string;
-  action: string;
+  organizationId?: string;
+  submissionVersion?: number;
+  decision?: "APPROVED" | "REJECTED" | string;
+  action?: string;
   reviewerId?: string;
   reviewerName?: string;
+  reason?: string;
   notes?: string;
-  createdAt: string;
+  reviewedAt?: string;
+  createdAt?: string;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -145,6 +158,12 @@ export interface CompanyVerificationItem {
   industry?: string;
   companySize?: string;
   description?: string;
+  joiningReason?: string;
+  emailVerified?: boolean;
+  submissionVersion?: number;
+  rejectionReason?: string | null;
+  reviewedAt?: string | null;
+  verifiedAt?: string | null;
   logoUrl?: string;
   riskIndicators?: {
     domainMatchesEmail: boolean;
