@@ -259,7 +259,9 @@ export function getReportDetailById(id: string): ReportManagementDetail {
   return {
     ...REPORT_DETAIL,
     id: matchedReport.id,
-    reportId: `RPT-2026-${matchedReport.id.toString().padStart(5, "0")}`,
+    reportId:
+      matchedReport.reportId ??
+      `RPT-2026-${matchedReport.id.toString().padStart(5, "0")}`,
     title: matchedReport.title,
     programLogo: matchedReport.programLogo,
     submitter: matchedReport.author,

@@ -7,6 +7,7 @@ import {
   SubmitReportPayload,
   SubmitReportResponse,
 } from "@/lib/types/reports/types";
+import type { ManagedReport } from "@/components/report-management/types";
 import {
   MOCK_REPORTS,
   MOCK_REPORT_DETAIL,
@@ -38,11 +39,49 @@ interface ReportApiResponse {
   resolvedAt?: string;
   createdAt?: string;
   updatedAt?: string;
+  reportId?: string;
+  reportCode?: string;
+  summary?: string;
+  impact?: string;
+  vulnerabilityInformation?: string;
+  assetId?: string;
+  assetName?: string;
+  assetIdentifier?: string;
+  type?: string;
+  programType?: string;
+  programName?: string;
+  authorName?: string;
+  authorEmail?: string;
+  submitterName?: string;
+  submitterEmail?: string;
+  researcherName?: string;
+  researcherEmail?: string;
+  userName?: string;
+  reporter?: {
+    name?: string;
+    email?: string;
+    username?: string;
+  };
 }
 
 interface ProgramApiResponse {
   id: string;
   name: string;
+  engagementType?: string;
+  assets?: Array<{
+    id?: string;
+    identifier?: string;
+  }>;
+  inScopeAssets?: Array<{
+    id?: string;
+    identifier?: string;
+  }>;
+}
+
+interface ReportsEnvelope<T> {
+  content?: T[];
+  items?: T[];
+  data?: T[];
 }
 
 // severity/triageSeverity are only set once a report has been triaged, so
@@ -115,6 +154,216 @@ function toReportId(id: string): string {
   return `#${id.slice(0, 8).toUpperCase()}`;
 }
 
+function extractReports(
+  response: ReportsEnvelope<ReportApiResponse> | ReportApiResponse[] | undefined,
+): ReportApiResponse[] {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.content)) return response.content;
+  if (Array.isArray(response?.items)) return response.items;
+  if (Array.isArray(response?.data)) return response.data;
+  return [];
+}
+
+function toManagedSeverity(
+  report: ReportApiResponse,
+): ManagedReport["severity"] {
+  const value =
+    report.severity ?? report.triageSeverity ?? report.reportedSeverity;
+
+  switch (value) {
+    case "CRITICAL":
+      return "Critical";
+    case "HIGH":
+      return "High";
+    case "MEDIUM":
+      return "Medium";
+    default:
+      return "Low";
+  }
+}
+
+function toManagedStatus(
+  state: ApiState,
+): ManagedReport["status"] {
+  switch (state) {
+    case "RESOLVED":
+    case "REJECTED":
+    case "DUPLICATE":
+      return "Closed";
+    default:
+      return "Open";
+  }
+}
+
+function toWorkflowState(
+  state: ApiState,
+): ManagedReport["queueState"] {
+  switch (state) {
+    case "NEW":
+      return "PENDING";
+    case "TRIAGING":
+    case "NEEDS_MORE_INFO":
+      return "UNDER_REVIEW";
+    case "VALID_CONFIRMED":
+      return "APPROVED";
+    default:
+      return "CLOSED";
+  }
+}
+
+function toManagedType(
+  report: ReportApiResponse,
+  program?: ProgramApiResponse,
+): ManagedReport["type"] {
+  const rawType = (
+    report.type ??
+    report.programType ??
+    program?.engagementType ??
+    "BOUNTY"
+  ).toUpperCase();
+
+  return rawType === "RESPONSE" ? "Response" : "Bounty";
+}
+
+function toSubmittedDate(report: ReportApiResponse): string {
+  const iso = report.submittedAt ?? report.createdAt ?? report.updatedAt;
+  const date = iso ? new Date(iso) : null;
+
+  if (!date || Number.isNaN(date.getTime())) {
+    return "Unknown date";
+  }
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  });
+}
+
+function toDisplayReportId(report: ReportApiResponse): string {
+  if (report.reportCode?.trim()) return report.reportCode;
+  if (report.reportId?.trim()) return report.reportId;
+
+  const compactId = report.id.replace(/-/g, "");
+  if (/^\d+$/.test(compactId)) {
+    return `RPT-2026-${compactId.padStart(5, "0")}`;
+  }
+
+  return `RPT-${compactId.slice(0, 8).toUpperCase()}`;
+}
+
+function toInitials(name: string): string {
+  const trimmed = name.trim();
+
+  if (!trimmed) return "UR";
+
+  return trimmed
+    .split(/\s+/)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("")
+    .slice(0, 2);
+}
+
+function toAuthorName(report: ReportApiResponse): string {
+  return (
+    report.submitterName ??
+    report.researcherName ??
+    report.authorName ??
+    report.userName ??
+    report.reporter?.name ??
+    report.reporter?.username ??
+    "Unknown Researcher"
+  );
+}
+
+function toAuthorEmail(report: ReportApiResponse): string {
+  return (
+    report.submitterEmail ??
+    report.researcherEmail ??
+    report.authorEmail ??
+    report.reporter?.email ??
+    "unknown@devsolve.local"
+  );
+}
+
+function toSummary(report: ReportApiResponse): string {
+  const source =
+    report.summary ??
+    report.impact ??
+    report.vulnerabilityInformation ??
+    "Submitted vulnerability report awaiting organization triage.";
+
+  return source
+    .replace(/\s+/g, " ")
+    .replace(/#+\s*/g, "")
+    .trim()
+    .slice(0, 220);
+}
+
+function getProgramAssets(program?: ProgramApiResponse) {
+  return program?.assets?.length
+    ? program.assets
+    : (program?.inScopeAssets ?? []);
+}
+
+function toAssets(
+  report: ReportApiResponse,
+  program?: ProgramApiResponse,
+): string[] {
+  const directAssets = [
+    report.assetName,
+    report.assetIdentifier,
+  ].filter((value): value is string => Boolean(value?.trim()));
+
+  if (directAssets.length > 0) {
+    return Array.from(new Set(directAssets)).slice(0, 3);
+  }
+
+  const programAssets = getProgramAssets(program);
+  if (report.assetId) {
+    const matchedAsset = programAssets.find(
+      (asset) => asset.id === report.assetId,
+    );
+
+    if (matchedAsset?.identifier) {
+      return [matchedAsset.identifier];
+    }
+  }
+
+  const fallbackAssets = programAssets
+    .map((asset) => asset.identifier)
+    .filter((value): value is string => Boolean(value?.trim()))
+    .slice(0, 3);
+
+  return fallbackAssets.length > 0
+    ? fallbackAssets
+    : ["Program asset"];
+}
+
+function toManagedReport(
+  report: ReportApiResponse,
+  program?: ProgramApiResponse,
+): ManagedReport {
+  const author = toAuthorName(report);
+
+  return {
+    id: report.id,
+    reportId: toDisplayReportId(report),
+    title: report.title || program?.name || "Untitled report",
+    programLogo: undefined,
+    author,
+    authorEmail: toAuthorEmail(report),
+    authorInitials: toInitials(author),
+    type: toManagedType(report, program),
+    status: toManagedStatus(report.state),
+    severity: toManagedSeverity(report),
+    queueState: toWorkflowState(report.state),
+    submittedAt: toSubmittedDate(report),
+    summary: toSummary(report),
+    assets: toAssets(report, program),
+  };
+}
+
 // CreateReportRequest (POST /programs/{programId}/reports) only exposes one
 // free-text field for the write-up — no dedicated fields for target asset,
 // HTTP method, reproduction steps, PoC payload, remediation, etc. — so the
@@ -183,12 +432,55 @@ function toReportItem(report: ReportApiResponse, programName: string): ReportIte
 
 export const reportsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    getManagedReports: builder.query<ManagedReport[], void>({
+      async queryFn(_arg, _api, _extraOptions, fetchWithBQ) {
+        const reportsResult = await fetchWithBQ(
+          "/reports?size=100&sort=submittedAt,DESC",
+        );
+        if (reportsResult.error) return { error: reportsResult.error };
+
+        const raw = extractReports(
+          reportsResult.data as
+            | ReportsEnvelope<ReportApiResponse>
+            | ReportApiResponse[]
+            | undefined,
+        );
+
+        const programIds = Array.from(
+          new Set(raw.map((report) => report.programId).filter(Boolean)),
+        );
+        const programResults = await Promise.all(
+          programIds.map((id) => fetchWithBQ(`/programs/${id}`)),
+        );
+        const programMap = new Map<string, ProgramApiResponse>();
+
+        programIds.forEach((id, index) => {
+          const result = programResults[index];
+          if (!result.error && result.data) {
+            programMap.set(id, result.data as ProgramApiResponse);
+          }
+        });
+
+        return {
+          data: raw.map((report) =>
+            toManagedReport(report, programMap.get(report.programId)),
+          ),
+        };
+      },
+      providesTags: ["Report"],
+    }),
+
     getReports: builder.query<ReportItem[], ReportsFilterParams | void>({
       async queryFn(params, _api, _extraOptions, fetchWithBQ) {
         const reportsResult = await fetchWithBQ(`/reports/mine?size=100&sort=submittedAt,DESC`);
         if (reportsResult.error) return { error: reportsResult.error };
 
-        const raw = (reportsResult.data as { content?: ReportApiResponse[] } | undefined)?.content ?? [];
+        const raw = extractReports(
+          reportsResult.data as
+            | ReportsEnvelope<ReportApiResponse>
+            | ReportApiResponse[]
+            | undefined,
+        );
 
         const programIds = Array.from(new Set(raw.map((report) => report.programId).filter(Boolean)));
         const programResults = await Promise.all(programIds.map((id) => fetchWithBQ(`/programs/${id}`)));
@@ -312,6 +604,7 @@ export const reportsApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetManagedReportsQuery,
   useGetReportsQuery,
   useGetReportByIdQuery,
   useAddReportCommentMutation,

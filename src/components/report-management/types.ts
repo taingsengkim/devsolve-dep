@@ -1,9 +1,11 @@
 export type ReportType = "Bounty" | "Response";
 export type ReportStatus = "Open" | "Closed";
 export type ReportSeverity = "Critical" | "High" | "Medium" | "Low";
+export type ReportWorkflowState = "PENDING" | "UNDER_REVIEW" | "APPROVED" | "CLOSED";
 
 export type ManagedReport = {
-  id: number;
+  id: string | number;
+  reportId?: string;
   title: string;
   programLogo?: string;
   author: string;
@@ -12,6 +14,7 @@ export type ManagedReport = {
   type: ReportType;
   status: ReportStatus;
   severity: ReportSeverity;
+  queueState?: ReportWorkflowState;
   submittedAt: string;
   summary: string;
   assets: string[];
