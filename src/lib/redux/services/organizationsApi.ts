@@ -118,6 +118,7 @@ export const organizationsApi = baseApi.injectEndpoints({
       ],
     }),
   }),
+  overrideExisting: true,
 });
 
 export const {

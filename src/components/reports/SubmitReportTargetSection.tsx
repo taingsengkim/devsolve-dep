@@ -89,9 +89,13 @@ export function SubmitReportTargetSection({
     ? selectedProgram.companyName.substring(0, 2).toUpperCase()
     : "CV";
 
-  const inScopeList =
+  const inScopeList: string[] =
     selectedProgram?.inScopeAssets && selectedProgram.inScopeAssets.length > 0
-      ? selectedProgram.inScopeAssets
+      ? selectedProgram.inScopeAssets.map((asset: any) =>
+          typeof asset === "string"
+            ? asset
+            : asset?.identifier || asset?.name || "Unknown asset",
+        )
       : [
           "api.nexacloud.com",
           "dashboard.nexacloud.com",
