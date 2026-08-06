@@ -19,7 +19,7 @@ const PILLARS: { icon: LucideIcon; title: string; body: string; href: string }[]
     icon: MessageSquare,
     title: "Solve problems",
     body: "Post what is broken, or answer someone else's and make it permanent.",
-    href: "/discussions",
+    href: "/problems",
   },
   {
     icon: Trophy,

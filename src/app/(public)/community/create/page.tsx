@@ -13,7 +13,7 @@ export default function PublicCreatePostSelectionPage() {
       className="min-h-[100dvh] bg-[#F8FAFC]"
     >
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-        <CreatePostSelection basePath="/discussions/create" backHref="/discussions" />
+        <CreatePostSelection basePath="/community/create" backHref="/community" />
       </main>
     </motion.div>
   );

@@ -56,7 +56,7 @@ interface CreateProblemFormProps {
   cancelHref?: string;
 }
 
-export function CreateProblemForm({ cancelHref = "/discussions" }: CreateProblemFormProps) {
+export function CreateProblemForm({ cancelHref = "/problems" }: CreateProblemFormProps) {
   const router = useRouter();
   const [createDiscussion, { isLoading, error }] = useCreateDiscussionMutation();
 

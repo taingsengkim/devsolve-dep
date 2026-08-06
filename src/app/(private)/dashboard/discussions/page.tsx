@@ -73,7 +73,14 @@ export default function DiscussionsPage() {
       transition={{ duration: 0.3, ease: "easeOut" }}
       className="space-y-6 w-full pb-12"
     >
-      <DiscussionHeader />
+      <DiscussionHeader
+        breadcrumbLabel="Community"
+        title="Community"
+        badgeLabel="Problems · Solutions · Showcases"
+        description="Ask focused questions, share practical solutions, and showcase what you are building with other developers."
+        createHref="/dashboard/discussions/create"
+        createLabel="Start a discussion"
+      />
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-8 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <section
@@ -95,6 +102,7 @@ export default function DiscussionsPage() {
           />
           <DiscussionActiveFilters
             category={category}
+            defaultCategory="All"
             topic={topic}
             tag={tag}
             searchQuery={searchQuery}
@@ -164,6 +172,7 @@ export default function DiscussionsPage() {
                       <DiscussionEmptyState
                         onReset={resetFilters}
                         hasFilters={hasActiveFilters}
+                        createHref="/dashboard/discussions/create"
                       />
                     </motion.div>
                   )}

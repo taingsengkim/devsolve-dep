@@ -42,16 +42,17 @@ const navLinks: NavLink[] = [
   { name: "Hacker Activity", href: "/hacktivity" },
   {
     name: "Community",
+    href: "/community",
     items: [
       {
         name: "Problem",
-        href: "/dashboard/discussions/create/problem",
+        href: "/problems",
         description: "Post bugs, blockers, and security questions.",
         icon: "problem",
       },
       {
         name: "Showcase",
-        href: "/dashboard/discussions/create/showcase",
+        href: "/showcases",
         description: "Share product wins, demos, and build highlights.",
         icon: "showcase",
       },
@@ -91,7 +92,6 @@ function CommunityMenuIcon({ icon }: { icon?: NavItem["icon"] }) {
 
 const Navbar = () => {
   const pathname = usePathname();
-
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -103,9 +103,7 @@ const Navbar = () => {
     start: "bottom-up",
   });
   const isDarkLogo = mounted && isDark;
-  const logoSrc = isDarkLogo
-    ? darkModeLogo
-    : "/devsolve-logo-removebg-preview.png";
+  const logoSrc = isDarkLogo ? darkModeLogo : "/devsolve-logo.png";
 
   // The header is a fixed island with no backdrop band, so it always overlaps
   // page content. To keep the screen clear it retracts while the reader moves
@@ -333,31 +331,49 @@ const Navbar = () => {
                           onMouseEnter={openCommunityMenu}
                           onMouseLeave={() => closeCommunityMenu(140)}
                         >
-                          <button
-                            type="button"
-                            aria-expanded={communityMenuOpen}
-                            aria-haspopup="menu"
-                            onClick={() => {
-                              if (communityMenuOpen) {
-                                closeCommunityMenu();
-                              } else {
-                                openCommunityMenu();
-                              }
-                            }}
+                          <div
                             className={cn(
-                              "group relative inline-flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-4 text-sm font-semibold transition-all duration-200",
+                              "group relative inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold transition-all duration-200",
                               isActive || communityMenuOpen
                                 ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
                                 : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900/80 dark:hover:text-white",
                             )}
                           >
-                            <span>{link.name}</span>
-                            <ChevronDown
-                              className={cn(
-                                "size-4 transition-transform duration-200",
-                                communityMenuOpen && "rotate-180",
-                              )}
-                            />
+                            {/* The label navigates straight to /community;
+                                the chevron is the only thing that toggles
+                                the flyout, so a click never fights a nav. */}
+                            <Link
+                              href={link.href ?? "/community"}
+                              aria-current={isActive ? "page" : undefined}
+                              onClick={() => {
+                                setCommunityMenuOpen(false);
+                                setMobileMenuOpen(false);
+                              }}
+                              className="inline-flex h-9 items-center rounded-l-lg pl-4 pr-1.5"
+                            >
+                              {link.name}
+                            </Link>
+                            <button
+                              type="button"
+                              aria-expanded={communityMenuOpen}
+                              aria-haspopup="menu"
+                              aria-label={`${communityMenuOpen ? "Close" : "Open"} ${link.name} menu`}
+                              onClick={() => {
+                                if (communityMenuOpen) {
+                                  closeCommunityMenu();
+                                } else {
+                                  openCommunityMenu();
+                                }
+                              }}
+                              className="inline-flex h-9 items-center rounded-r-lg pl-1.5 pr-4"
+                            >
+                              <ChevronDown
+                                className={cn(
+                                  "size-4 transition-transform duration-200",
+                                  communityMenuOpen && "rotate-180",
+                                )}
+                              />
+                            </button>
 
                             {isActive ? (
                               <motion.span
@@ -370,7 +386,7 @@ const Navbar = () => {
                                 }}
                               />
                             ) : null}
-                          </button>
+                          </div>
 
                           <AnimatePresence>
                             {communityMenuOpen ? (
@@ -620,26 +636,41 @@ const Navbar = () => {
                     if (link.items?.length) {
                       return (
                         <div key={`${link.name}-mobile`} className="space-y-1">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setMobileCommunityOpen((current) => !current)
-                            }
+                          <div
                             className={cn(
-                              "flex min-h-10 w-full items-center justify-between rounded-lg px-4 text-sm font-semibold transition-colors",
+                              "flex min-h-10 w-full items-center justify-between rounded-lg text-sm font-semibold transition-colors",
                               isActive || mobileCommunityOpen
                                 ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
                                 : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900/80 dark:hover:text-white",
                             )}
                           >
-                            <span>{link.name}</span>
-                            <ChevronDown
-                              className={cn(
-                                "size-4 transition-transform duration-200",
-                                mobileCommunityOpen && "rotate-180",
-                              )}
-                            />
-                          </button>
+                            {/* Same split as desktop: label navigates, the
+                                chevron only expands the submenu. */}
+                            <Link
+                              href={link.href ?? "/community"}
+                              onClick={() => setMobileMenuOpen(false)}
+                              aria-current={isActive ? "page" : undefined}
+                              className="flex min-h-10 flex-1 items-center pl-4"
+                            >
+                              {link.name}
+                            </Link>
+                            <button
+                              type="button"
+                              aria-expanded={mobileCommunityOpen}
+                              aria-label={`${mobileCommunityOpen ? "Close" : "Open"} ${link.name} menu`}
+                              onClick={() =>
+                                setMobileCommunityOpen((current) => !current)
+                              }
+                              className="flex min-h-10 items-center pl-3 pr-4"
+                            >
+                              <ChevronDown
+                                className={cn(
+                                  "size-4 transition-transform duration-200",
+                                  mobileCommunityOpen && "rotate-180",
+                                )}
+                              />
+                            </button>
+                          </div>
 
                           <AnimatePresence initial={false}>
                             {mobileCommunityOpen ? (

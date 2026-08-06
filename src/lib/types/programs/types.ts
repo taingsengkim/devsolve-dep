@@ -1,4 +1,4 @@
-export type EngagementType = "RESPONSE" |  "BOUNTY";
+export type EngagementType = "RESPONSE" | "BOUNTY";
 export type ProgramState = "DRAFT" | "PUBLISHED" | "ARCHIVED" | "ACTIVE";
 export type ProgramType = "All" | "Bounty" | "Response";
 export type SubmissionState = "PENDING_REVIEW" | "APPROVED" | "REJECTED";
@@ -27,6 +27,38 @@ export interface ProgramReward {
   minAmount: number;
   maxAmount: number;
   points: number;
+}
+
+export interface Asset {
+  assetType: "URL" | "IP" | "MOBILE" | "OTHER";
+  identifier: string;
+  description: string;
+  isInScope: boolean;
+  maxSeverity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+}
+
+export interface RewardTier {
+  severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+  minAmount: number;
+  maxAmount: number;
+  points: number;
+}
+
+export interface CreateProgramRequest {
+  handle: string;
+  name: string;
+  description: string;
+  engagementType: "BOUNTY" | "VDP";
+  visibility: "PUBLIC" | "PRIVATE";
+  policy: string;
+  proofOfConceptRequirements: string;
+  rulesOfEngagement: RuleSection;
+  exclusions: RuleSection;
+  offersBounties: boolean;
+  minimumBounty: number;
+  maximumBounty: number;
+  assets: Asset[];
+  rewards: RewardTier[];
 }
 
 export interface Program {
@@ -99,7 +131,13 @@ export interface GetProgramsParams {
   state?: string;
 }
 
-export type AssetCategory = "Web" | "API" | "Mobile" | "Network" | "Other" | string;
+export type AssetCategory =
+  | "Web"
+  | "API"
+  | "Mobile"
+  | "Network"
+  | "Other"
+  | string;
 export type ProgramStatus = "Open" | "Done" | "Closed" | string;
 
 export interface ProgramsCounts {
@@ -154,4 +192,4 @@ export interface ProgramItem {
   outOfScopeTargets?: string[];
   bountyMatrix?: ProgramBountyMatrixItem[];
   stats?: ProgramItemStats;
-}
+}
