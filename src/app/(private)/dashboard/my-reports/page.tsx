@@ -29,6 +29,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 const SEVERITY_OPTIONS = [
@@ -46,70 +53,26 @@ function SeverityFilterSelect({
   value: string;
   onChange: (val: string) => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const selectedOption = SEVERITY_OPTIONS.find((o) => o.value === value) || SEVERITY_OPTIONS[0];
-
   return (
-    <div ref={containerRef} className="relative w-full sm:w-auto">
-      <button
-        type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        className="h-10.5 px-3.5 w-full sm:w-auto min-w-[165px] text-sm font-semibold bg-white border border-slate-300 hover:border-slate-400 rounded-xl text-slate-800 flex items-center justify-between gap-3 cursor-pointer transition-all shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-600/20"
-      >
+    <Select value={value} onValueChange={(val) => val && onChange(val)}>
+      <SelectTrigger className="h-10.5 px-3.5 w-full sm:w-auto min-w-[165px] text-sm font-semibold bg-white border border-slate-300 hover:border-slate-400 rounded-xl text-slate-800 flex items-center justify-between gap-2.5 cursor-pointer shadow-2xs focus:ring-2 focus:ring-blue-600/20">
         <div className="flex items-center gap-2 min-w-0">
           <Filter className="w-4 h-4 text-slate-500 shrink-0" />
-          <span className="truncate">{selectedOption.label}</span>
+          <SelectValue placeholder="Severity: All" />
         </div>
-        <ChevronDown className={cn("w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200", isOpen && "rotate-180 text-blue-600")} />
-      </button>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -4, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.98 }}
-            transition={{ duration: 0.15 }}
-            className="absolute right-0 z-50 mt-1.5 w-full sm:w-48 bg-white border border-slate-200/90 rounded-2xl shadow-xl p-1.5 space-y-0.5"
+      </SelectTrigger>
+      <SelectContent className="rounded-xl border border-slate-200 bg-white p-1 shadow-xl">
+        {SEVERITY_OPTIONS.map((opt) => (
+          <SelectItem
+            key={opt.value}
+            value={opt.value}
+            className="text-sm font-medium text-slate-700 focus:bg-blue-50 focus:text-blue-700 rounded-lg cursor-pointer py-2 px-3"
           >
-            {SEVERITY_OPTIONS.map((opt) => {
-              const isSelected = value === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => {
-                    onChange(opt.value);
-                    setIsOpen(false);
-                  }}
-                  className={cn(
-                    "w-full px-3 py-2 text-sm rounded-xl flex items-center justify-between text-left transition-colors cursor-pointer",
-                    isSelected
-                      ? "bg-blue-50 text-blue-700 font-semibold"
-                      : "hover:bg-slate-50 text-slate-700 font-medium"
-                  )}
-                >
-                  <span className="truncate">{opt.label}</span>
-                  {isSelected && <Check className="w-4 h-4 text-blue-600 shrink-0 ml-2" />}
-                </button>
-              );
-            })}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+            {opt.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 
