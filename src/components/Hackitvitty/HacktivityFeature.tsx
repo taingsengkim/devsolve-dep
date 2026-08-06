@@ -26,7 +26,7 @@ export default function HacktivityFeature() {
 
   const searchParams = useMemo(
     () => (query.trim() ? { search: query.trim() } : undefined),
-    [query]
+    [query],
   );
 
   const { data, isLoading, isError } = useGetHacktivityFeedQuery(searchParams);
@@ -64,7 +64,8 @@ export default function HacktivityFeature() {
               Hacktivity Stream
             </h1>
             <p className="mt-1.5 text-sm text-slate-500 max-w-2xl">
-              Real-time feed of resolved vulnerabilities, hacker milestones, and public disclosure reports.
+              Real-time feed of resolved vulnerabilities, hacker milestones, and
+              public disclosure reports.
             </p>
           </div>
 
@@ -75,8 +76,12 @@ export default function HacktivityFeature() {
                 key={stat.label}
                 className="rounded-xl border border-slate-200/80 bg-white px-3.5 py-2 shadow-xs"
               >
-                <div className="text-sm font-bold text-slate-900">{stat.value}</div>
-                <div className="text-[11px] font-medium text-slate-500">{stat.label}</div>
+                <div className="text-sm font-bold text-slate-900">
+                  {stat.value}
+                </div>
+                <div className="text-[11px] font-medium text-slate-500">
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
@@ -109,11 +114,14 @@ export default function HacktivityFeature() {
                     <button
                       type="button"
                       key={option}
-                      onClick={() => setSelectedFilter(isActive ? null : option)}
-                      className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all shadow-xs ${isActive
+                      onClick={() =>
+                        setSelectedFilter(isActive ? null : option)
+                      }
+                      className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all shadow-xs ${
+                        isActive
                           ? "bg-blue-600 text-white"
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                        }`}
+                      }`}
                     >
                       {option}
                     </button>
@@ -174,7 +182,10 @@ export default function HacktivityFeature() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.98 }}
-                        transition={{ duration: 0.25, delay: Math.min(i, 8) * 0.03 }}
+                        transition={{
+                          duration: 0.25,
+                          delay: Math.min(i, 8) * 0.03,
+                        }}
                         className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-slate-200/80 bg-white p-4 transition-all hover:border-slate-300 hover:shadow-xs"
                       >
                         <div className="flex items-start gap-3.5 min-w-0 flex-1">
@@ -211,12 +222,13 @@ export default function HacktivityFeature() {
                             <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
                               {activity.severity && (
                                 <span
-                                  className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-semibold ${activity.severity === "Critical"
+                                  className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-semibold ${
+                                    activity.severity === "Critical"
                                       ? "bg-red-50 text-red-700 border border-red-200"
                                       : activity.severity === "High"
                                         ? "bg-amber-50 text-amber-700 border border-amber-200"
                                         : "bg-slate-100 text-slate-700"
-                                    }`}
+                                  }`}
                                 >
                                   <ShieldAlert size={12} />
                                   {activity.severity}
@@ -231,7 +243,9 @@ export default function HacktivityFeature() {
                               )}
 
                               <span className="text-slate-400">•</span>
-                              <span className="text-slate-500">{activity.timeAgo}</span>
+                              <span className="text-slate-500">
+                                {activity.timeAgo}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -241,14 +255,17 @@ export default function HacktivityFeature() {
                           <button
                             type="button"
                             onClick={() => toggleLike(activity.id)}
-                            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${isLiked
+                            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                              isLiked
                                 ? "bg-rose-50 text-rose-600 border border-rose-200"
                                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                              }`}
+                            }`}
                           >
                             <Heart
                               size={14}
-                              className={isLiked ? "fill-rose-600 text-rose-600" : ""}
+                              className={
+                                isLiked ? "fill-rose-600 text-rose-600" : ""
+                              }
                             />
                             <span>{isLiked ? 19 : 18}</span>
                           </button>
@@ -270,7 +287,8 @@ export default function HacktivityFeature() {
           </div>
 
           {/* Right Sidebar */}
-          <div className="space-y-6 sticky top-8">
+          {/* Clears the sticky navbar, otherwise the widgets pin underneath it */}
+          <div className="space-y-6 sticky top-[calc(var(--navbar-height)+1.5rem)]">
             {/* Top Hackers Widget */}
             <div className="rounded-2xl bg-white p-5 border border-slate-200/80 shadow-xs">
               <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
@@ -315,7 +333,9 @@ export default function HacktivityFeature() {
                 <span>Coordinated Disclosure</span>
               </div>
               <p className="text-slate-600 leading-relaxed">
-                All activities listed on Hacktivity adhere to coordinated vulnerability disclosure policies agreed upon by researchers and program teams.
+                All activities listed on Hacktivity adhere to coordinated
+                vulnerability disclosure policies agreed upon by researchers and
+                program teams.
               </p>
             </div>
           </div>

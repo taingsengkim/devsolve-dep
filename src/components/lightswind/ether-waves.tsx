@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { useInView } from "motion/react";
 import {
-  Clock,
+  Timer,
   Mesh,
   OrthographicCamera,
   PlaneGeometry,
@@ -384,7 +384,7 @@ export default function EtherWavesBackground({
     const mesh = new Mesh(geometry, material);
     scene.add(mesh);
 
-    const clock = new Clock();
+    const clock = new Timer();
 
     const setSize = () => {
       if (!active) return;
@@ -437,7 +437,8 @@ export default function EtherWavesBackground({
       if (!active) return;
       
       if (isInView) {
-        uniforms.iTime.value = clock.getElapsedTime();
+        clock.update();
+        uniforms.iTime.value = clock.getElapsed();
 
         if (interactive) {
           currentMouseRef.current.lerp(targetMouseRef.current, mouseDamping);

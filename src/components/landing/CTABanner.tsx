@@ -3,175 +3,143 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowRight, ChevronRight, Users, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Bug, MessageSquare, Trophy } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import SectionBackdrop, { ACCENT, PRIMARY, SECONDARY } from "./SectionBackdrop";
 
-const benefits = [
-  "Earn bounties for every validated report",
-  "Build a public reputation that gets you hired",
-  "Access challenges designed by industry experts",
-  "Join a global community of 2,400+ researchers",
-  "Free to join — get started in minutes",
+/* ─── The three pillars, restated as the closing argument ──────────── */
+const PILLARS: { icon: LucideIcon; title: string; body: string; href: string }[] = [
+  {
+    icon: Bug,
+    title: "Hunt bounties",
+    body: "Browse live programs, submit a report, get paid at the tier it lands in.",
+    href: "/programs",
+  },
+  {
+    icon: MessageSquare,
+    title: "Solve problems",
+    body: "Post what is broken, or answer someone else's and make it permanent.",
+    href: "/discussions",
+  },
+  {
+    icon: Trophy,
+    title: "Show the work",
+    body: "Every accepted report and answer compounds into a public profile.",
+    href: "/leaderboard",
+  },
 ];
 
 export function CTABanner() {
   return (
-    <section className="relative py-24 overflow-hidden bg-slate-950">
-      {/* Animated background glow blobs */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-blue-900/30 rounded-full blur-3xl" />
-      </div>
+    <section
+      className="relative overflow-hidden py-20 sm:py-24"
+      style={{ backgroundColor: SECONDARY }}
+    >
+      <SectionBackdrop tone="dark" seed={9} gridSize={72} />
 
-      {/* Grid overlay */}
-      <div className="absolute inset-0 opacity-[0.06] pointer-events-none">
-        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="cta-grid" width="48" height="48" patternUnits="userSpaceOnUse">
-              <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#FFFFFF" strokeWidth="1" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#cta-grid)" />
-        </svg>
-      </div>
+      <div className="relative mx-auto w-full max-w-7xl px-6 sm:px-12">
+        {/* ── Headline ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="max-w-3xl"
+        >
+          <div className="mb-5 flex items-center gap-2.5">
+            <span className="h-px w-8" style={{ backgroundColor: ACCENT }} />
+            <span
+              className="text-xs font-bold uppercase tracking-[0.22em]"
+              style={{ color: ACCENT }}
+            >
+              One account
+            </span>
+          </div>
 
-      <div className="relative z-10 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <h2 className="text-4xl font-bold leading-[1.05] tracking-[-0.045em] text-white sm:text-5xl lg:text-6xl">
+            Find it, fix it, and have
+            <br />
+            the record to prove it
+            <span style={{ color: PRIMARY }}>.</span>
+          </h2>
 
-          {/* Left content */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="space-y-6"
-          >
-            <div className="space-y-4">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">
-                <Users className="w-3.5 h-3.5" />
-                Join the community
-              </span>
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-slate-400">
+            Bounty programs, a problem-and-solution archive, and a profile that
+            carries the whole record — on one platform, free to join.
+          </p>
+        </motion.div>
 
-              <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-white leading-tight">
-                Ready to join
-                <br />
-                <span className="text-blue-400">DevSolve</span> today?
-              </h2>
-
-              <p className="text-lg text-slate-400 leading-relaxed max-w-md">
-                The best researchers, developers, and security professionals use DevSolve
-                to grow, earn, and make an impact.
-              </p>
-            </div>
-
-            {/* Benefits list */}
-            <ul className="space-y-2.5">
-              {benefits.map((b, i) => (
-                <motion.li
-                  key={b}
-                  initial={{ opacity: 0, x: -12 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.1 + i * 0.08, duration: 0.4 }}
-                  className="flex items-center gap-2.5 text-sm text-slate-300"
-                >
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  {b}
-                </motion.li>
-              ))}
-            </ul>
-
-            {/* CTA buttons */}
-            <div className="flex flex-wrap gap-3 pt-2">
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+        {/* ── Three pillars ── */}
+        <div className="mt-14 grid grid-cols-1 gap-px overflow-hidden rounded-2xl bg-white/10 sm:grid-cols-3">
+          {PILLARS.map((p, i) => {
+            const Icon = p.icon;
+            return (
+              <motion.div
+                key={p.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.5, delay: 0.15 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              >
                 <Link
-                  href="/account-type"
-                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-base px-7 py-3.5 rounded-full shadow-lg shadow-blue-500/30 transition-colors group"
+                  href={p.href}
+                  className="group flex h-full flex-col p-7 transition-colors hover:bg-white/4"
+                  style={{ backgroundColor: SECONDARY }}
                 >
-                  Get started free
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10">
+                    <Icon className="h-5 w-5 text-white" aria-hidden />
+                  </span>
+
+                  <h3 className="mt-5 flex items-center gap-2 text-lg font-bold tracking-tight text-white">
+                    {p.title}
+                    <ArrowUpRight className="h-4 w-4 text-slate-500 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-white" />
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-400">{p.body}</p>
                 </Link>
               </motion.div>
-
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                <Link
-                  href="/programs"
-                  className="inline-flex items-center gap-2 border border-white/20 bg-white/5 hover:bg-white/10 text-white font-semibold text-base px-7 py-3.5 rounded-full transition-colors group"
-                >
-                  Browse programs
-                  <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              </motion.div>
-            </div>
-          </motion.div>
-
-          {/* Right decorative element */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.92 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="hidden lg:block relative"
-          >
-            {/* Central glowing card */}
-            <div className="relative mx-auto w-80">
-              {/* Glow ring */}
-              <div className="absolute -inset-4 bg-blue-500/20 rounded-3xl blur-xl" />
-
-              <div className="relative bg-slate-900 border border-white/10 rounded-3xl p-6 shadow-2xl space-y-5">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                    <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                  </div>
-                  <span className="text-xs text-slate-500 font-mono">devsolve.platform</span>
-                </div>
-
-                {/* Fake terminal lines */}
-                <div className="font-mono text-sm space-y-1.5">
-                  <div className="flex gap-2">
-                    <span className="text-emerald-400">$</span>
-                    <span className="text-slate-300">devsolve login --sso</span>
-                  </div>
-                  <div className="text-slate-500 pl-4">→ Authenticating with Keycloak...</div>
-                  <div className="text-emerald-400 pl-4">✓ Logged in as @0xShadow</div>
-                  <div className="flex gap-2 mt-2">
-                    <span className="text-emerald-400">$</span>
-                    <span className="text-slate-300">devsolve programs --list</span>
-                  </div>
-                  <div className="text-slate-500 pl-4">→ Fetching active programs...</div>
-                  <div className="text-blue-400 pl-4">Found 150+ programs</div>
-                  <div className="flex gap-2 mt-2">
-                    <span className="text-emerald-400">$</span>
-                    <motion.span
-                      animate={{ opacity: [1, 0, 1] }}
-                      transition={{ duration: 1, repeat: Infinity }}
-                      className="text-slate-300"
-                    >
-                      █
-                    </motion.span>
-                  </div>
-                </div>
-
-                {/* Stats row */}
-                <div className="grid grid-cols-3 gap-3 pt-2 border-t border-white/5">
-                  {[
-                    { v: "150+", l: "Programs" },
-                    { v: "2.4k", l: "Members" },
-                    { v: "$5M+", l: "Paid Out" },
-                  ].map((s) => (
-                    <div key={s.l} className="text-center">
-                      <p className="text-base font-bold text-white">{s.v}</p>
-                      <p className="text-xs text-slate-500">{s.l}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
+            );
+          })}
         </div>
+
+        {/* ── Actions ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-10 flex flex-col items-start justify-between gap-6 border-t border-white/10 pt-10 sm:flex-row sm:items-center"
+        >
+          <p className="text-sm text-slate-400">
+            Free to join. No card, no minimum, no exclusivity clause.
+          </p>
+
+          <div className="flex flex-wrap gap-3">
+            <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0, scale: 0.98 }}>
+              <Link
+                href="/account-type"
+                className="group inline-flex items-center gap-2.5 rounded-full py-3 pl-6 pr-3 text-base font-semibold text-white shadow-[0_8px_24px_-10px_rgba(37,99,235,0.9)] transition-colors hover:brightness-110"
+                style={{ backgroundColor: PRIMARY }}
+              >
+                Get started free
+                <span
+                  className="flex h-7 w-7 items-center justify-center rounded-full"
+                  style={{ backgroundColor: ACCENT }}
+                >
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </Link>
+            </motion.div>
+
+            <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0, scale: 0.98 }}>
+              <Link
+                href="/programs"
+                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                Browse programs
+              </Link>
+            </motion.div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

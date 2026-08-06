@@ -41,11 +41,11 @@ export function useSubmitReportForm() {
       title: "",
     });
 
-  const { data: programsResponse, isLoading: isProgramsLoading } =
+  const { data: programsData, isLoading: isProgramsLoading } =
     useGetProgramsQuery();
   const [submitReport, { isLoading: isSubmitting }] = useSubmitReportMutation();
 
-  const programs = programsResponse?.content || [];
+  const programs = programsData?.content || [];
 
   const form = useForm<SubmitReportFormValues>({
     resolver: zodResolver(submitReportSchema),
@@ -84,20 +84,15 @@ export function useSubmitReportForm() {
   const selectedSeverity = watch("severity");
 
   const selectedProgram =
-    programs.find((p) => p.id === selectedProgramId) || programs[0] || null;
+    programs.find((p: any) => p.id === selectedProgramId) || programs[0] || null;
 
   // Synchronize preselected program ID when programs arrive asynchronously.
-  // Links into this form from a program's page (ProgramDetailHero/Sidebar)
-  // still carry that page's mock program id, which will never match a real
-  // program from useGetSubmittableProgramsQuery — so a match is required,
-  // not just a non-empty id, or the field gets stuck on an invalid id that
-  // silently fails at submit time.
   useEffect(() => {
     if (programs.length === 0) return;
-    const found = programs.find((p) => p.id === preselectedProgramId);
+    const found = programs.find((p: any) => p.id === preselectedProgramId);
     if (found) {
       setValue("programId", found.id);
-    } else if (!programs.some((p) => p.id === selectedProgramId)) {
+    } else if (!programs.some((p: any) => p.id === selectedProgramId)) {
       setValue("programId", programs[0].id);
     }
   }, [preselectedProgramId, programs, setValue, selectedProgramId]);
@@ -110,9 +105,9 @@ export function useSubmitReportForm() {
       selectedProgram.inScopeAssets.length > 0
     ) {
       const currentAsset = watch("targetAsset");
-      const asset0 = selectedProgram.inScopeAssets[0];
-      const assetIdentifier = typeof asset0 === "string" ? asset0 : asset0?.identifier || "";
-      const defaultDomain = assetIdentifier.replace("*.", "api.");
+      const firstAsset = selectedProgram.inScopeAssets[0];
+      const rawDomain = typeof firstAsset === "string" ? firstAsset : ((firstAsset as any)?.identifier || (firstAsset as any)?.name || "example.com");
+      const defaultDomain = typeof rawDomain === "string" ? rawDomain.replace("*.", "api.") : "api.example.com";
       if (
         !currentAsset ||
         currentAsset === "https://api.nexacloud.com/v1/invoices/1337"
@@ -240,15 +235,11 @@ export function useSubmitReportForm() {
 
   const onSubmit = async (values: SubmitReportFormValues) => {
     setSubmitError(null);
-    const selectedProg = programs.find((p) => p.id === values.programId);
-    const programName: string = selectedProg
-      ? selectedProg.name || selectedProg.organizationName || selectedProg.companyName || "CloudVault Security Program"
+    const selectedProg = programs.find((p: any) => p.id === values.programId);
+    const programName = selectedProg
+      ? (selectedProg.name || selectedProg.organizationName || (selectedProg as any).companyName)
       : "CloudVault Security Program";
-    const matchedAsset = selectedProg?.inScopeAssets?.find((asset) => {
-      const idStr = typeof asset === "string" ? asset : asset.identifier || "";
-      return values.targetAsset.includes(idStr.replace(/^\*\./, ""));
-    });
-    const assetId = typeof matchedAsset === "string" ? undefined : matchedAsset?.id;
+    const assetId = selectedProg?.inScopeAssets?.[0]?.id || values.targetAsset || "";
 
     try {
       const res = await submitReport({

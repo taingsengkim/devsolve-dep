@@ -1,0 +1,80 @@
+"use client";
+
+import {
+  CircleDot,
+  FileText,
+  FolderKanban,
+  Lightbulb,
+  type LucideIcon,
+} from "lucide-react";
+
+import type { DraftCategory } from "@/components/saved-draft/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+type SavedDraftTabsProps = {
+  activeTab: DraftCategory;
+  counts: Record<DraftCategory, number>;
+  onChange: (category: DraftCategory) => void;
+  visibleTabs?: DraftCategory[];
+};
+
+type DraftTabConfig = {
+  key: DraftCategory;
+  label: string;
+  icon: LucideIcon;
+};
+
+const TAB_CONFIG: DraftTabConfig[] = [
+  { key: "problem", label: "Problem", icon: CircleDot },
+  { key: "solution", label: "Solution", icon: Lightbulb },
+  { key: "program", label: "Program", icon: FolderKanban },
+  { key: "report", label: "Report", icon: FileText },
+];
+
+export function SavedDraftTabs({
+  activeTab,
+  counts,
+  onChange,
+  visibleTabs,
+}: SavedDraftTabsProps) {
+  const tabs = visibleTabs
+    ? TAB_CONFIG.filter((t) => visibleTabs.includes(t.key))
+    : TAB_CONFIG;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {tabs.map((tab) => {
+        const Icon = tab.icon;
+        const isActive = activeTab === tab.key;
+
+        return (
+          <Button
+            key={tab.key}
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onChange(tab.key)}
+            className={cn(
+              "h-10 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:border-blue-100 hover:bg-blue-50/60 hover:text-[#2563EB]",
+              isActive &&
+                "border-blue-600 bg-[#2563EB] text-white shadow-[0_10px_24px_rgba(37,99,235,0.18)] hover:bg-[#1D4ED8] hover:text-white"
+            )}
+          >
+            <Icon data-icon="inline-start" className="size-4" />
+            {tab.label}
+            <Badge
+              className={cn(
+                "rounded-full border-0 bg-slate-100 px-1.5 py-0 text-[11px] font-semibold text-slate-500 shadow-none",
+                isActive && "bg-white/20 text-white"
+              )}
+            >
+              {counts[tab.key]}
+            </Badge>
+          </Button>
+        );
+      })}
+    </div>
+  );
+}

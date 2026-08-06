@@ -36,9 +36,9 @@ interface SubmitReportTargetSectionProps {
   errors: FieldErrors<SubmitReportFormValues>;
   setValue: UseFormSetValue<SubmitReportFormValues>;
   watch: UseFormWatch<SubmitReportFormValues>;
-  programs: Program[];
+  programs: any[];
   isLoading: boolean;
-  selectedProgram?: Program | null;
+  selectedProgram?: any | null;
 }
 
 const HTTP_METHOD_STYLES: Record<string, { badge: string }> = {
@@ -89,9 +89,13 @@ export function SubmitReportTargetSection({
     ? selectedProgram.companyName.substring(0, 2).toUpperCase()
     : "CV";
 
-  const inScopeList =
+  const inScopeList: string[] =
     selectedProgram?.inScopeAssets && selectedProgram.inScopeAssets.length > 0
-      ? selectedProgram.inScopeAssets
+      ? selectedProgram.inScopeAssets.map((asset: any) =>
+          typeof asset === "string"
+            ? asset
+            : asset?.identifier || asset?.name || "Unknown asset",
+        )
       : [
           "api.nexacloud.com",
           "dashboard.nexacloud.com",
@@ -183,19 +187,16 @@ export function SubmitReportTargetSection({
           In-Scope Targets ({inScopeList.length})
         </h3>
         <div className="flex flex-wrap gap-3 py-1">
-          {inScopeList.map((target, idx) => {
-            const targetName = typeof target === "string" ? target : target.identifier;
-            return (
-              <Badge
-                key={typeof target === "string" ? target : target.id || idx}
-                variant="outline"
-                className="px-4 py-4 text-sm font-mono font-medium gap-2.5"
-              >
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span>{targetName}</span>
-              </Badge>
-            );
-          })}
+          {inScopeList.map((target: string) => (
+            <Badge
+              key={target}
+              variant="outline"
+              className="px-4 py-4 text-sm font-mono font-medium gap-2.5"
+            >
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>{target}</span>
+            </Badge>
+          ))}
         </div>
       </div>
 
@@ -205,19 +206,16 @@ export function SubmitReportTargetSection({
           Out-of-Scope Rules & Exclusions
         </h3>
         <div className="flex flex-wrap gap-3 py-1">
-          {outOfScopeList.map((target, idx) => {
-            const targetName = typeof target === "string" ? target : String(target);
-            return (
-              <Badge
-                key={idx}
-                variant="secondary"
-                className="px-4 py-4 text-sm font-mono font-medium gap-2.5 opacity-90"
-              >
-                <XCircle className="w-4 h-4 text-rose-500 dark:text-rose-400 shrink-0" />
-                <span>{targetName}</span>
-              </Badge>
-            );
-          })}
+          {outOfScopeList.map((target: string) => (
+            <Badge
+              key={target}
+              variant="secondary"
+              className="px-4 py-4 text-sm font-mono font-medium gap-2.5 opacity-90"
+            >
+              <XCircle className="w-4 h-4 text-rose-500 dark:text-rose-400 shrink-0" />
+              <span>{target}</span>
+            </Badge>
+          ))}
         </div>
       </div>
 
