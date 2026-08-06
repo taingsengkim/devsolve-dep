@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { authClient } from "@/lib/auth/auth-client";
 import { extractRealmRolesFromToken } from "@/lib/auth/token-utils";
 import { useGetEditProfileFormQuery } from "@/lib/redux/services/profileApi";
+import { clearAccessToken } from "@/lib/auth/access-token";
+import { baseApi } from "@/lib/redux/services/baseApi";
 
 /** Shape of the object returned by authClient.getAccessToken */
 interface AccessTokenResponse {
@@ -26,6 +29,7 @@ export interface SidebarUser {
 }
 
 export function useSidebarAuth() {
+  const dispatch = useDispatch();
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
   const { data: profile } = useGetEditProfileFormQuery(undefined, { skip: !session });
@@ -75,19 +79,37 @@ export function useSidebarAuth() {
     : undefined;
 
   const handleSignOut = async () => {
-    await authClient.signOut();
+    try {
+      // 1. Clear cached access token in memory
+      clearAccessToken();
 
-    const issuer = process.env.NEXT_PUBLIC_KEYCLOAK_ISSUER;
-    const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID;
+      // 2. Dispatch RTK Query resetApiState to wipe cached user data from Redux
+      dispatch(baseApi.util.resetApiState());
 
-    if (issuer && clientId) {
-      const cleanIssuer = issuer.replace(/\/+$/, "");
-      const logoutUrl = new URL(`${cleanIssuer}/protocol/openid-connect/logout`);
-      logoutUrl.searchParams.set("client_id", clientId);
-      logoutUrl.searchParams.set("post_logout_redirect_uri", window.location.origin);
-      window.location.href = logoutUrl.toString();
-    } else {
-      window.location.href = "/";
+      // 3. Clear better-auth session & cookies on the client domain
+      await authClient.signOut();
+
+      // 4. Clear client storage
+      if (typeof window !== "undefined") {
+        localStorage.clear();
+        sessionStorage.clear();
+      }
+    } catch (error) {
+      console.error("Error during sign out:", error);
+    } finally {
+      // 5. Redirect to Keycloak OIDC end_session endpoint to clear Keycloak SSO session & cookies
+      const issuer = process.env.NEXT_PUBLIC_KEYCLOAK_ISSUER;
+      const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID;
+
+      if (issuer && clientId) {
+        const cleanIssuer = issuer.replace(/\/+$/, "");
+        const logoutUrl = new URL(`${cleanIssuer}/protocol/openid-connect/logout`);
+        logoutUrl.searchParams.set("client_id", clientId);
+        logoutUrl.searchParams.set("post_logout_redirect_uri", window.location.origin);
+        window.location.href = logoutUrl.toString();
+      } else {
+        window.location.href = "/";
+      }
     }
   };
 

@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect} from "react";
+import { Layers } from "lucide-react"; 
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { FaGithub, FaLinkedin, FaTelegram, FaGlobe } from "react-icons/fa6";
@@ -28,6 +29,8 @@ import {
   ShieldCheck,
   Award,
   TrendingUp,
+  Target,
+  CheckCircle2,
 } from "lucide-react";
 import { AnimatedBeam } from "@/components/ui/animated-beam";
 
@@ -43,6 +46,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-slate-50/50 text-gray-900 font-sans antialiased">
       <AboutHeroSection />
+      <DevSolveOverview/>
       <TechStackSection />
       <TeamSection />
       <ContactSection />
@@ -255,6 +259,19 @@ const ICON_MAP = {
   Lock,
 };
 
+const MISSION_FEATURES = [
+  "Responsible vulnerability disclosure",
+  "Fair rewards for meaningful findings",
+  "Hands-on learning through real challenges",
+  "Collaboration between researchers and orgs",
+];
+
+const VISION_FEATURES = [
+  "Global, trusted community of security professionals",
+  "Recognition and growth for top talent",
+  "Improved resilience across the internet",
+];
+
 function OfferSection() {
   return (
     <section className="bg-slate-50/50 py-16 md:py-24 border-y border-gray-100">
@@ -301,433 +318,242 @@ function OfferSection() {
 
 
 
-interface TechStackSectionProps {
-  technologies?: Technology[];
-}
-
-const SUB_BADGE_PRESETS = [
-  ["UI", "Reactive"],
-  ["Security", "API"],
-  ["ACID", "Relational"],
-  ["Containers", "DevOps"],
-  ["Auth", "SSO"],
-  ["Utility", "CSS"],
-];
-
-export function TechStackSection({
-  technologies = TECHNOLOGIES,
-}: TechStackSectionProps) {
-  const [activeNode, setActiveNode] = useState(0);
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [ballPosition, setBallPosition] = useState({ x: 80, y: 100 });
-  const [containerWidth, setContainerWidth] = useState(1000);
-  const [isBallAtNode, setIsBallAtNode] = useState(true);
-  const [rippleKey, setRippleKey] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const TECH_FLOW = useMemo(
-    () =>
-      (technologies || []).map((tech, index) => ({
-        id: `tech-${index + 1}`,
-        name: tech.name,
-        description: tech.description,
-        image: tech.image,
-        bgColor: tech.bgColor,
-        borderColor: tech.borderColor,
-        subBadges: SUB_BADGE_PRESETS[index % SUB_BADGE_PRESETS.length],
-      })),
-    [technologies]
-  );
-
-  const flowLength = TECH_FLOW.length;
-
-  useEffect(() => {
-    const updateWidth = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth);
-      }
-    };
-
-    updateWidth();
-    window.addEventListener("resize", updateWidth);
-    return () => window.removeEventListener("resize", updateWidth);
-  }, []);
-
-  const positions = useMemo(() => {
-    const total = Math.max(flowLength, 1);
-    const nextPositions = [] as Array<{ x: number; y: number }>;
-    const width = containerWidth;
-    const padding = Math.max(80, Math.min(120, width * 0.1));
-    const usableWidth = width - padding * 2;
-
-    for (let i = 0; i < total; i++) {
-      const x = padding + (i / Math.max(total - 1, 1)) * usableWidth;
-      const y = 100 + Math.sin((i / Math.max(total - 1, 1)) * Math.PI) * 30;
-      nextPositions.push({ x, y });
-    }
-    return nextPositions;
-  }, [flowLength, containerWidth]);
-
-  useEffect(() => {
-    if (hoveredNode !== null || flowLength === 0) return;
-
-    const interval = setInterval(() => {
-      setIsBallAtNode(false);
-      setActiveNode((prev) => (prev + 1) % flowLength);
-      setRippleKey((prev) => prev + 1);
-    }, 2500);
-
-    return () => clearInterval(interval);
-  }, [flowLength, hoveredNode]);
-
-  useEffect(() => {
-    if (flowLength === 0 || !positions[activeNode]) return;
-
-    setBallPosition(positions[activeNode]);
-
-    const timer = setTimeout(() => {
-      setIsBallAtNode(true);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [activeNode, flowLength, positions]);
-
+ function DevSolveOverview() {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
-      <div className="text-center mb-6 sm:mb-8">
-        <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-xs sm:text-sm font-semibold mb-2 sm:mb-3">
-          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-600 animate-pulse" />
-          Tech Stack
-        </div>
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#0F172A] tracking-tight">
-          Built with Modern Technologies
-        </h2>
-        <p className="text-sm sm:text-base text-[#64748B] max-w-xl mx-auto mt-2 leading-relaxed px-2">
-          An end-to-end pipeline designed for security, scalability, and top-tier performance.
-        </p>
-      </div>
-
-      <div
-        ref={containerRef}
-        className="relative overflow-visible rounded-2xl sm:rounded-3xl md:rounded-[32px] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50 shadow-lg sm:shadow-xl p-4 sm:p-6 md:p-10"
-      >
-        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl sm:rounded-3xl md:rounded-[32px]">
-          <div className="absolute w-[250px] sm:w-[350px] md:w-[450px] h-[250px] sm:h-[350px] md:h-[450px] bg-blue-400/10 blur-[80px] sm:blur-[100px] md:blur-[120px] rounded-full -top-40 -left-32" />
-          <div className="absolute w-[200px] sm:w-[300px] md:w-[350px] h-[200px] sm:h-[300px] md:h-[350px] bg-emerald-300/10 blur-[80px] sm:blur-[100px] md:blur-[120px] rounded-full bottom-0 right-0" />
-        </div>
-
-        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="h-7 sm:h-8 px-3 sm:px-4 rounded-full bg-[#2B68F6] text-white font-bold text-[8px] sm:text-[10px] uppercase tracking-wider flex items-center gap-1.5 sm:gap-2 shadow-md shadow-blue-500/20">
-              Architecture Pipeline
-              <span className="animate-pulse text-[10px] sm:text-xs">➔</span>
-            </div>
+    <section className="bg-slate-50/50 py-16 sm:py-24 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="max-w-7xl mx-auto space-y-20">
+        <div>
+          {/* Section Header */}
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              What Drives DevSolve
+            </h2>
           </div>
-          <div className="hidden sm:flex items-center gap-2 sm:gap-3 text-[8px] sm:text-[10px] font-semibold text-slate-400 tracking-wider">
-            <span>CLIENT</span>
-            <span className="text-slate-300">›››</span>
-            <span>SERVICES</span>
-            <span className="text-slate-300">›››</span>
-            <span>PERSISTENCE</span>
-          </div>
-        </div>
 
-        <div className="relative py-8 sm:py-10 md:py-14 px-2 sm:px-4 md:px-10 my-1 sm:my-2 flex items-center justify-start sm:justify-between gap-3 sm:gap-4 md:gap-6 overflow-x-auto overflow-y-visible no-scrollbar">
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none z-0 min-w-[500px] sm:min-w-[700px]"
-            preserveAspectRatio="none"
-            viewBox="0 0 1000 200"
-          >
-            <defs>
-              <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-            </defs>
-
-            <path
-              id="techPath"
-              d="M 80,100 C 220,20 340,180 500,100 C 660,20 780,180 920,100"
-              fill="none"
-              stroke="#CBD5E1"
-              strokeWidth="2"
-              strokeDasharray="7 7"
-            />
-
-            <path
-              d="M 80,100 C 220,20 340,180 500,100 C 660,20 780,180 920,100"
-              fill="none"
-              stroke="#60A5FA"
-              strokeWidth="4"
-              opacity="0.3"
-              filter="url(#glow)"
-              strokeDasharray="30 170"
-              style={{ animation: "dash 4s linear infinite" }}
-            />
-
-            <path
-              d="M 80,100 C 220,20 340,180 500,100 C 660,20 780,180 920,100"
-              fill="none"
-              stroke="#2B68F6"
-              strokeWidth="3"
-              strokeDasharray="20 180"
-              style={{ animation: "dash 4s linear infinite" }}
-            />
-
-            <circle
-              cx={ballPosition.x}
-              cy={ballPosition.y}
-              r="6"
-              fill="#2563EB"
-              className="transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)]"
-            />
-
-            <circle
-              cx={ballPosition.x}
-              cy={ballPosition.y}
-              r="12"
-              fill="#2563EB"
-              opacity="0.15"
-              className="transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)]"
-            />
-
-            {isBallAtNode && (
-              <circle
-                key={rippleKey}
-                cx={ballPosition.x}
-                cy={ballPosition.y}
-                r="6"
-                fill="none"
-                stroke="#2563EB"
-                strokeWidth="2"
-                opacity="0.4"
-              >
-                <animate
-                  attributeName="r"
-                  from="6"
-                  to="24"
-                  dur="0.8s"
-                  repeatCount="1"
-                />
-                <animate
-                  attributeName="opacity"
-                  from="0.4"
-                  to="0"
-                  dur="0.8s"
-                  repeatCount="1"
-                />
-              </circle>
-            )}
-
-            <circle r="2.5" fill="#10B981">
-              <animateMotion begin="0s" dur="6s" repeatCount="indefinite">
-                <mpath href="#techPath" />
-              </animateMotion>
-            </circle>
-            <circle r="2" fill="#F59E0B">
-              <animateMotion begin="2s" dur="6s" repeatCount="indefinite">
-                <mpath href="#techPath" />
-              </animateMotion>
-            </circle>
-            <circle r="1.5" fill="#60A5FA">
-              <animateMotion begin="4s" dur="6s" repeatCount="indefinite">
-                <mpath href="#techPath" />
-              </animateMotion>
-            </circle>
-          </svg>
-
-          {TECH_FLOW.map((node, index) => {
-            const isActive = activeNode === index;
-            const isHovered = hoveredNode === node.id;
-            const shouldHighlight = isActive || isHovered;
-
-            return (
-              <div
-                key={node.id}
-                onMouseEnter={() => setHoveredNode(node.id)}
-                onMouseLeave={() => setHoveredNode(null)}
-                className="relative z-10 flex flex-col items-center justify-center shrink-0 min-w-[80px] sm:min-w-[100px] md:min-w-[120px] pt-6 sm:pt-8 pb-4 sm:pb-6"
-                style={{
-                  animation: "float 4s ease-in-out infinite",
-                  animationDelay: `${index * 0.5}s`,
-                }}
-              >
-                {/* Sub-badges */}
-                {node.subBadges && (
-                  <div className="absolute -top-5 sm:-top-6 left-0 right-0 pointer-events-none flex justify-between z-20 px-1 sm:px-2">
-                    {node.subBadges.map((badge, bIdx) => (
-                      <span
-                        key={bIdx}
-                        className={`px-1.5 sm:px-2 py-0.5 bg-white border rounded-full text-[7px] sm:text-[9px] font-bold shadow-sm transition-all duration-300 whitespace-nowrap ${
-                          shouldHighlight
-                            ? "border-[#2B68F6] text-[#2B68F6] scale-105 shadow-md shadow-blue-500/20"
-                            : "border-slate-200 text-slate-500 opacity-80"
-                        }`}
-                      >
-                        {badge}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="relative flex items-center justify-center mt-3 sm:mt-4">
-                  <div
-                    className={`absolute inset-0 scale-110 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400 blur-sm sm:blur-md transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] ${
-                      isActive
-                        ? "opacity-60 animate-spinSlow"
-                        : isHovered
-                        ? "opacity-40"
-                        : "opacity-0"
-                    }`}
-                  />
-
-                  <div
-                    className={`relative flex flex-col items-center justify-center rounded-full bg-white border-2 transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] cursor-pointer shadow-md ${
-                      shouldHighlight
-                        ? "w-[76px] h-[76px] sm:w-[92px] sm:h-[92px] md:w-[104px] md:h-[104px] border-[#2B68F6] scale-[1.03] shadow-xl shadow-blue-500/25 z-30"
-                        : "w-[64px] h-[64px] sm:w-[80px] sm:h-[80px] md:w-24 md:h-24 border-slate-200 scale-100 z-10"
-                    }`}
-                  >
-                    <div
-                      className={`relative transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] mb-0.5 z-10 ${
-                        shouldHighlight
-                          ? "w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rotate-3 scale-105"
-                          : "w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7"
-                      }`}
-                    >
-                      <Image
-                        src={node.image}
-                        alt={`${node.name} logo`}
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-
-                    <h3
-                      className={`font-bold text-center px-1 leading-tight z-10 transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] ${
-                        shouldHighlight
-                          ? "text-[8px] sm:text-[9px] md:text-[10px] text-[#0F172A]"
-                          : "text-[7px] sm:text-[8px] md:text-[9px] text-[#1E2B45]"
-                      }`}
-                    >
-                      {node.name}
-                    </h3>
-
-                    <span className="text-[6px] sm:text-[7px] md:text-[8px] text-[#64748B] text-center leading-tight font-medium px-1 sm:px-2 mt-0.5 block z-10">
-                      {node.description}
-                    </span>
-                  </div>
-
-                  {isActive && (
-                    <div className="absolute -bottom-5 sm:-bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 text-[6px] sm:text-[7px] md:text-[8px] font-extrabold text-[#2B68F6] uppercase tracking-widest z-20 bg-white/95 px-2 sm:px-2.5 py-0.5 rounded-full border border-blue-200 shadow-md shadow-blue-500/10 whitespace-nowrap animate-fadeIn">
-                      <span className="w-1 h-1 rounded-full bg-[#2B68F6] animate-pulse" />
-                      Active
-                    </div>
-                  )}
-                </div>
-
-                {index < TECH_FLOW.length - 1 && (
-                  <div
-                    className={`absolute right-[-12px] sm:right-[-16px] md:right-[-20px] top-1/2 -translate-y-1/2 z-0 hidden sm:block font-bold text-xs sm:text-sm md:text-base transition-all duration-300 ${
-                      isActive
-                        ? "text-[#2B68F6] translate-x-1 scale-125"
-                        : "text-slate-300"
-                    }`}
-                  >
-                    ➜
-                  </div>
-                )}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-white rounded-3xl p-8 sm:p-10 border-2 border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6">
+                <Target className="w-6 h-6" />
               </div>
-            );
-          })}
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
+                Our Mission
+              </span>
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mt-2 mb-4">
+                Responsible Disclosure & Continuous Learning
+              </h3>
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
+                To empower ethical hackers to identify and report vulnerabilities
+                responsibly, reward meaningful contributions, and cultivate a culture
+                of continuous learning through real-world security challenges that make
+                the digital ecosystem safer for everyone.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  "Structured, secure vulnerability reporting",
+                  "Transparent evaluation & merit-based rewards",
+                  "Anti-cheating and plagiarism prevention",
+                  "Innovation through real-world challenges",
+                ].map((item, idx) => (
+                  <li key={idx} className="flex items-start text-sm text-slate-700">
+                    <CheckCircle2 className="w-5 h-5 text-blue-500 shrink-0 mr-3 mt-0.5" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="bg-white rounded-3xl p-8 sm:p-10 border-2 border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6">
+                <FaGlobe className="w-6 h-6" />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">
+                Our Vision
+              </span>
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mt-2 mb-4">
+                A Trusted Global Cybersecurity Community
+              </h3>
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
+                To become the world's most trusted bridge between organizations and
+                ethical hackers — an ecosystem where cybersecurity awareness grows,
+                talent is recognized globally, and the internet becomes more resilient
+                through collective effort.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  "Globally trusted platform for all stakeholders",
+                  "Active, security-first collaborative community",
+                  "Scalable infrastructure for enterprise bounties",
+                  "Cybersecurity education through practice",
+                ].map((item, idx) => (
+                  <li key={idx} className="flex items-start text-sm text-slate-700">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mr-3 mt-0.5" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
 
-        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mt-4 sm:mt-6">
-          <div className="hidden md:flex items-center gap-2 sm:gap-3 text-[8px] sm:text-[10px] font-semibold text-slate-400 tracking-wider">
-            <span>DATA INTEGRITY</span>
-            <span className="text-slate-300">‹‹‹</span>
-            <span>SECURITY FIRST</span>
-            <span className="text-slate-300">‹‹‹</span>
-            <span>STABLE INFRASTRUCTURE</span>
+        <div>
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
+              Everything in One Place
+            </h2>
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+              DevSolve integrates the complete challenge lifecycle — from program creation to reward payout — in a single, cohesive, secure platform.
+            </p>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 ml-0 sm:ml-auto w-full sm:w-auto">
-            <div className="h-6 sm:h-8 px-3 sm:px-4 rounded-full bg-[#10B981] text-white font-bold text-[7px] sm:text-[10px] uppercase tracking-wider flex items-center gap-1.5 sm:gap-2 shadow-md shadow-emerald-500/20 w-full sm:w-auto justify-center">
-              <span className="animate-pulse text-[8px] sm:text-[10px]">◀</span>
-              <span className="hidden xs:inline">Continuous Security Feedback</span>
-              <span className="xs:hidden">Security</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-white rounded-3xl p-8 border-2 border-red-200 shadow-sm hover:shadow-md hover:border-red-300 transition-all">
+              <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center mb-6">
+                <Bug className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">
+                Bug Bounty Programs
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Organizations publish scoped programs with Markdown descriptions. Hackers find, document, and report vulnerabilities through a structured, secure workflow.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-3xl p-8 border-2 border-blue-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6">
+                <Code className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">
+                Technical Challenges
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                A rich library of coding and security challenges with defined evaluation criteria, secure file submission, and confidential judging for complete fairness.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-3xl p-8 border-2 border-purple-200 shadow-sm hover:shadow-md hover:border-purple-300 transition-all">
+              <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-6">
+                <MessageSquare className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">
+                Discussion Forum
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                An integrated community forum to exchange ideas, ask technical questions, share write-ups, and collaborate beyond individual challenge submissions.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-3xl p-8 border-2 border-amber-200 shadow-sm hover:shadow-md hover:border-amber-300 transition-all">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center mb-6">
+                <Trophy className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">
+                Global Leaderboards
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Real-time leaderboards ranking hackers by points, reputation, and outcomes. Outstanding contributors earn global recognition and premium badge tiers.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-3xl p-8 border-2 border-emerald-200 shadow-sm hover:shadow-md hover:border-emerald-300 transition-all">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6">
+                <Award className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">
+                Reward System
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Structured reward policies with milestone bonuses, badge tiers, and monetary payouts tied directly to accepted vulnerability reports and challenge solutions.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-3xl p-8 border-2 border-sky-200 shadow-sm hover:shadow-md hover:border-sky-300 transition-all">
+              <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-500 flex items-center justify-center mb-6">
+                <Lock className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">
+                Secure Authentication
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Enterprise-grade auth, anti-cheating mechanisms, plagiarism prevention, and duplicate submission protection keep the platform trustworthy and fair.
+              </p>
+            </div>
+          </div>
+
+          {/* Bottom Badge Link */}
+          <div className="mt-12 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sky-50 border border-sky-200 text-sky-600 text-xs font-bold uppercase tracking-wider shadow-xs">
+              <Layers className="w-3.5 h-3.5" />
+              Technology Stack
             </div>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes dash {
-          to {
-            stroke-dashoffset: -400;
-          }
-        }
-
-        @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-2px);
-          }
-        }
-
-        @keyframes spinSlow {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translate(-50%, 4px);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, 0);
-          }
-        }
-
-        .animate-spinSlow {
-          animation: spinSlow 8s linear infinite;
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out forwards;
-        }
-
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-
-        @media (max-width: 480px) {
-          .xs\\:inline {
-            display: inline;
-          }
-          .xs\\:hidden {
-            display: none;
-          }
-        }
-      `}</style>
     </section>
   );
 }
 
 
+interface TechStackSectionProps {
+  technologies?: Technology[];
+}
+
+export function TechStackSection({
+  technologies = TECHNOLOGIES,
+}: TechStackSectionProps) {
+  return (
+    <section className="bg-slate-50/60 py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8">
+      {/* Header */}
+      <div className="max-w-3xl mx-auto text-center mb-10 sm:mb-14">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 text-xs sm:text-sm font-semibold mb-3">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          Tech Stack
+        </div>
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+          Built with Modern Technologies
+        </h2>
+        <p className="text-sm sm:text-base text-slate-500 max-w-xl mx-auto mt-2 leading-relaxed">
+          An end-to-end architecture designed for security, performance, and seamless integration.
+        </p>
+      </div>
+
+      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        {(technologies || []).map((tech, index) => (
+          <div
+            key={tech.name || index}
+            className="group relative bg-white rounded-2xl p-6 sm:p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col items-center text-center"
+          >
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-100/80 group-hover:bg-emerald-50 flex items-center justify-center mb-5 transition-colors duration-300 p-3 relative">
+              <div className="relative w-10 h-10 sm:w-12 sm:h-12 transition-transform duration-300 group-hover:scale-110">
+                <Image
+                  src={tech.image}
+                  alt={`${tech.name} logo`}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            </div>
+
+            <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-2 group-hover:text-emerald-600 transition-colors">
+              {tech.name}
+            </h3>
+
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed mb-6 flex-grow">
+              {tech.description}
+            </p>
+
+            {/* Read More / Explore Link */}
+            <div className="mt-auto inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-emerald-500 group-hover:text-emerald-600 transition-colors">
+              <span>Read More</span>
+              <span className="transition-transform duration-300 group-hover:translate-x-1">
+                →
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 
 
@@ -750,7 +576,6 @@ function TeamSection() {
         </p>
       </div>
 
-      {/* Mentors Section */}
       <div className="mb-12 sm:mb-14">
         <h3 className="text-xl sm:text-2xl font-semibold text-center mb-4 sm:mb-6 text-pink-400">
           Mentors
@@ -766,7 +591,7 @@ function TeamSection() {
       </div>
 
       <div>
-        <h3 className="text-xl sm:text-2xl font-semibold text-center mb-4 sm:mb-6">
+        <h3 className="text-xl sm:text-2xl font-semibold text-center mb-4 sm:mb-6 text-blue-500 ">
           Developers
         </h3>
 
