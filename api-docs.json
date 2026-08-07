@@ -72,6 +72,49 @@
         "responses": { "204": { "description": "No Content" } }
       }
     },
+    "/api/v1/user-profiles/me/avatar": {
+      "put": {
+        "tags": ["user-controller"],
+        "operationId": "uploadAvatar",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string", "format": "binary" }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/UserProfileResponse" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["user-controller"],
+        "operationId": "removeAvatar",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/UserProfileResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/follows/{type}/{targetId}": {
       "put": {
         "tags": ["follow-controller"],
@@ -125,6 +168,65 @@
           }
         ],
         "responses": { "204": { "description": "No Content" } }
+      }
+    },
+    "/api/v1/categories/{id}/icon": {
+      "put": {
+        "tags": ["category-controller"],
+        "operationId": "uploadIcon",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string", "format": "binary" }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/CategoryResponse" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["category-controller"],
+        "operationId": "removeIcon",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/CategoryResponse" }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/bookmarks/{type}/{targetId}": {
@@ -4297,7 +4399,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["WARN", "SUSPEND", "REMOVE", "BAN"]
+              "enum": ["WARN", "SUSPEND", "REMOVE", "BAN", "REINSTATE"]
             }
           },
           {
@@ -4538,6 +4640,56 @@
           "createdAt": { "type": "string", "format": "date-time" }
         }
       },
+      "SocialLinkResponse": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "enum": [
+              "GITHUB",
+              "LINKEDIN",
+              "WEBSITE",
+              "X",
+              "FACEBOOK",
+              "TELEGRAM",
+              "OTHER"
+            ]
+          },
+          "url": { "type": "string" }
+        }
+      },
+      "UserProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "email": { "type": "string" },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "fullName": { "type": "string" },
+          "biography": { "type": "string" },
+          "phone": { "type": "string" },
+          "avatarUrl": { "type": "string" },
+          "dateOfBirth": { "type": "string", "format": "date" },
+          "gender": { "type": "string", "enum": ["MALE", "FEMALE", "OTHER"] },
+          "country": { "type": "string" },
+          "socialLinks": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SocialLinkResponse" }
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "SUSPENDED", "REMOVED"]
+          },
+          "reputation": { "type": "integer", "format": "int32" },
+          "totalReports": { "type": "integer", "format": "int32" },
+          "validReports": { "type": "integer", "format": "int32" },
+          "criticalReports": { "type": "integer", "format": "int32" },
+          "recognitionCount": { "type": "integer", "format": "int32" },
+          "lastLoginAt": { "type": "string", "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
       "FollowResponse": {
         "type": "object",
         "properties": {
@@ -4548,6 +4700,21 @@
           },
           "followableId": { "type": "string", "format": "uuid" },
           "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CategoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "scope": { "type": "string", "enum": ["PROBLEM", "SHOWCASE"] },
+          "description": { "type": "string" },
+          "iconUrl": { "type": "string" },
+          "sortOrder": { "type": "integer", "format": "int32" },
+          "isActive": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
         }
       },
       "BookmarkResponse": {
@@ -5414,21 +5581,6 @@
         },
         "required": ["name", "scope"]
       },
-      "CategoryResponse": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "name": { "type": "string" },
-          "slug": { "type": "string" },
-          "scope": { "type": "string", "enum": ["PROBLEM", "SHOWCASE"] },
-          "description": { "type": "string" },
-          "iconUrl": { "type": "string" },
-          "sortOrder": { "type": "integer", "format": "int32" },
-          "isActive": { "type": "boolean" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
-        }
-      },
       "RegisterRequest": {
         "type": "object",
         "properties": {
@@ -5493,7 +5645,7 @@
         "properties": {
           "action": {
             "type": "string",
-            "enum": ["WARN", "SUSPEND", "REMOVE", "BAN"]
+            "enum": ["WARN", "SUSPEND", "REMOVE", "BAN", "REINSTATE"]
           },
           "reason": { "type": "string", "maxLength": 2000, "minLength": 0 },
           "expiresAt": { "type": "string", "format": "date-time" }
@@ -5521,7 +5673,7 @@
           "targetId": { "type": "string", "format": "uuid" },
           "action": {
             "type": "string",
-            "enum": ["WARN", "SUSPEND", "REMOVE", "BAN"]
+            "enum": ["WARN", "SUSPEND", "REMOVE", "BAN", "REINSTATE"]
           },
           "reason": { "type": "string" },
           "expiresAt": { "type": "string", "format": "date-time" },
@@ -5579,56 +5731,6 @@
             "maxItems": 7,
             "minItems": 0
           }
-        }
-      },
-      "SocialLinkResponse": {
-        "type": "object",
-        "properties": {
-          "platform": {
-            "type": "string",
-            "enum": [
-              "GITHUB",
-              "LINKEDIN",
-              "WEBSITE",
-              "X",
-              "FACEBOOK",
-              "TELEGRAM",
-              "OTHER"
-            ]
-          },
-          "url": { "type": "string" }
-        }
-      },
-      "UserProfileResponse": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "email": { "type": "string" },
-          "firstName": { "type": "string" },
-          "lastName": { "type": "string" },
-          "fullName": { "type": "string" },
-          "biography": { "type": "string" },
-          "phone": { "type": "string" },
-          "avatarUrl": { "type": "string" },
-          "dateOfBirth": { "type": "string", "format": "date" },
-          "gender": { "type": "string", "enum": ["MALE", "FEMALE", "OTHER"] },
-          "country": { "type": "string" },
-          "socialLinks": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/SocialLinkResponse" }
-          },
-          "status": {
-            "type": "string",
-            "enum": ["ACTIVE", "SUSPENDED", "REMOVED"]
-          },
-          "reputation": { "type": "integer", "format": "int32" },
-          "totalReports": { "type": "integer", "format": "int32" },
-          "validReports": { "type": "integer", "format": "int32" },
-          "criticalReports": { "type": "integer", "format": "int32" },
-          "recognitionCount": { "type": "integer", "format": "int32" },
-          "lastLoginAt": { "type": "string", "format": "date-time" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
         }
       },
       "SolutionUpdateRequest": {
@@ -6007,10 +6109,10 @@
         "type": "object",
         "properties": {
           "offset": { "type": "integer", "format": "int64" },
-          "paged": { "type": "boolean" },
           "pageNumber": { "type": "integer", "format": "int32" },
           "pageSize": { "type": "integer", "format": "int32" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
+          "paged": { "type": "boolean" },
           "unpaged": { "type": "boolean" }
         }
       },
