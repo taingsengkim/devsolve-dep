@@ -3,6 +3,7 @@ import {
   ModerationItem,
   ContentReportItem,
   ReportReasonsBreakdownData,
+  ModerationActionType,
 } from "@/lib/types/admin/types";
 import {
   mockModerationItemsStore,
@@ -37,8 +38,47 @@ export const moderationApi = baseApi.injectEndpoints({
       { items: ContentReportItem[]; breakdown: ReportReasonsBreakdownData },
       void
     >({
-      queryFn: () => {
-        const pendingItems = mockContentReportsStore.filter((r) => r.status === "PENDING");
+      query: () => ({
+        url: "/admin/flags?pageSize=100",
+        method: "GET",
+      }),
+      transformResponse: (response: any) => {
+        const rawFlags: any[] =
+          response?.content ||
+          response?.items ||
+          (Array.isArray(response) ? response : []);
+
+        const items: ContentReportItem[] = rawFlags.map((flag) => {
+          const reasonMap: Record<string, "Spam" | "Harmful" | "Offensive" | "Off-topic"> = {
+            SPAM: "Spam",
+            OFFENSIVE: "Offensive",
+            DUPLICATE: "Harmful",
+            OFF_TOPIC: "Off-topic",
+            OTHER: "Harmful",
+          };
+
+          const statusMap: Record<string, "PENDING" | "DISMISSED" | "WARNED" | "REMOVED"> = {
+            PENDING: "PENDING",
+            DISMISSED: "DISMISSED",
+            REVIEWED: "WARNED",
+          };
+
+          return {
+            id: flag.id,
+            type: flag.flaggableType || "PROBLEM",
+            title: flag.description || `${flag.flaggableType || "Content"} Flag #${flag.id.slice(0, 8)}`,
+            timestamp: flag.createdAt
+              ? new Date(flag.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+              : "Recent",
+            reportCount: 1,
+            reason: reasonMap[flag.reason] || "Spam",
+            author: flag.reporterName || "Community User",
+            status: statusMap[flag.status] || "PENDING",
+            snippet: flag.description || undefined,
+          };
+        });
+
+        const pendingItems = items.filter((r) => r.status === "PENDING");
         const spam = pendingItems.filter((r) => r.reason === "Spam").length;
         const harmful = pendingItems.filter((r) => r.reason === "Harmful").length;
         const offensive = pendingItems.filter((r) => r.reason === "Offensive").length;
@@ -46,34 +86,21 @@ export const moderationApi = baseApi.injectEndpoints({
         const total = pendingItems.length;
 
         return {
-          data: {
-            items: mockContentReportsStore.map((r) => ({ ...r })),
-            breakdown: { spam, harmful, offensive, offTopic, total },
-          },
+          items,
+          breakdown: { spam, harmful, offensive, offTopic, total },
         };
       },
       providesTags: ["ContentReport"],
     }),
     updateContentReportAction: builder.mutation<
-      ContentReportItem,
-      { id: string; action: "DISMISS" | "WARN" | "REMOVE" }
+      unknown,
+      { id: string; action: ModerationActionType | "DISMISS" }
     >({
-      // TODO: replace queryFn with query() when real API is ready
-      queryFn: ({ id, action }) => {
-        updateMockContentReportsStore((prev) =>
-          prev.map((r) => {
-            if (r.id !== id) return r;
-            let newStatus = r.status;
-            if (action === "DISMISS") newStatus = "DISMISSED";
-            if (action === "WARN") newStatus = "WARNED";
-            if (action === "REMOVE") newStatus = "REMOVED";
-            return { ...r, status: newStatus };
-          })
-        );
-        const updated = mockContentReportsStore.find((r) => r.id === id);
-        return { data: updated ? { ...updated } : { ...mockContentReportsStore[0] } };
-      },
-      invalidatesTags: (_result, _error, { id }) => [{ type: "ContentReport", id }, "ContentReport"],
+      query: ({ id, action }) => ({
+        url: action === "DISMISS" ? `/admin/flags/${id}/dismiss` : `/admin/flags/${id}/resolve`,
+        method: "POST",
+      }),
+      invalidatesTags: ["ContentReport", "ModerationAction"],
     }),
   }),
 });

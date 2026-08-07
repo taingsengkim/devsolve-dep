@@ -96,9 +96,7 @@ export default function ContentReportsPage() {
   };
 
   const handleConfirmModalAction = (id: string, action: ModerationActionType) => {
-    if (action === "WARN" || action === "REMOVE") {
-      updateAction({ id, action });
-    }
+    updateAction({ id, action });
   };
 
   const contentTypeOptions = [
