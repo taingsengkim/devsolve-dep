@@ -6,7 +6,7 @@ const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 const PROVIDER_ID = "keycloak";
 
 const moderationActionSchema = z.object({
-  action: z.enum(["WARN", "SUSPEND", "REMOVE", "BAN", "ACTIVATE", "UNSUSPEND"]),
+  action: z.enum(["WARN", "SUSPEND", "REMOVE", "BAN", "REINSTATE"]),
   reason: z.string().min(1, "Reason is required").max(2000),
   expiresAt: z.string().optional(),
 });

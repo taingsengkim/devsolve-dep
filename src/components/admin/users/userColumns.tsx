@@ -101,7 +101,7 @@ function UserActionsCell({
                 onClick={() => onUpdateStatus(user.id, "ACTIVE")}
                 className="rounded-xl px-3 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer"
               >
-                <span>ACTIVATE</span>
+                <span>REINSTATE</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="my-1 border-slate-100 dark:border-slate-800" />
             </>
@@ -143,6 +143,13 @@ function UserActionsCell({
                 className="rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 dark:hover:text-purple-400 cursor-pointer"
               >
                 <span>BAN</span>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onClick={() => onModerateUser(user, "REINSTATE")}
+                className="rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-400 cursor-pointer"
+              >
+                <span>REINSTATE</span>
               </DropdownMenuItem>
             </>
           )}

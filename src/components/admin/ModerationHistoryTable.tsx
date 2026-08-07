@@ -77,6 +77,8 @@ export function ModerationHistoryTable() {
         return <Badge className="bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30">REMOVE</Badge>;
       case "BAN":
         return <Badge className="bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30">BAN</Badge>;
+      case "REINSTATE":
+        return <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">REINSTATE</Badge>;
       default:
         return <Badge variant="outline">{action}</Badge>;
     }
@@ -148,6 +150,7 @@ export function ModerationHistoryTable() {
                 <SelectItem value="SUSPEND">SUSPEND</SelectItem>
                 <SelectItem value="REMOVE">REMOVE</SelectItem>
                 <SelectItem value="BAN">BAN</SelectItem>
+                <SelectItem value="REINSTATE">REINSTATE</SelectItem>
               </SelectContent>
             </Select>
           </div>

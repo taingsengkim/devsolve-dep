@@ -19,7 +19,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { AlertTriangle, Trash2, ShieldAlert, UserX, Ban, Loader2 } from "lucide-react";
+import { AlertTriangle, Trash2, ShieldAlert, UserX, Ban, RotateCcw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useCreateModerationActionMutation } from "@/lib/redux/services/admin/moderationActionsApi";
 import type { ModerationActionType, ModerationActionTargetType, ContentReportItem } from "@/lib/types/admin/types";
@@ -95,6 +95,8 @@ export function ModerationActionDialog({
         return "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800";
       case "BAN":
         return "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800";
+      case "REINSTATE":
+        return "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800";
       default:
         return "bg-slate-100 text-slate-600";
     }
@@ -110,6 +112,8 @@ export function ModerationActionDialog({
         return <Trash2 className="size-5.5" />;
       case "BAN":
         return <Ban className="size-5.5" />;
+      case "REINSTATE":
+        return <RotateCcw className="size-5.5" />;
     }
   };
 
@@ -123,6 +127,8 @@ export function ModerationActionDialog({
         return "bg-rose-600 hover:bg-rose-700";
       case "BAN":
         return "bg-purple-600 hover:bg-purple-700";
+      case "REINSTATE":
+        return "bg-emerald-600 hover:bg-emerald-700";
     }
   };
 
@@ -241,6 +247,7 @@ export function ModerationActionDialog({
                   {report?.status === "REMOVED" ? "REMOVE (Already removed)" : "REMOVE"}
                 </SelectItem>
                 <SelectItem value="BAN">BAN</SelectItem>
+                <SelectItem value="REINSTATE">REINSTATE</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -256,6 +263,7 @@ export function ModerationActionDialog({
               placeholder="Detailed reason for this moderation action..."
               rows={3}
               required
+              maxLength={2000}
               className="w-full p-3 rounded-xl bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
             />
           </div>

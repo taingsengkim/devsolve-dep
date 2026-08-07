@@ -7,7 +7,7 @@ import {
 
 export interface CreateModerationActionParams {
   id: string;
-  action: "WARN" | "SUSPEND" | "REMOVE" | "BAN";
+  action: "WARN" | "SUSPEND" | "REMOVE" | "BAN" | "REINSTATE";
   reason: string;
   expiresAt?: string;
 }
@@ -46,8 +46,8 @@ export const adminUsersApi = baseApi.injectEndpoints({
         url: `/admin/${id}/moderation-actions`,
         method: "POST",
         body: {
-          action: status === "ACTIVE" ? "UNSUSPEND" : status === "SUSPENDED" ? "SUSPEND" : "WARN",
-          reason: reason || `Account ${status === "ACTIVE" ? "unsuspended" : status.toLowerCase()} via Admin Users dashboard.`,
+          action: status === "ACTIVE" ? "REINSTATE" : status === "SUSPENDED" ? "SUSPEND" : "WARN",
+          reason: reason || `Account ${status === "ACTIVE" ? "reinstated" : status.toLowerCase()} via Admin Users dashboard.`,
         },
       }),
       invalidatesTags: ["AdminUser"],
