@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { AdminUserItem } from "@/lib/redux/services/adminApi";
+import type { ModerationActionType } from "@/lib/types/admin/types";
+import { cn } from "@/lib/utils";
 import { UserStatusBadge } from "./UserStatusBadge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +18,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
   UserX,
   UserCheck,
   Shield,
@@ -23,17 +32,22 @@ import {
   User,
   ShieldAlert,
   ArrowUpDown,
+  Gavel,
+  MoreHorizontal,
+  AlertTriangle,
+  Trash2,
+  Ban,
+  RotateCcw,
 } from "lucide-react";
 
 const ROLE_OPTIONS: {
-  value: "USER" | "COMPANY" | "ADMIN" | "MODERATOR";
+  value: "USER" | "COMPANY" | "ADMIN";
   label: string;
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
-  { value: "USER", label: "Researcher", icon: User },
-  { value: "COMPANY", label: "Company", icon: Building2 },
-  { value: "ADMIN", label: "Admin", icon: Shield },
-  { value: "MODERATOR", label: "Moderator", icon: ShieldAlert },
+  { value: "USER", label: "USER", icon: User },
+  { value: "COMPANY", label: "COMPANY", icon: Building2 },
+  { value: "ADMIN", label: "ADMIN", icon: Shield },
 ];
 
 function getAvatarColor(name: string): string {
@@ -50,7 +64,8 @@ function getAvatarColor(name: string): string {
 }
 
 interface ColumnCallbacks {
-  onUpdateStatus: (id: string, status: "ACTIVE" | "SUSPENDED") => void;
+  onUpdateStatus?: (id: string, status: "ACTIVE" | "SUSPENDED") => void;
+  onModerateUser?: (user: AdminUserItem, actionType?: ModerationActionType) => void;
   onUpdateRole?: (
     id: string,
     role: "USER" | "COMPANY" | "ADMIN" | "MODERATOR"
@@ -60,91 +75,110 @@ interface ColumnCallbacks {
 function UserActionsCell({
   user,
   onUpdateStatus,
+  onModerateUser,
 }: {
   user: AdminUserItem;
-  onUpdateStatus: (id: string, status: "ACTIVE" | "SUSPENDED") => void;
+  onUpdateStatus?: (id: string, status: "ACTIVE" | "SUSPENDED") => void;
+  onModerateUser?: (user: AdminUserItem, actionType?: ModerationActionType) => void;
 }) {
-  const [showConfirm, setShowConfirm] = useState(false);
+  const isRemoved = user.status === "REMOVED";
   const isSuspended = user.status === "SUSPENDED";
-  const isPending = user.status === "PENDING";
-  const shouldActivate = isSuspended || isPending;
-  const targetStatus: "ACTIVE" | "SUSPENDED" = shouldActivate ? "ACTIVE" : "SUSPENDED";
-
-  const handleConfirmStatusChange = () => {
-    onUpdateStatus(user.id, targetStatus);
-    setShowConfirm(false);
-  };
+  const isActive = user.status === "ACTIVE";
 
   return (
-    <>
-      <div className="flex items-center justify-end">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowConfirm(true)}
-          className={`h-8 px-3 rounded-xl text-xs font-semibold cursor-pointer gap-1.5 transition-colors shadow-2xs ${
-            shouldActivate
-              ? "border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
-              : "border-slate-200 dark:border-slate-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-300 dark:hover:border-rose-700"
-          }`}
+    <div className="flex items-center justify-end">
+      <DropdownMenu>
+        <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer shadow-2xs">
+          <MoreHorizontal className="size-4" />
+          <span className="sr-only">Actions</span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          sideOffset={6}
+          className="w-56 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-lg space-y-0.5"
         >
-          {shouldActivate ? (
+          {onModerateUser && (
             <>
-              <UserCheck className="w-3.5 h-3.5" />
-              {isPending ? "Approve" : "Activate"}
-            </>
-          ) : (
-            <>
-              <UserX className="w-3.5 h-3.5" />
-              Suspend
+              <DropdownMenuItem
+                onClick={() => onModerateUser(user, "WARN")}
+                disabled={isRemoved}
+                className={cn(
+                  "rounded-xl px-3 py-2 text-xs font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer flex items-center gap-2",
+                  isRemoved && "opacity-40 cursor-not-allowed pointer-events-none"
+                )}
+              >
+                <AlertTriangle className="size-3.5" />
+                <span>{isRemoved ? "WARN (User Removed)" : "WARN"}</span>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onClick={() => onModerateUser(user, "SUSPEND")}
+                disabled={isSuspended || isRemoved}
+                className={cn(
+                  "rounded-xl px-3 py-2 text-xs font-bold text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/40 cursor-pointer flex items-center gap-2",
+                  (isSuspended || isRemoved) && "opacity-40 cursor-not-allowed pointer-events-none"
+                )}
+              >
+                <UserX className="size-3.5" />
+                <span>
+                  {isRemoved
+                    ? "SUSPEND (User Removed)"
+                    : isSuspended
+                    ? "SUSPEND (Suspended)"
+                    : "SUSPEND"}
+                </span>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onClick={() => onModerateUser(user, "REMOVE")}
+                disabled={isRemoved}
+                className={cn(
+                  "rounded-xl px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer flex items-center gap-2",
+                  isRemoved && "opacity-40 cursor-not-allowed pointer-events-none"
+                )}
+              >
+                <Trash2 className="size-3.5" />
+                <span>{isRemoved ? "REMOVE (Removed)" : "REMOVE"}</span>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onClick={() => onModerateUser(user, "BAN")}
+                disabled={isRemoved}
+                className={cn(
+                  "rounded-xl px-3 py-2 text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40 cursor-pointer flex items-center gap-2",
+                  isRemoved && "opacity-40 cursor-not-allowed pointer-events-none"
+                )}
+              >
+                <Ban className="size-3.5" />
+                <span>{isRemoved ? "BAN (User Removed)" : "BAN"}</span>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onClick={() => onModerateUser(user, "REINSTATE")}
+                disabled={isActive}
+                className={cn(
+                  "rounded-xl px-3 py-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer flex items-center gap-2",
+                  isActive && "opacity-40 cursor-not-allowed pointer-events-none"
+                )}
+              >
+                <RotateCcw className="size-3.5" />
+                <span>
+                  {isActive
+                    ? "REINSTATE (User account is already active)"
+                    : "REINSTATE"}
+                </span>
+              </DropdownMenuItem>
             </>
           )}
-        </Button>
-      </div>
-
-      {/* CONFIRMATION DIALOG */}
-      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {shouldActivate
-                ? isPending
-                  ? "Approve & Activate User Account?"
-                  : "Activate User Account?"
-                : "Suspend User Account?"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to {shouldActivate ? "activate" : "suspend"} the account for{" "}
-              <strong className="text-slate-900 dark:text-slate-100">{user.name}</strong> ({user.email})?
-              {shouldActivate
-                ? " This will give them full access to the platform."
-                : " This will immediately block their access to platform services."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setShowConfirm(false)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmStatusChange}
-              className={`rounded-xl text-sm font-semibold cursor-pointer ${
-                shouldActivate
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                  : "bg-rose-600 hover:bg-rose-700 text-white"
-              }`}
-            >
-              {shouldActivate ? (isPending ? "Approve & Activate" : "Activate Account") : "Suspend Account"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
 
 export function getUserColumns({
   onUpdateStatus,
-  onUpdateRole,
+  onModerateUser,
 }: ColumnCallbacks): ColumnDef<AdminUserItem>[] {
   return [
     {
@@ -301,9 +335,9 @@ export function getUserColumns({
         <UserActionsCell
           user={row.original}
           onUpdateStatus={onUpdateStatus}
+          onModerateUser={onModerateUser}
         />
       ),
     },
   ];
 }
-

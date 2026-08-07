@@ -32,31 +32,67 @@ import {
 interface UserDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  pageIndex?: number;
+  pageSize?: number;
+  pageCount?: number;
+  totalElements?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
 }
 
 export function UserDataTable<TData, TValue>({
   columns,
   data,
+  pageIndex,
+  pageSize,
+  pageCount,
+  totalElements,
+  onPageChange,
+  onPageSizeChange,
 }: UserDataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [pagination, setPagination] = useState({
+  const [localPagination, setLocalPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
   });
 
+  const isServerPaged = typeof pageIndex === "number" && typeof pageCount === "number";
+
   const table = useReactTable({
     data,
     columns,
+    pageCount: isServerPaged ? pageCount : undefined,
+    manualPagination: isServerPaged,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    ...(!isServerPaged && { getPaginationRowModel: getPaginationRowModel() }),
     onSortingChange: setSorting,
-    onPaginationChange: setPagination,
+    onPaginationChange: (updater) => {
+      if (isServerPaged) {
+        if (typeof updater === "function") {
+          const nextState = updater({
+            pageIndex: pageIndex ?? 0,
+            pageSize: pageSize ?? 20,
+          });
+          if (nextState.pageIndex !== pageIndex && onPageChange) {
+            onPageChange(nextState.pageIndex);
+          }
+          if (nextState.pageSize !== pageSize && onPageSizeChange) {
+            onPageSizeChange(nextState.pageSize);
+          }
+        }
+      } else {
+        setLocalPagination(updater);
+      }
+    },
     getSortedRowModel: getSortedRowModel(),
     state: {
       sorting,
-      pagination,
+      pagination: isServerPaged
+        ? { pageIndex: pageIndex ?? 0, pageSize: pageSize ?? 20 }
+        : localPagination,
     },
   });
+
 
   return (
     <div className="space-y-4">
@@ -160,7 +196,7 @@ export function UserDataTable<TData, TValue>({
                 <span className="font-bold text-slate-700 dark:text-slate-200">
                   {table.getPageCount() || 1}
                 </span>{" "}
-                ({data.length} total)
+                ({totalElements ?? data.length} total)
               </div>
             </div>
 

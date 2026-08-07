@@ -5,13 +5,12 @@ import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export type StatusFilter = "ALL" | "ACTIVE" | "SUSPENDED" | "PENDING" | "REMOVED";
+export type StatusFilter = "ALL" | "ACTIVE" | "SUSPENDED" | "REMOVED";
 
 interface StatusCounts {
   all: number;
   active: number;
   suspended: number;
-  pending: number;
   removed?: number;
 }
 
@@ -27,7 +26,6 @@ const STATUS_TABS: { key: StatusFilter; label: string; countKey: keyof StatusCou
   { key: "ALL", label: "All Users", countKey: "all" },
   { key: "ACTIVE", label: "Active", countKey: "active" },
   { key: "SUSPENDED", label: "Suspended", countKey: "suspended" },
-  { key: "PENDING", label: "Pending", countKey: "pending" },
   { key: "REMOVED", label: "Removed", countKey: "removed" },
 ];
 
@@ -39,33 +37,33 @@ export function UserFiltersBar({
   statusCounts,
 }: UserFiltersBarProps) {
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       {/* STATUS TABS */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
+      <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200/60 dark:border-slate-700 shrink-0 gap-1 overflow-x-auto no-scrollbar">
         {STATUS_TABS.map((tab) => {
           const isActive = statusFilter === tab.key;
           return (
-            <Button
+            <button
               key={tab.key}
-              variant={isActive ? "default" : "ghost"}
+              type="button"
               onClick={() => onStatusFilterChange(tab.key)}
-              className={`rounded-xl text-sm font-semibold h-9 px-3.5 cursor-pointer transition-all shrink-0 ${
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition cursor-pointer shrink-0 ${
                 isActive
-                  ? "bg-blue-600 hover:bg-blue-700 text-white shadow-2xs"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-800/50"
               }`}
             >
-              {tab.label}
+              <span>{tab.label}</span>
               <span
-                className={`ml-1.5 px-1.5 py-0.5 rounded-full text-xs font-bold ${
+                className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
                   isActive
-                    ? "bg-blue-500/40 text-white"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                    ? "bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300"
+                    : "bg-slate-200/70 dark:bg-slate-700/70 text-slate-600 dark:text-slate-400"
                 }`}
               >
                 {statusCounts[tab.countKey] ?? 0}
               </span>
-            </Button>
+            </button>
           );
         })}
       </div>

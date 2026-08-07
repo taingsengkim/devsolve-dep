@@ -60,6 +60,7 @@ export const baseApi = createApi({
     "ModerationItem",
     "ContentReport",
     "AdminUser",
+    "ModerationAction",
     "Showcase",
     "Category",
   ],
