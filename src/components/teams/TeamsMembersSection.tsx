@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import {
   AlertTriangle,
   CalendarDays,
-  Check,
   ChevronDown,
   Crown,
   Eye,
@@ -104,6 +103,9 @@ function getMemberPermissions(member: TeamMember) {
 type TeamsMembersSectionProps = {
   counts: TeamCounts;
   filteredMembers: TeamMember[];
+  isError: boolean;
+  isLoading: boolean;
+  onRetry: () => void;
   searchTerm: string;
   setSearchTerm: (value: string) => void;
   roleFilter: RoleFilter;
@@ -115,6 +117,9 @@ type TeamsMembersSectionProps = {
 export function TeamsMembersSection({
   counts,
   filteredMembers,
+  isError,
+  isLoading,
+  onRetry,
   searchTerm,
   setSearchTerm,
   roleFilter,
@@ -122,10 +127,8 @@ export function TeamsMembersSection({
   statusFilter,
   setStatusFilter,
 }: TeamsMembersSectionProps) {
-  const [openMenuMemberId, setOpenMenuMemberId] = useState<number | null>(null);
+  const [openMenuMemberId, setOpenMenuMemberId] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<ConfirmActionState | null>(null);
-
-  const hasActiveFilters = roleFilter !== "All" || statusFilter !== "All";
 
   useEffect(() => {
     function handleEscape(event: KeyboardEvent) {
@@ -141,7 +144,7 @@ export function TeamsMembersSection({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [confirmAction]);
 
-  function getAvatarTone(memberId: number) {
+  function getAvatarTone(memberId: string) {
     const tones = [
       "bg-[#2563EB] text-white",
       "bg-blue-600 text-white",
@@ -151,7 +154,11 @@ export function TeamsMembersSection({
       "bg-cyan-600 text-white",
     ];
 
-    return tones[(memberId - 1) % tones.length];
+    const numericSeed = memberId
+      .split("")
+      .reduce((total, char) => total + char.charCodeAt(0), 0);
+
+    return tones[numericSeed % tones.length];
   }
 
   function handleMenuAction(action: "view-profile" | "edit-role", member: TeamMember) {
@@ -208,21 +215,6 @@ export function TeamsMembersSection({
               value={statusFilter}
               onChange={setStatusFilter}
             />
-
-            {hasActiveFilters ? (
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  setSearchTerm("");
-                  setRoleFilter("All");
-                  setStatusFilter("All");
-                }}
-                className="h-10.5 rounded-xl px-4 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-              >
-                Reset
-              </Button>
-            ) : null}
           </div>
         </div>
       </div>
@@ -243,14 +235,69 @@ export function TeamsMembersSection({
 
             <tbody className="divide-y divide-slate-100">
               {filteredMembers.length === 0 ? (
+                isLoading ? (
+                  Array.from({ length: 4 }).map((_, index) => (
+                    <tr key={`team-loading-${index}`} className="animate-pulse">
+                      <td className="px-4 py-4 sm:px-6">
+                        <div className="flex items-center gap-4">
+                          <div className="size-12 rounded-full bg-slate-200" />
+                          <div className="min-w-0 flex-1 space-y-2">
+                            <div className="h-4 w-40 rounded bg-slate-200" />
+                            <div className="h-3 w-28 rounded bg-slate-100" />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 sm:px-6">
+                        <div className="h-4 w-40 rounded bg-slate-100" />
+                      </td>
+                      <td className="px-4 py-4 sm:px-6">
+                        <div className="h-8 w-24 rounded-full bg-slate-100" />
+                      </td>
+                      <td className="px-4 py-4 sm:px-6">
+                        <div className="h-8 w-24 rounded-full bg-slate-100" />
+                      </td>
+                      <td className="px-4 py-4 sm:px-6">
+                        <div className="h-4 w-28 rounded bg-slate-100" />
+                      </td>
+                      <td className="px-4 py-4 sm:px-6">
+                        <div className="ml-auto h-9 w-9 rounded-xl bg-slate-100" />
+                      </td>
+                    </tr>
+                  ))
+                ) : isError ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-6 py-14 text-center"
+                    >
+                      <div className="space-y-3">
+                        <p className="text-base font-medium text-slate-700">
+                          We couldn&apos;t load your team members.
+                        </p>
+                        <p className="text-sm text-slate-400">
+                          Check your organization access and try again.
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={onRetry}
+                          className="h-10 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                          Try again
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-6 py-14 text-center text-base text-slate-400"
                   >
                     No members match your current filters.
                   </td>
                 </tr>
+                )
               ) : (
                 filteredMembers.map((member, index) => {
                   const permissions = getMemberPermissions(member);
@@ -498,10 +545,7 @@ function StatusFilterSelect({
               value={filter}
               className="rounded-xl px-3 py-2 text-sm text-slate-700 data-[checked]:bg-blue-50 data-[checked]:font-semibold data-[checked]:text-blue-700 focus:bg-slate-50 focus:text-slate-900"
             >
-              <div className="flex w-full items-center justify-between gap-3">
-                <span>{filter}</span>
-                {value === filter ? <Check className="size-4 text-blue-600" /> : null}
-              </div>
+              <span>{filter}</span>
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

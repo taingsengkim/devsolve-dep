@@ -29,10 +29,12 @@ export default function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={`relative flex items-center gap-2 pb-3 pt-1 text-sm font-semibold transition cursor-pointer ${
-                isActive ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
+                isActive
+                  ? "text-slate-900 dark:text-slate-100"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
               }`}
             >
-              <Icon size={16} className={isActive ? "text-blue-600" : "text-slate-400"} />
+              <Icon size={16} className={isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400"} />
               <span>{tab.label}</span>
               {isActive && (
                 <motion.div

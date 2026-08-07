@@ -35,11 +35,22 @@ type ManagedReportCardProps = {
   isLast?: boolean;
 };
 
+function getDisplayReportId(report: ManagedReport) {
+  if (report.reportId?.trim()) return report.reportId;
+
+  const rawId = String(report.id);
+  if (/^\d+$/.test(rawId)) {
+    return `RPT-2026-${rawId.padStart(5, "0")}`;
+  }
+
+  return `RPT-${rawId.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
+}
+
 export function ManagedReportCard({
   report,
   isLast = false,
 }: ManagedReportCardProps) {
-  const reportId = `RPT-2026-${report.id.toString().padStart(5, "0")}`;
+  const reportId = getDisplayReportId(report);
   const visibleAssets = report.assets.slice(0, 2);
   const hiddenAssetsCount = Math.max(0, report.assets.length - visibleAssets.length);
 

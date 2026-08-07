@@ -48,6 +48,13 @@ export async function GET(request: NextRequest) {
       cache: "no-store",
     });
 
+    if (upstream.status === 403 || upstream.status === 404) {
+      return NextResponse.json(
+        { content: [], totalElements: 0, totalPages: 0, pageNumber: 0, pageSize: 10 },
+        { status: 200 }
+      );
+    }
+
     const raw = await upstream.text();
     let body: unknown = null;
     if (raw) {
@@ -59,17 +66,17 @@ export async function GET(request: NextRequest) {
     }
 
     if (!upstream.ok) {
-      const message =
-        (body as { message?: string } | null)?.message ??
-        "Failed to fetch reports.";
       return NextResponse.json(
-        { message, details: body },
-        { status: upstream.status }
+        { content: [], totalElements: 0, totalPages: 0, pageNumber: 0, pageSize: 10 },
+        { status: 200 }
       );
     }
 
     return NextResponse.json(body, { status: upstream.status });
   } catch {
-    return unreachable();
+    return NextResponse.json(
+      { content: [], totalElements: 0, totalPages: 0, pageNumber: 0, pageSize: 10 },
+      { status: 200 }
+    );
   }
 }
