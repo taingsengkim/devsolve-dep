@@ -22,7 +22,7 @@ import {
 import { AlertTriangle, Trash2, ShieldAlert, UserX, Ban, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useCreateModerationActionMutation } from "@/lib/redux/services/admin/moderationActionsApi";
-import type { ModerationActionType } from "@/lib/types/admin/types";
+import type { ModerationActionType, ModerationActionTargetType } from "@/lib/types/admin/types";
 import type { ContentReportItem } from "@/lib/redux/services/adminApi";
 
 export interface TargetDetails {
@@ -126,9 +126,15 @@ export function ModerationActionDialog({
         ? new Date(expiresAt).toISOString()
         : undefined;
 
+      const targetType = report
+        ? (report.type as ModerationActionTargetType)
+        : (target?.type as ModerationActionTargetType) || "USER";
+
       await createModerationAction({
         id: targetId,
         body: {
+          targetType,
+          targetId,
           action,
           reason: reason.trim(),
           expiresAt: formattedExpiresAt,

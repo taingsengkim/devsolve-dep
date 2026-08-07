@@ -334,6 +334,8 @@ export type ModerationActionTargetType =
 export type ModerationActionType = "WARN" | "SUSPEND" | "REMOVE" | "BAN";
 
 export interface CreateModerationActionRequest {
+  targetType?: ModerationActionTargetType;
+  targetId?: string;
   action: ModerationActionType;
   reason: string;
   expiresAt?: string;

@@ -6,6 +6,10 @@ const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 const PROVIDER_ID = "keycloak";
 
 const moderationActionSchema = z.object({
+  targetType: z
+    .enum(["PROGRAM", "PROBLEM", "SOLUTION", "COMMENT", "USER", "REPORT", "SHOWCASE"])
+    .optional(),
+  targetId: z.string().optional(),
   action: z.enum(["WARN", "SUSPEND", "REMOVE", "BAN"]),
   reason: z.string().min(1, "Reason is required").max(2000),
   expiresAt: z.string().optional(),
@@ -21,6 +25,24 @@ async function bearerTokenFor(request: NextRequest): Promise<string | null> {
       headers: request.headers,
     });
     return accessToken ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function getAdminProfileId(token: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${BACKEND_API_URL}/user-profiles/me`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const profile = await res.json();
+    return profile?.id ?? null;
   } catch {
     return null;
   }
@@ -44,7 +66,7 @@ export async function POST(
 
   const { id } = await params;
   if (!id) {
-    return NextResponse.json({ message: "User ID is required" }, { status: 400 });
+    return NextResponse.json({ message: "Target ID is required" }, { status: 400 });
   }
 
   let body: unknown;
@@ -62,7 +84,19 @@ export async function POST(
     );
   }
 
-  const targetUrl = `${BACKEND_API_URL}/admin/${id}/moderation-actions`;
+  // Retrieve authenticated admin profile ID from /me or fallback to route param
+  const myAdminProfileId = await getAdminProfileId(token);
+  const adminId = myAdminProfileId || id;
+
+  const targetUrl = `${BACKEND_API_URL}/admin/${adminId}/moderation-actions`;
+
+  const payload = {
+    targetType: parsed.data.targetType || "USER",
+    targetId: parsed.data.targetId || id,
+    action: parsed.data.action,
+    reason: parsed.data.reason,
+    expiresAt: parsed.data.expiresAt,
+  };
 
   try {
     const upstream = await fetch(targetUrl, {
@@ -72,7 +106,7 @@ export async function POST(
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(parsed.data),
+      body: JSON.stringify(payload),
       cache: "no-store",
     });
 
