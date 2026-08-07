@@ -70,13 +70,17 @@ interface ColumnCallbacks {
 
 function UserActionsCell({
   user,
+  onUpdateStatus,
   onModerateUser,
 }: {
   user: AdminUserItem;
   onUpdateStatus?: (id: string, status: "ACTIVE" | "SUSPENDED") => void;
   onModerateUser?: (user: AdminUserItem, actionType?: ModerationActionType) => void;
 }) {
-  if (!onModerateUser) return null;
+  const isRemoved = user.status === "REMOVED";
+  const isSuspended = user.status === "SUSPENDED";
+  const isPending = user.status === "PENDING";
+  const canActivate = isSuspended || isPending || isRemoved;
 
   return (
     <div className="flex items-center justify-end">
@@ -90,33 +94,58 @@ function UserActionsCell({
           sideOffset={6}
           className="w-72 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-lg space-y-0.5"
         >
-          <DropdownMenuItem
-            onClick={() => onModerateUser(user, "WARN")}
-            className="rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-700 dark:hover:text-amber-400 cursor-pointer"
-          >
-            <span><strong className="font-bold">WARN</strong> &mdash; Issue official warning</span>
-          </DropdownMenuItem>
+          {canActivate && onUpdateStatus && (
+            <>
+              <DropdownMenuItem
+                onClick={() => onUpdateStatus(user.id, "ACTIVE")}
+                className="rounded-xl px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer flex items-center justify-between"
+              >
+                <span><strong className="font-bold">ACTIVATE</strong> &mdash; Restore & activate account</span>
+                <UserCheck className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="my-1 border-slate-100 dark:border-slate-800" />
+            </>
+          )}
 
-          <DropdownMenuItem
-            onClick={() => onModerateUser(user, "SUSPEND")}
-            className="rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-orange-50 dark:hover:bg-orange-950/40 hover:text-orange-700 dark:hover:text-orange-400 cursor-pointer"
-          >
-            <span><strong className="font-bold">SUSPEND</strong> &mdash; Temporarily suspend</span>
-          </DropdownMenuItem>
+          {onModerateUser && (
+            <>
+              <DropdownMenuItem
+                onClick={() => onModerateUser(user, "WARN")}
+                className="rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-700 dark:hover:text-amber-400 cursor-pointer"
+              >
+                <span><strong className="font-bold">WARN</strong> &mdash; Issue official warning</span>
+              </DropdownMenuItem>
 
-          <DropdownMenuItem
-            onClick={() => onModerateUser(user, "REMOVE")}
-            className="rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer"
-          >
-            <span><strong className="font-bold">REMOVE</strong> &mdash; Hide or delete content/account</span>
-          </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onModerateUser(user, "SUSPEND")}
+                disabled={isSuspended}
+                className={cn(
+                  "rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-orange-50 dark:hover:bg-orange-950/40 hover:text-orange-700 dark:hover:text-orange-400 cursor-pointer",
+                  isSuspended && "opacity-50 cursor-not-allowed pointer-events-none"
+                )}
+              >
+                <span><strong className="font-bold">SUSPEND</strong> &mdash; {isSuspended ? "Already suspended" : "Temporarily suspend"}</span>
+              </DropdownMenuItem>
 
-          <DropdownMenuItem
-            onClick={() => onModerateUser(user, "BAN")}
-            className="rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 dark:hover:text-purple-400 cursor-pointer"
-          >
-            <span><strong className="font-bold">BAN</strong> &mdash; Permanently ban entity</span>
-          </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onModerateUser(user, "REMOVE")}
+                disabled={isRemoved}
+                className={cn(
+                  "rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer",
+                  isRemoved && "opacity-50 cursor-not-allowed pointer-events-none"
+                )}
+              >
+                <span><strong className="font-bold">REMOVE</strong> &mdash; {isRemoved ? "Already removed" : "Hide or delete content/account"}</span>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onClick={() => onModerateUser(user, "BAN")}
+                className="rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 dark:hover:text-purple-400 cursor-pointer"
+              >
+                <span><strong className="font-bold">BAN</strong> &mdash; Permanently ban entity</span>
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

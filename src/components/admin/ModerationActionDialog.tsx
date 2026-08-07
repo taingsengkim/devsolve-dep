@@ -234,8 +234,12 @@ export function ModerationActionDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="WARN">WARN — Issue official warning</SelectItem>
-                <SelectItem value="SUSPEND">SUSPEND — Temporarily suspend</SelectItem>
-                <SelectItem value="REMOVE">REMOVE — Hide or delete content/account</SelectItem>
+                <SelectItem value="SUSPEND" disabled={report?.status === "SUSPENDED"}>
+                  {report?.status === "SUSPENDED" ? "SUSPEND — Already suspended" : "SUSPEND — Temporarily suspend"}
+                </SelectItem>
+                <SelectItem value="REMOVE" disabled={report?.status === "REMOVED"}>
+                  {report?.status === "REMOVED" ? "REMOVE — Already removed" : "REMOVE — Hide or delete content/account"}
+                </SelectItem>
                 <SelectItem value="BAN">BAN — Permanently ban entity</SelectItem>
               </SelectContent>
             </Select>
