@@ -44,7 +44,9 @@ export default function AccountTypeSelectionPage() {
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-white text-slate-900 selection:bg-blue-100 selection:text-blue-900">
       {/* Same backdrop system as the landing page */}
-      <SectionBackdrop seed={6} gridSize={80} />
+      {/* Pinned light: no dark styling on this page yet, so a theme-following
+          backdrop would draw white gridlines on a white surface. */}
+      <SectionBackdrop tone="light" seed={6} gridSize={80} />
 
       {/* ── Top bar ── */}
       <motion.header

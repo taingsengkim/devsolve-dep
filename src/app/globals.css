@@ -91,6 +91,16 @@
   --sidebar-ring: oklch(0.708 0 0);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+
+  /* Pool of light behind the landing headline. A token rather than a utility
+     because it is applied as an inline `background`, which no `dark:` variant
+     can reach. */
+  --hero-glow: radial-gradient(
+    60rem 34rem at 50% 14%,
+    #ffffff 0%,
+    rgba(255, 255, 255, 0.62) 45%,
+    transparent 78%
+  );
 }
 
 .dark {
@@ -127,6 +137,15 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Same pool, inverted: a cool lift out of the near-black field instead of
+     a white one, or the headline sits in a bright hole. */
+  --hero-glow: radial-gradient(
+    60rem 34rem at 50% 14%,
+    rgba(51, 65, 85, 0.55) 0%,
+    rgba(30, 41, 59, 0.35) 45%,
+    transparent 78%
+  );
 }
 
 @layer base {
