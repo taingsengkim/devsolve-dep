@@ -35,7 +35,7 @@ export const adminUsersApi = baseApi.injectEndpoints({
       CreateModerationActionParams
     >({
       query: ({ id, action, reason, expiresAt }) => ({
-        url: `/admin/users/${id}/moderation-actions`,
+        url: `/admin/${id}/moderation-actions`,
         method: "POST",
         body: { action, reason, expiresAt },
       }),
@@ -46,7 +46,7 @@ export const adminUsersApi = baseApi.injectEndpoints({
       { id: string; status: "ACTIVE" | "SUSPENDED" | "PENDING"; reason?: string }
     >({
       query: ({ id, status, reason }) => ({
-        url: `/admin/users/${id}/moderation-actions`,
+        url: `/admin/${id}/moderation-actions`,
         method: "POST",
         body: {
           action: status === "SUSPENDED" ? "SUSPEND" : "WARN",
