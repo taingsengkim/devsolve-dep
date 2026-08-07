@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { AdminUserItem } from "@/lib/redux/services/adminApi";
 import type { ModerationActionType } from "@/lib/types/admin/types";
+import { cn } from "@/lib/utils";
 import { UserStatusBadge } from "./UserStatusBadge";
 import { Button } from "@/components/ui/button";
 import {
