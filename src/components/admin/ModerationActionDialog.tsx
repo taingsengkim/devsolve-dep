@@ -67,22 +67,34 @@ export function ModerationActionDialog({
     }
   }, [initialActionType]);
 
+  useEffect(() => {
+    if (isOpen && !expiresAt) {
+      const defaultDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      setExpiresAt(defaultDate.toISOString().slice(0, 16));
+    }
+  }, [isOpen]);
+
   const targetId = report?.id || target?.id;
   const targetName = report?.author || target?.name || "Target Entity";
   const targetTitle = report?.title || target?.subtitle || target?.type || "";
 
   if (!isOpen || !targetId) return null;
 
+  const setPresetDays = (days: number) => {
+    const date = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+    setExpiresAt(date.toISOString().slice(0, 16));
+  };
+
   const getActionColorClass = (act: ModerationActionType) => {
     switch (act) {
       case "WARN":
-        return "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400";
+        return "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800";
       case "SUSPEND":
-        return "bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400";
+        return "bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800";
       case "REMOVE":
-        return "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400";
+        return "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800";
       case "BAN":
-        return "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400";
+        return "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800";
       default:
         return "bg-slate-100 text-slate-600";
     }
@@ -121,10 +133,13 @@ export function ModerationActionDialog({
       return;
     }
 
+    if (!expiresAt) {
+      toast.error("Action expiration date is required.");
+      return;
+    }
+
     try {
-      const formattedExpiresAt = expiresAt
-        ? new Date(expiresAt).toISOString()
-        : undefined;
+      const formattedExpiresAt = new Date(expiresAt).toISOString();
 
       const targetType = report
         ? (report.type as ModerationActionTargetType)
@@ -238,20 +253,38 @@ export function ModerationActionDialog({
             />
           </div>
 
-          {/* Optional Expiration Date (for WARN / SUSPEND) */}
-          {(action === "WARN" || action === "SUSPEND") && (
-            <div className="space-y-2">
+          {/* Required Expiration Date */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
               <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                Action Expiration Date (Optional)
+                Action Expiration Date <span className="text-rose-500">*</span>
               </Label>
-              <Input
-                type="datetime-local"
-                value={expiresAt}
-                onChange={(e) => setExpiresAt(e.target.value)}
-                className="h-10 rounded-xl bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-sm"
-              />
+              <div className="flex items-center gap-1">
+                {[
+                  { label: "+1D", days: 1 },
+                  { label: "+7D", days: 7 },
+                  { label: "+30D", days: 30 },
+                  { label: "+90D", days: 90 },
+                ].map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => setPresetDays(preset.days)}
+                    className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950 dark:hover:text-blue-400 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
+            <Input
+              type="datetime-local"
+              value={expiresAt}
+              onChange={(e) => setExpiresAt(e.target.value)}
+              required
+              className="h-10 rounded-xl bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
           <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-2">
             <Button
