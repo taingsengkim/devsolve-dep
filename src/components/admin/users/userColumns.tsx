@@ -41,14 +41,13 @@ import {
 } from "lucide-react";
 
 const ROLE_OPTIONS: {
-  value: "USER" | "COMPANY" | "ADMIN" | "MODERATOR";
+  value: "USER" | "COMPANY" | "ADMIN";
   label: string;
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
-  { value: "USER", label: "Researcher", icon: User },
-  { value: "COMPANY", label: "Company", icon: Building2 },
-  { value: "ADMIN", label: "Admin", icon: Shield },
-  { value: "MODERATOR", label: "Moderator", icon: ShieldAlert },
+  { value: "USER", label: "USER", icon: User },
+  { value: "COMPANY", label: "COMPANY", icon: Building2 },
+  { value: "ADMIN", label: "ADMIN", icon: Shield },
 ];
 
 function getAvatarColor(name: string): string {

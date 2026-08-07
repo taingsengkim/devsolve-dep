@@ -9,7 +9,7 @@ import {
   useGetAdminUsersQuery,
   useUpdateAdminUserStatusMutation,
 } from "@/lib/redux/services/admin/adminUsersApi";
-import { AdminUserItem } from "@/lib/types/admin/types";
+import { AdminUserItem, AdminUserSummaryItem } from "@/lib/types/admin/types";
 import { UserStatCards } from "@/components/admin/users/UserStatCards";
 import {
   UserFiltersBar,
@@ -46,6 +46,25 @@ export default function AdminUsersPage() {
 
   const [updateUser] = useUpdateAdminUserStatusMutation();
 
+  function extractUserRole(item: AdminUserSummaryItem): "USER" | "COMPANY" | "ADMIN" {
+    const rolesList: string[] = [
+      ...(item.roles || []),
+      ...(item.realm_access?.roles || []),
+      ...(item.realmAccess?.roles || []),
+      ...(item.role ? [item.role] : []),
+    ].map((r) => String(r).toUpperCase());
+
+    if (rolesList.includes("ADMIN")) return "ADMIN";
+    if (
+      rolesList.includes("COMPANY") ||
+      rolesList.includes("ORGANIZATION") ||
+      rolesList.includes("ORG")
+    ) {
+      return "COMPANY";
+    }
+    return "USER";
+  }
+
   /* ── Map overall items for Stat Cards ──────────────────────────────────── */
   const overallUsers: AdminUserItem[] = useMemo(() => {
     if (!overallResponse?.content) return [];
@@ -53,7 +72,7 @@ export default function AdminUsersPage() {
       id: item.id,
       name: item.fullName || item.email || "Unknown User",
       email: item.email || "",
-      role: "USER" as const,
+      role: extractUserRole(item),
       status: (item.status as "ACTIVE" | "SUSPENDED" | "PENDING" | "REMOVED") || "ACTIVE",
       joinedDate: item.createdAt || new Date().toISOString(),
       reportsSubmitted: item.totalReports ?? 0,
@@ -72,7 +91,7 @@ export default function AdminUsersPage() {
       id: item.id,
       name: item.fullName || item.email || "Unknown User",
       email: item.email || "",
-      role: "USER" as const,
+      role: extractUserRole(item),
       status: (item.status as "ACTIVE" | "SUSPENDED" | "PENDING" | "REMOVED") || "ACTIVE",
       joinedDate: item.createdAt || new Date().toISOString(),
       reportsSubmitted: item.totalReports ?? 0,

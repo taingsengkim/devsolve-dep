@@ -246,6 +246,14 @@ export interface AdminUserSummaryItem {
   recognitionCount?: number;
   lastLoginAt?: string;
   createdAt: string;
+  roles?: string[];
+  role?: string;
+  realm_access?: {
+    roles?: string[];
+  };
+  realmAccess?: {
+    roles?: string[];
+  };
 }
 
 export type PageAdminUserSummaryResponse = PaginatedResponse<AdminUserSummaryItem>;
@@ -254,7 +262,7 @@ export interface AdminUserItem {
   id: string;
   name: string;
   email: string;
-  role: "USER" | "COMPANY" | "ADMIN" | "MODERATOR";
+  role: "USER" | "COMPANY" | "ADMIN";
   status: "ACTIVE" | "SUSPENDED" | "PENDING" | "REMOVED";
   joinedDate: string;
   reportsSubmitted?: number;
