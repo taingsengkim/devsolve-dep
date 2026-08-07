@@ -1,42 +1,65 @@
 import { baseApi } from "../baseApi";
-import { AdminUserItem } from "@/lib/types/admin/types";
-import {
-  mockAdminUsersStore,
-  updateMockAdminUsersStore,
-} from "./adminMockData";
+import { PageAdminUserSummaryResponse } from "@/lib/types/admin/types";
+
+export interface GetAdminUsersParams {
+  query?: string;
+  status?: string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+export interface CreateModerationActionParams {
+  id: string;
+  action: "WARN" | "SUSPEND" | "REMOVE" | "BAN";
+  reason: string;
+  expiresAt?: string;
+}
 
 export const adminUsersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getAdminUsers: builder.query<AdminUserItem[], void>({
-      queryFn: () => {
-        return { data: mockAdminUsersStore.map((u) => ({ ...u })) };
+    getAdminUsers: builder.query<PageAdminUserSummaryResponse, GetAdminUsersParams | void>({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        if (params?.query) searchParams.set("query", params.query);
+        if (params?.status && params.status !== "ALL") searchParams.set("status", params.status);
+        if (typeof params?.pageNumber === "number") searchParams.set("pageNumber", String(params.pageNumber));
+        if (typeof params?.pageSize === "number") searchParams.set("pageSize", String(params.pageSize));
+
+        const qs = searchParams.toString();
+        return `/admin/users${qs ? `?${qs}` : ""}`;
       },
       providesTags: ["AdminUser"],
     }),
-    updateAdminUserStatus: builder.mutation<
-      AdminUserItem,
-      { id: string; status?: "ACTIVE" | "SUSPENDED" | "PENDING"; role?: "USER" | "COMPANY" | "ADMIN" | "MODERATOR" }
+    createAdminModerationAction: builder.mutation<
+      unknown,
+      CreateModerationActionParams
     >({
-      // TODO: replace queryFn with query() when real API is ready
-      queryFn: ({ id, status, role }) => {
-        updateMockAdminUsersStore((prev) =>
-          prev.map((u) =>
-            u.id === id
-              ? {
-                  ...u,
-                  ...(status ? { status } : {}),
-                  ...(role ? { role } : {}),
-                }
-              : u
-          )
-        );
-        const updated = mockAdminUsersStore.find((u) => u.id === id);
-        return { data: updated ? { ...updated } : { ...mockAdminUsersStore[0] } };
-      },
-      invalidatesTags: (_result, _error, { id }) => [{ type: "AdminUser", id }, "AdminUser"],
+      query: ({ id, action, reason, expiresAt }) => ({
+        url: `/admin/users/${id}/moderation-actions`,
+        method: "POST",
+        body: { action, reason, expiresAt },
+      }),
+      invalidatesTags: ["AdminUser"],
+    }),
+    updateAdminUserStatus: builder.mutation<
+      unknown,
+      { id: string; status: "ACTIVE" | "SUSPENDED" | "PENDING"; reason?: string }
+    >({
+      query: ({ id, status, reason }) => ({
+        url: `/admin/users/${id}/moderation-actions`,
+        method: "POST",
+        body: {
+          action: status === "SUSPENDED" ? "SUSPEND" : "WARN",
+          reason: reason || `Status updated to ${status} via Admin Users dashboard.`,
+        },
+      }),
+      invalidatesTags: ["AdminUser"],
     }),
   }),
 });
 
-export const { useGetAdminUsersQuery, useUpdateAdminUserStatusMutation } =
-  adminUsersApi;
+export const {
+  useGetAdminUsersQuery,
+  useCreateAdminModerationActionMutation,
+  useUpdateAdminUserStatusMutation,
+} = adminUsersApi;

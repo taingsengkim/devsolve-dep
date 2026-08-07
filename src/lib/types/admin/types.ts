@@ -232,14 +232,36 @@ export interface ReportConfirmationItem {
   }[];
 }
 
+export interface AdminUserSummaryItem {
+  id: string;
+  fullName?: string;
+  email?: string;
+  avatarUrl?: string;
+  country?: string;
+  status: "ACTIVE" | "SUSPENDED" | "REMOVED" | string;
+  reputation?: number;
+  totalReports?: number;
+  validReports?: number;
+  criticalReports?: number;
+  recognitionCount?: number;
+  lastLoginAt?: string;
+  createdAt: string;
+}
+
+export type PageAdminUserSummaryResponse = PaginatedResponse<AdminUserSummaryItem>;
+
 export interface AdminUserItem {
   id: string;
   name: string;
   email: string;
   role: "USER" | "COMPANY" | "ADMIN" | "MODERATOR";
-  status: "ACTIVE" | "SUSPENDED" | "PENDING";
+  status: "ACTIVE" | "SUSPENDED" | "PENDING" | "REMOVED";
   joinedDate: string;
   reportsSubmitted?: number;
+  validReports?: number;
+  criticalReports?: number;
+  reputation?: number;
+  country?: string;
   programsManaged?: number;
   avatarUrl?: string;
 }

@@ -2,7 +2,7 @@
 
 import React from "react";
 
-export type UserStatus = "ACTIVE" | "SUSPENDED" | "PENDING";
+export type UserStatus = "ACTIVE" | "SUSPENDED" | "PENDING" | "REMOVED";
 
 interface StatusConfig {
   label: string;
@@ -21,6 +21,10 @@ const STATUS_CONFIG: Record<UserStatus, StatusConfig> = {
   PENDING: {
     label: "Pending",
     dotColor: "bg-amber-500",
+  },
+  REMOVED: {
+    label: "Removed",
+    dotColor: "bg-slate-400",
   },
 };
 
