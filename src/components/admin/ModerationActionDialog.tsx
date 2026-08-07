@@ -231,6 +231,7 @@ export function ModerationActionDialog({
           {(() => {
             const isTargetRemoved = (report?.status as string) === "REMOVED" || target?.status === "REMOVED";
             const isTargetSuspended = (report?.status as string) === "SUSPENDED" || target?.status === "SUSPENDED";
+            const isTargetActive = (report?.status as string) === "ACTIVE" || target?.status === "ACTIVE";
             return (
               <div className="space-y-2">
                 <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
@@ -260,7 +261,9 @@ export function ModerationActionDialog({
                     <SelectItem value="BAN" disabled={isTargetRemoved}>
                       {isTargetRemoved ? "BAN (User Removed)" : "BAN"}
                     </SelectItem>
-                    <SelectItem value="REINSTATE">REINSTATE</SelectItem>
+                    <SelectItem value="REINSTATE" disabled={isTargetActive}>
+                      {isTargetActive ? "REINSTATE (User account is already active)" : "REINSTATE"}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

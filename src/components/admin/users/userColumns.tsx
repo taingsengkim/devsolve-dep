@@ -83,8 +83,7 @@ function UserActionsCell({
 }) {
   const isRemoved = user.status === "REMOVED";
   const isSuspended = user.status === "SUSPENDED";
-  const isPending = user.status === "PENDING";
-  const canActivate = isSuspended || isPending || isRemoved;
+  const isActive = user.status === "ACTIVE";
 
   return (
     <div className="flex items-center justify-end">
@@ -96,9 +95,8 @@ function UserActionsCell({
         <DropdownMenuContent
           align="end"
           sideOffset={6}
-          className="w-44 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-lg space-y-0.5"
+          className="w-56 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-lg space-y-0.5"
         >
-
           {onModerateUser && (
             <>
               <DropdownMenuItem
@@ -157,10 +155,18 @@ function UserActionsCell({
 
               <DropdownMenuItem
                 onClick={() => onModerateUser(user, "REINSTATE")}
-                className="rounded-xl px-3 py-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer flex items-center gap-2"
+                disabled={isActive}
+                className={cn(
+                  "rounded-xl px-3 py-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer flex items-center gap-2",
+                  isActive && "opacity-40 cursor-not-allowed pointer-events-none"
+                )}
               >
                 <RotateCcw className="size-3.5" />
-                <span>REINSTATE</span>
+                <span>
+                  {isActive
+                    ? "REINSTATE (User account is already active)"
+                    : "REINSTATE"}
+                </span>
               </DropdownMenuItem>
             </>
           )}
