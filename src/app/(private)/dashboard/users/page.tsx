@@ -22,11 +22,15 @@ import { ModerationActionDialog } from "@/components/admin/ModerationActionDialo
 export default function AdminUsersPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
   const [moderateUserTarget, setModerateUserTarget] = useState<AdminUserItem | null>(null);
 
   const { data: response, isLoading, isFetching } = useGetAdminUsersQuery({
     query: searchQuery.trim() || undefined,
     status: statusFilter !== "ALL" ? statusFilter : undefined,
+    pageNumber: pageIndex,
+    pageSize: pageSize,
   });
 
   const [updateUser] = useUpdateAdminUserStatusMutation();
@@ -63,6 +67,16 @@ export default function AdminUsersPage() {
   }, [response]);
 
   /* ── Handlers ────────────────────────────────────────────────────── */
+  const handleStatusFilterChange = useCallback((status: StatusFilter) => {
+    setStatusFilter(status);
+    setPageIndex(0);
+  }, []);
+
+  const handleSearchQueryChange = useCallback((query: string) => {
+    setSearchQuery(query);
+    setPageIndex(0);
+  }, []);
+
   const handleUpdateStatus = useCallback(
     async (id: string, status: "ACTIVE" | "SUSPENDED") => {
       try {
@@ -99,6 +113,8 @@ export default function AdminUsersPage() {
   );
 
   const suspendedCount = statusCounts.suspended;
+  const totalPages = response?.totalPages ?? 1;
+  const totalElements = response?.totalElements ?? 0;
 
   /* ── Render ──────────────────────────────────────────────────────── */
   return (
@@ -146,9 +162,9 @@ export default function AdminUsersPage() {
       {/* FILTER BAR */}
       <UserFiltersBar
         statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
+        onStatusFilterChange={handleStatusFilterChange}
         searchQuery={searchQuery}
-        onSearchQueryChange={setSearchQuery}
+        onSearchQueryChange={handleSearchQueryChange}
         statusCounts={statusCounts}
       />
 
@@ -159,7 +175,19 @@ export default function AdminUsersPage() {
             <div className="h-64 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
           </div>
         ) : (
-          <UserDataTable columns={columns} data={users} />
+          <UserDataTable
+            columns={columns}
+            data={users}
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            pageCount={totalPages}
+            totalElements={totalElements}
+            onPageChange={setPageIndex}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPageIndex(0);
+            }}
+          />
         )}
       </main>
 

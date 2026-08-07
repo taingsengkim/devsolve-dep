@@ -5,14 +5,7 @@ import { auth } from "@/lib/auth/auth";
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 const PROVIDER_ID = "keycloak";
 
-const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-const isUuid = (val?: string | null): boolean => typeof val === "string" && uuidRegex.test(val);
-
 const moderationActionSchema = z.object({
-  targetType: z
-    .enum(["PROGRAM", "PROBLEM", "SOLUTION", "COMMENT", "USER", "REPORT", "SHOWCASE"])
-    .optional(),
-  targetId: z.string().optional(),
   action: z.enum(["WARN", "SUSPEND", "REMOVE", "BAN"]),
   reason: z.string().min(1, "Reason is required").max(2000),
   expiresAt: z.string().optional(),
@@ -28,24 +21,6 @@ async function bearerTokenFor(request: NextRequest): Promise<string | null> {
       headers: request.headers,
     });
     return accessToken ?? null;
-  } catch {
-    return null;
-  }
-}
-
-async function getAdminProfileId(token: string): Promise<string | null> {
-  try {
-    const res = await fetch(`${BACKEND_API_URL}/user-profiles/me`, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    const profile = await res.json();
-    return profile?.id && isUuid(profile.id) ? profile.id : null;
   } catch {
     return null;
   }
@@ -87,19 +62,15 @@ export async function POST(
     );
   }
 
-  // Retrieve authenticated admin profile UUID if valid, or use route param if it's a UUID
-  const myAdminProfileId = await getAdminProfileId(token);
-  const adminId = isUuid(myAdminProfileId) ? myAdminProfileId : isUuid(id) ? id : id;
+  const targetUrl = `${BACKEND_API_URL}/admin/${id}/moderation-actions`;
 
-  const targetUrl = `${BACKEND_API_URL}/admin/${adminId}/moderation-actions`;
-
-  const payload = {
-    targetType: parsed.data.targetType || "USER",
-    targetId: parsed.data.targetId || id,
+  const payload: { action: string; reason: string; expiresAt?: string } = {
     action: parsed.data.action,
     reason: parsed.data.reason,
-    expiresAt: parsed.data.expiresAt,
   };
+  if (parsed.data.expiresAt) {
+    payload.expiresAt = parsed.data.expiresAt;
+  }
 
   try {
     const upstream = await fetch(targetUrl, {
@@ -138,3 +109,4 @@ export async function POST(
     return unreachable();
   }
 }
+
