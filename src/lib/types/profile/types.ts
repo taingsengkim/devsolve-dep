@@ -38,9 +38,6 @@ export interface Profile {
   displayName: string;
   avatarInitials: string;
   avatarUrl?: string;
-  isVerified: boolean;
-  rankBadgeLabel?: string; // e.g. "Top 10"
-  verifiedBadgeLabel?: string; // e.g. "Verified User"
   bio: string;
   location?: string;
   memberSince: string; // e.g. "March 2023"

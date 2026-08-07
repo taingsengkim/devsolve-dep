@@ -4,14 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
-  BadgeCheck,
   Check,
   ChevronRight,
   MapPin,
   Pencil,
   Settings,
   Share2,
-  Trophy,
 } from "lucide-react";
 import { Profile } from "@/lib/types/profile/types";
 import FollowButton from "@/components/profile/FollowButton";
@@ -75,28 +73,9 @@ export default function ProfileHeader({
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-1.5">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 wrap-break-word sm:text-3xl dark:text-slate-100">
-              {profile.displayName}
-            </h1>
-
-            {profile.isVerified && (
-              <span
-                title={profile.verifiedBadgeLabel ?? "Verified"}
-                className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-              >
-                <BadgeCheck size={13} />
-                {profile.verifiedBadgeLabel ?? "Verified"}
-              </span>
-            )}
-
-            {profile.rankBadgeLabel && (
-              <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-xs font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-                <Trophy size={13} />
-                {profile.rankBadgeLabel}
-              </span>
-            )}
-          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 wrap-break-word sm:text-3xl dark:text-slate-100">
+            {profile.displayName}
+          </h1>
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-base text-slate-500 dark:text-slate-400">
             <span className="font-medium">@{profile.username}</span>
