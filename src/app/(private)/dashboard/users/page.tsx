@@ -75,8 +75,11 @@ export default function AdminUsersPage() {
           status === "ACTIVE" ? "Account activated." : "Account suspended.",
           { description: "User status updated successfully." }
         );
-      } catch {
-        toast.error("Failed to update user status.");
+      } catch (err: unknown) {
+        const message =
+          (err as { data?: { message?: string } })?.data?.message ||
+          "Failed to update user status.";
+        toast.error(message);
       }
     },
     [updateUser]
