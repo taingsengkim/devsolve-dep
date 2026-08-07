@@ -95,9 +95,12 @@ export async function POST(
     }
 
     if (!upstream.ok) {
+      console.error("Upstream error:", upstream.status, resBody);
       const message =
-        (resBody as { message?: string } | null)?.message ??
-        "Failed to apply moderation action.";
+        (resBody as { message?: string; error?: string } | null)?.message ||
+        (resBody as { message?: string; error?: string } | null)?.error ||
+        (typeof resBody === "string" ? resBody : null) ||
+        `Backend error (${upstream.status}): Failed to apply moderation action.`;
       return NextResponse.json(
         { message, details: resBody },
         { status: upstream.status }
