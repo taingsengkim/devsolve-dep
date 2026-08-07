@@ -39,7 +39,7 @@ export function UserFiltersBar({
   statusCounts,
 }: UserFiltersBarProps) {
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       {/* STATUS TABS */}
       <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200/60 dark:border-slate-700 shrink-0 gap-1 overflow-x-auto no-scrollbar">
         {STATUS_TABS.map((tab) => {
