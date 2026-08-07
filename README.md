@@ -1,6 +1,6 @@
 # DevSolve Frontend
 
-Production Deployment URL: https://devsolve-frontend.vercel.app/
+Production Deployment URL: https://devsolve.app/
 
 -----
 
@@ -10,44 +10,44 @@ Production Deployment URL: https://devsolve-frontend.vercel.app/
 
 ### Public & Community Pages
 
-- Landing Page: https://devsolve-frontend.vercel.app/
-- Hacktivity Feed: https://devsolve-frontend.vercel.app/hacktivity
-- Leaderboard: https://devsolve-frontend.vercel.app/leaderboard
-- Discussions Hub: https://devsolve-frontend.vercel.app/discussions
-- Create Discussion: https://devsolve-frontend.vercel.app/discussions/create
-- Submit Problem: https://devsolve-frontend.vercel.app/discussions/create/problem
-- Submit Showcase: https://devsolve-frontend.vercel.app/discussions/create/showcase
+- Landing Page: https://devsolve.app/ [Mock Data]
+- Hacktivity Feed: https://devsolve.app/hacktivity [Mock Data]
+- Leaderboard: https://devsolve.app/leaderboard [Mock Data]
+- Discussions Hub: https://devsolve.app/discussions [Mock Data]
+- Create Discussion: https://devsolve.app/discussions/create [Mock Data]
+- Submit Problem: https://devsolve.app/discussions/create/problem [Mock Data]
+- Submit Showcase: https://devsolve.app/discussions/create/showcase [Mock Data]
 
 -----
 
 ### Authentication & Onboarding
 
-- Account Type Selection: https://devsolve-frontend.vercel.app/account-type
-- User Registration: https://devsolve-frontend.vercel.app/register/user
-- Company Registration: https://devsolve-frontend.vercel.app/register/company
+- Account Type Selection: https://devsolve.app/account-type [Real API]
+- User Registration: https://devsolve.app/register/user [Real API]
+- Company Registration: https://devsolve.app/register/company [Real API]
 
 -----
 
 ### User & Researcher Dashboard
 
-- Dashboard Overview: https://devsolve-frontend.vercel.app/dashboard
-- Bounty Programs: https://devsolve-frontend.vercel.app/dashboard/programs
-- Program Details: https://devsolve-frontend.vercel.app/dashboard/programs/[id]
-- Submit Vulnerability Report: https://devsolve-frontend.vercel.app/dashboard/submit-report?program-id=[id]
-- My Reports: https://devsolve-frontend.vercel.app/dashboard/my-reports
-- My Bookmarks: https://devsolve-frontend.vercel.app/dashboard/bookmarks
-- Notifications: https://devsolve-frontend.vercel.app/dashboard/notifications
-- Profile View: https://devsolve-frontend.vercel.app/dashboard/profile/[username]
-- Account Settings: https://devsolve-frontend.vercel.app/dashboard/profile/settings
+- Dashboard Overview: https://devsolve.app/dashboard [Mock Data]
+- Bounty Programs: https://devsolve.app/dashboard/programs [Real API]
+- Program Details: https://devsolve.app/dashboard/programs/[id] [Real API]
+- Submit Vulnerability Report: https://devsolve.app/dashboard/submit-report?program-id=[id] [Real API]
+- My Reports: https://devsolve.app/dashboard/my-reports [Real API]
+- My Bookmarks: https://devsolve.app/dashboard/bookmarks [Real API]
+- Notifications: https://devsolve.app/dashboard/notifications [Mock Data]
+- Profile View: https://devsolve.app/dashboard/profile/[username] [Real API]
+- Account Settings: https://devsolve.app/dashboard/profile/settings [Real API]
 
 -----
 
 ### Admin & Moderation Dashboard
 
-- User Management: https://devsolve-frontend.vercel.app/dashboard/users
-- Company Verification: https://devsolve-frontend.vercel.app/dashboard/company-verification
-- Content Reports & Moderation: https://devsolve-frontend.vercel.app/dashboard/content-reports
-- Report Confirmation: https://devsolve-frontend.vercel.app/dashboard/report-confirmation
+- User Management: https://devsolve.app/dashboard/users [Real API]
+- Company Verification: https://devsolve.app/dashboard/company-verification [Real API]
+- Content Reports & Moderation: https://devsolve.app/dashboard/content-reports [Real API]
+- Report Confirmation: https://devsolve.app/dashboard/report-confirmation [Mock Data]
 
 -----
 
