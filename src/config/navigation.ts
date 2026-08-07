@@ -19,6 +19,7 @@ import {
   ShieldAlert,
   FilePen,
   Tags,
+  CircleUser,
   LucideIcon,
 } from "lucide-react";
 
@@ -34,6 +35,8 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   // Overview items
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
+  // Resolves to /dashboard/profile/{username} — never guess the slug.
+  { name: "My Profile", href: "/dashboard/profile", icon: CircleUser, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
   { name: "Programs", href: "/dashboard/programs", icon: Globe, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
   { name: "Community", href: "/dashboard/discussions", icon: MessageSquare, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
   { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },

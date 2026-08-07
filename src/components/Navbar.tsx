@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -101,6 +102,14 @@ const Navbar = () => {
   const [mobileCommunityOpen, setMobileCommunityOpen] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const reduce = useReducedMotion();
+  // Anything inside this is "the menu"; a press anywhere else dismisses it.
+  const headerRef = useRef<HTMLElement>(null);
+
+  const closeAllMenus = () => {
+    setCommunityMenuOpen(false);
+    setMobileMenuOpen(false);
+    setMobileCommunityOpen(false);
+  };
   const { isDark, mounted, toggle } = useThemeToggle({
     variant: "rectangle",
     start: "bottom-up",
@@ -235,21 +244,40 @@ const Navbar = () => {
     return () => query.removeEventListener("change", handleChange);
   }, []);
 
+  /**
+   * Dismissal, for whichever menu is open. Previously only the desktop flyout
+   * answered Escape, and nothing answered a press outside — so on a phone the
+   * panel could only be closed by finding the hamburger again, and on a touch
+   * screen the flyout had no way out at all (there is no `mouseleave` to
+   * close it).
+   */
   useEffect(() => {
-    if (!communityMenuOpen) {
+    if (!mobileMenuOpen && !communityMenuOpen) {
       return;
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setCommunityMenuOpen(false);
+        closeAllMenus();
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    const handlePointerDown = (event: PointerEvent) => {
+      // A press on the island itself is the trigger doing its own job.
+      if (headerRef.current?.contains(event.target as Node)) {
+        return;
+      }
+      closeAllMenus();
+    };
 
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [communityMenuOpen]);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [mobileMenuOpen, communityMenuOpen]);
 
   const handleLogin = async () => {
     if (isLoggingIn) {
@@ -301,9 +329,29 @@ const Navbar = () => {
           ? { duration: 0 }
           : { type: "spring", stiffness: 380, damping: 34, mass: 0.9 }
       }
+      ref={headerRef}
       className="fixed inset-x-0 top-0 z-[100] w-full"
     >
       <div className="pointer-events-none">
+        {/* Scrim under the open mobile panel. First child, so the island and
+            the panel paint over it. It makes "tap anywhere to close" visible
+            rather than something you have to guess at, and it stops taps
+            landing on the page behind. */}
+        <AnimatePresence>
+          {mobileMenuOpen ? (
+            <motion.button
+              type="button"
+              aria-label="Close navigation menu"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: reduce ? 0 : 0.2 }}
+              onClick={closeAllMenus}
+              className="pointer-events-auto fixed inset-0 cursor-default bg-slate-950/25 backdrop-blur-[2px] lg:hidden"
+            />
+          ) : null}
+        </AnimatePresence>
+
         <div className="mx-auto w-full max-w-7xl px-4 py-3 sm:px-6">
           {/* Translucent + blurred, because page content now passes directly
               behind it rather than under an opaque band. */}
