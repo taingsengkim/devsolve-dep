@@ -46,8 +46,8 @@ export const adminUsersApi = baseApi.injectEndpoints({
         url: `/admin/${id}/moderation-actions`,
         method: "POST",
         body: {
-          action: status === "SUSPENDED" ? "SUSPEND" : "WARN",
-          reason: reason || `Status updated to ${status} via Admin Users dashboard.`,
+          action: status === "ACTIVE" ? "ACTIVATE" : status === "SUSPENDED" ? "SUSPEND" : "WARN",
+          reason: reason || `Account status set to ${status} via Admin Users dashboard.`,
         },
       }),
       invalidatesTags: ["AdminUser"],

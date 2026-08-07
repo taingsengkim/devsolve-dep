@@ -331,7 +331,7 @@ export type ModerationActionTargetType =
   | "REPORT"
   | "SHOWCASE";
 
-export type ModerationActionType = "WARN" | "SUSPEND" | "REMOVE" | "BAN";
+export type ModerationActionType = "WARN" | "SUSPEND" | "REMOVE" | "BAN" | "ACTIVATE" | "UNSUSPEND";
 
 export interface CreateModerationActionRequest {
   targetType?: ModerationActionTargetType;
