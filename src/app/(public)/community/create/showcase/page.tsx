@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { ChevronRight } from "lucide-react";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import { CreateShowcaseForm } from "@/components/showcases/create/CreateShowcaseForm";
 
 export default function PublicCreateShowcasePage() {
@@ -49,10 +50,17 @@ export default function PublicCreateShowcasePage() {
           </div>
         </header>
 
-        <CreateShowcaseForm
-          successHref="/showcases"
-          cancelHref="/community/create"
-        />
+        {/* Covers the routes into this page that skip the gated link — a
+            pasted URL, a bookmark, back/forward. */}
+        <RequireAuth
+          title="Sign in to post a showcase"
+          description="Publishing a showcase needs an account, so the project stays attached to your profile. It only takes a moment."
+        >
+          <CreateShowcaseForm
+            successHref="/showcases"
+            cancelHref="/community/create"
+          />
+        </RequireAuth>
       </motion.main>
     </div>
   );

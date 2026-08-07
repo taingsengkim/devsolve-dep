@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowUpRight, Bug, Rocket, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { AuthGatedLink } from "@/components/auth/AuthGatedLink";
 import SectionBackdrop, {
   ACCENT,
   PRIMARY,
@@ -382,6 +383,8 @@ type Format = {
   body: string;
   /** What the author is expected to bring — sets expectations before the form. */
   brings: string[];
+  /** Heading on the sign-in prompt an anonymous visitor gets on this card. */
+  promptTitle: string;
   icon: LucideIcon;
   accent: string;
   Art: (props: { reduce: boolean | null }) => React.ReactElement;
@@ -394,6 +397,7 @@ const FORMATS: Format[] = [
     title: "Problem & Bug",
     body: "Report a security flaw, system bug, or technical blocker and let the community work it with you.",
     brings: ["Steps to reproduce", "Impact", "Stack details"],
+    promptTitle: "Sign in to post a problem",
     icon: Bug,
     accent: PRIMARY,
     Art: ProblemArt,
@@ -404,6 +408,7 @@ const FORMATS: Format[] = [
     title: "Showcase Project",
     body: "Share a project, an architecture write-up, or a guide worth reading twice.",
     brings: ["Write-up", "Diagrams", "Repo link"],
+    promptTitle: "Sign in to post a showcase",
     icon: Rocket,
     accent: ACCENT,
     Art: ShowcaseArt,
@@ -501,8 +506,9 @@ export function CreatePostSelection({
                 whileHover={reduce ? undefined : { y: -4 }}
                 whileTap={{ scale: 0.99 }}
               >
-                <Link
+                <AuthGatedLink
                   href={`${basePath}/${format.slug}`}
+                  promptTitle={format.promptTitle}
                   /* One custom property drives every accented state below, so
                      a card's colour lives in exactly one place. Not `--accent`:
                      that name is shadcn's theme token, and shadowing it here
@@ -561,7 +567,7 @@ export function CreatePostSelection({
                     Start writing
                     <ArrowUpRight className="size-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </span>
-                </Link>
+                </AuthGatedLink>
               </motion.div>
             );
           })}
