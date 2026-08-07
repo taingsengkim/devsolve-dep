@@ -2,10 +2,10 @@ export type MemberRole = "Manager" | "Member" | "Viewer";
 export type MemberStatus = "Active" | "Pending";
 
 export type TeamMember = {
-  id: number;
+  id: string;
   name: string;
   email: string;
-  avatar: string;
+  avatar?: string;
   role: MemberRole;
   status: MemberStatus;
   joined: string;

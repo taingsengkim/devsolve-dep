@@ -161,24 +161,25 @@ export function getUserColumns({
       ),
       cell: ({ row }) => {
         const user = row.original;
-        const initials = user.name
+        const displayName = user.name || (user as { fullName?: string }).fullName || user.email || "User";
+        const initials = displayName
           .split(" ")
           .slice(0, 2)
           .map((w) => w[0])
           .join("")
-          .toUpperCase();
+          .toUpperCase() || "U";
         return (
           <div className="flex items-center gap-3 py-0.5">
             {user.avatarUrl ? (
               <img
                 src={user.avatarUrl}
-                alt={user.name}
+                alt={displayName}
                 className="w-9 h-9 rounded-full object-cover shrink-0 border border-slate-200 dark:border-slate-800"
               />
             ) : (
               <div
                 className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${getAvatarColor(
-                  user.name
+                  displayName
                 )}`}
               >
                 {initials}
@@ -186,7 +187,7 @@ export function getUserColumns({
             )}
             <div className="min-w-0">
               <div className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate">
-                {user.name}
+                {displayName}
               </div>
               <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
                 {user.email}
@@ -233,6 +234,34 @@ export function getUserColumns({
       cell: ({ row }) => <UserStatusBadge status={row.original.status} />,
     },
     {
+      accessorKey: "reportsSubmitted",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="px-0 hover:bg-transparent font-bold text-slate-700 dark:text-slate-300 cursor-pointer text-xs uppercase tracking-wider"
+        >
+          Activity
+          <ArrowUpDown className="ml-1.5 h-3.5 w-3.5" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const u = row.original;
+        const reports = u.reportsSubmitted ?? 0;
+        const rep = u.reputation ?? 0;
+        return (
+          <div className="text-xs space-y-0.5">
+            <div className="font-semibold text-slate-700 dark:text-slate-300">
+              {reports} report{reports === 1 ? "" : "s"}
+            </div>
+            <div className="text-slate-400 dark:text-slate-500">
+              {rep} rep points
+            </div>
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: "joinedDate",
       header: ({ column }) => (
         <Button
@@ -244,11 +273,22 @@ export function getUserColumns({
           <ArrowUpDown className="ml-1.5 h-3.5 w-3.5" />
         </Button>
       ),
-      cell: ({ row }) => (
-        <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
-          {row.original.joinedDate}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const rawDate = row.original.joinedDate;
+        let formatted = rawDate;
+        if (rawDate && !isNaN(Date.parse(rawDate))) {
+          formatted = new Date(rawDate).toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          });
+        }
+        return (
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+            {formatted}
+          </span>
+        );
+      },
     },
     {
       id: "actions",

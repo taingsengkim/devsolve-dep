@@ -83,8 +83,8 @@ const ACTS: Act[] = [
     kicker: "How it works",
     title: ["Problems,", "Answered"],
     accent: ACCENT,
-    href: "/discussions",
-    hrefLabel: "Open the discussions",
+    href: "/problems",
+    hrefLabel: "Open the problems feed",
     steps: [
       {
         n: "01",
@@ -142,6 +142,10 @@ function arcPoint(f: number) {
     x: ARC.cx + ARC.r * Math.cos(rad),
     y: ARC.cy + ARC.r * Math.sin(rad),
   };
+}
+
+function formatPercent(value: number, total: number) {
+  return `${((value / total) * 100).toFixed(4)}%`;
 }
 
 /** Inset so the first and last dot never sit at the very ends of the sweep. */
@@ -436,7 +440,7 @@ export function FeatureHighlights() {
                   return (
                     <div
                       key={step.n}
-                      className={`dot-${ai}-${si} absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full`}
+                      className={`dot-${ai}-${si} absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-300`}
                       style={{
                         left: `${((p.x / ARC.w) * 100).toFixed(4)}%`,
                         top: `${((p.y / ARC.h) * 100).toFixed(4)}%`,

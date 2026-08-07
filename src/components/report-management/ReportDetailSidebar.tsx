@@ -17,7 +17,9 @@ type ReportDetailSidebarProps = {
 export function ReportDetailSidebar({
   detail,
 }: ReportDetailSidebarProps) {
-  const contactEmail = `${detail.submitterInitials.toLowerCase()}@devsolve.io`;
+  const contactEmail =
+    detail.submitterEmail?.trim() ||
+    `${detail.submitterInitials.toLowerCase()}@devsolve.io`;
 
   return (
     <aside className="space-y-5 xl:sticky xl:top-6">

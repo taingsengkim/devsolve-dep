@@ -26,37 +26,37 @@ export default function ProfileSidebar({ profile, stats }: ProfileSidebarProps) 
 
       {/* Stats Divider Section */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           <span>Stats</span>
-          <div className="h-px flex-1 bg-slate-200/80" />
+          <div className="h-px flex-1 bg-slate-200/80 dark:bg-slate-800" />
         </div>
 
         <div className="space-y-3 text-sm">
           <div>
-            <p className="font-bold text-slate-700 text-2xl tracking-tight">{stats.reputation.toLocaleString()}</p>
-            <p className="text-sm text-slate-500 font-medium">Reputation Points</p>
+            <p className="font-bold text-slate-900 dark:text-slate-100 text-2xl tracking-tight">{stats.reputation.toLocaleString()}</p>
+            <p className="text-sm text-slate-700 dark:text-slate-300 font-semibold">Reputation Points</p>
           </div>
 
           {stats.globalRank !== undefined && (
-            <div className="flex items-center justify-between py-1.5 border-t border-slate-100">
-              <span className="text-sm text-slate-500 font-medium">Global Rank</span>
-              <span className="text-sm font-bold text-slate-600">#{stats.globalRank}</span>
+            <div className="flex items-center justify-between py-1.5 border-t border-slate-100 dark:border-slate-800">
+              <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">Global Rank</span>
+              <span className="text-sm font-bold text-slate-900 dark:text-slate-100">#{stats.globalRank}</span>
             </div>
           )}
 
-          <div className="flex items-center justify-between py-1.5 border-t border-slate-100">
-            <span className="text-sm text-slate-500 font-medium">Reports Submitted</span>
-            <span className="text-sm font-bold text-slate-600">{stats.reportsSubmitted}</span>
+          <div className="flex items-center justify-between py-1.5 border-t border-slate-100 dark:border-slate-800">
+            <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">Reports Submitted</span>
+            <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{stats.reportsSubmitted}</span>
           </div>
 
-          <div className="flex items-center justify-between py-1.5 border-t border-slate-100">
-            <span className="text-sm text-slate-500 font-medium">Accepted Rate</span>
-            <span className="text-sm font-bold text-emerald-600">{stats.acceptedRate}%</span>
+          <div className="flex items-center justify-between py-1.5 border-t border-slate-100 dark:border-slate-800">
+            <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">Accepted Rate</span>
+            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{stats.acceptedRate}%</span>
           </div>
 
-          <div className="flex items-center justify-between py-1.5 border-t border-slate-100">
-            <span className="text-sm text-slate-500 font-medium">Total Earned</span>
-            <span className="text-sm font-bold text-emerald-600">${stats.totalEarned.toLocaleString()}</span>
+          <div className="flex items-center justify-between py-1.5 border-t border-slate-100 dark:border-slate-800">
+            <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">Total Earned</span>
+            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">${stats.totalEarned.toLocaleString()}</span>
           </div>
         </div>
       </div>

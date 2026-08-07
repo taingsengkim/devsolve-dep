@@ -17,12 +17,17 @@ export type ReviewQueueLane = {
 };
 
 export type PriorityReviewItem = {
-  id: number;
+  id: string | number;
+  reportId: string;
   title: string;
   severity: ReviewSeverity;
   reporter: string;
   submittedAt: string;
+  submittedAtIso?: string;
   queue: ReviewQueueLaneKey;
   status: string;
   assets: string[];
+  reportType: "Bounty" | "Response";
+  authorInitials: string;
+  logoSrc?: string;
 };

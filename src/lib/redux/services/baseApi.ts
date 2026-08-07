@@ -8,7 +8,7 @@ import {
 import { clearAccessToken, getAccessToken } from "@/lib/auth/access-token";
 
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL,
+  baseUrl: "/api",
   prepareHeaders: async (headers) => {
     // The token lives with better-auth against the session cookie, not in
     // localStorage — asking the client for it is the only way to get one.
@@ -39,7 +39,7 @@ const baseQueryWithReauth: BaseQueryFn<
 };
 
 export const baseApi = createApi({
-  reducerPath: "api",
+  reducerPath: "/api",
   baseQuery: baseQueryWithReauth,
   tagTypes: [
     "Program",
@@ -48,7 +48,10 @@ export const baseApi = createApi({
     "User",
     "Notification",
     "Organization",
+    "OrganizationVerification",
     "OrganizationMember",
+    "OrganizationMembers",
+    "OrganizationInvitations",
     "Profile",
     "Report",
     "Bookmark",
@@ -57,6 +60,8 @@ export const baseApi = createApi({
     "ModerationItem",
     "ContentReport",
     "AdminUser",
+    "Showcase",
+    "Category",
   ],
   endpoints: () => ({}),
 });

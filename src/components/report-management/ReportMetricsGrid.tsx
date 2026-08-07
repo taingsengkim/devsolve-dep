@@ -1,6 +1,5 @@
 import { BarChart3, CheckCheck, Clock3, ShieldAlert, TrendingUp, type LucideIcon } from "lucide-react";
 
-import { REPORT_METRICS } from "@/components/report-management/mock-data";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -12,12 +11,31 @@ const METRIC_HELPERS = [
   "In analyst review",
   "Ready for closure",
 ];
-const METRIC_TRENDS = ["+14%", "-8%", "+2", "+11%"];
 
-export function ReportMetricsGrid() {
+type ReportMetricsGridProps = {
+  metrics: {
+    total: number;
+    pending: number;
+    underReview: number;
+    approved: number;
+  };
+  isLoading?: boolean;
+};
+
+export function ReportMetricsGrid({
+  metrics,
+  isLoading = false,
+}: ReportMetricsGridProps) {
+  const metricItems = [
+    { title: "Total Report", value: metrics.total },
+    { title: "Pending", value: metrics.pending },
+    { title: "Under Review", value: metrics.underReview },
+    { title: "Approved", value: metrics.approved },
+  ];
+
   return (
     <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-      {REPORT_METRICS.map((metric, index) => {
+      {metricItems.map((metric, index) => {
         const Icon = METRIC_ICONS[index];
 
         return (
@@ -52,9 +70,13 @@ export function ReportMetricsGrid() {
                 </div>
 
                 <div className="flex items-end gap-3">
-                  <p className="text-[2rem] font-semibold leading-none tracking-[-0.05em] text-[#0F172A]">
-                    {metric.value}
-                  </p>
+                  {isLoading ? (
+                    <div className="h-10 w-20 animate-pulse rounded-xl bg-slate-100" />
+                  ) : (
+                    <p className="text-[2rem] font-semibold leading-none tracking-[-0.05em] text-[#0F172A]">
+                      {metric.value}
+                    </p>
+                  )}
                   <Badge
                     variant="outline"
                     className={cn(
@@ -65,7 +87,7 @@ export function ReportMetricsGrid() {
                     )}
                   >
                     <TrendingUp />
-                    {METRIC_TRENDS[index]}
+                    Live
                   </Badge>
                 </div>
               </div>

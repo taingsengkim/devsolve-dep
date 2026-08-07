@@ -8,7 +8,8 @@ import { toast } from "sonner";
 import {
   useGetAdminUsersQuery,
   useUpdateAdminUserStatusMutation,
-} from "@/lib/redux/services/adminApi";
+} from "@/lib/redux/services/admin/adminUsersApi";
+import { AdminUserItem } from "@/lib/types/admin/types";
 import { UserStatCards } from "@/components/admin/users/UserStatCards";
 import {
   UserFiltersBar,
@@ -18,57 +19,62 @@ import { UserDataTable } from "@/components/admin/users/UserDataTable";
 import { getUserColumns } from "@/components/admin/users/userColumns";
 
 export default function AdminUsersPage() {
-  const { data: users = [], isLoading, isFetching } = useGetAdminUsersQuery();
-  const [updateUser] = useUpdateAdminUserStatusMutation();
-
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
-  /* ── Counts ─────────────────────────────────────────────────────── */
-  const statusCounts = {
-    all: users.length,
-    active: users.filter((u) => u.status === "ACTIVE").length,
-    suspended: users.filter((u) => u.status === "SUSPENDED").length,
-    pending: users.filter((u) => u.status === "PENDING").length,
-  };
-
-  /* ── Filtering ───────────────────────────────────────────────────── */
-  const filteredUsers = users.filter((u) => {
-    const matchesStatus = statusFilter === "ALL" || u.status === statusFilter;
-    const q = searchQuery.toLowerCase().trim();
-    const matchesSearch =
-      !q ||
-      u.name.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q);
-    return matchesStatus && matchesSearch;
+  const { data: response, isLoading, isFetching } = useGetAdminUsersQuery({
+    query: searchQuery.trim() || undefined,
+    status: statusFilter !== "ALL" ? statusFilter : undefined,
   });
+
+  const [updateUser] = useUpdateAdminUserStatusMutation();
+
+  /* ── Map backend items to AdminUserItem ────────────────────────────────── */
+  const users: AdminUserItem[] = useMemo(() => {
+    if (!response?.content) return [];
+    return response.content.map((item) => ({
+      id: item.id,
+      name: item.fullName || item.email || "Unknown User",
+      email: item.email || "",
+      role: "USER" as const,
+      status: (item.status as "ACTIVE" | "SUSPENDED" | "PENDING" | "REMOVED") || "ACTIVE",
+      joinedDate: item.createdAt || new Date().toISOString(),
+      reportsSubmitted: item.totalReports ?? 0,
+      validReports: item.validReports ?? 0,
+      criticalReports: item.criticalReports ?? 0,
+      reputation: item.reputation ?? 0,
+      country: item.country,
+      avatarUrl: item.avatarUrl,
+    }));
+  }, [response]);
+
+  /* ── Counts ─────────────────────────────────────────────────────── */
+  const statusCounts = useMemo(() => {
+    const items = response?.content || [];
+    return {
+      all: response?.totalElements ?? items.length,
+      active: items.filter((u) => u.status === "ACTIVE").length,
+      suspended: items.filter((u) => u.status === "SUSPENDED").length,
+      pending: items.filter((u) => u.status === "PENDING").length,
+      removed: items.filter((u) => u.status === "REMOVED").length,
+    };
+  }, [response]);
 
   /* ── Handlers ────────────────────────────────────────────────────── */
   const handleUpdateStatus = useCallback(
     async (id: string, status: "ACTIVE" | "SUSPENDED") => {
       try {
-        await updateUser({ id, status }).unwrap();
+        await updateUser({
+          id,
+          status,
+          reason: `Status set to ${status} via Admin Users dashboard.`,
+        }).unwrap();
         toast.success(
           status === "ACTIVE" ? "Account activated." : "Account suspended.",
-          { description: `User status updated successfully.` }
+          { description: "User status updated successfully." }
         );
       } catch {
         toast.error("Failed to update user status.");
-      }
-    },
-    [updateUser]
-  );
-
-  const handleUpdateRole = useCallback(
-    async (
-      id: string,
-      role: "USER" | "COMPANY" | "ADMIN" | "MODERATOR"
-    ) => {
-      try {
-        await updateUser({ id, role }).unwrap();
-        toast.success("Role updated.", { description: `User role changed to ${role}.` });
-      } catch {
-        toast.error("Failed to update user role.");
       }
     },
     [updateUser]
@@ -78,9 +84,8 @@ export default function AdminUsersPage() {
     () =>
       getUserColumns({
         onUpdateStatus: handleUpdateStatus,
-        onUpdateRole: handleUpdateRole,
       }),
-    [handleUpdateStatus, handleUpdateRole]
+    [handleUpdateStatus]
   );
 
   const suspendedCount = statusCounts.suspended;
@@ -116,7 +121,7 @@ export default function AdminUsersPage() {
       </header>
 
       {/* STAT CARDS */}
-      {!isLoading && <UserStatCards users={users} />}
+      {!isLoading && <UserStatCards users={users} totalCount={response?.totalElements} />}
       {isLoading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
           {[0, 1, 2, 3].map((i) => (
@@ -144,11 +149,9 @@ export default function AdminUsersPage() {
             <div className="h-64 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
           </div>
         ) : (
-          <UserDataTable columns={columns} data={filteredUsers} />
+          <UserDataTable columns={columns} data={users} />
         )}
       </main>
     </motion.div>
   );
 }
-
-

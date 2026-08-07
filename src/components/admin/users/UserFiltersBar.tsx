@@ -5,13 +5,14 @@ import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export type StatusFilter = "ALL" | "ACTIVE" | "SUSPENDED" | "PENDING";
+export type StatusFilter = "ALL" | "ACTIVE" | "SUSPENDED" | "PENDING" | "REMOVED";
 
 interface StatusCounts {
   all: number;
   active: number;
   suspended: number;
   pending: number;
+  removed?: number;
 }
 
 interface UserFiltersBarProps {
@@ -27,6 +28,7 @@ const STATUS_TABS: { key: StatusFilter; label: string; countKey: keyof StatusCou
   { key: "ACTIVE", label: "Active", countKey: "active" },
   { key: "SUSPENDED", label: "Suspended", countKey: "suspended" },
   { key: "PENDING", label: "Pending", countKey: "pending" },
+  { key: "REMOVED", label: "Removed", countKey: "removed" },
 ];
 
 export function UserFiltersBar({
@@ -61,7 +63,7 @@ export function UserFiltersBar({
                     : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                 }`}
               >
-                {statusCounts[tab.countKey]}
+                {statusCounts[tab.countKey] ?? 0}
               </span>
             </Button>
           );

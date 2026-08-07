@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,7 +16,7 @@ import {
   Trophy,
   X,
 } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import darkModeLogo from "@/app/devsolve_dark_mode-removebg-preview.png";
 import { ThemeToggle, useThemeToggle } from "@/components/motion/theme-toggle";
@@ -39,19 +40,22 @@ type NavLink = {
 const navLinks: NavLink[] = [
   { name: "Home", href: "/" },
   { name: "Programs", href: "/programs" },
-  { name: "Hacker Activity", href: "/hacktivity" },
+  // "Hacktivity" everywhere else in the product, and ~60px narrower than
+  // "Hacker Activity" — which is most of what made the bar overflow at lg.
+  { name: "Hacktivity", href: "/hacktivity" },
   {
     name: "Community",
+    href: "/community",
     items: [
       {
         name: "Problem",
-        href: "/dashboard/discussions/create/problem",
+        href: "/problems",
         description: "Post bugs, blockers, and security questions.",
         icon: "problem",
       },
       {
         name: "Showcase",
-        href: "/dashboard/discussions/create/showcase",
+        href: "/showcases",
         description: "Share product wins, demos, and build highlights.",
         icon: "showcase",
       },
@@ -91,21 +95,27 @@ function CommunityMenuIcon({ icon }: { icon?: NavItem["icon"] }) {
 
 const Navbar = () => {
   const pathname = usePathname();
-
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [communityMenuOpen, setCommunityMenuOpen] = useState(false);
   const [mobileCommunityOpen, setMobileCommunityOpen] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const reduce = useReducedMotion();
+  // Anything inside this is "the menu"; a press anywhere else dismisses it.
+  const headerRef = useRef<HTMLElement>(null);
+
+  const closeAllMenus = () => {
+    setCommunityMenuOpen(false);
+    setMobileMenuOpen(false);
+    setMobileCommunityOpen(false);
+  };
   const { isDark, mounted, toggle } = useThemeToggle({
     variant: "rectangle",
     start: "bottom-up",
   });
   const isDarkLogo = mounted && isDark;
-  const logoSrc = isDarkLogo
-    ? darkModeLogo
-    : "/devsolve-logo-removebg-preview.png";
+  const logoSrc = isDarkLogo ? darkModeLogo : "/devsolve-logo.png";
 
   // The header is a fixed island with no backdrop band, so it always overlaps
   // page content. To keep the screen clear it retracts while the reader moves
@@ -149,12 +159,10 @@ const Navbar = () => {
     };
   }, []);
 
-  // An open menu must never be dragged off-screen with the island.
-  useEffect(() => {
-    if (mobileMenuOpen || communityMenuOpen) {
-      setHidden(false);
-    }
-  }, [mobileMenuOpen, communityMenuOpen]);
+  // An open menu must never be dragged off-screen with the island. Derived
+  // rather than pushed back into `hidden` from an effect — that spent a whole
+  // extra render on something the render already knows.
+  const isRetracted = hidden && !mobileMenuOpen && !communityMenuOpen;
 
   useEffect(() => {
     const handleResetLoading = () => {
@@ -206,27 +214,70 @@ const Navbar = () => {
   );
 
   // Navigating away should never leave a menu hanging over the new page.
-  useEffect(() => {
+  // Adjusted during render against the previous path rather than in an effect:
+  // React re-runs this pass before committing, so the new page never paints
+  // with the old menu open. Covers back/forward too, which the links' own
+  // onClick handlers cannot.
+  const [renderedPath, setRenderedPath] = useState(pathname);
+
+  if (renderedPath !== pathname) {
+    setRenderedPath(pathname);
     setCommunityMenuOpen(false);
     setMobileMenuOpen(false);
     setMobileCommunityOpen(false);
-  }, [pathname]);
+  }
 
+  // Crossing into the desktop layout hides the panel via `lg:hidden` but leaves
+  // it open in state, so narrowing again would flash it back. Closing on the
+  // breakpoint change keeps the two in step.
   useEffect(() => {
-    if (!communityMenuOpen) {
+    const query = window.matchMedia("(min-width: 1024px)");
+
+    const handleChange = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        setMobileMenuOpen(false);
+        setMobileCommunityOpen(false);
+      }
+    };
+
+    query.addEventListener("change", handleChange);
+    return () => query.removeEventListener("change", handleChange);
+  }, []);
+
+  /**
+   * Dismissal, for whichever menu is open. Previously only the desktop flyout
+   * answered Escape, and nothing answered a press outside — so on a phone the
+   * panel could only be closed by finding the hamburger again, and on a touch
+   * screen the flyout had no way out at all (there is no `mouseleave` to
+   * close it).
+   */
+  useEffect(() => {
+    if (!mobileMenuOpen && !communityMenuOpen) {
       return;
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setCommunityMenuOpen(false);
+        closeAllMenus();
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    const handlePointerDown = (event: PointerEvent) => {
+      // A press on the island itself is the trigger doing its own job.
+      if (headerRef.current?.contains(event.target as Node)) {
+        return;
+      }
+      closeAllMenus();
+    };
 
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [communityMenuOpen]);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [mobileMenuOpen, communityMenuOpen]);
 
   const handleLogin = async () => {
     if (isLoggingIn) {
@@ -265,12 +316,42 @@ const Navbar = () => {
     // Fixed and out of flow: no full-width band, just the island floating over
     // the page. `--navbar-height` is what reserves room for it in the layout.
     <motion.header
-      initial={{ y: -24, opacity: 0 }}
-      animate={hidden ? { y: "-115%", opacity: 0 } : { y: 0, opacity: 1 }}
-      transition={{ type: "spring", stiffness: 380, damping: 34, mass: 0.9 }}
+      initial={reduce ? false : { y: -24, opacity: 0 }}
+      /* Retracting on scroll is motion for its own sake — with reduced motion
+         the island simply stays put. */
+      animate={
+        isRetracted && !reduce
+          ? { y: "-115%", opacity: 0 }
+          : { y: 0, opacity: 1 }
+      }
+      transition={
+        reduce
+          ? { duration: 0 }
+          : { type: "spring", stiffness: 380, damping: 34, mass: 0.9 }
+      }
+      ref={headerRef}
       className="fixed inset-x-0 top-0 z-[100] w-full"
     >
       <div className="pointer-events-none">
+        {/* Scrim under the open mobile panel. First child, so the island and
+            the panel paint over it. It makes "tap anywhere to close" visible
+            rather than something you have to guess at, and it stops taps
+            landing on the page behind. */}
+        <AnimatePresence>
+          {mobileMenuOpen ? (
+            <motion.button
+              type="button"
+              aria-label="Close navigation menu"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: reduce ? 0 : 0.2 }}
+              onClick={closeAllMenus}
+              className="pointer-events-auto fixed inset-0 cursor-default bg-slate-950/25 backdrop-blur-[2px] lg:hidden"
+            />
+          ) : null}
+        </AnimatePresence>
+
         <div className="mx-auto w-full max-w-7xl px-4 py-3 sm:px-6">
           {/* Translucent + blurred, because page content now passes directly
               behind it rather than under an opaque band. */}
@@ -283,7 +364,10 @@ const Navbar = () => {
                 : "shadow-[0_0_0_1px_rgba(30,41,59,0.04),0_8px_24px_-14px_rgba(15,23,42,0.35)] dark:shadow-[0_10px_30px_rgba(2,6,23,0.28)]",
             )}
           >
-            <div className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-4">
+            {/* Gaps tighten where the bar is tightest. `min-w-0` on the middle
+                track is what stops the nav pushing into the actions instead of
+                staying inside its column. */}
+            <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 lg:gap-3 xl:gap-4">
               <Link
                 href="/"
                 aria-label="Go to DevSolve homepage"
@@ -300,14 +384,16 @@ const Navbar = () => {
                   }}
                   className="flex items-center"
                 >
-                  <span className="relative block h-10 w-35 sm:h-11 sm:w-38.5">
+                  {/* Narrows through the band where the nav is fighting for
+                      room, back to full size once there is space again. */}
+                  <span className="relative block h-10 w-33 sm:w-35 lg:w-32 xl:h-11 xl:w-38.5">
                     <Image
                       key={isDarkLogo ? "dark-logo" : "light-logo"}
                       src={logoSrc}
                       alt="DevSolve"
                       fill
                       priority
-                      sizes="(min-width: 640px) 154px, 140px"
+                      sizes="(min-width: 1280px) 154px, 132px"
                       className={cn(
                         "origin-left object-contain object-left transition-transform scale-[1.15]",
                         isDarkLogo && "translate-x-[2px]",
@@ -321,7 +407,7 @@ const Navbar = () => {
                 aria-label="Main navigation"
                 className="hidden min-w-0 items-center justify-center lg:flex"
               >
-                <div className="flex items-center gap-1">
+                <div className="flex min-w-0 items-center gap-0.5 xl:gap-1">
                   {navLinks.map((link) => {
                     const isActive = isNavLinkActive(pathname, link);
 
@@ -333,31 +419,49 @@ const Navbar = () => {
                           onMouseEnter={openCommunityMenu}
                           onMouseLeave={() => closeCommunityMenu(140)}
                         >
-                          <button
-                            type="button"
-                            aria-expanded={communityMenuOpen}
-                            aria-haspopup="menu"
-                            onClick={() => {
-                              if (communityMenuOpen) {
-                                closeCommunityMenu();
-                              } else {
-                                openCommunityMenu();
-                              }
-                            }}
+                          <div
                             className={cn(
-                              "group relative inline-flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-4 text-sm font-semibold transition-all duration-200",
+                              "group relative inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold transition-all duration-200",
                               isActive || communityMenuOpen
                                 ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
                                 : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900/80 dark:hover:text-white",
                             )}
                           >
-                            <span>{link.name}</span>
-                            <ChevronDown
-                              className={cn(
-                                "size-4 transition-transform duration-200",
-                                communityMenuOpen && "rotate-180",
-                              )}
-                            />
+                            {/* The label navigates straight to /community;
+                                the chevron is the only thing that toggles
+                                the flyout, so a click never fights a nav. */}
+                            <Link
+                              href={link.href ?? "/community"}
+                              aria-current={isActive ? "page" : undefined}
+                              onClick={() => {
+                                setCommunityMenuOpen(false);
+                                setMobileMenuOpen(false);
+                              }}
+                              className="inline-flex h-9 items-center rounded-l-lg pl-3 pr-1 xl:pl-4 xl:pr-1.5"
+                            >
+                              {link.name}
+                            </Link>
+                            <button
+                              type="button"
+                              aria-expanded={communityMenuOpen}
+                              aria-haspopup="menu"
+                              aria-label={`${communityMenuOpen ? "Close" : "Open"} ${link.name} menu`}
+                              onClick={() => {
+                                if (communityMenuOpen) {
+                                  closeCommunityMenu();
+                                } else {
+                                  openCommunityMenu();
+                                }
+                              }}
+                              className="inline-flex h-9 items-center rounded-r-lg pl-1 pr-3 xl:pl-1.5 xl:pr-4"
+                            >
+                              <ChevronDown
+                                className={cn(
+                                  "size-4 transition-transform duration-200",
+                                  communityMenuOpen && "rotate-180",
+                                )}
+                              />
+                            </button>
 
                             {isActive ? (
                               <motion.span
@@ -370,7 +474,7 @@ const Navbar = () => {
                                 }}
                               />
                             ) : null}
-                          </button>
+                          </div>
 
                           <AnimatePresence>
                             {communityMenuOpen ? (
@@ -493,7 +597,7 @@ const Navbar = () => {
                         aria-current={isActive ? "page" : undefined}
                         onClick={() => setMobileMenuOpen(false)}
                         className={cn(
-                          "group relative inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg px-4 text-sm font-semibold transition-all duration-200",
+                          "group relative inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg px-3 text-sm font-semibold transition-all duration-200 xl:px-4",
                           isActive
                             ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
                             : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900/80 dark:hover:text-white",
@@ -518,7 +622,10 @@ const Navbar = () => {
                 </div>
               </nav>
 
-              <div className="flex items-center justify-end gap-2 sm:gap-2.5">
+              {/* Staged so each width carries only what fits: hamburger alone,
+                  then Get Started, then Log in, and the theme toggle last —
+                  it is the one control the mobile panel also offers. */}
+              <div className="flex shrink-0 items-center justify-end gap-1.5 xl:gap-2.5">
                 <ThemeToggle
                   variant="rectangle"
                   start="bottom-up"
@@ -527,7 +634,7 @@ const Navbar = () => {
                       ? "Switch to light mode"
                       : "Switch to dark mode"
                   }
-                  className="hidden size-11 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-[0_2px_10px_rgba(15,23,42,0.05)] transition-all duration-200 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-blue-500/40 dark:hover:bg-slate-800 dark:hover:text-blue-300 dark:focus-visible:ring-blue-500/30 sm:inline-flex"
+                  className="hidden size-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-[0_2px_10px_rgba(15,23,42,0.05)] transition-all duration-200 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-blue-500/40 dark:hover:bg-slate-800 dark:hover:text-blue-300 dark:focus-visible:ring-blue-500/30 xl:inline-flex"
                   iconClassName="size-[18px]"
                 />
 
@@ -536,7 +643,7 @@ const Navbar = () => {
                   variant="outline"
                   onClick={handleLogin}
                   disabled={isLoggingIn}
-                  className="hidden h-10 rounded-lg border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 shadow-xs transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-blue-500/40 dark:hover:bg-slate-800 dark:hover:text-blue-200 sm:inline-flex"
+                  className="hidden h-10 rounded-lg border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 shadow-xs transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-blue-500/40 dark:hover:bg-slate-800 dark:hover:text-blue-200 md:inline-flex xl:px-5"
                 >
                   {isLoggingIn ? (
                     <>
@@ -549,17 +656,19 @@ const Navbar = () => {
                 </Button>
 
                 <motion.div
-                  whileHover={{ y: -1 }}
+                  whileHover={reduce ? undefined : { y: -1 }}
                   whileTap={{ scale: 0.98 }}
                   className="hidden sm:block"
                 >
                   <Button
                     nativeButton={false}
                     render={<Link href="/account-type" />}
-                    className="group h-10 rounded-lg bg-primary px-5 text-sm font-semibold text-white shadow-xs transition-all hover:bg-[#1D4ED8] hover:shadow-[0_8px_18px_rgba(37,99,235,0.18)] dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500 dark:hover:shadow-[0_10px_24px_rgba(37,99,235,0.28)]"
+                    className="group h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-white shadow-xs transition-all hover:bg-[#1D4ED8] hover:shadow-[0_8px_18px_rgba(37,99,235,0.18)] dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500 dark:hover:shadow-[0_10px_24px_rgba(37,99,235,0.28)] xl:px-5"
                   >
                     Get Started
-                    <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
+                    {/* The arrow is decoration, and it is the first thing worth
+                        dropping when the row is tight. */}
+                    <ArrowRight className="hidden size-4 transition-transform duration-200 group-hover:translate-x-1 xl:block" />
                   </Button>
                 </motion.div>
 
@@ -606,7 +715,13 @@ const Navbar = () => {
               initial={{ opacity: 0, height: 0, y: -8 }}
               animate={{ opacity: 1, height: "auto", y: 0 }}
               exit={{ opacity: 0, height: 0, y: -8 }}
-              transition={{ duration: 0.22, ease: "easeInOut" }}
+              /* Opacity leads on the way in and trails on the way out, so the
+                 panel reads as revealed rather than as a box being resized. */
+              transition={{
+                duration: reduce ? 0 : 0.28,
+                ease: [0.22, 1, 0.36, 1],
+                opacity: { duration: reduce ? 0 : 0.18 },
+              }}
               className="pointer-events-auto overflow-hidden px-4 pb-4 sm:px-6 lg:hidden"
             >
               <div className="mx-auto w-full max-w-7xl rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_8px_24px_rgba(15,23,42,0.08)] dark:border-slate-800/80 dark:bg-slate-950/95 dark:shadow-[0_12px_32px_rgba(2,6,23,0.3)]">
@@ -620,26 +735,41 @@ const Navbar = () => {
                     if (link.items?.length) {
                       return (
                         <div key={`${link.name}-mobile`} className="space-y-1">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setMobileCommunityOpen((current) => !current)
-                            }
+                          <div
                             className={cn(
-                              "flex min-h-10 w-full items-center justify-between rounded-lg px-4 text-sm font-semibold transition-colors",
+                              "flex min-h-10 w-full items-center justify-between rounded-lg text-sm font-semibold transition-colors",
                               isActive || mobileCommunityOpen
                                 ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
                                 : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900/80 dark:hover:text-white",
                             )}
                           >
-                            <span>{link.name}</span>
-                            <ChevronDown
-                              className={cn(
-                                "size-4 transition-transform duration-200",
-                                mobileCommunityOpen && "rotate-180",
-                              )}
-                            />
-                          </button>
+                            {/* Same split as desktop: label navigates, the
+                                chevron only expands the submenu. */}
+                            <Link
+                              href={link.href ?? "/community"}
+                              onClick={() => setMobileMenuOpen(false)}
+                              aria-current={isActive ? "page" : undefined}
+                              className="flex min-h-10 flex-1 items-center pl-4"
+                            >
+                              {link.name}
+                            </Link>
+                            <button
+                              type="button"
+                              aria-expanded={mobileCommunityOpen}
+                              aria-label={`${mobileCommunityOpen ? "Close" : "Open"} ${link.name} menu`}
+                              onClick={() =>
+                                setMobileCommunityOpen((current) => !current)
+                              }
+                              className="flex min-h-10 items-center pl-3 pr-4"
+                            >
+                              <ChevronDown
+                                className={cn(
+                                  "size-4 transition-transform duration-200",
+                                  mobileCommunityOpen && "rotate-180",
+                                )}
+                              />
+                            </button>
+                          </div>
 
                           <AnimatePresence initial={false}>
                             {mobileCommunityOpen ? (
@@ -647,7 +777,10 @@ const Navbar = () => {
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: "auto" }}
                                 exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.18, ease: "easeOut" }}
+                                transition={{
+                                  duration: reduce ? 0 : 0.24,
+                                  ease: [0.22, 1, 0.36, 1],
+                                }}
                                 className="overflow-hidden"
                               >
                                 <div className="grid grid-cols-1 gap-2 pl-3 pt-1 sm:grid-cols-2">
