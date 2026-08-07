@@ -31,6 +31,12 @@ export default function AdminUsersPage() {
     actionType: ModerationActionType;
   } | null>(null);
 
+  // Overall dataset query for stat cards and tab counts
+  const { data: overallResponse } = useGetAdminUsersQuery({
+    pageSize: 100,
+  });
+
+  // Filtered dataset query for table data
   const { data: response, isLoading, isFetching } = useGetAdminUsersQuery({
     query: searchQuery.trim() || undefined,
     status: statusFilter !== "ALL" ? statusFilter : undefined,
@@ -40,7 +46,26 @@ export default function AdminUsersPage() {
 
   const [updateUser] = useUpdateAdminUserStatusMutation();
 
-  /* ── Map backend items to AdminUserItem ────────────────────────────────── */
+  /* ── Map overall items for Stat Cards ──────────────────────────────────── */
+  const overallUsers: AdminUserItem[] = useMemo(() => {
+    if (!overallResponse?.content) return [];
+    return overallResponse.content.map((item) => ({
+      id: item.id,
+      name: item.fullName || item.email || "Unknown User",
+      email: item.email || "",
+      role: "USER" as const,
+      status: (item.status as "ACTIVE" | "SUSPENDED" | "PENDING" | "REMOVED") || "ACTIVE",
+      joinedDate: item.createdAt || new Date().toISOString(),
+      reportsSubmitted: item.totalReports ?? 0,
+      validReports: item.validReports ?? 0,
+      criticalReports: item.criticalReports ?? 0,
+      reputation: item.reputation ?? 0,
+      country: item.country,
+      avatarUrl: item.avatarUrl,
+    }));
+  }, [overallResponse]);
+
+  /* ── Map table items ───────────────────────────────────────────────────── */
   const users: AdminUserItem[] = useMemo(() => {
     if (!response?.content) return [];
     return response.content.map((item) => ({
@@ -59,17 +84,18 @@ export default function AdminUsersPage() {
     }));
   }, [response]);
 
-  /* ── Counts ─────────────────────────────────────────────────────── */
+  /* ── Counts (always derived from overallResponse if available) ────────── */
   const statusCounts = useMemo(() => {
-    const items = response?.content || [];
+    const items = overallResponse?.content || response?.content || [];
+    const total = overallResponse?.totalElements ?? response?.totalElements ?? 0;
     return {
-      all: response?.totalElements ?? items.length,
+      all: total,
       active: items.filter((u) => u.status === "ACTIVE").length,
       suspended: items.filter((u) => u.status === "SUSPENDED").length,
       pending: items.filter((u) => u.status === "PENDING").length,
       removed: items.filter((u) => u.status === "REMOVED").length,
     };
-  }, [response]);
+  }, [overallResponse, response]);
 
   /* ── Handlers ────────────────────────────────────────────────────── */
   const handleStatusFilterChange = useCallback((status: StatusFilter) => {
@@ -155,7 +181,12 @@ export default function AdminUsersPage() {
       </header>
 
       {/* STAT CARDS */}
-      {!isLoading && <UserStatCards users={users} totalCount={response?.totalElements} />}
+      {!isLoading && (
+        <UserStatCards
+          users={overallUsers.length > 0 ? overallUsers : users}
+          totalCount={overallResponse?.totalElements ?? response?.totalElements}
+        />
+      )}
       {isLoading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
           {[0, 1, 2, 3].map((i) => (
