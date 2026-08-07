@@ -1,14 +1,17 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { baseApi } from "./services/baseApi";
+import { proxyApi } from "./services/proxyApi";
 
 export const makeStore = () => {
   const store = configureStore({
     reducer: {
       [baseApi.reducerPath]: baseApi.reducer,
+      // Endpoints that route through the Next handlers in `src/app/api/*`.
+      [proxyApi.reducerPath]: proxyApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().concat(baseApi.middleware),
+      getDefaultMiddleware().concat(baseApi.middleware, proxyApi.middleware),
   });
 
   setupListeners(store.dispatch);

@@ -33,6 +33,110 @@ export interface ReportStatusBreakdown {
   total: number;
 }
 
+// ─── Real API: GET /api/v1/admin/organizations/pending ────────────────────────
+
+export type PendingOrgIndustry =
+  | "TECHNOLOGY"
+  | "FINANCE"
+  | "HEALTHCARE"
+  | "EDUCATION"
+  | "RETAIL"
+  | "MANUFACTURING"
+  | "MEDIA"
+  | "GOVERNMENT"
+  | "NONPROFIT"
+  | string;
+
+export interface PendingOrganizationItem {
+  id: string;
+  name: string;
+  slug: string;
+  websiteUrl: string;
+  industry: PendingOrgIndustry;
+  companySize: string;
+  country: string;
+  status: "PENDING";
+  ownerId: string;
+  ownerFullName: string;
+  ownerEmail: string;
+  submissionVersion: number;
+  createdAt: string;
+}
+
+export interface PageableSort {
+  empty: boolean;
+  sorted: boolean;
+  unsorted: boolean;
+}
+
+export interface PageableInfo {
+  offset: number;
+  paged: boolean;
+  pageNumber: number;
+  pageSize: number;
+  sort: PageableSort;
+  unpaged: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  content: T[];
+  number: number;
+  first: boolean;
+  last: boolean;
+  numberOfElements: number;
+  pageable: PageableInfo;
+  sort: PageableSort;
+  empty: boolean;
+}
+
+export type PendingOrganizationsResponse = PaginatedResponse<PendingOrganizationItem>;
+
+export interface OrganizationResponse {
+  id: string;
+  ownerId?: string;
+  ownerFullName?: string;
+  ownerEmail?: string;
+  ownerJobTitle?: string;
+  joiningReason?: string;
+  emailVerified?: boolean;
+  submissionVersion?: number;
+  reviewedBy?: string;
+  reviewedAt?: string | null;
+  rejectionReason?: string | null;
+  name: string;
+  slug?: string;
+  domain?: string;
+  websiteUrl?: string;
+  logoUrl?: string;
+  description?: string;
+  industry?: string;
+  companySize?: string;
+  country?: string;
+  status: "PENDING" | "ACTIVE" | "REJECTED" | string;
+  verifiedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface OrganizationReviewHistoryItem {
+  id: string;
+  organizationId?: string;
+  submissionVersion?: number;
+  decision?: "APPROVED" | "REJECTED" | string;
+  action?: string;
+  reviewerId?: string;
+  reviewerName?: string;
+  reason?: string;
+  notes?: string;
+  reviewedAt?: string;
+  createdAt?: string;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+
 export interface CompanyVerificationItem {
   id: string;
   orgCode?: string;
@@ -52,7 +156,14 @@ export interface CompanyVerificationItem {
   website?: string;
   country?: string;
   industry?: string;
+  companySize?: string;
   description?: string;
+  joiningReason?: string;
+  emailVerified?: boolean;
+  submissionVersion?: number;
+  rejectionReason?: string | null;
+  reviewedAt?: string | null;
+  verifiedAt?: string | null;
   logoUrl?: string;
   riskIndicators?: {
     domainMatchesEmail: boolean;
