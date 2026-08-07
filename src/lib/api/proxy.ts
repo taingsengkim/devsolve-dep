@@ -93,7 +93,12 @@ export function upstreamFetch(
     ...init,
     headers: {
       Accept: "application/json",
-      ...(init.body ? { "Content-Type": "application/json" } : {}),
+      /* Only a serialized body is JSON. A FormData body has to set its own
+         Content-Type so the multipart boundary is generated — naming the
+         header here would strip it and the upstream parse would fail. */
+      ...(typeof init.body === "string"
+        ? { "Content-Type": "application/json" }
+        : {}),
       ...init.headers,
       Authorization: `Bearer ${token}`,
     },
