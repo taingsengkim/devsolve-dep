@@ -19,12 +19,17 @@ import { UserDataTable } from "@/components/admin/users/UserDataTable";
 import { getUserColumns } from "@/components/admin/users/userColumns";
 import { ModerationActionDialog } from "@/components/admin/ModerationActionDialog";
 
+import type { ModerationActionType } from "@/lib/types/admin/types";
+
 export default function AdminUsersPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(20);
-  const [moderateUserTarget, setModerateUserTarget] = useState<AdminUserItem | null>(null);
+  const [moderateTarget, setModerateTarget] = useState<{
+    user: AdminUserItem;
+    actionType: ModerationActionType;
+  } | null>(null);
 
   const { data: response, isLoading, isFetching } = useGetAdminUsersQuery({
     query: searchQuery.trim() || undefined,
@@ -99,9 +104,12 @@ export default function AdminUsersPage() {
     [updateUser]
   );
 
-  const handleModerateUser = useCallback((user: AdminUserItem) => {
-    setModerateUserTarget(user);
-  }, []);
+  const handleModerateUser = useCallback(
+    (user: AdminUserItem, actionType?: ModerationActionType) => {
+      setModerateTarget({ user, actionType: actionType || "WARN" });
+    },
+    []
+  );
 
   const columns = useMemo(
     () =>
@@ -194,17 +202,18 @@ export default function AdminUsersPage() {
       {/* Moderation Action Dialog for Selected User */}
       <ModerationActionDialog
         target={
-          moderateUserTarget
+          moderateTarget
             ? {
-                id: moderateUserTarget.id,
-                name: moderateUserTarget.name,
-                subtitle: moderateUserTarget.email,
+                id: moderateTarget.user.id,
+                name: moderateTarget.user.name,
+                subtitle: moderateTarget.user.email,
                 type: "USER",
               }
             : null
         }
-        isOpen={!!moderateUserTarget}
-        onClose={() => setModerateUserTarget(null)}
+        actionType={moderateTarget?.actionType}
+        isOpen={!!moderateTarget}
+        onClose={() => setModerateTarget(null)}
       />
     </motion.div>
   );
