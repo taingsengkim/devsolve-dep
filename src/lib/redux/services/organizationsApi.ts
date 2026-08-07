@@ -52,6 +52,20 @@ export type OrganizationVerification = {
   [key: string]: unknown;
 };
 
+export type RegisterOrganizationRequest = {
+  fullName: string;
+  jobTitle: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  companyName: string;
+  companyWebsite: string;
+  industry: OrganizationIndustry;
+  companySize: string;
+  country: string;
+  joiningReason: string;
+};
+
 export type UpdateOrganizationRequest = {
   name?: string;
   domain?: string;
@@ -151,6 +165,17 @@ function extractOrganizationMembers(
 
 export const organizationsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    registerOrganization: builder.mutation<
+      Organization,
+      RegisterOrganizationRequest
+    >({
+      query: (body) => ({
+        url: "/organizations/register",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Organization"],
+    }),
     getMyOrganization: builder.query<Organization, void>({
       query: () => ({
         url: "/organizations/me",
@@ -287,6 +312,7 @@ export const organizationsApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useRegisterOrganizationMutation,
   useGetMyOrganizationQuery,
   useUpdateMyOrganizationMutation,
   useDeleteMyOrganizationMutation,
