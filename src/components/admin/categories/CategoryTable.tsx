@@ -42,6 +42,32 @@ const SCOPE_STYLES: Record<string, string> = {
     "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
 };
 
+/**
+ * A stored `iconUrl` is not necessarily a reachable one — the backend
+ * currently hands back an internal MinIO host over plain http, which no
+ * browser can load. Falling back to the glyph on error keeps the column
+ * readable instead of filling it with broken-image icons.
+ */
+function CategoryIcon({ url }: { url?: string }) {
+  const [failed, setFailed] = useState(false);
+
+  return (
+    <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
+      {url && !failed ? (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
+          src={url}
+          alt=""
+          className="size-full object-contain p-1"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <Tags className="size-4 text-slate-300 dark:text-slate-600" />
+      )}
+    </span>
+  );
+}
+
 export function CategoryTable({ categories, onEdit }: CategoryTableProps) {
   const [updateCategory] = useUpdateCategoryMutation();
   const [deleteCategory, { isLoading: deleting }] = useDeleteCategoryMutation();
@@ -130,12 +156,18 @@ export function CategoryTable({ categories, onEdit }: CategoryTableProps) {
                   className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50/70 dark:border-slate-800 dark:hover:bg-slate-800/40"
                 >
                   <TableCell className="px-5 py-4">
-                    <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                      {category.name}
-                    </p>
-                    <p className="font-mono text-sm text-slate-400">
-                      {category.slug}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <CategoryIcon url={category.iconUrl} />
+
+                      <div className="min-w-0">
+                        <p className="truncate text-base font-semibold text-slate-900 dark:text-slate-100">
+                          {category.name}
+                        </p>
+                        <p className="truncate font-mono text-sm text-slate-400">
+                          {category.slug}
+                        </p>
+                      </div>
+                    </div>
                   </TableCell>
 
                   <TableCell>

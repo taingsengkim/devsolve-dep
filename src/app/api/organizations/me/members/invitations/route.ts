@@ -68,6 +68,13 @@ export async function POST(request: NextRequest) {
     }
 
     if (!upstream.ok) {
+      if (upstream.status === 404) {
+        return NextResponse.json(
+          { message: "You must register or belong to an active organization to send member invitations.", details: body },
+          { status: 400 }
+        );
+      }
+
       const message =
         (body as { message?: string } | null)?.message ??
         "Failed to invite organization member.";

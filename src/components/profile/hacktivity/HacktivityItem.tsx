@@ -49,20 +49,20 @@ function Icon({ entry }: { entry: HacktivityEntry }) {
 function Description({ entry }: { entry: HacktivityEntry }) {
   if (entry.type === "resolved") {
     return (
-      <p className="text-sm text-slate-700">
-        <span className="font-medium">{entry.actorHandle}</span> resolved a{" "}
-        <span className={`font-medium ${entry.severity ? SEVERITY_COLOR[entry.severity] : ""}`}>
+      <p className="text-sm text-slate-800 dark:text-slate-200">
+        <span className="font-semibold">{entry.actorHandle}</span> resolved a{" "}
+        <span className={`font-semibold ${entry.severity ? SEVERITY_COLOR[entry.severity] : ""}`}>
           {entry.severity && entry.severity[0].toUpperCase() + entry.severity.slice(1)}
         </span>{" "}
-        bug for <span className="font-semibold text-slate-900">{entry.program}</span>
+        bug for <span className="font-bold text-slate-900 dark:text-slate-100">{entry.program}</span>
       </p>
     );
   }
   if (entry.type === "badge") {
     return (
-      <p className="text-sm text-slate-700">
-        <span className="font-medium">{entry.actorHandle}</span> earned the badge{" "}
-        <span className="ml-1 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
+      <p className="text-sm text-slate-800 dark:text-slate-200">
+        <span className="font-semibold">{entry.actorHandle}</span> earned the badge{" "}
+        <span className="ml-1 inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-950 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:text-amber-300">
           {entry.badgeName}
         </span>
       </p>
@@ -70,28 +70,28 @@ function Description({ entry }: { entry: HacktivityEntry }) {
   }
   if (entry.type === "rank") {
     return (
-      <p className="text-sm text-slate-700">
-        <span className="font-medium">{entry.actorHandle}</span> climbed to{" "}
-        <span className="font-semibold text-blue-600">{entry.rankLabel}</span>
+      <p className="text-sm text-slate-800 dark:text-slate-200">
+        <span className="font-semibold">{entry.actorHandle}</span> climbed to{" "}
+        <span className="font-semibold text-blue-600 dark:text-blue-400">{entry.rankLabel}</span>
       </p>
     );
   }
   return (
-    <p className="text-sm text-slate-700">
-      <span className="font-medium">{entry.actorHandle}</span> completed a retest for{" "}
-      <span className="font-semibold text-slate-900">{entry.program}</span>
+    <p className="text-sm text-slate-800 dark:text-slate-200">
+      <span className="font-semibold">{entry.actorHandle}</span> completed a retest for{" "}
+      <span className="font-bold text-slate-900 dark:text-slate-100">{entry.program}</span>
     </p>
   );
 }
 
 export default function HacktivityItem({ entry }: HacktivityItemProps) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-slate-100 py-4 last:border-0">
+    <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 py-4 last:border-0">
       <div className="flex items-start gap-3">
         <Icon entry={entry} />
         <div>
           <Description entry={entry} />
-          <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-400">{formatDate(entry.date)}</p>
+          <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400">{formatDate(entry.date)}</p>
         </div>
       </div>
 

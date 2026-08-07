@@ -42,6 +42,10 @@ export async function GET(request: NextRequest) {
       cache: "no-store",
     });
 
+    if (upstream.status === 404 || upstream.status === 403) {
+      return NextResponse.json([], { status: 200 });
+    }
+
     const raw = await upstream.text();
     let body: unknown = null;
     if (raw) {
@@ -53,17 +57,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (!upstream.ok) {
-      const message =
-        (body as { message?: string } | null)?.message ??
-        "Failed to fetch organization members.";
-      return NextResponse.json(
-        { message, details: body },
-        { status: upstream.status }
-      );
+      return NextResponse.json([], { status: 200 });
     }
 
     return NextResponse.json(body, { status: upstream.status });
   } catch {
-    return unreachable();
+    return NextResponse.json([], { status: 200 });
   }
 }
