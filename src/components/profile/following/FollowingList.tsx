@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { User, Building2, Hash } from "lucide-react";
+import { User, Building2, Hash, UserCheck } from "lucide-react";
 import { FollowRecord, FollowingCounts } from "@/lib/types/profile/types";
 import FollowingItem from "./FollowingItem";
 
@@ -30,11 +30,11 @@ export default function FollowingList({ counts, items }: FollowingListProps) {
   const filteredItems = items.filter((item) => bucketOf(item) === filter);
 
   return (
-    <div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 dark:border-slate-800 pb-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Following</h2>
-          <p className="mt-1 text-sm text-slate-500">Users, organizations, and security topics you follow on DevSolve.</p>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Following</h2>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Users, organizations, and security topics you follow on DevSolve.</p>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -45,13 +45,19 @@ export default function FollowingList({ counts, items }: FollowingListProps) {
               <button
                 key={pill.id}
                 onClick={() => setFilter(pill.id)}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                  isActive ? "bg-blue-600 text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition cursor-pointer ${
+                  isActive
+                    ? "bg-blue-600 text-white shadow-2xs"
+                    : "border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-2xs"
                 }`}
               >
                 <Icon size={14} />
                 <span className="capitalize">{pill.label}</span>
-                <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"}`}>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                    isActive ? "bg-white/20 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                  }`}
+                >
                   {pill.count}
                 </span>
               </button>
@@ -60,13 +66,19 @@ export default function FollowingList({ counts, items }: FollowingListProps) {
         </div>
       </div>
 
-      <div className="mt-5 space-y-3">
+      <div className="space-y-3">
         {filteredItems.length > 0 ? (
           filteredItems.map((item) => <FollowingItem key={item.id} record={item} />)
         ) : (
-          <p className="rounded-xl border border-dashed border-slate-200 bg-white p-10 text-center text-sm text-slate-400">
-            No {filter} followed yet.
-          </p>
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 py-12 px-6 text-center shadow-2xs">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 mb-3">
+              <UserCheck size={24} />
+            </div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">No {filter} followed yet</h3>
+            <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
+              When you follow users, organizations, or security topics, they will appear here.
+            </p>
+          </div>
         )}
       </div>
     </div>

@@ -14,6 +14,9 @@ export default function TeamsPage() {
   const {
     counts,
     filteredMembers,
+    isError,
+    isLoading,
+    refetch,
     searchTerm,
     setSearchTerm,
     roleFilter,
@@ -37,6 +40,9 @@ export default function TeamsPage() {
         <TeamsMembersSection
           counts={counts}
           filteredMembers={filteredMembers}
+          isError={isError}
+          isLoading={isLoading}
+          onRetry={refetch}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           roleFilter={roleFilter}

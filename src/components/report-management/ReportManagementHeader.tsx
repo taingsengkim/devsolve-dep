@@ -18,10 +18,12 @@ export function ReportManagementHeader() {
           href="/dashboard/report-management/review-queue"
           className={cn(
             buttonVariants({ variant: "outline", size: "lg" }),
-            "h-11 rounded-xl border-slate-200 bg-white px-5 font-semibold text-slate-700 shadow-none hover:bg-slate-50 hover:text-slate-900"
+            "h-11 items-center justify-center gap-2.5 rounded-xl border-slate-200 bg-white px-5 font-semibold text-slate-700 shadow-none hover:bg-slate-50 hover:text-slate-900"
           )}
         >
-          <ListChecks data-icon="inline-start" />
+          <span className="flex size-4 items-center justify-center">
+            <ListChecks className="size-4" />
+          </span>
           Review queue
         </Link>
 
@@ -29,10 +31,12 @@ export function ReportManagementHeader() {
           href="/dashboard/report-management/export"
           className={cn(
             buttonVariants({ variant: "outline", size: "lg" }),
-            "h-11 rounded-xl border-slate-200 bg-white px-5 font-semibold text-slate-700 shadow-none hover:bg-slate-50 hover:text-slate-900"
+            "h-11 items-center justify-center gap-2.5 rounded-xl border-slate-200 bg-white px-5 font-semibold text-slate-700 shadow-none hover:bg-slate-50 hover:text-slate-900"
           )}
         >
-          <Download data-icon="inline-start" />
+          <span className="flex size-4 items-center justify-center">
+            <Download className="size-4" />
+          </span>
           Export
         </Link>
       </div>

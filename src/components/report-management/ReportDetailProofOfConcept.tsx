@@ -1,4 +1,11 @@
-import { CheckCircle2, Copy, FileCode2, FileText, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  Copy,
+  FileCode2,
+  FileImage,
+  FileText,
+  XCircle,
+} from "lucide-react";
 
 import { ReportDetailSectionCard } from "@/components/report-management/ReportDetailSectionCard";
 import type { ReportManagementDetail } from "@/components/report-management/types";
@@ -62,27 +69,64 @@ export function ReportDetailProofOfConcept({
         </div>
 
         <div className="space-y-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-            Attachments ({detail.attachments.length})
-          </p>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                Attachments
+              </p>
+              <p className="mt-1 text-sm text-slate-500">
+                {detail.attachments.length} supporting files included with this report.
+              </p>
+            </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+            <span className="inline-flex h-7 items-center rounded-full border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-500">
+              {detail.attachments.length} files
+            </span>
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
             {detail.attachments.map((attachment) => (
               <div
                 key={attachment.name}
-                className="flex min-h-[104px] items-end overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
+                className="group flex items-center justify-between gap-4 border-b border-slate-100 px-4 py-4 transition-colors last:border-b-0 hover:bg-slate-50/80"
               >
-                <div className="flex h-full w-full flex-col justify-between p-4">
-                  <div className="flex size-12 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-slate-400">
-                    <FileText className="size-5" />
+                <div className="flex min-w-0 items-center gap-3">
+                  <div
+                    className={
+                      attachment.kind === "image"
+                        ? "flex size-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"
+                        : "flex size-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500"
+                    }
+                  >
+                    {attachment.kind === "image" ? (
+                      <FileImage className="size-5" />
+                    ) : (
+                      <FileText className="size-5" />
+                    )}
                   </div>
-                  <p className="truncate text-sm font-medium text-slate-600">
-                    {attachment.name}
-                  </p>
+
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-slate-900 group-hover:text-slate-950">
+                      {attachment.name}
+                    </p>
+                    <p className="mt-0.5 text-xs text-slate-500">
+                      {attachment.kind === "image" ? "Image evidence" : "Supporting file"}
+                    </p>
+                  </div>
                 </div>
+
+                <span className="inline-flex shrink-0 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-500">
+                  {attachment.kind === "image" ? "Preview" : "File"}
+                </span>
               </div>
             ))}
           </div>
+
+          {detail.attachments.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 py-6 text-center text-sm text-slate-500">
+              No attachments were included with this submission.
+            </div>
+          ) : null}
         </div>
     </ReportDetailSectionCard>
   );

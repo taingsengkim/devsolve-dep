@@ -70,11 +70,13 @@ export function ReportSeverityReviewHeader({
           <Link
             href={`/dashboard/report-management/${detail.id}`}
             className={cn(
-              buttonVariants({ variant: "outline" }),
-              "rounded-xl border-slate-300 bg-white text-slate-700"
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "h-10 items-center justify-center gap-2.5 rounded-full border-slate-300 bg-white px-4 font-semibold text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.03)] transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:text-slate-700 hover:shadow-[0_8px_18px_rgba(15,23,42,0.06)]"
             )}
           >
-            <ArrowLeft data-icon="inline-start" />
+            <span className="flex size-4 items-center justify-center">
+              <ArrowLeft className="size-4" />
+            </span>
             Back to report detail
           </Link>
         </div>

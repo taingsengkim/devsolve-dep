@@ -46,13 +46,11 @@ export const NAV_ITEMS: NavItem[] = [
 
   // COMPANY Role items
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3, roles: ["COMPANY"], category: "Organization" },
-  { name: "Rewards", href: "/dashboard/ogreward", icon: CircleDollarSign, roles: ["COMPANY"], category: "Organization" },
-   { name: "Program Management", href: "/dashboard/org-settings", icon: Building2, roles: ["COMPANY"], category: "Organization" },
+  { name: "Program Management", href: "/dashboard/admin-program-management", icon: Building2, roles: ["COMPANY"], category: "Organization" },
   { name: "Create Program", href: "/dashboard/create-program", icon: PlusCircle, roles: ["COMPANY"], category: "Organization" },
   { name: "Saved Drafts", href: "/dashboard/saved-draft", icon: FilePen, roles: ["COMPANY"], category: "Organization" },
   { name: "Report Management", href: "/dashboard/report-management", icon: ClipboardList, roles: ["COMPANY"], category: "Organization" },
   { name: "Team Management", href: "/dashboard/team-management", icon: Users, roles: ["COMPANY"], category: "Organization" },
-  { name: "Org Settings", href: "/dashboard/org-settings", icon: Building2, roles: ["COMPANY"], category: "Organization" },
  
   // ADMIN Role items
   { name: "Organization Verification", href: "/dashboard/company-verification", icon: ShieldCheck, roles: ["ADMIN"], category: "Administration" },

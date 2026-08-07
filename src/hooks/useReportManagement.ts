@@ -2,13 +2,13 @@
 
 import { useMemo, useState } from "react";
 
-import { MANAGED_REPORTS } from "@/components/report-management/mock-data";
 import type {
   ManagedReport,
   ReportStatus,
   ReportSeverity,
   ReportType,
 } from "@/components/report-management/types";
+import { useGetManagedReportsQuery } from "@/lib/redux/services/reportsApi";
 
 type TypeFilter = "All Types" | ReportType;
 type SeverityFilter = "All" | ReportSeverity;
@@ -31,6 +31,13 @@ function paginateReports(
 }
 
 export function useReportManagement() {
+  const {
+    data: reports = [],
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useGetManagedReportsQuery();
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("All Types");
   const [severityFilter, setSeverityFilter] = useState<SeverityFilter>("All");
@@ -41,11 +48,13 @@ export function useReportManagement() {
   const filteredReports = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
 
-    return MANAGED_REPORTS.filter((report) => {
+    return reports.filter((report) => {
       const matchesSearch =
         query.length === 0 ||
         report.title.toLowerCase().includes(query) ||
+        (report.reportId?.toLowerCase().includes(query) ?? false) ||
         report.author.toLowerCase().includes(query) ||
+        report.authorEmail.toLowerCase().includes(query) ||
         report.assets.some((asset) => asset.toLowerCase().includes(query));
 
       const matchesType =
@@ -59,30 +68,41 @@ export function useReportManagement() {
 
       return matchesSearch && matchesType && matchesSeverity && matchesStatus;
     });
-  }, [searchTerm, severityFilter, statusFilter, typeFilter]);
+  }, [reports, searchTerm, severityFilter, statusFilter, typeFilter]);
 
   const typeCounts = useMemo(() => {
     return {
-      bounty: MANAGED_REPORTS.filter((report) => report.type === "Bounty").length,
-      response: MANAGED_REPORTS.filter((report) => report.type === "Response").length,
+      bounty: reports.filter((report) => report.type === "Bounty").length,
+      response: reports.filter((report) => report.type === "Response").length,
     };
-  }, []);
+  }, [reports]);
 
   const severityCounts = useMemo(() => {
     return {
-      critical: MANAGED_REPORTS.filter((report) => report.severity === "Critical").length,
-      high: MANAGED_REPORTS.filter((report) => report.severity === "High").length,
-      medium: MANAGED_REPORTS.filter((report) => report.severity === "Medium").length,
-      low: MANAGED_REPORTS.filter((report) => report.severity === "Low").length,
+      critical: reports.filter((report) => report.severity === "Critical").length,
+      high: reports.filter((report) => report.severity === "High").length,
+      medium: reports.filter((report) => report.severity === "Medium").length,
+      low: reports.filter((report) => report.severity === "Low").length,
     };
-  }, []);
+  }, [reports]);
 
   const statusCounts = useMemo(() => {
     return {
-      open: MANAGED_REPORTS.filter((report) => report.status === "Open").length,
-      closed: MANAGED_REPORTS.filter((report) => report.status === "Closed").length,
+      open: reports.filter((report) => report.status === "Open").length,
+      closed: reports.filter((report) => report.status === "Closed").length,
     };
-  }, []);
+  }, [reports]);
+
+  const metrics = useMemo(() => {
+    return {
+      total: reports.length,
+      pending: reports.filter((report) => report.queueState === "PENDING").length,
+      underReview: reports.filter(
+        (report) => report.queueState === "UNDER_REVIEW",
+      ).length,
+      approved: reports.filter((report) => report.queueState === "APPROVED").length,
+    };
+  }, [reports]);
 
   const pagination = useMemo(() => {
     return paginateReports(filteredReports, currentPage, rowsPerPage);
@@ -105,7 +125,7 @@ export function useReportManagement() {
     setRowsPerPage,
     currentPage: pagination.currentPage,
     setCurrentPage,
-    totalCount: MANAGED_REPORTS.length,
+    totalCount: reports.length,
     filteredCount: filteredReports.length,
     paginatedReports: pagination.paginatedReports,
     totalPages: pagination.totalPages,
@@ -113,5 +133,10 @@ export function useReportManagement() {
     typeCounts,
     severityCounts,
     statusCounts,
+    metrics,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
   };
 }

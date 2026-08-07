@@ -7,6 +7,7 @@ import {
   SubmitReportPayload,
   SubmitReportResponse,
 } from "@/lib/types/reports/types";
+import type { ManagedReport } from "@/components/report-management/types";
 import {
   MOCK_REPORTS,
   MOCK_REPORT_DETAIL,
@@ -27,6 +28,7 @@ type ApiState = "NEW" | "TRIAGING" | "NEEDS_MORE_INFO" | "VALID_CONFIRMED" | "RE
 interface ReportApiResponse {
   id: string;
   programId: string;
+  reporterId?: string;
   title: string;
   reportedSeverity?: ApiSeverity;
   triageSeverity?: ApiSeverity;
@@ -38,11 +40,50 @@ interface ReportApiResponse {
   resolvedAt?: string;
   createdAt?: string;
   updatedAt?: string;
+  reportId?: string;
+  reportCode?: string;
+  summary?: string;
+  impact?: string;
+  vulnerabilityInformation?: string;
+  assetId?: string;
+  assetName?: string;
+  assetIdentifier?: string;
+  type?: string;
+  programType?: string;
+  programName?: string;
+  authorName?: string;
+  authorEmail?: string;
+  submitterName?: string;
+  submitterEmail?: string;
+  researcherName?: string;
+  researcherEmail?: string;
+  userName?: string;
+  reporter?: {
+    id?: string;
+    name?: string;
+    email?: string;
+    username?: string;
+  };
 }
 
 interface ProgramApiResponse {
   id: string;
   name: string;
+  engagementType?: string;
+  assets?: Array<{
+    id?: string;
+    identifier?: string;
+  }>;
+  inScopeAssets?: Array<{
+    id?: string;
+    identifier?: string;
+  }>;
+}
+
+interface ReportsEnvelope<T> {
+  content?: T[];
+  items?: T[];
+  data?: T[];
 }
 
 // severity/triageSeverity are only set once a report has been triaged, so
@@ -115,6 +156,17 @@ function toReportId(id: string): string {
   return `#${id.slice(0, 8).toUpperCase()}`;
 }
 
+function extractReports(
+  response: ReportsEnvelope<ReportApiResponse> | ReportApiResponse[] | undefined,
+): ReportApiResponse[] {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.content)) return response.content;
+  if (Array.isArray(response?.items)) return response.items;
+  if (Array.isArray(response?.data)) return response.data;
+  return [];
+}
+
+
 // CreateReportRequest (POST /programs/{programId}/reports) only exposes one
 // free-text field for the write-up — no dedicated fields for target asset,
 // HTTP method, reproduction steps, PoC payload, remediation, etc. — so the
@@ -183,12 +235,22 @@ function toReportItem(report: ReportApiResponse, programName: string): ReportIte
 
 export const reportsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    getManagedReports: builder.query<ManagedReport[], void>({
+      query: () => "/reports/management",
+      providesTags: ["Report"],
+    }),
+
     getReports: builder.query<ReportItem[], ReportsFilterParams | void>({
       async queryFn(params, _api, _extraOptions, fetchWithBQ) {
         const reportsResult = await fetchWithBQ(`/reports/mine?size=100&sort=submittedAt,DESC`);
         if (reportsResult.error) return { error: reportsResult.error };
 
-        const raw = (reportsResult.data as { content?: ReportApiResponse[] } | undefined)?.content ?? [];
+        const raw = extractReports(
+          reportsResult.data as
+            | ReportsEnvelope<ReportApiResponse>
+            | ReportApiResponse[]
+            | undefined,
+        );
 
         const programIds = Array.from(new Set(raw.map((report) => report.programId).filter(Boolean)));
         const programResults = await Promise.all(programIds.map((id) => fetchWithBQ(`/programs/${id}`)));
@@ -312,6 +374,7 @@ export const reportsApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetManagedReportsQuery,
   useGetReportsQuery,
   useGetReportByIdQuery,
   useAddReportCommentMutation,

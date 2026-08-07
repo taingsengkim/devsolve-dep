@@ -37,6 +37,11 @@ export default function ReportManagementPage() {
     typeCounts,
     severityCounts,
     statusCounts,
+    metrics,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
   } = useReportManagement();
   const [showMoreFilters, setShowMoreFilters] = useState(false);
 
@@ -66,7 +71,7 @@ export default function ReportManagementPage() {
       </motion.div>
 
       <motion.div variants={pageEnterItem}>
-        <ReportMetricsGrid />
+        <ReportMetricsGrid metrics={metrics} isLoading={isLoading} />
       </motion.div>
 
       <motion.div variants={pageEnterItem} id="report-filters">
@@ -99,15 +104,83 @@ export default function ReportManagementPage() {
             type="button"
             variant="outline"
             size="icon-lg"
-            onClick={() => setCurrentPage(1)}
+            onClick={() => {
+              setCurrentPage(1);
+              void refetch();
+            }}
             className="rounded-xl border-slate-200 bg-white text-slate-600 shadow-none hover:bg-slate-50 hover:text-slate-900"
             aria-label="Refresh report list"
           >
-            <RefreshCw />
+            <RefreshCw className={isFetching ? "animate-spin" : undefined} />
           </Button>
         </div>
 
-        {paginatedReports.length === 0 ? (
+        {isLoading ? (
+          <div className="overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.03)]">
+            <div className="hidden border-b border-slate-200 px-6 py-4 lg:block">
+              <div className={reportListGridClass}>
+                {[
+                  { label: "Report", align: "text-left" },
+                  { label: "Assets", align: "text-left" },
+                  { label: "Type", align: "text-center" },
+                  { label: "Status", align: "text-center" },
+                  { label: "Severity", align: "text-center" },
+                ].map(({ label, align }) => (
+                  <span
+                    key={label}
+                    className={`text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400 ${align}`}
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="divide-y divide-slate-200 bg-white">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <div
+                  key={`report-skeleton-${index}`}
+                  className="grid gap-4 px-6 py-5 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1.4fr)_0.8fr_0.8fr_0.8fr]"
+                >
+                  <div className="space-y-3">
+                    <div className="h-5 w-2/3 animate-pulse rounded bg-slate-100" />
+                    <div className="h-4 w-1/2 animate-pulse rounded bg-slate-100" />
+                    <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <div className="h-7 w-24 animate-pulse rounded-full bg-slate-100" />
+                    <div className="h-7 w-20 animate-pulse rounded-full bg-slate-100" />
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <div className="h-7 w-20 animate-pulse rounded-full bg-slate-100" />
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <div className="h-7 w-20 animate-pulse rounded-full bg-slate-100" />
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <div className="h-7 w-20 animate-pulse rounded-full bg-slate-100" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : isError ? (
+          <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+            <h3 className="text-xl font-semibold text-slate-900">
+              We couldn&apos;t load organization reports
+            </h3>
+            <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
+              Check your organization access and try fetching the report queue again.
+            </p>
+            <button
+              type="button"
+              onClick={() => void refetch()}
+              className="mt-5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 hover:text-slate-900"
+            >
+              Retry
+            </button>
+          </div>
+        ) : paginatedReports.length === 0 ? (
           <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
             <h3 className="text-xl font-semibold text-slate-900">
               No reports match the current filters

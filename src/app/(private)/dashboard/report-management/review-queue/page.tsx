@@ -3,31 +3,105 @@
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
 
-import { PRIORITY_REVIEW_ITEMS } from "@/components/report-management/review-queue/mock-data";
 import { ReviewQueueHeader } from "@/components/report-management/review-queue/ReviewQueueHeader";
 import { ReviewQueueLanes } from "@/components/report-management/review-queue/ReviewQueueLanes";
 import { ReviewQueuePriorityList } from "@/components/report-management/review-queue/ReviewQueuePriorityList";
 import type {
+  PriorityReviewItem,
+  ReviewQueueLane,
   ReviewQueueLaneFilter,
   ReviewSeverity,
 } from "@/components/report-management/review-queue/types";
+import { useGetManagedReportsQuery } from "@/lib/redux/services/reportsApi";
+
+function toReviewQueue(
+  queueState?: "PENDING" | "UNDER_REVIEW" | "APPROVED" | "CLOSED",
+): ReviewQueueLaneFilter | null {
+  if (queueState === "PENDING") return "Pending Intake";
+  if (queueState === "UNDER_REVIEW") return "Under Review";
+  if (queueState === "APPROVED") return "Approval Ready";
+  return null;
+}
+
+function queueStatusLabel(queue: Exclude<ReviewQueueLaneFilter, "All">): string {
+  if (queue === "Pending Intake") return "Needs scope validation";
+  if (queue === "Under Review") return "Evidence review in progress";
+  return "Ready for final approval";
+}
+
+function submittedAtValue(value?: string) {
+  const time = value ? new Date(value).getTime() : 0;
+  return Number.isFinite(time) ? time : 0;
+}
 
 export default function Page() {
+  const { data: managedReports = [] } = useGetManagedReportsQuery();
   const [activeQueue, setActiveQueue] = useState<ReviewQueueLaneFilter>("All");
   const [severityFilter, setSeverityFilter] = useState<"All" | ReviewSeverity>("All");
   const [sortBy, setSortBy] = useState<"priority" | "recent">("priority");
 
+  const queueItems = useMemo<PriorityReviewItem[]>(() => {
+    return managedReports
+      .map((report) => {
+        const queue = toReviewQueue(report.queueState);
+        if (!queue) return null;
+
+        return {
+          id: report.id,
+          reportId: report.reportId ?? String(report.id),
+          title: report.title,
+          severity: report.severity,
+          reporter: report.author,
+          submittedAt: report.submittedAt,
+          submittedAtIso: report.submittedAtIso,
+          queue,
+          status: queueStatusLabel(queue),
+          assets: report.assets,
+          reportType: report.type,
+          authorInitials: report.authorInitials,
+          logoSrc: report.programLogo,
+        };
+      })
+      .filter((item): item is PriorityReviewItem => Boolean(item));
+  }, [managedReports]);
+
   const queueCounts = useMemo(() => {
     return {
-      all: PRIORITY_REVIEW_ITEMS.length,
-      pending: PRIORITY_REVIEW_ITEMS.filter((item) => item.queue === "Pending Intake").length,
-      review: PRIORITY_REVIEW_ITEMS.filter((item) => item.queue === "Under Review").length,
-      ready: PRIORITY_REVIEW_ITEMS.filter((item) => item.queue === "Approval Ready").length,
+      all: queueItems.length,
+      pending: queueItems.filter((item) => item.queue === "Pending Intake").length,
+      review: queueItems.filter((item) => item.queue === "Under Review").length,
+      ready: queueItems.filter((item) => item.queue === "Approval Ready").length,
     };
-  }, []);
+  }, [queueItems]);
+
+  const lanes = useMemo<ReviewQueueLane[]>(() => {
+    return [
+      {
+        title: "Pending Intake",
+        count: queueCounts.pending,
+        description:
+          "New submissions waiting for first-pass moderation and scope validation.",
+        accent: "amber",
+      },
+      {
+        title: "Under Review",
+        count: queueCounts.review,
+        description:
+          "Analysts are checking evidence quality, impact, and report completeness.",
+        accent: "blue",
+      },
+      {
+        title: "Approval Ready",
+        count: queueCounts.ready,
+        description:
+          "Reports cleared for final sign-off, payout confirmation, or closure.",
+        accent: "emerald",
+      },
+    ];
+  }, [queueCounts.pending, queueCounts.ready, queueCounts.review]);
 
   const filteredItems = useMemo(() => {
-    const filtered = PRIORITY_REVIEW_ITEMS.filter((item) => {
+    const filtered = queueItems.filter((item) => {
       const matchesQueue = activeQueue === "All" || item.queue === activeQueue;
       const matchesSeverity = severityFilter === "All" || item.severity === severityFilter;
       return matchesQueue && matchesSeverity;
@@ -42,12 +116,15 @@ export default function Page() {
 
     return [...filtered].sort((a, b) => {
       if (sortBy === "priority") {
-        return severityRank[a.severity] - severityRank[b.severity] || b.id - a.id;
+        return (
+          severityRank[a.severity] - severityRank[b.severity] ||
+          submittedAtValue(b.submittedAtIso) - submittedAtValue(a.submittedAtIso)
+        );
       }
 
-      return b.id - a.id;
+      return submittedAtValue(b.submittedAtIso) - submittedAtValue(a.submittedAtIso);
     });
-  }, [activeQueue, severityFilter, sortBy]);
+  }, [activeQueue, queueItems, severityFilter, sortBy]);
 
   return (
     <motion.section
@@ -60,6 +137,7 @@ export default function Page() {
       <ReviewQueueLanes
         activeQueue={activeQueue}
         onQueueChange={setActiveQueue}
+        lanes={lanes}
       />
       <ReviewQueuePriorityList
         activeQueue={activeQueue}
