@@ -16,6 +16,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
   UserX,
   UserCheck,
   Shield,
@@ -24,6 +31,7 @@ import {
   ShieldAlert,
   ArrowUpDown,
   Gavel,
+  MoreHorizontal,
 } from "lucide-react";
 
 const ROLE_OPTIONS: {
@@ -81,41 +89,51 @@ function UserActionsCell({
 
   return (
     <>
-      <div className="flex items-center justify-end gap-1.5">
-        {onModerateUser && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onModerateUser(user)}
-            className="h-8 px-2.5 rounded-xl text-xs font-semibold cursor-pointer border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-2xs"
+      <div className="flex items-center justify-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer shadow-2xs">
+            <MoreHorizontal className="size-4" />
+            <span className="sr-only">Actions</span>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            sideOffset={6}
+            className="w-48 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-lg"
           >
-            <Gavel className="w-3.5 h-3.5 mr-1 text-amber-600" />
-            Moderate
-          </Button>
-        )}
+            {onModerateUser && (
+              <DropdownMenuItem
+                onClick={() => onModerateUser(user)}
+                className="rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                <Gavel className="size-4 text-amber-600 dark:text-amber-500" />
+                Moderate User
+              </DropdownMenuItem>
+            )}
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowConfirm(true)}
-          className={`h-8 px-2.5 rounded-xl text-xs font-semibold cursor-pointer gap-1.5 transition-colors shadow-2xs ${
-            shouldActivate
-              ? "border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
-              : "border-slate-200 dark:border-slate-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-300 dark:hover:border-rose-700"
-          }`}
-        >
-          {shouldActivate ? (
-            <>
-              <UserCheck className="w-3.5 h-3.5" />
-              {isPending ? "Approve" : "Activate"}
-            </>
-          ) : (
-            <>
-              <UserX className="w-3.5 h-3.5" />
-              Suspend
-            </>
-          )}
-        </Button>
+            {onModerateUser && <DropdownMenuSeparator className="my-1 border-slate-100 dark:border-slate-800" />}
+
+            <DropdownMenuItem
+              onClick={() => setShowConfirm(true)}
+              className={`rounded-xl px-3 py-2 text-xs font-semibold cursor-pointer ${
+                shouldActivate
+                  ? "text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                  : "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+              }`}
+            >
+              {shouldActivate ? (
+                <>
+                  <UserCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
+                  {isPending ? "Approve & Activate" : "Activate Account"}
+                </>
+              ) : (
+                <>
+                  <UserX className="size-4 text-rose-600 dark:text-rose-400" />
+                  Suspend Account
+                </>
+              )}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* CONFIRMATION DIALOG */}
