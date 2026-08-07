@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, notFound } from "next/navigation";
+import { motion } from "motion/react";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import FollowersList from "@/components/profile/followers/FollowersList";
 import {
@@ -16,20 +17,29 @@ export default function FollowersPage() {
   });
 
   if (isLoadingProfile || isLoadingFollowers) {
-    return <div className="p-6 text-sm text-slate-400">Loading...</div>;
+    return (
+      <div className="space-y-6 w-full pb-12 animate-pulse">
+        <div className="h-28 rounded-2xl bg-slate-200 dark:bg-slate-800" />
+        <div className="h-64 rounded-2xl bg-slate-200 dark:bg-slate-800" />
+      </div>
+    );
   }
   if (isError || !overview || !followers) return notFound();
 
   return (
-    <div>
-      {/* <div className="rounded-2xl bg-white shadow-sm">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="space-y-6 w-full pb-12"
+    >
+      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xs">
         <ProfileHeader profile={overview.profile} backHref={`/dashboard/profile/${username}`} />
-        <div className="h-5" />
-      </div> */}
+      </div>
 
-      <div className="mt-6">
+      <div>
         <FollowersList total={followers.total} items={followers.items} />
       </div>
-    </div>
+    </motion.div>
   );
 }
