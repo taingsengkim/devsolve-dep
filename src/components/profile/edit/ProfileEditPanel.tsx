@@ -4,7 +4,9 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { toast } from "sonner";
-import { Camera, Check, Loader2, Lock, Trash2, X } from "lucide-react";
+import { AlertCircle, Camera, Check, Loader2, Lock, Trash2, X } from "lucide-react";
+import { parseApiError, type ParsedApiError } from "@/lib/api/errors";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +44,27 @@ const GENDER_OPTIONS: { value: NonNullable<EditProfileFormData["gender"]>; label
 const inputClass =
   "h-11 rounded-xl border-slate-300 bg-white text-base text-slate-900 shadow-2xs dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100";
 
+const errorInputClass =
+  "border-rose-400 focus-visible:ring-rose-500/30 dark:border-rose-700";
+
+/**
+ * The PATCH body uses the backend's field names, the form uses its own, so a
+ * server-side complaint about `biography` has to find its way to the Bio box.
+ * `fullName` is split into firstName/lastName on the way out, which is why two
+ * API fields land on one control.
+ */
+const API_FIELD_TO_FORM: Record<string, string> = {
+  firstName: "fullName",
+  lastName: "fullName",
+  biography: "bio",
+  country: "location",
+  phone: "phone",
+  avatarUrl: "avatarUrl",
+  dateOfBirth: "dateOfBirth",
+  gender: "gender",
+  socialLinks: "socialLinks",
+};
+
 /* One card and one field primitive for the whole form — every label, gap and
    input matches by construction instead of by each section re-deciding. */
 
@@ -75,11 +98,13 @@ function Field({
   label,
   hint,
   htmlFor,
+  error,
   children,
 }: {
   label: string;
   hint?: React.ReactNode;
   htmlFor?: string;
+  error?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -91,8 +116,15 @@ function Field({
         {label}
       </label>
       {children}
-      {hint && (
-        <p className="text-sm text-slate-400 dark:text-slate-500">{hint}</p>
+      {/* The server's own words, under the control it rejected. */}
+      {error ? (
+        <p className="text-sm font-medium text-rose-600 dark:text-rose-400">
+          {error}
+        </p>
+      ) : (
+        hint && (
+          <p className="text-sm text-slate-400 dark:text-slate-500">{hint}</p>
+        )
       )}
     </div>
   );
@@ -111,7 +143,18 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
 
   const [form, setForm] = useState<EditProfileFormData | null>(null);
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<ParsedApiError | null>(null);
   const isAvatarBusy = isUploading || isRemoving;
+
+  /** The server's message for a given form control, if it sent one. */
+  const fieldError = (formKey: string): string | undefined => {
+    if (!saveError) return undefined;
+    for (const [apiField, message] of Object.entries(saveError.fieldErrors)) {
+      if (API_FIELD_TO_FORM[apiField] === formKey) return message;
+      if (apiField === formKey) return message;
+    }
+    return undefined;
+  };
 
   // Seeded from the query the first time it resolves, then owned locally so
   // typing is never fighting a refetch.
@@ -149,8 +192,8 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
       const profile = await uploadAvatar(file).unwrap();
       patch({ avatarUrl: profile.avatarUrl || undefined });
       toast.success("Photo updated.");
-    } catch {
-      setAvatarError("Upload failed — please try again.");
+    } catch (error) {
+      setAvatarError(parseApiError(error, "Upload failed.").message);
     }
   };
 
@@ -160,18 +203,26 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
       await removeAvatar().unwrap();
       patch({ avatarUrl: undefined });
       toast.success("Photo removed.");
-    } catch {
-      setAvatarError("Could not remove your photo — please try again.");
+    } catch (error) {
+      setAvatarError(
+        parseApiError(error, "Could not remove your photo.").message,
+      );
     }
   };
 
   const handleSave = async () => {
+    setSaveError(null);
+
     try {
       await updateProfile(values).unwrap();
       toast.success("Profile updated.");
       onDone();
-    } catch {
-      toast.error("Failed to update profile. Please try again.");
+    } catch (error) {
+      // Keep the reason on screen next to the fields it concerns, rather than
+      // in a toast that vanishes before it can be acted on.
+      const parsed = parseApiError(error, "Failed to update profile.");
+      setSaveError(parsed);
+      toast.error(parsed.message);
     }
   };
 
@@ -182,6 +233,40 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
       transition={{ duration: 0.25, ease: "easeOut" }}
       className="mx-auto w-full max-w-3xl space-y-5"
     >
+      {saveError && (
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          role="alert"
+          className="flex gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-900/60 dark:bg-rose-950/40"
+        >
+          <AlertCircle className="mt-0.5 size-5 shrink-0 text-rose-600 dark:text-rose-400" />
+          <div className="min-w-0 space-y-1">
+            <p className="text-sm font-bold text-rose-800 dark:text-rose-200">
+              {saveError.status
+                ? `Couldn't save (${saveError.status})`
+                : "Couldn't save"}
+            </p>
+            <p className="text-sm text-rose-700 dark:text-rose-300">
+              {saveError.message}
+            </p>
+
+            {/* Anything the server named a field for is repeated under that
+                field too; listing them here means you can see the whole set
+                without hunting down the page. */}
+            {Object.keys(saveError.fieldErrors).length > 0 && (
+              <ul className="mt-1 list-inside list-disc space-y-0.5 text-sm text-rose-700 dark:text-rose-300">
+                {Object.entries(saveError.fieldErrors).map(([field, message]) => (
+                  <li key={field}>
+                    <span className="font-semibold">{field}</span>: {message}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </motion.div>
+      )}
+
       <Card
         title="Photo"
         description="Shown on your profile and next to everything you post."
@@ -259,19 +344,24 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
 
       <Card title="About you">
         <div className="space-y-5">
-          <Field label="Full name" htmlFor="edit-full-name">
+          <Field
+            label="Full name"
+            htmlFor="edit-full-name"
+            error={fieldError("fullName")}
+          >
             <Input
               id="edit-full-name"
               value={values.fullName}
               onChange={(e) => patch({ fullName: e.target.value })}
               placeholder="First & last name"
-              className={inputClass}
+              className={cn(inputClass, fieldError("fullName") && errorInputClass)}
             />
           </Field>
 
           <Field
             label="Bio"
             htmlFor="edit-bio"
+            error={fieldError("bio")}
             hint={
               <span className="flex justify-between">
                 <span>A short introduction for your profile.</span>
@@ -292,13 +382,17 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
             />
           </Field>
 
-          <Field label="Location" htmlFor="edit-location">
+          <Field
+            label="Location"
+            htmlFor="edit-location"
+            error={fieldError("location")}
+          >
             <Input
               id="edit-location"
               value={values.location}
               onChange={(e) => patch({ location: e.target.value })}
               placeholder="City, Country"
-              className={inputClass}
+              className={cn(inputClass, fieldError("location") && errorInputClass)}
             />
           </Field>
         </div>
@@ -314,6 +408,7 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
               key={field.key}
               label={field.label}
               htmlFor={`edit-${field.key}`}
+              error={fieldError("socialLinks") ?? fieldError(field.key)}
             >
               <Input
                 id={`edit-${field.key}`}
@@ -337,29 +432,40 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
 
       <Card title="Personal details">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Phone" htmlFor="edit-phone">
+          <Field
+            label="Phone"
+            htmlFor="edit-phone"
+            error={fieldError("phone")}
+          >
             <Input
               id="edit-phone"
               type="tel"
               value={values.phone ?? ""}
               onChange={(e) => patch({ phone: e.target.value })}
               placeholder="+1 555 123 4567"
-              className={inputClass}
+              className={cn(inputClass, fieldError("phone") && errorInputClass)}
             />
           </Field>
 
-          <Field label="Date of birth" htmlFor="edit-dob">
+          <Field
+            label="Date of birth"
+            htmlFor="edit-dob"
+            error={fieldError("dateOfBirth")}
+          >
             <Input
               id="edit-dob"
               type="date"
               value={values.dateOfBirth ?? ""}
               onChange={(e) => patch({ dateOfBirth: e.target.value })}
-              className={inputClass}
+              className={cn(
+                inputClass,
+                fieldError("dateOfBirth") && errorInputClass,
+              )}
             />
           </Field>
 
           <div className="sm:col-span-2">
-            <Field label="Gender">
+            <Field label="Gender" error={fieldError("gender")}>
               <div className="flex flex-wrap gap-2">
                 {GENDER_OPTIONS.map((option) => {
                   const active = values.gender === option.value;
