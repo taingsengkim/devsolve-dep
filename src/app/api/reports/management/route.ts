@@ -357,6 +357,10 @@ export async function GET(request: NextRequest) {
     >("/reports?size=100&sort=submittedAt,DESC", token);
 
     if (!reportsResult.ok) {
+      if (reportsResult.status === 403 || reportsResult.status === 404) {
+        return NextResponse.json([], { status: 200 });
+      }
+
       const message =
         (reportsResult.body as { message?: string } | null)?.message ??
         "Unable to load organization reports. Please try again.";
@@ -372,7 +376,7 @@ export async function GET(request: NextRequest) {
       new Set(rawReports.map((report) => report.programId).filter(Boolean)),
     );
     const reporterIds = Array.from(
-      new Set(rawReports.map((report) => reporterIdOf(report)).filter(Boolean)),
+      new Set(rawReports.map((report) => reporterIdOf(report)).filter((id): id is string => Boolean(id))),
     );
 
     const [programResults, reporterResults] = await Promise.all([
@@ -405,13 +409,14 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    const managedReports = rawReports.map((report) =>
-      toManagedReport(
+    const managedReports = rawReports.map((report) => {
+      const repId = reporterIdOf(report);
+      return toManagedReport(
         report,
         programMap.get(report.programId),
-        reporterMap.get(reporterIdOf(report) ?? ""),
-      ),
-    );
+        repId ? reporterMap.get(repId) : undefined,
+      );
+    });
 
     return NextResponse.json(managedReports, { status: 200 });
   } catch {
