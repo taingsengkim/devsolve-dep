@@ -2,31 +2,120 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Building2, ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useState, useMemo, useCallback } from "react";
+import { motion } from "motion/react";
+import { Building2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useGetPendingOrganizationsQuery } from "@/lib/redux/services/adminApi";
-import { PendingOrganizationCard } from "@/components/admin/organizations/PendingOrganizationCard";
+import {
+  useGetPendingOrganizationsQuery,
+  useGetCompanyVerificationsQuery,
+  useUpdateCompanyVerificationStatusMutation,
+  CompanyVerificationItem,
+} from "@/lib/redux/services/adminApi";
+import { OrganizationStatCards } from "@/components/admin/organizations/OrganizationStatCards";
+import { OrganizationFiltersBar } from "@/components/admin/organizations/OrganizationFiltersBar";
+import { OrganizationDataTable } from "@/components/admin/organizations/OrganizationDataTable";
+import { getOrganizationColumns } from "@/components/admin/organizations/organizationColumns";
+import { OrganizationKycModal } from "@/components/admin/organizations/OrganizationKycModal";
 
-const PAGE_SIZE = 20;
+type StatusFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED" | "UNDER_REVIEW";
 
 export default function OrganizationVerificationPage() {
-  const [pageNumber, setPageNumber] = useState(0);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedAuditCompany, setSelectedAuditCompany] = useState<CompanyVerificationItem | null>(null);
+
+  // RTK Query hooks
+  const {
+    data: pendingData,
+    isLoading: isPendingLoading,
+    isFetching: isPendingFetching,
+  } = useGetPendingOrganizationsQuery({ pageNumber: 0, pageSize: 100 });
 
   const {
-    data,
-    isLoading,
-    isFetching,
-    isError,
-  } = useGetPendingOrganizationsQuery({ pageNumber, pageSize: PAGE_SIZE });
+    data: mockVerifications = [],
+    isLoading: isMockLoading,
+    isFetching: isMockFetching,
+  } = useGetCompanyVerificationsQuery();
 
-  const items = data?.content ?? [];
-  const totalElements = data?.totalElements ?? 0;
-  const totalPages = data?.totalPages ?? 0;
-  const isFirst = data?.first ?? true;
-  const isLast = data?.last ?? true;
+  const [updateStatus] = useUpdateCompanyVerificationStatusMutation();
+
+  const isLoading = isPendingLoading || isMockLoading;
+  const isFetching = isPendingFetching || isMockFetching;
+
+  // Unify pending org items from backend and mock verifications
+  const combinedVerifications = useMemo(() => {
+    const pendingItems: CompanyVerificationItem[] = (pendingData?.content ?? []).map((p) => ({
+      id: p.id,
+      orgCode: p.slug,
+      companyName: p.name,
+      email: p.ownerEmail || "—",
+      domain: p.websiteUrl ? p.websiteUrl.replace(/^https?:\/\//, "") : "—",
+      taxId: "—",
+      businessType: p.industry || "Technology",
+      registrationDate: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "—",
+      submittedAt: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "—",
+      status: "PENDING",
+      documentsCount: 0,
+      contactName: p.ownerFullName || "Owner",
+      country: p.country,
+      industry: p.industry,
+      companySize: p.companySize,
+      submissionVersion: p.submissionVersion,
+    }));
+
+    const pendingIds = new Set(pendingItems.map((p) => p.id));
+    const remainingMocks = mockVerifications.filter((m) => !pendingIds.has(m.id));
+
+    return [...pendingItems, ...remainingMocks];
+  }, [pendingData, mockVerifications]);
+
+  // Counts for summary metrics and status tabs
+  const counts = useMemo(
+    () => ({
+      all: combinedVerifications.length,
+      pending: combinedVerifications.filter((v) => v.status === "PENDING").length,
+      underReview: combinedVerifications.filter((v) => v.status === "UNDER_REVIEW").length,
+      approved: combinedVerifications.filter((v) => v.status === "APPROVED").length,
+      rejected: combinedVerifications.filter((v) => v.status === "REJECTED").length,
+    }),
+    [combinedVerifications]
+  );
+
+  // Filtering by status & text query
+  const filteredVerifications = useMemo(() => {
+    return combinedVerifications.filter((v) => {
+      const matchesStatus = statusFilter === "ALL" || v.status === statusFilter;
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        v.companyName.toLowerCase().includes(q) ||
+        v.email?.toLowerCase().includes(q) ||
+        v.domain?.toLowerCase().includes(q) ||
+        v.contactName?.toLowerCase().includes(q) ||
+        v.taxId?.toLowerCase().includes(q) ||
+        v.industry?.toLowerCase().includes(q) ||
+        v.orgCode?.toLowerCase().includes(q);
+
+      return matchesStatus && matchesSearch;
+    });
+  }, [combinedVerifications, statusFilter, searchQuery]);
+
+  // Audit modal status updater callback
+  const handleUpdateStatus = useCallback(
+    async (id: string, status: "APPROVED" | "REJECTED", notes?: string) => {
+      await updateStatus({ id, status, notes }).unwrap();
+    },
+    [updateStatus]
+  );
+
+  const columns = useMemo(
+    () =>
+      getOrganizationColumns({
+        onQuickAudit: (company) => setSelectedAuditCompany(company),
+      }),
+    []
+  );
 
   return (
     <motion.div
@@ -42,107 +131,60 @@ export default function OrganizationVerificationPage() {
             Organization Verification
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Review and manage pending company KYB / KYC requests.
+            Review, audit, and manage pending and verified corporate KYB / KYC requests.
           </p>
         </div>
 
-        {/* Pending badge */}
-        {totalElements > 0 && (
+        {/* Pending badge count alert */}
+        {counts.pending > 0 && (
           <div className="shrink-0 flex items-center gap-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-2.5">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
             <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">
-              {totalElements} pending review{totalElements !== 1 ? "s" : ""}
+              {counts.pending} pending review{counts.pending !== 1 ? "s" : ""}
             </span>
           </div>
         )}
       </header>
 
-      {/* LIST */}
+      {/* STAT CARDS */}
+      {!isLoading && <OrganizationStatCards verifications={combinedVerifications} />}
+      {isLoading && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-24 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800"
+            />
+          ))}
+        </div>
+      )}
+
+      {/* FILTER & SEARCH BAR */}
+      <OrganizationFiltersBar
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        counts={counts}
+      />
+
+      {/* DATA TABLE */}
       <main className="space-y-3">
         {isLoading || isFetching ? (
           <div className="space-y-3 animate-pulse">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="h-24 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800"
-              />
-            ))}
+            <div className="h-64 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
           </div>
-        ) : isError ? (
-          <Card className="rounded-2xl border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/30 p-12 text-center space-y-4 shadow-2xs">
-            <div className="w-14 h-14 rounded-2xl bg-rose-100 dark:bg-rose-900/40 text-rose-500 mx-auto flex items-center justify-center">
-              <Building2 className="w-7 h-7" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Failed to Load Verifications
-              </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
-                Could not reach the server. Please check your connection and try again.
-              </p>
-            </div>
-          </Card>
-        ) : items.length === 0 ? (
-          <Card className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center space-y-4 shadow-2xs">
-            <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center">
-              <Building2 className="w-7 h-7" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                No Pending Organizations
-              </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
-                There are no organizations awaiting verification at this time.
-              </p>
-            </div>
-          </Card>
         ) : (
-          <div className="grid grid-cols-1 gap-3">
-            <AnimatePresence mode="popLayout">
-              {items.map((item) => (
-                <PendingOrganizationCard key={item.id} item={item} />
-              ))}
-            </AnimatePresence>
-          </div>
+          <OrganizationDataTable columns={columns} data={filteredVerifications} />
         )}
       </main>
 
-      {/* PAGINATION */}
-      {!isLoading && !isError && totalPages > 1 && (
-        <nav className="flex items-center justify-between gap-4 pt-2">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Page <span className="font-semibold text-slate-700 dark:text-slate-300">{pageNumber + 1}</span> of{" "}
-            <span className="font-semibold text-slate-700 dark:text-slate-300">{totalPages}</span>
-            {" "}·{" "}
-            <span className="font-semibold text-slate-700 dark:text-slate-300">{totalElements}</span> total
-          </p>
-
-          <div className="flex items-center gap-2">
-            <Button
-              id="pagination-prev"
-              variant="outline"
-              size="sm"
-              disabled={isFirst || isFetching}
-              onClick={() => setPageNumber((p) => Math.max(0, p - 1))}
-              className="rounded-xl h-9 px-3 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40"
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Previous
-            </Button>
-            <Button
-              id="pagination-next"
-              variant="outline"
-              size="sm"
-              disabled={isLast || isFetching}
-              onClick={() => setPageNumber((p) => p + 1)}
-              className="rounded-xl h-9 px-3 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40"
-            >
-              Next
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
-        </nav>
-      )}
+      {/* QUICK AUDIT MODAL */}
+      <OrganizationKycModal
+        selectedCompany={selectedAuditCompany}
+        onClose={() => setSelectedAuditCompany(null)}
+        onUpdateStatus={handleUpdateStatus}
+      />
     </motion.div>
   );
 }
