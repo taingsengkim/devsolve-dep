@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { Cake, CalendarDays, Globe, MapPin, Phone, Users, VenusAndMars } from "lucide-react";
+import {
+  Cake,
+  CalendarDays,
+  Globe,
+  MapPin,
+  Phone,
+  Users,
+  VenusAndMars,
+} from "lucide-react";
 import { Profile } from "@/lib/types/profile/types";
 import { SiGithub, SiX } from "react-icons/si";
 
@@ -16,7 +24,11 @@ const GENDER_LABELS: Record<NonNullable<Profile["gender"]>, string> = {
 function formatDateOfBirth(iso: string) {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 // The edit form asks for full URLs (e.g. "https://github.com/username" — see
@@ -33,139 +45,193 @@ function displayUrl(value: string): string {
   return value.replace(/^https?:\/\//i, "").replace(/\/$/, "");
 }
 
+/** Label/value pair. One component so every row lines up identically. */
+function InfoRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="w-28 shrink-0 pt-px text-sm font-medium text-slate-500 dark:text-slate-400">
+        {label}
+      </span>
+      <span className="min-w-0 flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">
+        {children}
+      </span>
+    </div>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+      {children}
+    </h3>
+  );
+}
+
+const linkClass =
+  "inline-flex min-w-0 items-center gap-1.5 font-medium text-blue-600 hover:underline dark:text-blue-400";
+
 export default function ProfileBio({ profile }: ProfileBioProps) {
-  const { bio, location, memberSince, socialLinks, followers, following, username, phone, dateOfBirth, gender } = profile;
+  const {
+    bio,
+    location,
+    memberSince,
+    socialLinks,
+    followers,
+    following,
+    username,
+    phone,
+    dateOfBirth,
+    gender,
+  } = profile;
+
+  const hasContact =
+    location || phone || socialLinks.website || socialLinks.github || socialLinks.twitter;
 
   return (
-    <div className="space-y-6 pt-2">
-      {/* Contact Information Section */}
-      <div>
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
-          Contact Information
-        </h3>
+    <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+      {hasContact && (
+        <div className="mb-6">
+          <SectionLabel>Contact information</SectionLabel>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3.5 gap-x-6 text-sm">
-          {location && (
-            <div className="flex items-start gap-4">
-              <span className="w-28 shrink-0 font-medium text-slate-500">Address:</span>
-              <span className="font-medium text-slate-600 flex items-center gap-1.5">
-                <MapPin size={15} className="text-slate-400 shrink-0" />
-                {location}
-              </span>
-            </div>
-          )}
+          <div className="grid grid-cols-1 gap-x-6 gap-y-3.5 sm:grid-cols-2">
+            {location && (
+              <InfoRow label="Address">
+                <span className="flex items-center gap-1.5">
+                  <MapPin size={15} className="shrink-0 text-slate-400" />
+                  {location}
+                </span>
+              </InfoRow>
+            )}
 
-          {phone && (
-            <div className="flex items-center gap-4">
-              <span className="w-28 shrink-0 font-medium text-slate-500">Phone:</span>
-              <span className="font-medium text-slate-600 flex items-center gap-1.5">
-                <Phone size={15} className="text-slate-400 shrink-0" />
-                {phone}
-              </span>
-            </div>
-          )}
+            {phone && (
+              <InfoRow label="Phone">
+                <span className="flex items-center gap-1.5">
+                  <Phone size={15} className="shrink-0 text-slate-400" />
+                  {phone}
+                </span>
+              </InfoRow>
+            )}
 
-          {socialLinks.website && (
-            <div className="flex items-center gap-4">
-              <span className="w-28 shrink-0 font-medium text-slate-500">Site:</span>
-              <a
-                href={toHref(socialLinks.website)}
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium text-blue-500 hover:underline flex items-center gap-1.5"
-              >
-                <Globe size={15} className="text-blue-400 shrink-0" />
-                {displayUrl(socialLinks.website)}
-              </a>
-            </div>
-          )}
+            {socialLinks.website && (
+              <InfoRow label="Site">
+                <a
+                  href={toHref(socialLinks.website)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={linkClass}
+                >
+                  <Globe size={15} className="shrink-0 text-blue-400" />
+                  <span className="truncate">
+                    {displayUrl(socialLinks.website)}
+                  </span>
+                </a>
+              </InfoRow>
+            )}
 
-          {socialLinks.github && (
-            <div className="flex items-center gap-4">
-              <span className="w-28 shrink-0 font-medium text-slate-500">GitHub:</span>
-              <a
-                href={toHref(socialLinks.github)}
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium text-blue-500 hover:underline flex items-center gap-1.5"
-              >
-                <SiGithub size={15} className="text-slate-500 shrink-0" />
-                {displayUrl(socialLinks.github)}
-              </a>
-            </div>
-          )}
+            {socialLinks.github && (
+              <InfoRow label="GitHub">
+                <a
+                  href={toHref(socialLinks.github)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={linkClass}
+                >
+                  <SiGithub size={15} className="shrink-0 text-slate-500" />
+                  <span className="truncate">
+                    {displayUrl(socialLinks.github)}
+                  </span>
+                </a>
+              </InfoRow>
+            )}
 
-          {socialLinks.twitter && (
-            <div className="flex items-center gap-4">
-              <span className="w-28 shrink-0 font-medium text-slate-500">X (Twitter):</span>
-              <a
-                href={toHref(socialLinks.twitter)}
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium text-blue-500 hover:underline flex items-center gap-1.5"
-              >
-                <SiX size={15} className="text-slate-500 shrink-0" />
-                {displayUrl(socialLinks.twitter)}
-              </a>
-            </div>
-          )}
+            {socialLinks.twitter && (
+              <InfoRow label="X (Twitter)">
+                <a
+                  href={toHref(socialLinks.twitter)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={linkClass}
+                >
+                  <SiX size={15} className="shrink-0 text-slate-500" />
+                  <span className="truncate">
+                    {displayUrl(socialLinks.twitter)}
+                  </span>
+                </a>
+              </InfoRow>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Basic Information Section */}
-      <div className="border-t border-slate-100 pt-5">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
-          Basic Information
-        </h3>
+      <div
+        className={
+          hasContact
+            ? "border-t border-slate-100 pt-5 dark:border-slate-800"
+            : undefined
+        }
+      >
+        <SectionLabel>Basic information</SectionLabel>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3.5 gap-x-6 text-sm mb-4">
-          <div className="flex items-center gap-4">
-            <span className="w-28 shrink-0 font-medium text-slate-500">Member Since:</span>
-            <span className="font-medium text-slate-600 flex items-center gap-1.5">
-              <CalendarDays size={15} className="text-slate-400 shrink-0" />
+        <div className="grid grid-cols-1 gap-x-6 gap-y-3.5 sm:grid-cols-2">
+          <InfoRow label="Member since">
+            <span className="flex items-center gap-1.5">
+              <CalendarDays size={15} className="shrink-0 text-slate-400" />
               {memberSince}
             </span>
-          </div>
+          </InfoRow>
 
-          <div className="flex items-center gap-4">
-            <span className="w-28 shrink-0 font-medium text-slate-500">Community:</span>
-            <span className="font-medium text-slate-600 flex items-center gap-2">
-              <Users size={15} className="text-slate-400 shrink-0" />
-              <Link href={`/dashboard/profile/${username}/followers`} className="hover:text-blue-600 hover:underline">
+          <InfoRow label="Community">
+            <span className="flex flex-wrap items-center gap-2">
+              <Users size={15} className="shrink-0 text-slate-400" />
+              <Link
+                href={`/dashboard/profile/${username}/followers`}
+                className="hover:text-blue-600 hover:underline dark:hover:text-blue-400"
+              >
                 {followers} followers
               </Link>
-              <span className="text-slate-300">•</span>
-              <Link href={`/dashboard/profile/${username}/following`} className="hover:text-blue-600 hover:underline">
+              <span className="text-slate-300 dark:text-slate-700">•</span>
+              <Link
+                href={`/dashboard/profile/${username}/following`}
+                className="hover:text-blue-600 hover:underline dark:hover:text-blue-400"
+              >
                 {following} following
               </Link>
             </span>
-          </div>
+          </InfoRow>
 
           {dateOfBirth && (
-            <div className="flex items-center gap-4">
-              <span className="w-28 shrink-0 font-medium text-slate-500">Date of Birth:</span>
-              <span className="font-medium text-slate-600 flex items-center gap-1.5">
-                <Cake size={15} className="text-slate-400 shrink-0" />
+            <InfoRow label="Date of birth">
+              <span className="flex items-center gap-1.5">
+                <Cake size={15} className="shrink-0 text-slate-400" />
                 {formatDateOfBirth(dateOfBirth)}
               </span>
-            </div>
+            </InfoRow>
           )}
 
           {gender && (
-            <div className="flex items-center gap-4">
-              <span className="w-28 shrink-0 font-medium text-slate-500">Sex:</span>
-              <span className="font-medium text-slate-600 flex items-center gap-1.5">
-                <VenusAndMars size={15} className="text-slate-400 shrink-0" />
+            <InfoRow label="Sex">
+              <span className="flex items-center gap-1.5">
+                <VenusAndMars size={15} className="shrink-0 text-slate-400" />
                 {GENDER_LABELS[gender]}
               </span>
-            </div>
+            </InfoRow>
           )}
         </div>
 
         {bio && (
-          <div className="mt-3 rounded-2xl bg-slate-50/70 p-4 border border-slate-200/60">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">About</p>
-            <p className="text-sm leading-relaxed text-slate-600 font-normal">{bio}</p>
+          <div className="mt-5 rounded-xl border border-slate-200/60 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/40">
+            <p className="mb-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              About
+            </p>
+            <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+              {bio}
+            </p>
           </div>
         )}
       </div>

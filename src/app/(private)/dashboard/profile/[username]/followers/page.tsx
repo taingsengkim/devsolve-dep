@@ -1,7 +1,6 @@
 "use client";
 
 import { useParams, notFound } from "next/navigation";
-import ProfileHeader from "@/components/profile/ProfileHeader";
 import FollowersList from "@/components/profile/followers/FollowersList";
 import {
   useGetProfileByUsernameQuery,
