@@ -19,8 +19,11 @@ const TABS: { id: ProfileTabId; label: string; icon: LucideIcon }[] = [
 
 export default function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
   return (
-    <div className="border-b border-slate-200/80">
-      <nav className="flex gap-6 overflow-x-auto">
+    <div className="border-b border-slate-200/80 dark:border-slate-800">
+      {/* Four tabs don't fit a phone, so the rail scrolls — with the scrollbar
+          hidden and the labels kept, because the icons alone aren't
+          self-explanatory. `pr-1` keeps the last indicator off the edge. */}
+      <nav className="flex gap-4 overflow-x-auto pr-1 sm:gap-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TABS.map((tab) => {
           const isActive = tab.id === activeTab;
           const Icon = tab.icon;
@@ -28,7 +31,7 @@ export default function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`relative flex items-center gap-2 pb-3 pt-1 text-sm font-semibold transition cursor-pointer ${
+              className={`relative flex shrink-0 items-center gap-2 whitespace-nowrap pb-3 pt-1 text-sm font-semibold transition cursor-pointer ${
                 isActive
                   ? "text-slate-900 dark:text-slate-100"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"

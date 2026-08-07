@@ -536,7 +536,7 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
           type="button"
           variant="outline"
           onClick={onDone}
-          className="h-11 rounded-xl border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+          className="h-11 flex-1 rounded-xl border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:flex-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
         >
           <X size={15} />
           Cancel
@@ -546,7 +546,7 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
           type="button"
           onClick={handleSave}
           disabled={isSaving}
-          className="h-11 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white hover:bg-blue-700"
+          className="h-11 flex-1 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white hover:bg-blue-700 sm:flex-none"
         >
           {isSaving ? (
             <Loader2 size={15} className="animate-spin" />

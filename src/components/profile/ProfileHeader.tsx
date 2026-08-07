@@ -76,7 +76,7 @@ export default function ProfileHeader({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-1.5">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-100">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 wrap-break-word sm:text-3xl dark:text-slate-100">
               {profile.displayName}
             </h1>
 
@@ -113,7 +113,9 @@ export default function ProfileHeader({
           </div>
         </div>
 
-        {/* Own profile leads with Edit; someone else's leads with Follow. */}
+        {/* Own profile leads with Edit; someone else's leads with Follow.
+            The primary action stretches on a phone so it's a comfortable tap
+            target rather than a small button floating on a wide row. */}
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {profile.isOwnProfile ? (
             <>
@@ -123,7 +125,7 @@ export default function ProfileHeader({
                 <button
                   type="button"
                   onClick={onEdit}
-                  className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white shadow-xs transition-colors hover:bg-blue-700"
+                  className="inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white shadow-xs transition-colors hover:bg-blue-700 sm:flex-none"
                 >
                   <Pencil size={15} />
                   Edit profile
