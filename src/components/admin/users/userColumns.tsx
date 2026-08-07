@@ -59,7 +59,7 @@ function getAvatarColor(name: string): string {
 }
 
 interface ColumnCallbacks {
-  onUpdateStatus: (id: string, status: "ACTIVE" | "SUSPENDED") => void;
+  onUpdateStatus?: (id: string, status: "ACTIVE" | "SUSPENDED") => void;
   onModerateUser?: (user: AdminUserItem) => void;
   onUpdateRole?: (
     id: string,
@@ -69,110 +69,36 @@ interface ColumnCallbacks {
 
 function UserActionsCell({
   user,
-  onUpdateStatus,
   onModerateUser,
 }: {
   user: AdminUserItem;
-  onUpdateStatus: (id: string, status: "ACTIVE" | "SUSPENDED") => void;
+  onUpdateStatus?: (id: string, status: "ACTIVE" | "SUSPENDED") => void;
   onModerateUser?: (user: AdminUserItem) => void;
 }) {
-  const [showConfirm, setShowConfirm] = useState(false);
-  const isSuspended = user.status === "SUSPENDED";
-  const isPending = user.status === "PENDING";
-  const shouldActivate = isSuspended || isPending;
-  const targetStatus: "ACTIVE" | "SUSPENDED" = shouldActivate ? "ACTIVE" : "SUSPENDED";
-
-  const handleConfirmStatusChange = () => {
-    onUpdateStatus(user.id, targetStatus);
-    setShowConfirm(false);
-  };
+  if (!onModerateUser) return null;
 
   return (
-    <>
-      <div className="flex items-center justify-end">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer shadow-2xs">
-            <MoreHorizontal className="size-4" />
-            <span className="sr-only">Actions</span>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            sideOffset={6}
-            className="w-48 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-lg"
+    <div className="flex items-center justify-end">
+      <DropdownMenu>
+        <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer shadow-2xs">
+          <MoreHorizontal className="size-4" />
+          <span className="sr-only">Actions</span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          sideOffset={6}
+          className="w-44 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-lg"
+        >
+          <DropdownMenuItem
+            onClick={() => onModerateUser(user)}
+            className="rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
           >
-            {onModerateUser && (
-              <DropdownMenuItem
-                onClick={() => onModerateUser(user)}
-                className="rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-              >
-                <Gavel className="size-4 text-amber-600 dark:text-amber-500" />
-                Moderate User
-              </DropdownMenuItem>
-            )}
-
-            {onModerateUser && <DropdownMenuSeparator className="my-1 border-slate-100 dark:border-slate-800" />}
-
-            <DropdownMenuItem
-              onClick={() => setShowConfirm(true)}
-              className={`rounded-xl px-3 py-2 text-xs font-semibold cursor-pointer ${
-                shouldActivate
-                  ? "text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
-                  : "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40"
-              }`}
-            >
-              {shouldActivate ? (
-                <>
-                  <UserCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
-                  {isPending ? "Approve & Activate" : "Activate Account"}
-                </>
-              ) : (
-                <>
-                  <UserX className="size-4 text-rose-600 dark:text-rose-400" />
-                  Suspend Account
-                </>
-              )}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      {/* CONFIRMATION DIALOG */}
-      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {shouldActivate
-                ? isPending
-                  ? "Approve & Activate User Account?"
-                  : "Activate User Account?"
-                : "Suspend User Account?"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to {shouldActivate ? "activate" : "suspend"} the account for{" "}
-              <strong className="text-slate-900 dark:text-slate-100">{user.name}</strong> ({user.email})?
-              {shouldActivate
-                ? " This will give them full access to the platform."
-                : " This will immediately block their access to platform services."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setShowConfirm(false)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmStatusChange}
-              className={`rounded-xl text-sm font-semibold cursor-pointer ${
-                shouldActivate
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                  : "bg-rose-600 hover:bg-rose-700 text-white"
-              }`}
-            >
-              {shouldActivate ? (isPending ? "Approve & Activate" : "Activate Account") : "Suspend Account"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+            <Gavel className="size-4 text-amber-600 dark:text-amber-500" />
+            Moderate User
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
 
