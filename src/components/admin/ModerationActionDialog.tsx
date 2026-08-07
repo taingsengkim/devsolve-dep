@@ -68,11 +68,11 @@ export function ModerationActionDialog({
   }, [initialActionType]);
 
   useEffect(() => {
-    if (isOpen && !expiresAt) {
+    if (isOpen && action === "SUSPEND" && !expiresAt) {
       const defaultDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
       setExpiresAt(defaultDate.toISOString().slice(0, 16));
     }
-  }, [isOpen]);
+  }, [isOpen, action, expiresAt]);
 
   const targetId = report?.id || target?.id;
   const targetName = report?.author || target?.name || "Target Entity";
@@ -133,13 +133,16 @@ export function ModerationActionDialog({
       return;
     }
 
-    if (!expiresAt) {
-      toast.error("Action expiration date is required.");
+    if (action === "SUSPEND" && !expiresAt) {
+      toast.error("Action expiration date is required for suspension.");
       return;
     }
 
     try {
-      const formattedExpiresAt = new Date(expiresAt).toISOString();
+      const formattedExpiresAt =
+        action === "SUSPEND" && expiresAt
+          ? new Date(expiresAt).toISOString()
+          : undefined;
 
       const targetType = report
         ? (report.type as ModerationActionTargetType)
@@ -253,38 +256,40 @@ export function ModerationActionDialog({
             />
           </div>
 
-          {/* Required Expiration Date */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                Action Expiration Date <span className="text-rose-500">*</span>
-              </Label>
-              <div className="flex items-center gap-1">
-                {[
-                  { label: "+1D", days: 1 },
-                  { label: "+7D", days: 7 },
-                  { label: "+30D", days: 30 },
-                  { label: "+90D", days: 90 },
-                ].map((preset) => (
-                  <button
-                    key={preset.label}
-                    type="button"
-                    onClick={() => setPresetDays(preset.days)}
-                    className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950 dark:hover:text-blue-400 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
-                  >
-                    {preset.label}
-                  </button>
-                ))}
+          {/* Required Expiration Date (ONLY for SUSPEND) */}
+          {action === "SUSPEND" && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Action Expiration Date <span className="text-rose-500">*</span>
+                </Label>
+                <div className="flex items-center gap-1">
+                  {[
+                    { label: "+1D", days: 1 },
+                    { label: "+7D", days: 7 },
+                    { label: "+30D", days: 30 },
+                    { label: "+90D", days: 90 },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => setPresetDays(preset.days)}
+                      className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950 dark:hover:text-blue-400 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
               </div>
+              <Input
+                type="datetime-local"
+                value={expiresAt}
+                onChange={(e) => setExpiresAt(e.target.value)}
+                required
+                className="h-10 rounded-xl bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500"
+              />
             </div>
-            <Input
-              type="datetime-local"
-              value={expiresAt}
-              onChange={(e) => setExpiresAt(e.target.value)}
-              required
-              className="h-10 rounded-xl bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          )}
 
           <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-2">
             <Button
