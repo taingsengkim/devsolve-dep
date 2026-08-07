@@ -37,6 +37,9 @@ export default function AdminCategoriesPage() {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<CategoryResponse | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  /* Keys the dialog body so each open mounts fresh state. Bumped from the
+     click handlers, which keeps it out of an effect. */
+  const [session, setSession] = useState(0);
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -59,11 +62,13 @@ export default function AdminCategoriesPage() {
 
   const openCreate = () => {
     setEditing(null);
+    setSession((n) => n + 1);
     setDialogOpen(true);
   };
 
   const openEdit = (category: CategoryResponse) => {
     setEditing(category);
+    setSession((n) => n + 1);
     setDialogOpen(true);
   };
 
@@ -185,6 +190,7 @@ export default function AdminCategoriesPage() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         category={editing}
+        session={session}
       />
     </motion.div>
   );
