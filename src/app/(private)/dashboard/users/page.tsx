@@ -111,7 +111,6 @@ export default function AdminUsersPage() {
       all: total,
       active: items.filter((u) => u.status === "ACTIVE").length,
       suspended: items.filter((u) => u.status === "SUSPENDED").length,
-      pending: items.filter((u) => u.status === "PENDING").length,
       removed: items.filter((u) => u.status === "REMOVED").length,
     };
   }, [overallResponse, response]);

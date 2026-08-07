@@ -346,20 +346,89 @@ export default function ContentReportsPage() {
                   )}
                 </Card>
               ) : (
-                <AnimatePresence mode="popLayout">
-                  {paginatedReports.map((report) => (
-                    <motion.div
-                      key={report.id}
-                      layout
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.96 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ContentReportCard report={report} onAction={handleAction} />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+                <>
+                  <AnimatePresence mode="popLayout">
+                    {paginatedReports.map((report) => (
+                      <motion.div
+                        key={report.id}
+                        layout
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.96 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ContentReportCard report={report} onAction={handleAction} />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+
+                  {/* Integrated Pagination Controls */}
+                  {totalFiltered > 0 && (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-200/80 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+                      <div className="flex items-center gap-2">
+                        <span>Rows per page</span>
+                        <div className="w-20">
+                          <Select
+                            value={String(rowsPerPage)}
+                            onValueChange={(val: string | null) => {
+                              if (val) setRowsPerPage(Number(val));
+                            }}
+                          >
+                            <SelectTrigger className="h-8 rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs font-semibold">
+                              <SelectValue placeholder={String(rowsPerPage)} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="10">10</SelectItem>
+                              <SelectItem value="25">25</SelectItem>
+                              <SelectItem value="50">50</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <span className="ml-2 text-slate-400">
+                          Showing {(currentPage - 1) * rowsPerPage + 1}–
+                          {Math.min(currentPage * rowsPerPage, totalFiltered)} of {totalFiltered} items
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-center sm:self-auto">
+                        <button
+                          type="button"
+                          onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
+                          disabled={currentPage === 1}
+                          className="flex items-center gap-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition cursor-pointer"
+                        >
+                          <ChevronLeft className="size-4" />
+                          Previous
+                        </button>
+
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                          <button
+                            key={pageNum}
+                            type="button"
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`size-7 rounded-full font-bold text-xs flex items-center justify-center cursor-pointer transition ${
+                              currentPage === pageNum
+                                ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-2xs"
+                                : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        ))}
+
+                        <button
+                          type="button"
+                          onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
+                          disabled={currentPage === totalPages}
+                          className="flex items-center gap-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition cursor-pointer"
+                        >
+                          Next
+                          <ChevronRight className="size-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -374,73 +443,6 @@ export default function ContentReportsPage() {
               )}
             </div>
           </div>
-
-          {/* 4. Pagination Controls Footer */}
-          {totalFiltered > 0 && (
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-200/80 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
-              <div className="flex items-center gap-2">
-                <span>Rows per page</span>
-                <div className="w-20">
-                  <Select
-                    value={String(rowsPerPage)}
-                    onValueChange={(val: string | null) => {
-                      if (val) setRowsPerPage(Number(val));
-                    }}
-                  >
-                    <SelectTrigger className="h-8 rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs font-semibold">
-                      <SelectValue placeholder={String(rowsPerPage)} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="25">25</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <span className="ml-2 text-slate-400">
-                  Showing {(currentPage - 1) * rowsPerPage + 1}–
-                  {Math.min(currentPage * rowsPerPage, totalFiltered)} of {totalFiltered} items
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 self-center sm:self-auto">
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="flex items-center gap-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition cursor-pointer"
-                >
-                  <ChevronLeft className="size-4" />
-                  Previous
-                </button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                  <button
-                    key={pageNum}
-                    type="button"
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`size-7 rounded-full font-bold text-xs flex items-center justify-center cursor-pointer transition ${
-                      currentPage === pageNum
-                        ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-2xs"
-                        : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                ))}
-
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="flex items-center gap-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition cursor-pointer"
-                >
-                  Next
-                  <ChevronRight className="size-4" />
-                </button>
-              </div>
-            </div>
-          )}
 
           {/* Action Confirmation Modal Dialog */}
           <ModerationActionDialog
