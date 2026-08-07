@@ -1,12 +1,9 @@
 import { baseApi } from "../baseApi";
-import { PageAdminUserSummaryResponse } from "@/lib/types/admin/types";
+import {
+  PageAdminUserSummaryResponse,
+  GetAdminUsersParams,
+} from "@/lib/types/admin/types";
 
-export interface GetAdminUsersParams {
-  query?: string;
-  status?: string;
-  pageNumber?: number;
-  pageSize?: number;
-}
 
 export interface CreateModerationActionParams {
   id: string;

@@ -319,3 +319,52 @@ export interface AdminDashboardOverviewResponse {
   };
   recentActivity: AdminActivityFeedItem[];
 }
+
+// ─── Real API: Moderation Actions & Admin Users ─────────────────────────────
+
+export type ModerationActionTargetType =
+  | "PROGRAM"
+  | "PROBLEM"
+  | "SOLUTION"
+  | "COMMENT"
+  | "USER"
+  | "REPORT"
+  | "SHOWCASE";
+
+export type ModerationActionType = "WARN" | "SUSPEND" | "REMOVE" | "BAN";
+
+export interface CreateModerationActionRequest {
+  action: ModerationActionType;
+  reason: string;
+  expiresAt?: string;
+}
+
+export interface ModerationActionResponse {
+  id: string;
+  adminId: string;
+  adminName: string;
+  targetType: ModerationActionTargetType;
+  targetId: string;
+  action: ModerationActionType;
+  reason: string;
+  expiresAt?: string | null;
+  createdAt: string;
+}
+
+export type PageModerationActionResponse = PaginatedResponse<ModerationActionResponse>;
+
+export interface GetModerationHistoryParams {
+  targetType?: ModerationActionTargetType;
+  targetId?: string;
+  action?: ModerationActionType;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+export interface GetAdminUsersParams {
+  query?: string;
+  status?: "ACTIVE" | "SUSPENDED" | "REMOVED" | string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+

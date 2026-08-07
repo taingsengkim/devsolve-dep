@@ -17,10 +17,12 @@ import {
 } from "@/components/admin/users/UserFiltersBar";
 import { UserDataTable } from "@/components/admin/users/UserDataTable";
 import { getUserColumns } from "@/components/admin/users/userColumns";
+import { ModerationActionDialog } from "@/components/admin/ModerationActionDialog";
 
 export default function AdminUsersPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [moderateUserTarget, setModerateUserTarget] = useState<AdminUserItem | null>(null);
 
   const { data: response, isLoading, isFetching } = useGetAdminUsersQuery({
     query: searchQuery.trim() || undefined,
@@ -80,12 +82,17 @@ export default function AdminUsersPage() {
     [updateUser]
   );
 
+  const handleModerateUser = useCallback((user: AdminUserItem) => {
+    setModerateUserTarget(user);
+  }, []);
+
   const columns = useMemo(
     () =>
       getUserColumns({
         onUpdateStatus: handleUpdateStatus,
+        onModerateUser: handleModerateUser,
       }),
-    [handleUpdateStatus]
+    [handleUpdateStatus, handleModerateUser]
   );
 
   const suspendedCount = statusCounts.suspended;
@@ -152,6 +159,22 @@ export default function AdminUsersPage() {
           <UserDataTable columns={columns} data={users} />
         )}
       </main>
+
+      {/* Moderation Action Dialog for Selected User */}
+      <ModerationActionDialog
+        target={
+          moderateUserTarget
+            ? {
+                id: moderateUserTarget.id,
+                name: moderateUserTarget.name,
+                subtitle: moderateUserTarget.email,
+                type: "USER",
+              }
+            : null
+        }
+        isOpen={!!moderateUserTarget}
+        onClose={() => setModerateUserTarget(null)}
+      />
     </motion.div>
   );
 }

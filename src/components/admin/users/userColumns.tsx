@@ -23,6 +23,7 @@ import {
   User,
   ShieldAlert,
   ArrowUpDown,
+  Gavel,
 } from "lucide-react";
 
 const ROLE_OPTIONS: {
@@ -51,6 +52,7 @@ function getAvatarColor(name: string): string {
 
 interface ColumnCallbacks {
   onUpdateStatus: (id: string, status: "ACTIVE" | "SUSPENDED") => void;
+  onModerateUser?: (user: AdminUserItem) => void;
   onUpdateRole?: (
     id: string,
     role: "USER" | "COMPANY" | "ADMIN" | "MODERATOR"
@@ -60,9 +62,11 @@ interface ColumnCallbacks {
 function UserActionsCell({
   user,
   onUpdateStatus,
+  onModerateUser,
 }: {
   user: AdminUserItem;
   onUpdateStatus: (id: string, status: "ACTIVE" | "SUSPENDED") => void;
+  onModerateUser?: (user: AdminUserItem) => void;
 }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const isSuspended = user.status === "SUSPENDED";
@@ -77,12 +81,24 @@ function UserActionsCell({
 
   return (
     <>
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end gap-1.5">
+        {onModerateUser && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onModerateUser(user)}
+            className="h-8 px-2.5 rounded-xl text-xs font-semibold cursor-pointer border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-2xs"
+          >
+            <Gavel className="w-3.5 h-3.5 mr-1 text-amber-600" />
+            Moderate
+          </Button>
+        )}
+
         <Button
           variant="outline"
           size="sm"
           onClick={() => setShowConfirm(true)}
-          className={`h-8 px-3 rounded-xl text-xs font-semibold cursor-pointer gap-1.5 transition-colors shadow-2xs ${
+          className={`h-8 px-2.5 rounded-xl text-xs font-semibold cursor-pointer gap-1.5 transition-colors shadow-2xs ${
             shouldActivate
               ? "border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
               : "border-slate-200 dark:border-slate-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-300 dark:hover:border-rose-700"
@@ -144,7 +160,7 @@ function UserActionsCell({
 
 export function getUserColumns({
   onUpdateStatus,
-  onUpdateRole,
+  onModerateUser,
 }: ColumnCallbacks): ColumnDef<AdminUserItem>[] {
   return [
     {
@@ -301,9 +317,9 @@ export function getUserColumns({
         <UserActionsCell
           user={row.original}
           onUpdateStatus={onUpdateStatus}
+          onModerateUser={onModerateUser}
         />
       ),
     },
   ];
 }
-
