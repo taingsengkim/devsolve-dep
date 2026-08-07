@@ -23,7 +23,7 @@ import { AlertTriangle, Trash2, ShieldAlert, UserX, Ban, Loader2 } from "lucide-
 import { toast } from "sonner";
 import { useCreateModerationActionMutation } from "@/lib/redux/services/admin/moderationActionsApi";
 import type { ModerationActionType, ModerationActionTargetType } from "@/lib/types/admin/types";
-import type { ContentReportItem } from "@/lib/redux/services/adminApi";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 
 export interface TargetDetails {
   id: string;
@@ -281,12 +281,10 @@ export function ModerationActionDialog({
                   ))}
                 </div>
               </div>
-              <Input
-                type="datetime-local"
+              <DateTimePicker
                 value={expiresAt}
-                onChange={(e) => setExpiresAt(e.target.value)}
-                required
-                className="h-10 rounded-xl bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500"
+                onChange={setExpiresAt}
+                placeholder="Select expiration date & time"
               />
             </div>
           )}
