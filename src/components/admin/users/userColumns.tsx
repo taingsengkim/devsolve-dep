@@ -95,36 +95,35 @@ function UserActionsCell({
           sideOffset={6}
           className="w-44 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-lg space-y-0.5"
         >
-          {canActivate && onUpdateStatus && (
-            <>
-              <DropdownMenuItem
-                onClick={() => onUpdateStatus(user.id, "ACTIVE")}
-                className="rounded-xl px-3 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer"
-              >
-                <span>REINSTATE</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="my-1 border-slate-100 dark:border-slate-800" />
-            </>
-          )}
 
           {onModerateUser && (
             <>
               <DropdownMenuItem
                 onClick={() => onModerateUser(user, "WARN")}
-                className="rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-700 dark:hover:text-amber-400 cursor-pointer"
+                disabled={isRemoved}
+                className={cn(
+                  "rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-700 dark:hover:text-amber-400 cursor-pointer",
+                  isRemoved && "opacity-50 cursor-not-allowed pointer-events-none"
+                )}
               >
-                <span>WARN</span>
+                <span>{isRemoved ? "WARN (User Removed)" : "WARN"}</span>
               </DropdownMenuItem>
 
               <DropdownMenuItem
                 onClick={() => onModerateUser(user, "SUSPEND")}
-                disabled={isSuspended}
+                disabled={isSuspended || isRemoved}
                 className={cn(
                   "rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-orange-50 dark:hover:bg-orange-950/40 hover:text-orange-700 dark:hover:text-orange-400 cursor-pointer",
-                  isSuspended && "opacity-50 cursor-not-allowed pointer-events-none"
+                  (isSuspended || isRemoved) && "opacity-50 cursor-not-allowed pointer-events-none"
                 )}
               >
-                <span>{isSuspended ? "SUSPEND (Suspended)" : "SUSPEND"}</span>
+                <span>
+                  {isRemoved
+                    ? "SUSPEND (User Removed)"
+                    : isSuspended
+                    ? "SUSPEND (Suspended)"
+                    : "SUSPEND"}
+                </span>
               </DropdownMenuItem>
 
               <DropdownMenuItem
@@ -140,9 +139,13 @@ function UserActionsCell({
 
               <DropdownMenuItem
                 onClick={() => onModerateUser(user, "BAN")}
-                className="rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 dark:hover:text-purple-400 cursor-pointer"
+                disabled={isRemoved}
+                className={cn(
+                  "rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 dark:hover:text-purple-400 cursor-pointer",
+                  isRemoved && "opacity-50 cursor-not-allowed pointer-events-none"
+                )}
               >
-                <span>BAN</span>
+                <span>{isRemoved ? "BAN (User Removed)" : "BAN"}</span>
               </DropdownMenuItem>
 
               <DropdownMenuItem

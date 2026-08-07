@@ -30,6 +30,7 @@ export interface TargetDetails {
   name: string;
   subtitle?: string;
   type?: string;
+  status?: string;
 }
 
 interface ModerationActionDialogProps {
@@ -227,30 +228,44 @@ export function ModerationActionDialog({
         {/* Moderation Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Action Select */}
-          <div className="space-y-2">
-            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-              Select Action Type
-            </Label>
-            <Select
-              value={action}
-              onValueChange={(val) => setAction(val as ModerationActionType)}
-            >
-              <SelectTrigger className="w-full h-10 rounded-xl bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-sm">
-                <SelectValue placeholder="Select action" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="WARN">WARN</SelectItem>
-                <SelectItem value="SUSPEND" disabled={(report?.status as string) === "SUSPENDED"}>
-                  {(report?.status as string) === "SUSPENDED" ? "SUSPEND (Already suspended)" : "SUSPEND"}
-                </SelectItem>
-                <SelectItem value="REMOVE" disabled={report?.status === "REMOVED"}>
-                  {report?.status === "REMOVED" ? "REMOVE (Already removed)" : "REMOVE"}
-                </SelectItem>
-                <SelectItem value="BAN">BAN</SelectItem>
-                <SelectItem value="REINSTATE">REINSTATE</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {(() => {
+            const isTargetRemoved = (report?.status as string) === "REMOVED" || target?.status === "REMOVED";
+            const isTargetSuspended = (report?.status as string) === "SUSPENDED" || target?.status === "SUSPENDED";
+            return (
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Select Action Type
+                </Label>
+                <Select
+                  value={action}
+                  onValueChange={(val) => setAction(val as ModerationActionType)}
+                >
+                  <SelectTrigger className="w-full h-10 rounded-xl bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-sm">
+                    <SelectValue placeholder="Select action" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="WARN" disabled={isTargetRemoved}>
+                      {isTargetRemoved ? "WARN (User Removed)" : "WARN"}
+                    </SelectItem>
+                    <SelectItem value="SUSPEND" disabled={isTargetSuspended || isTargetRemoved}>
+                      {isTargetRemoved
+                        ? "SUSPEND (User Removed)"
+                        : isTargetSuspended
+                        ? "SUSPEND (Already suspended)"
+                        : "SUSPEND"}
+                    </SelectItem>
+                    <SelectItem value="REMOVE" disabled={isTargetRemoved}>
+                      {isTargetRemoved ? "REMOVE (Already removed)" : "REMOVE"}
+                    </SelectItem>
+                    <SelectItem value="BAN" disabled={isTargetRemoved}>
+                      {isTargetRemoved ? "BAN (User Removed)" : "BAN"}
+                    </SelectItem>
+                    <SelectItem value="REINSTATE">REINSTATE</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            );
+          })()}
 
           {/* Reason Input */}
           <div className="space-y-2">

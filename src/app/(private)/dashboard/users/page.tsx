@@ -239,6 +239,7 @@ export default function AdminUsersPage() {
                 name: moderateTarget.user.name,
                 subtitle: moderateTarget.user.email,
                 type: "USER",
+                status: moderateTarget.user.status,
               }
             : null
         }
