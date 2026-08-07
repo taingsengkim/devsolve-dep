@@ -34,6 +34,10 @@ import {
   ArrowUpDown,
   Gavel,
   MoreHorizontal,
+  AlertTriangle,
+  Trash2,
+  Ban,
+  RotateCcw,
 } from "lucide-react";
 
 const ROLE_OPTIONS: {
@@ -102,10 +106,11 @@ function UserActionsCell({
                 onClick={() => onModerateUser(user, "WARN")}
                 disabled={isRemoved}
                 className={cn(
-                  "rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-700 dark:hover:text-amber-400 cursor-pointer",
-                  isRemoved && "opacity-50 cursor-not-allowed pointer-events-none"
+                  "rounded-xl px-3 py-2 text-xs font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer flex items-center gap-2",
+                  isRemoved && "opacity-40 cursor-not-allowed pointer-events-none"
                 )}
               >
+                <AlertTriangle className="size-3.5" />
                 <span>{isRemoved ? "WARN (User Removed)" : "WARN"}</span>
               </DropdownMenuItem>
 
@@ -113,10 +118,11 @@ function UserActionsCell({
                 onClick={() => onModerateUser(user, "SUSPEND")}
                 disabled={isSuspended || isRemoved}
                 className={cn(
-                  "rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-orange-50 dark:hover:bg-orange-950/40 hover:text-orange-700 dark:hover:text-orange-400 cursor-pointer",
-                  (isSuspended || isRemoved) && "opacity-50 cursor-not-allowed pointer-events-none"
+                  "rounded-xl px-3 py-2 text-xs font-bold text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/40 cursor-pointer flex items-center gap-2",
+                  (isSuspended || isRemoved) && "opacity-40 cursor-not-allowed pointer-events-none"
                 )}
               >
+                <UserX className="size-3.5" />
                 <span>
                   {isRemoved
                     ? "SUSPEND (User Removed)"
@@ -130,10 +136,11 @@ function UserActionsCell({
                 onClick={() => onModerateUser(user, "REMOVE")}
                 disabled={isRemoved}
                 className={cn(
-                  "rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-700 dark:hover:text-rose-400 cursor-pointer",
-                  isRemoved && "opacity-50 cursor-not-allowed pointer-events-none"
+                  "rounded-xl px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer flex items-center gap-2",
+                  isRemoved && "opacity-40 cursor-not-allowed pointer-events-none"
                 )}
               >
+                <Trash2 className="size-3.5" />
                 <span>{isRemoved ? "REMOVE (Removed)" : "REMOVE"}</span>
               </DropdownMenuItem>
 
@@ -141,17 +148,19 @@ function UserActionsCell({
                 onClick={() => onModerateUser(user, "BAN")}
                 disabled={isRemoved}
                 className={cn(
-                  "rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 dark:hover:text-purple-400 cursor-pointer",
-                  isRemoved && "opacity-50 cursor-not-allowed pointer-events-none"
+                  "rounded-xl px-3 py-2 text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40 cursor-pointer flex items-center gap-2",
+                  isRemoved && "opacity-40 cursor-not-allowed pointer-events-none"
                 )}
               >
+                <Ban className="size-3.5" />
                 <span>{isRemoved ? "BAN (User Removed)" : "BAN"}</span>
               </DropdownMenuItem>
 
               <DropdownMenuItem
                 onClick={() => onModerateUser(user, "REINSTATE")}
-                className="rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-400 cursor-pointer"
+                className="rounded-xl px-3 py-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer flex items-center gap-2"
               >
+                <RotateCcw className="size-3.5" />
                 <span>REINSTATE</span>
               </DropdownMenuItem>
             </>
