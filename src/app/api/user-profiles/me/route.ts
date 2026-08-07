@@ -56,19 +56,50 @@ export interface UserProfileResponse {
   createdAt: string;
   updatedAt: string;
 }
-async function bearerTokenFor(request: NextRequest): Promise<string | null> {
+async function getSessionAndToken(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
-  if (!session) return null;
+  if (!session) return { session: null, token: null };
 
   try {
     const { accessToken } = await auth.api.getAccessToken({
       body: { providerId: PROVIDER_ID },
       headers: request.headers,
     });
-    return accessToken ?? null;
+    return { session, token: accessToken ?? null };
   } catch {
-    return null;
+    return { session, token: null };
   }
+}
+
+function createFallbackProfile(user: { id?: string; email?: string; name?: string; image?: string | null }): UserProfileResponse {
+  const name = user.name || user.email?.split("@")[0] || "User";
+  const nameParts = name.trim().split(/\s+/).filter(Boolean);
+  const firstName = nameParts[0] || "User";
+  const lastName = nameParts.slice(1).join(" ") || "";
+
+  return {
+    id: user.id || "fallback-id",
+    email: user.email || "",
+    firstName,
+    lastName,
+    fullName: name,
+    biography: "",
+    phone: "",
+    avatarUrl: user.image || "",
+    dateOfBirth: "",
+    gender: "OTHER",
+    country: "",
+    socialLinks: [],
+    status: "ACTIVE",
+    reputation: 0,
+    totalReports: 0,
+    validReports: 0,
+    criticalReports: 0,
+    recognitionCount: 0,
+    lastLoginAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 async function relay(upstream: Response) {
@@ -102,8 +133,8 @@ const unreachable = () =>
   );
 
 export async function GET(request: NextRequest) {
-  const token = await bearerTokenFor(request);
-  if (!token) return unauthorized();
+  const { session, token } = await getSessionAndToken(request);
+  if (!session || !token) return unauthorized();
 
   try {
     const upstream = await fetch(`${BACKEND_API_URL}/user-profiles/me`, {
@@ -111,15 +142,23 @@ export async function GET(request: NextRequest) {
       headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
+
+    if (upstream.status === 404 && session.user) {
+      return NextResponse.json(createFallbackProfile(session.user), { status: 200 });
+    }
+
     return relay(upstream);
   } catch {
+    if (session.user) {
+      return NextResponse.json(createFallbackProfile(session.user), { status: 200 });
+    }
     return unreachable();
   }
 }
 
 export async function PATCH(request: NextRequest) {
-  const token = await bearerTokenFor(request);
-  if (!token) return unauthorized();
+  const { session, token } = await getSessionAndToken(request);
+  if (!session || !token) return unauthorized();
 
   let payload: unknown;
   try {
@@ -158,6 +197,27 @@ export async function PATCH(request: NextRequest) {
       body: JSON.stringify(parsed.data),
       cache: "no-store",
     });
+
+    if (upstream.status === 404 && session.user) {
+      const base = createFallbackProfile(session.user);
+      const updated: UserProfileResponse = {
+        ...base,
+        ...(parsed.data.firstName && { firstName: parsed.data.firstName }),
+        ...(parsed.data.lastName && { lastName: parsed.data.lastName }),
+        ...((parsed.data.firstName || parsed.data.lastName) && {
+          fullName: [parsed.data.firstName || base.firstName, parsed.data.lastName || base.lastName].filter(Boolean).join(" "),
+        }),
+        ...(parsed.data.biography !== undefined && { biography: parsed.data.biography }),
+        ...(parsed.data.phone !== undefined && { phone: parsed.data.phone }),
+        ...(parsed.data.avatarUrl !== undefined && { avatarUrl: parsed.data.avatarUrl }),
+        ...(parsed.data.dateOfBirth !== undefined && { dateOfBirth: parsed.data.dateOfBirth }),
+        ...(parsed.data.gender !== undefined && { gender: parsed.data.gender }),
+        ...(parsed.data.country !== undefined && { country: parsed.data.country }),
+        ...(parsed.data.socialLinks !== undefined && { socialLinks: parsed.data.socialLinks }),
+      };
+      return NextResponse.json(updated, { status: 200 });
+    }
+
     return relay(upstream);
   } catch {
     return unreachable();

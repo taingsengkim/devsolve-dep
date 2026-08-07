@@ -42,12 +42,12 @@ export default function ProfileHeader({ profile, backHref }: ProfileHeaderProps)
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-500 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
               {profile.displayName}
             </h1>
             {profile.location && (
-              <span className="flex items-center gap-1.5 text-sm font-medium text-slate-500">
-                <MapPin size={15} className="text-slate-400" />
+              <span className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <MapPin size={15} className="text-slate-500 dark:text-slate-400" />
                 {profile.location}
               </span>
             )}

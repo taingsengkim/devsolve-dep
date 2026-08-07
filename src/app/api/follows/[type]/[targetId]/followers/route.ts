@@ -22,19 +22,24 @@ async function bearerTokenFor(request: NextRequest): Promise<string | null> {
 const unauthorized = () =>
   NextResponse.json({ message: "Not authenticated" }, { status: 401 });
 
-const unreachable = () =>
+const emptyResponse = () =>
   NextResponse.json(
-    { message: "Unable to reach the reports service. Please try again." },
-    { status: 502 }
+    { content: [], totalElements: 0, totalPages: 0, pageNumber: 0, pageSize: 10 },
+    { status: 200 }
   );
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ type: string; targetId: string }> }
+) {
   const token = await bearerTokenFor(request);
   if (!token) return unauthorized();
 
+  const { type, targetId } = await context.params;
   const { searchParams } = new URL(request.url);
   const queryString = searchParams.toString();
-  const targetUrl = `${BACKEND_API_URL}/reports/mine${
+
+  const targetUrl = `${BACKEND_API_URL}/follows/${type}/${targetId}/followers${
     queryString ? `?${queryString}` : ""
   }`;
 
@@ -48,11 +53,8 @@ export async function GET(request: NextRequest) {
       cache: "no-store",
     });
 
-    if (upstream.status === 403 || upstream.status === 404) {
-      return NextResponse.json(
-        { content: [], totalElements: 0, totalPages: 0, pageNumber: 0, pageSize: 10 },
-        { status: 200 }
-      );
+    if (upstream.status === 404 || upstream.status === 403) {
+      return emptyResponse();
     }
 
     const raw = await upstream.text();
@@ -66,17 +68,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (!upstream.ok) {
-      return NextResponse.json(
-        { content: [], totalElements: 0, totalPages: 0, pageNumber: 0, pageSize: 10 },
-        { status: 200 }
-      );
+      return emptyResponse();
     }
 
     return NextResponse.json(body, { status: upstream.status });
   } catch {
-    return NextResponse.json(
-      { content: [], totalElements: 0, totalPages: 0, pageNumber: 0, pageSize: 10 },
-      { status: 200 }
-    );
+    return emptyResponse();
   }
 }
