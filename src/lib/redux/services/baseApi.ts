@@ -57,6 +57,8 @@ export const baseApi = createApi({
     "ModerationItem",
     "ContentReport",
     "AdminUser",
+    "Showcase",
+    "Category",
   ],
   endpoints: () => ({}),
 });
