@@ -22,7 +22,7 @@ import {
 import { AlertTriangle, Trash2, ShieldAlert, UserX, Ban, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useCreateModerationActionMutation } from "@/lib/redux/services/admin/moderationActionsApi";
-import type { ModerationActionType, ModerationActionTargetType } from "@/lib/types/admin/types";
+import type { ModerationActionType, ModerationActionTargetType, ContentReportItem } from "@/lib/types/admin/types";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
 
 export interface TargetDetails {
@@ -234,8 +234,8 @@ export function ModerationActionDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="WARN">WARN — Issue official warning</SelectItem>
-                <SelectItem value="SUSPEND" disabled={report?.status === "SUSPENDED"}>
-                  {report?.status === "SUSPENDED" ? "SUSPEND — Already suspended" : "SUSPEND — Temporarily suspend"}
+                <SelectItem value="SUSPEND" disabled={(report?.status as string) === "SUSPENDED"}>
+                  {(report?.status as string) === "SUSPENDED" ? "SUSPEND — Already suspended" : "SUSPEND — Temporarily suspend"}
                 </SelectItem>
                 <SelectItem value="REMOVE" disabled={report?.status === "REMOVED"}>
                   {report?.status === "REMOVED" ? "REMOVE — Already removed" : "REMOVE — Hide or delete content/account"}
