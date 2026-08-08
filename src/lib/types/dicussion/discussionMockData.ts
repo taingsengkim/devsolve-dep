@@ -86,27 +86,6 @@ export const MOCK_DISCUSSIONS: DiscussionPost[] = [
     isUpvoted: false,
   },
   {
-    id: "4",
-    title: "Interactive OAuth Security Architecture Flow & POC Playground",
-    category: "Showcase",
-    topic: "Program Design",
-    description:
-      "Built a browser sandbox comparing OAuth 2.0 PKCE flow vs Implicit grant token leaks. Check out the interactive React demo!",
-    tags: ["#oauth", "#security-architecture", "#showcase"],
-    techStack: ["#react", "#firebase", "#keycloak"],
-    thumbnailUrl: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&auto=format&fit=crop&q=80",
-    votes: 320,
-    answersCount: 12,
-    viewsCount: 8410,
-    author: {
-      name: "Alex Mercer",
-      avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Alex",
-    },
-    createdAt: "Apr 02, 2025",
-    isBookmarked: true,
-    isUpvoted: true,
-  },
-  {
     id: "5",
     title: "SSRF via PDF generation — can I escalate to RCE from AWS metadata?",
     category: "Problems",

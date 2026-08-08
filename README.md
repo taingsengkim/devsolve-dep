@@ -16,7 +16,9 @@ Production Deployment URL: https://devsolve.app/
 - Discussions Hub: https://devsolve.app/discussions [Mock Data]
 - Create Discussion: https://devsolve.app/discussions/create [Mock Data]
 - Submit Problem: https://devsolve.app/discussions/create/problem [Mock Data]
-- Submit Showcase: https://devsolve.app/discussions/create/showcase [Mock Data]
+- Showcase Index: https://devsolve.app/showcases [Real API]
+- Showcase Detail: https://devsolve.app/showcases/[id] [Real API]
+- Submit Showcase: https://devsolve.app/community/create/showcase [Real API]
 
 -----
 
