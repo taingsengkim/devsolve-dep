@@ -14,6 +14,16 @@ export const VOTE_TARGET_TYPES = [
 
 export type VoteTargetType = (typeof VOTE_TARGET_TYPES)[number];
 
+/** What can be bookmarked. A comment cannot; a program can. */
+export const BOOKMARK_TARGET_TYPES = [
+  "PROGRAM",
+  "PROBLEM",
+  "SOLUTION",
+  "SHOWCASE",
+] as const;
+
+export type BookmarkTargetType = (typeof BOOKMARK_TARGET_TYPES)[number];
+
 export const COMMENTABLE_TYPES = [
   "REPORT",
   "SOLUTION",

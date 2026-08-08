@@ -38,8 +38,15 @@ export interface DiscussionPost {
   isUpvoted?: boolean;
 }
 
+/**
+ * Topics are the problem categories in use, so a topic is whatever the backend
+ * calls one. `TopicFilter` stays in the union to keep the original vocabulary
+ * assignable and to preserve autocomplete on it.
+ */
+export type TopicName = TopicFilter | (string & {});
+
 export interface TopicCount {
-  name: TopicFilter;
+  name: TopicName;
   count: number;
 }
 

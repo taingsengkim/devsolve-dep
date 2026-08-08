@@ -56,6 +56,7 @@ import { useGetActiveCategoriesQuery } from "@/lib/redux/services/categoriesApi"
 import { useCreateProblemMutation } from "@/lib/redux/services/problemsApi";
 import {
   createProblemFormSchema,
+  SDLC_LABELS,
   SDLC_PHASES,
 } from "@/lib/validations/problem";
 import { cn } from "@/lib/utils";
@@ -65,16 +66,6 @@ type ProblemFormValues = z.output<typeof createProblemFormSchema>;
 
 const MAX_TECHNOLOGIES = 20;
 const MAX_TAGS = 10;
-
-const SDLC_LABELS = {
-  PLANNING: "Planning",
-  REQUIREMENTS_ANALYSIS: "Requirements analysis",
-  DESIGN: "Design",
-  DEVELOPMENT: "Development",
-  TESTING: "Testing",
-  DEPLOYMENT: "Deployment",
-  MAINTENANCE: "Maintenance",
-} as const;
 
 const SDLC_ITEMS = SDLC_PHASES.map((value) => ({
   value,

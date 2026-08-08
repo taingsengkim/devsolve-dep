@@ -65,6 +65,8 @@ export const baseApi = createApi({
     "ShowcaseStep",
     "ShowcaseRevision",
     "ShowcaseReview",
+    "Problem",
+    "ProblemReview",
     "Category",
     "Vote",
     "Comment",

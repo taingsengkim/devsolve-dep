@@ -4,13 +4,21 @@ import {
   DiscussionSort,
   TopicCount,
 } from "@/lib/types/dicussion/types";
-import {
-  MOCK_DISCUSSIONS,
-  MOCK_TOPICS,
-  MOCK_TRENDING_TAGS,
-} from "@/lib/types/dicussion/discussionMockData";
 import { excerptOf } from "@/lib/markdown-excerpt";
 import type { Page, ShowcaseResponse } from "./showcasesApi";
+import type { ProblemResponse } from "./problemsApi";
+
+/**
+ * The community feed, built entirely from the API: problems from
+ * `GET /api/v1/problems` (published only — a submission stays out until a
+ * moderator approves it) and showcases from `GET /api/v1/showcases` (approved
+ * only, likewise). The two are merged and then filtered, sorted and paginated
+ * together, so one code path serves whatever a post came from.
+ *
+ * Nothing here is invented. Where a list response carries no figure — neither
+ * endpoint returns vote or answer counts — the post gets a zero rather than a
+ * number nobody could reproduce.
+ */
 
 // ─── Query param types ────────────────────────────────────────────────────────
 
@@ -32,26 +40,31 @@ export interface DiscussionsResponse {
   totalPages: number;
 }
 
+/** Platform totals the list endpoints can actually answer. */
 export interface DiscussionStats {
   problems: number;
-  solutions: number;
-  researchers: number;
+  showcases: number;
 }
 
 // ─── Sorting helpers ──────────────────────────────────────────────────────────
 
-/** `createdAt` is a display string ("Jun 12, 2025" / "Just now"). Unparsable
- *  values are treated as "now" so freshly created posts sort to the top. */
+/** `createdAt` is a display string ("Jun 12, 2025"). Unparsable values are
+ *  treated as "now" so freshly created posts sort to the top. */
 function createdAtTime(value: string): number {
   const parsed = Date.parse(value);
   return Number.isNaN(parsed) ? Date.now() : parsed;
 }
 
-function sortDiscussions<T extends DiscussionPost>(list: T[], sort: DiscussionSort): T[] {
+function sortDiscussions<T extends DiscussionPost>(
+  list: T[],
+  sort: DiscussionSort,
+): T[] {
   const sorted = [...list];
   switch (sort) {
     case "oldest":
-      return sorted.sort((a, b) => createdAtTime(a.createdAt) - createdAtTime(b.createdAt));
+      return sorted.sort(
+        (a, b) => createdAtTime(a.createdAt) - createdAtTime(b.createdAt),
+      );
     case "top":
       return sorted.sort((a, b) => b.votes - a.votes);
     case "discussed":
@@ -60,34 +73,22 @@ function sortDiscussions<T extends DiscussionPost>(list: T[], sort: DiscussionSo
       return sorted.sort((a, b) => b.viewsCount - a.viewsCount);
     case "newest":
     default:
-      return sorted.sort((a, b) => createdAtTime(b.createdAt) - createdAtTime(a.createdAt));
+      return sorted.sort(
+        (a, b) => createdAtTime(b.createdAt) - createdAtTime(a.createdAt),
+      );
   }
 }
 
-// ─── Mock vote state (module-level, real API will replace this) ───────────────
-const votesMap: Record<string, { votes: number; isUpvoted: boolean }> = {};
-const bookmarksSet = new Set<string>();
-
-MOCK_DISCUSSIONS.forEach((d) => {
-  votesMap[d.id] = { votes: d.votes, isUpvoted: d.isUpvoted ?? false };
-  if (d.isBookmarked) bookmarksSet.add(d.id);
-});
-
-// ─── Showcases (real API) ─────────────────────────────────────────────────────
+// ─── Mapping the two response shapes onto one card ───────────────────────────
 
 /**
- * Showcases in this feed are real: they come from `GET /api/v1/showcases`
- * through the proxy, and only ones an admin has approved are returned. Problems
- * are still the mock store, so the two are merged and then run through the same
- * filter/sort/paginate below — one code path, whatever a post came from.
- *
- * The endpoint caps a page at 100. That is the ceiling on how many showcases
- * one feed page can draw from; server-side paging can replace this once
- * problems are real too and the merge goes away.
+ * Both endpoints cap a page at 100. That is the ceiling on how many posts one
+ * feed page can draw from; server-side paging can replace the merge once the
+ * backend serves problems and showcases from a single feed endpoint.
  */
-const SHOWCASE_PAGE_SIZE = 100;
+const FEED_PAGE_SIZE = 100;
 
-function showcaseDate(iso?: string): string {
+function displayDate(iso?: string): string {
   if (!iso) return "";
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
@@ -98,94 +99,140 @@ function showcaseDate(iso?: string): string {
   });
 }
 
+/** The sidebar's tag vocabulary is written with a leading `#`. */
+const hashed = (name?: string) => (name ? `#${name}` : "");
+
+/** `ProblemResponse` in the shape this feed's card already renders. */
+function problemToPost(problem: ProblemResponse): DiscussionPost {
+  return {
+    id: problem.id ?? "",
+    title: problem.title ?? "Untitled problem",
+    category: "Problems",
+    // A problem's topic is its category — the vocabulary the sidebar counts.
+    topic: problem.category?.name || "Uncategorised",
+    description: excerptOf(problem.description ?? "", 240),
+    tags: (problem.tags ?? []).map((tag) => hashed(tag.name)).filter(Boolean),
+    techStack: (problem.technologies ?? [])
+      .map((tech) => tech.name)
+      .filter((name): name is string => Boolean(name)),
+    /* `ProblemResponse` carries neither a vote score nor a solution count, so
+       both stay at zero rather than being guessed at. */
+    votes: 0,
+    answersCount: 0,
+    viewsCount: problem.viewCount ?? 0,
+    status: problem.status === "RESOLVED" ? "Solved" : "Open",
+    author: {
+      name: problem.author?.fullName || "Unknown",
+      avatarUrl: problem.author?.avatarUrl ?? "",
+      reputation: problem.author?.reputation,
+    },
+    createdAt: displayDate(problem.publishedAt ?? problem.createdAt),
+  };
+}
+
 /** `ShowCasesResponse` in the shape this feed's card already renders. */
 function showcaseToPost(showcase: ShowcaseResponse): DiscussionPost {
   return {
     id: showcase.id,
     title: showcase.title,
     category: "Showcase",
-    // A showcase has a category, not one of the mock topics.
+    // A showcase carries its own category name where a problem carries a topic.
     topic: showcase.categoryName || "Showcase",
     description: excerptOf(showcase.overview ?? "", 240),
-    // No tag or vote data on the showcase endpoints yet — an empty list renders
-    // no chips rather than inventing any.
-    tags: [],
+    tags: (showcase.tags ?? []).map((tag) => hashed(tag.name)).filter(Boolean),
     thumbnailUrl: showcase.coverImageUrl,
+    // No vote or comment counts on the showcase list response either.
     votes: 0,
     answersCount: 0,
     viewsCount: showcase.viewCount ?? 0,
     author: { name: showcase.authorName || "Unknown", avatarUrl: "" },
-    createdAt: showcaseDate(showcase.createdAt),
-    isBookmarked: false,
-    isUpvoted: false,
+    createdAt: displayDate(showcase.createdAt),
   };
 }
+
+/** What a target is called on the vote and bookmark endpoints. */
+const targetTypeOf = (category: DiscussionPost["category"]) =>
+  category === "Showcase" ? "SHOWCASE" : "PROBLEM";
 
 // ─── API slice ────────────────────────────────────────────────────────────────
 
 export const discussionsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // ── List discussions with filter + pagination ───────────────────────────
-    getDiscussions: builder.query<DiscussionsResponse, DiscussionsFilterParams | void>({
+    getDiscussions: builder.query<
+      DiscussionsResponse,
+      DiscussionsFilterParams | void
+    >({
       queryFn: async (params, _api, _extraOptions, fetchWithBQ) => {
         const category = params?.category ?? "All";
+        const search = params?.searchQuery?.trim();
 
-        /* Showcases come from the API, problems from the mock store, and the
-           category tab decides which halves are worth asking for. */
-        let showcases: DiscussionPost[] = [];
-        if (category !== "Problems") {
-          const response = await fetchWithBQ({
-            url: "/showcases",
-            params: {
-              pageSize: SHOWCASE_PAGE_SIZE,
-              sortBy: "createdAt",
-              sortDirection: "DESC",
-              // Narrowing upstream keeps the search from being limited to
-              // whatever the first page happened to contain.
-              ...(params?.searchQuery?.trim()
-                ? { query: params.searchQuery.trim() }
-                : {}),
-            },
-          });
+        /* The category tab decides which halves are worth asking for, so a
+           feed narrowed to one kind costs one request rather than two. */
+        const wantProblems = category !== "Showcase";
+        const wantShowcases = category !== "Problems";
 
-          if (response.error) return { error: response.error };
+        const [problemsResponse, showcasesResponse] = await Promise.all([
+          wantProblems
+            ? fetchWithBQ({
+                url: "/problems",
+                params: {
+                  size: FEED_PAGE_SIZE,
+                  sort: "publishedAt,DESC",
+                  /* The problem feed filters by a single tag rather than a
+                     free-text query, so the sidebar's tag selection is the
+                     only narrowing that can happen upstream. */
+                  ...(params?.tag ? { tag: params.tag.replace(/^#/, "") } : {}),
+                },
+              })
+            : null,
+          wantShowcases
+            ? fetchWithBQ({
+                url: "/showcases",
+                params: {
+                  pageSize: FEED_PAGE_SIZE,
+                  sortBy: "createdAt",
+                  sortDirection: "DESC",
+                  // Narrowing upstream keeps the search from being limited to
+                  // whatever the first page happened to contain.
+                  ...(search ? { query: search } : {}),
+                },
+              })
+            : null,
+        ]);
 
-          const page = response.data as Page<ShowcaseResponse>;
-          showcases = (page?.content ?? []).map(showcaseToPost);
-        }
+        if (problemsResponse?.error) return { error: problemsResponse.error };
+        if (showcasesResponse?.error) return { error: showcasesResponse.error };
 
-        const problems =
-          category === "Showcase"
-            ? []
-            : MOCK_DISCUSSIONS.filter((d) => d.category === "Problems");
+        const problemPage = problemsResponse?.data as
+          | Page<ProblemResponse>
+          | undefined;
+        const showcasePage = showcasesResponse?.data as
+          | Page<ShowcaseResponse>
+          | undefined;
 
-        let results = [...showcases, ...problems].map((d) => ({
-          ...d,
-          votes: votesMap[d.id]?.votes ?? d.votes,
-          isUpvoted: votesMap[d.id]?.isUpvoted ?? false,
-          isBookmarked: bookmarksSet.has(d.id),
-        }));
+        const problems = (problemPage?.content ?? []).map(problemToPost);
+        const showcases = (showcasePage?.content ?? []).map(showcaseToPost);
 
-        if (params?.category && params.category !== "All") {
-          results = results.filter((d) => d.category === params.category);
-        }
+        let results = [...problems, ...showcases];
+
         if (params?.topic) {
-          results = results.filter((d) => d.topic === params.topic);
+          results = results.filter((post) => post.topic === params.topic);
         }
         if (params?.tag) {
-          results = results.filter((d) => d.tags.includes(params.tag!));
+          results = results.filter((post) => post.tags.includes(params.tag!));
         }
-        if (params?.searchQuery?.trim()) {
-          const q = params.searchQuery.toLowerCase();
+        if (search) {
+          const q = search.toLowerCase();
           results = results.filter(
-            (d) =>
+            (post) =>
               // Showcases were already matched upstream, against their full
               // overview rather than the excerpt held here — re-testing them
               // against the excerpt would drop genuine matches.
-              d.category === "Showcase" ||
-              d.title.toLowerCase().includes(q) ||
-              d.description.toLowerCase().includes(q) ||
-              d.tags.some((t) => t.toLowerCase().includes(q))
+              post.category === "Showcase" ||
+              post.title.toLowerCase().includes(q) ||
+              post.description.toLowerCase().includes(q) ||
+              post.tags.some((tag) => tag.toLowerCase().includes(q)),
           );
         }
 
@@ -197,111 +244,175 @@ export const discussionsApi = baseApi.injectEndpoints({
         // Clamp so a stale page (e.g. after narrowing filters) never yields a blank feed.
         const page = Math.min(Math.max(1, params?.page ?? 1), totalPages);
         const start = (page - 1) * limit;
-        const paginatedData = results.slice(start, start + limit);
 
         return {
-          data: { data: paginatedData, totalCount, page, limit, totalPages },
+          data: {
+            data: results.slice(start, start + limit),
+            totalCount,
+            page,
+            limit,
+            totalPages,
+          },
         };
       },
-      /* Also tagged `Showcase/LIST`, so publishing or approving a showcase
-         refreshes this feed the same way it refreshes the showcase caches. */
+      /* Tagged against both source caches, so publishing or approving either
+         kind of post refreshes this feed the same way it refreshes theirs. */
       providesTags: (result) =>
         result
           ? [
-              ...result.data.map(({ id }) => ({ type: "Discussion" as const, id })),
+              ...result.data.map(({ id }) => ({
+                type: "Discussion" as const,
+                id,
+              })),
               { type: "Discussion" as const, id: "LIST" },
               { type: "Showcase" as const, id: "LIST" },
+              { type: "Problem" as const, id: "LIST" },
             ]
           : [
               { type: "Discussion" as const, id: "LIST" },
               { type: "Showcase" as const, id: "LIST" },
+              { type: "Problem" as const, id: "LIST" },
             ],
     }),
 
-    // ── Fetch single discussion ─────────────────────────────────────────────
-    getDiscussionById: builder.query<DiscussionPost | null, string>({
-      queryFn: (id) => {
-        const found = MOCK_DISCUSSIONS.find((d) => d.id === id);
-        if (!found) return { data: null };
+    // ── Topic list ──────────────────────────────────────────────────────────
+    /**
+     * The sidebar's topics are the problem categories actually in use, counted
+     * off the published feed. A category nobody has posted under does not
+     * appear, because filtering by it would empty the feed.
+     */
+    getDiscussionTopics: builder.query<TopicCount[], void>({
+      queryFn: async (_arg, _api, _extraOptions, fetchWithBQ) => {
+        const response = await fetchWithBQ({
+          url: "/problems",
+          params: { size: FEED_PAGE_SIZE },
+        });
+        if (response.error) return { error: response.error };
+
+        const page = response.data as Page<ProblemResponse>;
+        const counts = new Map<string, number>();
+        for (const problem of page?.content ?? []) {
+          const name = problem.category?.name;
+          if (name) counts.set(name, (counts.get(name) ?? 0) + 1);
+        }
+
         return {
-          data: {
-            ...found,
-            votes: votesMap[id]?.votes ?? found.votes,
-            isUpvoted: votesMap[id]?.isUpvoted ?? false,
-            isBookmarked: bookmarksSet.has(id),
-          },
+          data: [...counts.entries()]
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count),
         };
       },
-      providesTags: (_result, _error, id) => [{ type: "Discussion" as const, id }],
-    }),
-
-    // ── Topic list ──────────────────────────────────────────────────────────
-    getDiscussionTopics: builder.query<TopicCount[], void>({
-      queryFn: () => ({ data: MOCK_TOPICS }),
-      providesTags: [{ type: "Discussion" as const, id: "TOPICS" }],
+      providesTags: [
+        { type: "Discussion" as const, id: "TOPICS" },
+        { type: "Problem" as const, id: "LIST" },
+      ],
     }),
 
     // ── Trending tags ───────────────────────────────────────────────────────
+    /** The tags carried by published problems, commonest first. */
     getTrendingTags: builder.query<string[], void>({
-      queryFn: () => ({ data: MOCK_TRENDING_TAGS }),
-      providesTags: [{ type: "Discussion" as const, id: "TAGS" }],
+      queryFn: async (_arg, _api, _extraOptions, fetchWithBQ) => {
+        const response = await fetchWithBQ({
+          url: "/problems",
+          params: { size: FEED_PAGE_SIZE },
+        });
+        if (response.error) return { error: response.error };
+
+        const page = response.data as Page<ProblemResponse>;
+        const counts = new Map<string, number>();
+        for (const problem of page?.content ?? []) {
+          for (const tag of problem.tags ?? []) {
+            const label = hashed(tag.name);
+            if (label) counts.set(label, (counts.get(label) ?? 0) + 1);
+          }
+        }
+
+        return {
+          data: [...counts.entries()]
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(([label]) => label),
+        };
+      },
+      providesTags: [
+        { type: "Discussion" as const, id: "TAGS" },
+        { type: "Problem" as const, id: "LIST" },
+      ],
     }),
 
     // ── Platform stats ──────────────────────────────────────────────────────
+    /**
+     * Both totals are the `totalElements` the list endpoints report, so they
+     * count everything published rather than the page fetched above.
+     */
     getDiscussionStats: builder.query<DiscussionStats, void>({
-      queryFn: () => ({
-        data: { problems: 847, solutions: 3241, researchers: 12480 },
-      }),
-      providesTags: [{ type: "Discussion" as const, id: "STATS" }],
+      queryFn: async (_arg, _api, _extraOptions, fetchWithBQ) => {
+        const [problems, showcases] = await Promise.all([
+          fetchWithBQ({ url: "/problems", params: { size: 1 } }),
+          fetchWithBQ({ url: "/showcases", params: { pageSize: 1 } }),
+        ]);
+
+        if (problems.error) return { error: problems.error };
+        if (showcases.error) return { error: showcases.error };
+
+        return {
+          data: {
+            problems:
+              (problems.data as Page<ProblemResponse>)?.totalElements ?? 0,
+            showcases:
+              (showcases.data as Page<ShowcaseResponse>)?.totalElements ?? 0,
+          },
+        };
+      },
+      providesTags: [
+        { type: "Discussion" as const, id: "STATS" },
+        { type: "Problem" as const, id: "LIST" },
+        { type: "Showcase" as const, id: "LIST" },
+      ],
     }),
 
     // ── Vote mutation ───────────────────────────────────────────────────────
+    /**
+     * `PUT /api/v1/votes/{type}/{targetId}` sets the caller's vote; `DELETE`
+     * withdraws it. The card sends where it is moving to, not a toggle, so a
+     * double-tap cannot leave the two out of step.
+     */
     voteDiscussion: builder.mutation<
-      { id: string; votes: number; isUpvoted: boolean },
-      { id: string }
+      unknown,
+      { id: string; category: DiscussionPost["category"]; upvote: boolean }
     >({
-      queryFn: ({ id }) => {
-        const current = votesMap[id];
-        if (!current) return { error: { status: 404, data: "Not found" } };
-        if (current.isUpvoted) {
-          current.votes -= 1;
-          current.isUpvoted = false;
-        } else {
-          current.votes += 1;
-          current.isUpvoted = true;
-        }
-        return { data: { id, votes: current.votes, isUpvoted: current.isUpvoted } };
-      },
-      // TODO: replace queryFn with query() when real API is ready
+      query: ({ id, category, upvote }) => ({
+        url: `/votes/${targetTypeOf(category)}/${id}`,
+        ...(upvote
+          ? { method: "PUT", body: { value: 1 } }
+          : { method: "DELETE" }),
+      }),
       invalidatesTags: (_result, _error, { id }) => [
         { type: "Discussion" as const, id },
-        { type: "Discussion" as const, id: "LIST" },
       ],
     }),
 
     // ── Bookmark mutation ───────────────────────────────────────────────────
+    /** `PUT`/`DELETE /api/v1/bookmarks/{type}/{targetId}`. */
     bookmarkDiscussion: builder.mutation<
-      { id: string; isBookmarked: boolean },
-      { id: string }
+      unknown,
+      { id: string; category: DiscussionPost["category"]; bookmarked: boolean }
     >({
-      queryFn: ({ id }) => {
-        const wasBookmarked = bookmarksSet.has(id);
-        if (wasBookmarked) bookmarksSet.delete(id);
-        else bookmarksSet.add(id);
-        return { data: { id, isBookmarked: !wasBookmarked } };
-      },
-      // TODO: replace queryFn with query() when real API is ready
+      query: ({ id, category, bookmarked }) => ({
+        url: `/bookmarks/${targetTypeOf(category)}/${id}`,
+        method: bookmarked ? "PUT" : "DELETE",
+      }),
       invalidatesTags: (_result, _error, { id }) => [
         { type: "Discussion" as const, id },
-        { type: "Discussion" as const, id: "LIST" },
+        { type: "Bookmark" as const, id: "LIST" },
       ],
     }),
   }),
+  overrideExisting: true,
 });
 
 export const {
   useGetDiscussionsQuery,
-  useGetDiscussionByIdQuery,
   useGetDiscussionTopicsQuery,
   useGetTrendingTagsQuery,
   useGetDiscussionStatsQuery,

@@ -7,4 +7,5 @@ export * from "./adminUsersApi";
 export * from "./moderationApi";
 export * from "./moderationActionsApi";
 export * from "./showcaseReviewApi";
+export * from "./problemReviewApi";
 

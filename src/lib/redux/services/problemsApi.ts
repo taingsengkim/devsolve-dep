@@ -1,16 +1,25 @@
 import { baseApi } from "./baseApi";
+import type { Page } from "./showcasesApi";
 import type {
   CreateProblemRequest,
+  ProblemStatus,
   SdlcPhase,
 } from "@/lib/validations/problem";
 
-export type ProblemStatus =
-  | "DRAFT"
-  | "PENDING_APPROVAL"
-  | "PUBLISHED"
-  | "RESOLVED"
-  | "CLOSED"
-  | "REJECTED";
+export type { ProblemStatus };
+
+/** Query parameters `findPublished` accepts. */
+export interface ProblemFeedParams {
+  categoryId?: string;
+  sdlcPhase?: SdlcPhase;
+  tag?: string;
+  technology?: string;
+  /** Zero-based, matching Spring's own paging on this controller. */
+  page?: number;
+  size?: number;
+  /** `property,(asc|desc)` — defaults to `publishedAt,DESC` upstream. */
+  sort?: string;
+}
 
 export interface AuthorSummary {
   id?: string;
@@ -76,8 +85,31 @@ export const problemsApi = baseApi.injectEndpoints({
       query: (body) => ({ url: "/problems", method: "POST", body }),
       invalidatesTags: [{ type: "Discussion", id: "LIST" }],
     }),
+
+    /** GET /api/problems/{id} -> GET /api/v1/problems/{id}. */
+    getProblemById: builder.query<ProblemResponse, string>({
+      query: (id) => `/problems/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Problem", id }],
+    }),
+
+    /** GET /api/problems -> the published feed. Approved problems only. */
+    getProblems: builder.query<Page<ProblemResponse>, ProblemFeedParams | void>({
+      query: (args) => {
+        // Undefined entries are dropped so RTK Query's cache keys stay stable.
+        const params: Record<string, string> = {};
+        for (const [key, value] of Object.entries(args ?? {})) {
+          if (value !== undefined && value !== "") params[key] = String(value);
+        }
+        return { url: "/problems", params };
+      },
+      providesTags: [{ type: "Problem", id: "LIST" }],
+    }),
   }),
   overrideExisting: true,
 });
 
-export const { useCreateProblemMutation } = problemsApi;
+export const {
+  useCreateProblemMutation,
+  useGetProblemByIdQuery,
+  useGetProblemsQuery,
+} = problemsApi;
