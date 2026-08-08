@@ -44,9 +44,10 @@ export function getStatusConfig(status: string): StatusConfig {
 interface StatusBadgeProps {
   status: string;
   size?: "sm" | "md";
+  showIcon?: boolean;
 }
 
-export function StatusBadge({ status, size = "sm" }: StatusBadgeProps) {
+export function StatusBadge({ status, size = "sm", showIcon = true }: StatusBadgeProps) {
   const config = getStatusConfig(status);
   const Icon = config.icon;
   const sizeClass = size === "md" ? "px-3 py-1 text-sm" : "px-2.5 py-0.5 text-xs";
@@ -55,7 +56,7 @@ export function StatusBadge({ status, size = "sm" }: StatusBadgeProps) {
     <Badge
       className={`rounded-full font-bold gap-1 ${sizeClass} ${config.badgeClass}`}
     >
-      <Icon className="w-3.5 h-3.5 shrink-0" />
+      {showIcon && <Icon className="w-3.5 h-3.5 shrink-0" />}
       {config.label}
     </Badge>
   );

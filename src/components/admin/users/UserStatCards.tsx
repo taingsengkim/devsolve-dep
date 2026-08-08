@@ -7,13 +7,14 @@ import { motion } from "motion/react";
 
 interface UserStatCardsProps {
   users: AdminUserItem[];
+  totalCount?: number;
 }
 
-export function UserStatCards({ users }: UserStatCardsProps) {
-  const total = users.length;
+export function UserStatCards({ users, totalCount }: UserStatCardsProps) {
+  const total = typeof totalCount === "number" ? totalCount : users.length;
   const researchers = users.filter((u) => u.role === "USER").length;
-  const companies = users.filter((u) => u.role === "COMPANY").length;
-  const staff = users.filter((u) => u.role === "ADMIN" || u.role === "MODERATOR").length;
+  const activeCount = users.filter((u) => u.status === "ACTIVE").length;
+  const totalReports = users.reduce((acc, u) => acc + (u.reportsSubmitted || 0), 0);
   const suspended = users.filter((u) => u.status === "SUSPENDED").length;
 
   const stats = [
@@ -26,28 +27,28 @@ export function UserStatCards({ users }: UserStatCardsProps) {
         "text-blue-600 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-400 border-blue-200 dark:border-blue-800",
     },
     {
-      title: "Researchers",
-      value: researchers,
-      subtext: "Security researchers",
+      title: "Active Users",
+      value: activeCount,
+      subtext: "Active accounts",
       icon: User,
       color:
-        "text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700",
+        "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
     },
     {
-      title: "Companies",
-      value: companies,
-      subtext: "VDP program owners",
+      title: "Reports Submitted",
+      value: totalReports,
+      subtext: "Across active users",
       icon: Building2,
       color:
         "text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800",
     },
     {
-      title: "Platform Staff",
-      value: staff,
-      subtext: "Admins & Moderators",
+      title: "Suspended Accounts",
+      value: suspended,
+      subtext: "Require admin review",
       icon: Shield,
       color:
-        "text-purple-600 bg-purple-50 dark:bg-purple-950/60 dark:text-purple-400 border-purple-200 dark:border-purple-800",
+        "text-rose-600 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400 border-rose-200 dark:border-rose-800",
     },
   ];
 

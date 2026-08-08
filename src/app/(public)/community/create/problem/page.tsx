@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "motion/react";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import { CreatePostHeader } from "@/components/discussions/create/CreatePostHeader";
 import { CreateProblemForm } from "@/components/discussions/create/CreateProblemForm";
 
@@ -20,7 +21,14 @@ export default function PublicCreateProblemPage() {
           backHref="/community/create"
           currentType="problem"
         />
-        <CreateProblemForm cancelHref="/problems" />
+        {/* Covers the routes into this page that skip the gated link — a
+            pasted URL, a bookmark, back/forward. */}
+        <RequireAuth
+          title="Sign in to post a problem"
+          description="Posting a problem needs an account, so answers reach you and the thread stays attached to your profile. It only takes a moment."
+        >
+          <CreateProblemForm cancelHref="/problems" />
+        </RequireAuth>
       </main>
     </motion.div>
   );

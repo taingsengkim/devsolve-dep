@@ -8,7 +8,8 @@ import { toast } from "sonner";
 import {
   useGetAdminUsersQuery,
   useUpdateAdminUserStatusMutation,
-} from "@/lib/redux/services/adminApi";
+} from "@/lib/redux/services/admin/adminUsersApi";
+import { AdminUserItem, AdminUserSummaryItem } from "@/lib/types/admin/types";
 import { UserStatCards } from "@/components/admin/users/UserStatCards";
 import {
   UserFiltersBar,
@@ -16,74 +17,156 @@ import {
 } from "@/components/admin/users/UserFiltersBar";
 import { UserDataTable } from "@/components/admin/users/UserDataTable";
 import { getUserColumns } from "@/components/admin/users/userColumns";
+import { ModerationActionDialog } from "@/components/admin/ModerationActionDialog";
+
+import type { ModerationActionType } from "@/lib/types/admin/types";
 
 export default function AdminUsersPage() {
-  const { data: users = [], isLoading, isFetching } = useGetAdminUsersQuery();
-  const [updateUser] = useUpdateAdminUserStatusMutation();
-
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [moderateTarget, setModerateTarget] = useState<{
+    user: AdminUserItem;
+    actionType: ModerationActionType;
+  } | null>(null);
 
-  /* ── Counts ─────────────────────────────────────────────────────── */
-  const statusCounts = {
-    all: users.length,
-    active: users.filter((u) => u.status === "ACTIVE").length,
-    suspended: users.filter((u) => u.status === "SUSPENDED").length,
-    pending: users.filter((u) => u.status === "PENDING").length,
-  };
-
-  /* ── Filtering ───────────────────────────────────────────────────── */
-  const filteredUsers = users.filter((u) => {
-    const matchesStatus = statusFilter === "ALL" || u.status === statusFilter;
-    const q = searchQuery.toLowerCase().trim();
-    const matchesSearch =
-      !q ||
-      u.name.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q);
-    return matchesStatus && matchesSearch;
+  // Overall dataset query for stat cards and tab counts
+  const { data: overallResponse } = useGetAdminUsersQuery({
+    pageSize: 100,
   });
 
+  // Filtered dataset query for table data
+  const { data: response, isLoading, isFetching } = useGetAdminUsersQuery({
+    query: searchQuery.trim() || undefined,
+    status: statusFilter !== "ALL" ? statusFilter : undefined,
+    pageNumber: pageIndex,
+    pageSize: pageSize,
+  });
+
+  const [updateUser] = useUpdateAdminUserStatusMutation();
+
+  function extractUserRole(item: AdminUserSummaryItem): "USER" | "COMPANY" | "ADMIN" {
+    const rolesList: string[] = [
+      ...(item.roles || []),
+      ...(item.realm_access?.roles || []),
+      ...(item.realmAccess?.roles || []),
+      ...(item.role ? [item.role] : []),
+    ].map((r) => String(r).toUpperCase());
+
+    if (rolesList.includes("ADMIN")) return "ADMIN";
+    if (
+      rolesList.includes("COMPANY") ||
+      rolesList.includes("ORGANIZATION") ||
+      rolesList.includes("ORG")
+    ) {
+      return "COMPANY";
+    }
+    return "USER";
+  }
+
+  /* ── Map overall items for Stat Cards ──────────────────────────────────── */
+  const overallUsers: AdminUserItem[] = useMemo(() => {
+    if (!overallResponse?.content) return [];
+    return overallResponse.content.map((item) => ({
+      id: item.id,
+      name: item.fullName || item.email || "Unknown User",
+      email: item.email || "",
+      role: extractUserRole(item),
+      status: (item.status as "ACTIVE" | "SUSPENDED" | "PENDING" | "REMOVED") || "ACTIVE",
+      joinedDate: item.createdAt || new Date().toISOString(),
+      reportsSubmitted: item.totalReports ?? 0,
+      validReports: item.validReports ?? 0,
+      criticalReports: item.criticalReports ?? 0,
+      reputation: item.reputation ?? 0,
+      country: item.country,
+      avatarUrl: item.avatarUrl,
+    }));
+  }, [overallResponse]);
+
+  /* ── Map table items ───────────────────────────────────────────────────── */
+  const users: AdminUserItem[] = useMemo(() => {
+    if (!response?.content) return [];
+    return response.content.map((item) => ({
+      id: item.id,
+      name: item.fullName || item.email || "Unknown User",
+      email: item.email || "",
+      role: extractUserRole(item),
+      status: (item.status as "ACTIVE" | "SUSPENDED" | "PENDING" | "REMOVED") || "ACTIVE",
+      joinedDate: item.createdAt || new Date().toISOString(),
+      reportsSubmitted: item.totalReports ?? 0,
+      validReports: item.validReports ?? 0,
+      criticalReports: item.criticalReports ?? 0,
+      reputation: item.reputation ?? 0,
+      country: item.country,
+      avatarUrl: item.avatarUrl,
+    }));
+  }, [response]);
+
+  /* ── Counts (always derived from overallResponse if available) ────────── */
+  const statusCounts = useMemo(() => {
+    const items = overallResponse?.content || response?.content || [];
+    const total = overallResponse?.totalElements ?? response?.totalElements ?? 0;
+    return {
+      all: total,
+      active: items.filter((u) => u.status === "ACTIVE").length,
+      suspended: items.filter((u) => u.status === "SUSPENDED").length,
+      removed: items.filter((u) => u.status === "REMOVED").length,
+    };
+  }, [overallResponse, response]);
+
   /* ── Handlers ────────────────────────────────────────────────────── */
+  const handleStatusFilterChange = useCallback((status: StatusFilter) => {
+    setStatusFilter(status);
+    setPageIndex(0);
+  }, []);
+
+  const handleSearchQueryChange = useCallback((query: string) => {
+    setSearchQuery(query);
+    setPageIndex(0);
+  }, []);
+
   const handleUpdateStatus = useCallback(
     async (id: string, status: "ACTIVE" | "SUSPENDED") => {
       try {
-        await updateUser({ id, status }).unwrap();
+        await updateUser({
+          id,
+          status,
+          reason: `Status set to ${status} via Admin Users dashboard.`,
+        }).unwrap();
         toast.success(
           status === "ACTIVE" ? "Account activated." : "Account suspended.",
-          { description: `User status updated successfully.` }
+          { description: "User status updated successfully." }
         );
-      } catch {
-        toast.error("Failed to update user status.");
+      } catch (err: unknown) {
+        const message =
+          (err as { data?: { message?: string } })?.data?.message ||
+          "Failed to update user status.";
+        toast.error(message);
       }
     },
     [updateUser]
   );
 
-  const handleUpdateRole = useCallback(
-    async (
-      id: string,
-      role: "USER" | "COMPANY" | "ADMIN" | "MODERATOR"
-    ) => {
-      try {
-        await updateUser({ id, role }).unwrap();
-        toast.success("Role updated.", { description: `User role changed to ${role}.` });
-      } catch {
-        toast.error("Failed to update user role.");
-      }
+  const handleModerateUser = useCallback(
+    (user: AdminUserItem, actionType?: ModerationActionType) => {
+      setModerateTarget({ user, actionType: actionType || "WARN" });
     },
-    [updateUser]
+    []
   );
 
   const columns = useMemo(
     () =>
       getUserColumns({
         onUpdateStatus: handleUpdateStatus,
-        onUpdateRole: handleUpdateRole,
+        onModerateUser: handleModerateUser,
       }),
-    [handleUpdateStatus, handleUpdateRole]
+    [handleUpdateStatus, handleModerateUser]
   );
 
   const suspendedCount = statusCounts.suspended;
+  const totalPages = response?.totalPages ?? 1;
+  const totalElements = response?.totalElements ?? 0;
 
   /* ── Render ──────────────────────────────────────────────────────── */
   return (
@@ -116,7 +199,12 @@ export default function AdminUsersPage() {
       </header>
 
       {/* STAT CARDS */}
-      {!isLoading && <UserStatCards users={users} />}
+      {!isLoading && (
+        <UserStatCards
+          users={overallUsers.length > 0 ? overallUsers : users}
+          totalCount={overallResponse?.totalElements ?? response?.totalElements}
+        />
+      )}
       {isLoading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
           {[0, 1, 2, 3].map((i) => (
@@ -131,9 +219,9 @@ export default function AdminUsersPage() {
       {/* FILTER BAR */}
       <UserFiltersBar
         statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
+        onStatusFilterChange={handleStatusFilterChange}
         searchQuery={searchQuery}
-        onSearchQueryChange={setSearchQuery}
+        onSearchQueryChange={handleSearchQueryChange}
         statusCounts={statusCounts}
       />
 
@@ -144,11 +232,39 @@ export default function AdminUsersPage() {
             <div className="h-64 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
           </div>
         ) : (
-          <UserDataTable columns={columns} data={filteredUsers} />
+          <UserDataTable
+            columns={columns}
+            data={users}
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            pageCount={totalPages}
+            totalElements={totalElements}
+            onPageChange={setPageIndex}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPageIndex(0);
+            }}
+          />
         )}
       </main>
+
+      {/* Moderation Action Dialog for Selected User */}
+      <ModerationActionDialog
+        target={
+          moderateTarget
+            ? {
+                id: moderateTarget.user.id,
+                name: moderateTarget.user.name,
+                subtitle: moderateTarget.user.email,
+                type: "USER",
+                status: moderateTarget.user.status,
+              }
+            : null
+        }
+        actionType={moderateTarget?.actionType}
+        isOpen={!!moderateTarget}
+        onClose={() => setModerateTarget(null)}
+      />
     </motion.div>
   );
 }
-
-

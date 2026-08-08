@@ -27,6 +27,7 @@ export const REVIEW_QUEUE_LANES: ReviewQueueLane[] = [
 export const PRIORITY_REVIEW_ITEMS: PriorityReviewItem[] = [
   {
     id: 1,
+    reportId: "RPT-001",
     title: "TikTok Security Bug Bounty",
     severity: "Critical",
     reporter: "Seng Songhuor",
@@ -34,9 +35,12 @@ export const PRIORITY_REVIEW_ITEMS: PriorityReviewItem[] = [
     queue: "Pending Intake",
     status: "Needs scope validation",
     assets: ["api.tiktok.com", "Android App"],
+    reportType: "Bounty",
+    authorInitials: "SS",
   },
   {
     id: 6,
+    reportId: "RPT-006",
     title: "TikTok Mobile App Token Exchange",
     severity: "Critical",
     reporter: "Seng Songhuor",
@@ -44,9 +48,12 @@ export const PRIORITY_REVIEW_ITEMS: PriorityReviewItem[] = [
     queue: "Under Review",
     status: "Awaiting severity confirmation",
     assets: ["Android App", "auth.tiktok.com"],
+    reportType: "Bounty",
+    authorInitials: "SS",
   },
   {
     id: 9,
+    reportId: "RPT-009",
     title: "TikTok Public API Partner Sandbox",
     severity: "High",
     reporter: "Seng Songhuor",
@@ -54,9 +61,12 @@ export const PRIORITY_REVIEW_ITEMS: PriorityReviewItem[] = [
     queue: "Under Review",
     status: "Evidence review in progress",
     assets: ["sandbox-api.tiktok.com", "Partner Sandbox"],
+    reportType: "Bounty",
+    authorInitials: "SS",
   },
   {
     id: 3,
+    reportId: "RPT-003",
     title: "TikTok Creator Commerce APIs",
     severity: "Medium",
     reporter: "Seng Songhuor",
@@ -64,5 +74,7 @@ export const PRIORITY_REVIEW_ITEMS: PriorityReviewItem[] = [
     queue: "Approval Ready",
     status: "Waiting analyst notes",
     assets: ["commerce-api.tiktok.com", "Partner Portal"],
+    reportType: "Bounty",
+    authorInitials: "SS",
   },
 ];

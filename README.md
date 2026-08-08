@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DevSolve Frontend
 
-## Getting Started
+Production Deployment URL: https://devsolve.app/
 
-First, run the development server:
+-----
+
+## Quick Navigation Links
+
+-----
+
+### Public & Community Pages
+
+- Landing Page: https://devsolve.app/ [Mock Data]
+- Hacktivity Feed: https://devsolve.app/hacktivity [Mock Data]
+- Leaderboard: https://devsolve.app/leaderboard [Mock Data]
+- Discussions Hub: https://devsolve.app/discussions [Mock Data]
+- Create Discussion: https://devsolve.app/discussions/create [Mock Data]
+- Submit Problem: https://devsolve.app/discussions/create/problem [Mock Data]
+- Showcase Index: https://devsolve.app/showcases [Real API]
+- Showcase Detail: https://devsolve.app/showcases/[id] [Real API]
+- Submit Showcase: https://devsolve.app/community/create/showcase [Real API]
+
+-----
+
+### Authentication & Onboarding
+
+- Account Type Selection: https://devsolve.app/account-type [Real API]
+- User Registration: https://devsolve.app/register/user [Real API]
+- Company Registration: https://devsolve.app/register/company [Real API]
+
+-----
+
+### User & Researcher Dashboard
+
+- Dashboard Overview: https://devsolve.app/dashboard [Mock Data]
+- Bounty Programs: https://devsolve.app/dashboard/programs [Real API]
+- Program Details: https://devsolve.app/dashboard/programs/[id] [Real API]
+- Submit Vulnerability Report: https://devsolve.app/dashboard/submit-report?program-id=[id] [Real API]
+- My Reports: https://devsolve.app/dashboard/my-reports [Real API]
+- My Bookmarks: https://devsolve.app/dashboard/bookmarks [Real API]
+- Notifications: https://devsolve.app/dashboard/notifications [Mock Data]
+- Profile View: https://devsolve.app/dashboard/profile/[username] [Real API]
+- Account Settings: https://devsolve.app/dashboard/profile/settings [Real API]
+
+-----
+
+### Admin & Moderation Dashboard
+
+- User Management: https://devsolve.app/dashboard/users [Real API]
+- Company Verification: https://devsolve.app/dashboard/company-verification [Real API]
+- Content Reports & Moderation: https://devsolve.app/dashboard/content-reports [Real API]
+- Report Confirmation: https://devsolve.app/dashboard/report-confirmation [Mock Data]
+
+-----
+
+## Tech Stack
+
+- **Framework**: Next.js 16.2.10 (App Router) & React 19
+- **Styling**: TailwindCSS v4 & shadcn/ui
+- **State & API**: Redux Toolkit & RTK Query
+- **Authentication**: better-auth with Keycloak OIDC/PKCE
+- **Animations**: motion/react (Motion v12)
+
+-----
+
+## Local Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open [http://localhost:3000](http://localhost:3000) with your browser.

@@ -2,16 +2,29 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ImagePlus, Link2, Loader2, Trash2, Upload, X } from "lucide-react";
+import {
+  Clock,
+  ImagePlus,
+  Link2,
+  Loader2,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useUploadShowcaseImageMutation } from "@/lib/redux/services/showcasesApi";
 import { validateImageFile } from "@/lib/validations/showcase";
 import { cn } from "@/lib/utils";
 
 interface ImageDropFieldProps {
+  /** A URL already hosted upstream, or one the author pasted. */
   value?: string;
   onChange: (url: string) => void;
+  /** A chosen file waiting to be uploaded, held in form state. */
+  file?: File | null;
+  onFileChange: (file: File | null) => void;
+  /** True while the parent is putting this file to its upload route. */
+  uploading?: boolean;
   /** Tailwind aspect class — the cover is locked to 16:9. */
   aspectClassName?: string;
   label: string;
@@ -24,23 +37,27 @@ interface ImageDropFieldProps {
 type Mode = "upload" | "link";
 
 /**
- * Drag-and-drop image field. The file is uploaded the moment it is chosen
- * rather than at submit, so the form only ever holds a URL and publishing
- * stays a single fast request.
+ * Drag-and-drop image field, with pasting a URL as the alternative.
  *
- * The backend publishes no general upload route yet (see `showcasesApi`), so
- * a failed upload drops the author into the link mode instead of dead-ending.
+ * Every upload route the backend publishes is scoped to a row that has to
+ * exist first — `PUT /showcases/{id}/cover-image`, `PUT
+ * /showcase-steps/{showcaseId}/{stepId}/image`. So a chosen file is not sent
+ * here: it is handed to the form, previewed locally, and uploaded by the
+ * publish sequence once the showcase (or step) it belongs to has been created.
+ * A pasted URL needs no upload at all and travels in the create body.
  */
 export function ImageDropField({
   value,
   onChange,
+  file,
+  onFileChange,
+  uploading = false,
   aspectClassName = "aspect-video",
   label,
   hint,
   error,
   compact = false,
 }: ImageDropFieldProps) {
-  const [uploadImage, { isLoading }] = useUploadShowcaseImageMutation();
   const [mode, setMode] = useState<Mode>("upload");
   const [dragging, setDragging] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -48,55 +65,71 @@ export function ImageDropField({
   const [linkDraft, setLinkDraft] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  /* The object URL is a document-lifetime handle — without this the blob
-     stays resident for every image the author trials. */
-  useEffect(() => {
-    return () => {
-      if (preview) URL.revokeObjectURL(preview);
-    };
-  }, [preview]);
+  /* An object URL is a document-lifetime handle: without the revoke, every
+     image the author trials stays resident. The live one is mirrored in a ref
+     so it can be released when it is replaced and again on unmount. */
+  const previewRef = useRef<string | null>(null);
 
-  const accept = async (file: File) => {
-    const reason = validateImageFile(file);
-    if (reason) {
-      setLocalError(reason);
-      return;
-    }
-
-    setLocalError(null);
-    const objectUrl = URL.createObjectURL(file);
-    setPreview(objectUrl);
-
-    try {
-      const { url } = await uploadImage(file).unwrap();
-      onChange(url);
-    } catch {
-      setPreview(null);
-      URL.revokeObjectURL(objectUrl);
-      setMode("link");
-      setLocalError(
-        "Upload isn't available yet — paste an image URL instead.",
-      );
-    }
-  };
-
-  const onDrop = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    setDragging(false);
-    const file = event.dataTransfer.files?.[0];
-    if (file) void accept(file);
-    // `accept` is stable enough for this handler's purpose.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  const showPreview = useCallback((next: string | null) => {
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    previewRef.current = next;
+    setPreview(next);
   }, []);
 
+  useEffect(
+    () => () => {
+      if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    },
+    [],
+  );
+
+  const accept = useCallback(
+    (candidate: File) => {
+      const reason = validateImageFile(candidate);
+      if (reason) {
+        setLocalError(reason);
+        return;
+      }
+
+      setLocalError(null);
+      showPreview(URL.createObjectURL(candidate));
+      onFileChange(candidate);
+      // A file replaces whatever URL was there, so the two can't disagree.
+      if (value) onChange("");
+    },
+    [onChange, onFileChange, showPreview, value],
+  );
+
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      setDragging(false);
+      const dropped = event.dataTransfer.files?.[0];
+      if (dropped) accept(dropped);
+    },
+    [accept],
+  );
+
+  const applyLink = () => {
+    const url = linkDraft.trim();
+    if (!url) return;
+    setLocalError(null);
+    showPreview(null);
+    onFileChange(null);
+    onChange(url);
+  };
+
   const clear = () => {
-    if (preview) URL.revokeObjectURL(preview);
-    setPreview(null);
     setLinkDraft("");
+    setLocalError(null);
+    showPreview(null);
+    onFileChange(null);
     onChange("");
   };
 
-  const shown = value || preview;
+  /* The preview only counts while the form still holds the file it was made
+     from — a reset upstream clears the field rather than leaving a dead blob. */
+  const shown = value || (file ? preview : null);
   const message = error ?? localError;
 
   return (
@@ -152,7 +185,7 @@ export function ImageDropField({
               onError={() => setLocalError("That image could not be loaded")}
             />
 
-            {isLoading && (
+            {uploading && (
               <div className="absolute inset-0 flex items-center justify-center bg-slate-900/45 backdrop-blur-xs">
                 <span className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-700">
                   <Loader2 className="size-4 animate-spin" />
@@ -186,7 +219,7 @@ export function ImageDropField({
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
                     event.preventDefault();
-                    if (linkDraft.trim()) onChange(linkDraft.trim());
+                    applyLink();
                   }
                 }}
                 placeholder="https://…/cover.png"
@@ -195,7 +228,7 @@ export function ImageDropField({
             </div>
             <Button
               type="button"
-              onClick={() => linkDraft.trim() && onChange(linkDraft.trim())}
+              onClick={applyLink}
               className="h-11 rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-800"
             >
               Use
@@ -229,9 +262,7 @@ export function ImageDropField({
               )}
             >
               <span className="flex size-11 items-center justify-center rounded-xl bg-white text-blue-600 shadow-2xs dark:bg-slate-800">
-                {isLoading ? (
-                  <Loader2 className="size-5 animate-spin" />
-                ) : dragging ? (
+                {dragging ? (
                   <Upload className="size-5" />
                 ) : (
                   <ImagePlus className="size-5" />
@@ -239,7 +270,7 @@ export function ImageDropField({
               </span>
 
               <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                {isLoading ? "Uploading…" : "Drop an image or click to browse"}
+                Drop an image or click to browse
               </span>
               <span className="text-xs text-slate-500">
                 {hint ?? "PNG, JPG or WebP · up to 5MB · 16:9 works best"}
@@ -252,15 +283,26 @@ export function ImageDropField({
               accept="image/png,image/jpeg,image/webp"
               className="hidden"
               onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) void accept(file);
-                // Let the same file be re-picked after a failed upload.
+                const chosen = event.target.files?.[0];
+                if (chosen) accept(chosen);
+                // Let the same file be re-picked after clearing it.
                 event.target.value = "";
               }}
             />
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Says plainly that the bytes have not left the browser yet — the
+          upload route needs the row this image hangs off to exist first. */}
+      {file && !uploading && (
+        <p className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <Clock className="size-3.5 shrink-0" />
+          <span className="truncate">
+            {file.name} · uploads when you publish
+          </span>
+        </p>
+      )}
 
       {message && (
         <p className="flex items-start gap-1.5 text-sm font-medium text-rose-600">

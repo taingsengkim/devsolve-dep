@@ -1,10 +1,10 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { motion } from "motion/react";
 import { MessageSquareDashed, Plus } from "lucide-react";
 
+import { AuthGatedLink } from "@/components/auth/AuthGatedLink";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -52,13 +52,13 @@ export function DiscussionEmptyState({
           Clear all filters
         </Button>
       ) : (
-        <Link
+        <AuthGatedLink
           href={createHref}
           className={cn(buttonVariants({ size: "lg" }), "rounded-xl")}
         >
           <Plus data-icon="inline-start" aria-hidden="true" />
           Start a post
-        </Link>
+        </AuthGatedLink>
       )}
     </motion.div>
   );

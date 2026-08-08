@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { Cake, CalendarDays, Globe, MapPin, Phone, Users, VenusAndMars } from "lucide-react";
+import {
+  Cake,
+  CalendarDays,
+  Globe,
+  MapPin,
+  Phone,
+  Users,
+  VenusAndMars,
+} from "lucide-react";
 import { Profile } from "@/lib/types/profile/types";
 import { SiGithub, SiX } from "react-icons/si";
 
@@ -16,13 +24,17 @@ const GENDER_LABELS: Record<NonNullable<Profile["gender"]>, string> = {
 function formatDateOfBirth(iso: string) {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 // The edit form asks for full URLs (e.g. "https://github.com/username" — see
-// BioSocialSection's placeholders), so social links are stored that way. Build
-// the href straight from the stored value instead of re-prefixing a domain
-// onto it, which previously produced broken/duplicated URLs like
+// the editor's placeholders), so social links are stored that way. Build the
+// href straight from the stored value instead of re-prefixing a domain onto
+// it, which previously produced broken/duplicated URLs like
 // "github.com/https://github.com/handle" whenever a user followed the form's
 // own placeholder guidance.
 function toHref(value: string): string {
@@ -33,139 +45,184 @@ function displayUrl(value: string): string {
   return value.replace(/^https?:\/\//i, "").replace(/\/$/, "");
 }
 
+/**
+ * Label above value on phones, beside it from `sm` up. A fixed 112px label
+ * column left roughly 160px for the value on a 320px screen, which a GitHub
+ * URL blows straight through.
+ */
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5 sm:flex-row sm:items-start sm:gap-4">
+      <span className="shrink-0 text-sm font-medium text-slate-700 sm:w-28 sm:pt-px dark:text-slate-300">
+        {label}
+      </span>
+      <span className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-slate-900 dark:text-slate-100">
+        {children}
+      </span>
+    </div>
+  );
+}
+
+const iconClass = "size-4 shrink-0 text-slate-500 dark:text-slate-400";
+const linkClass =
+  "flex min-w-0 items-center gap-1.5 font-semibold text-blue-600 hover:underline dark:text-blue-400";
+
 export default function ProfileBio({ profile }: ProfileBioProps) {
-  const { bio, location, memberSince, socialLinks, followers, following, username, phone, dateOfBirth, gender } = profile;
+  const {
+    bio,
+    location,
+    memberSince,
+    socialLinks,
+    followers,
+    following,
+    username,
+    phone,
+    dateOfBirth,
+    gender,
+  } = profile;
+
+  const hasContact =
+    location ||
+    phone ||
+    socialLinks.website ||
+    socialLinks.github ||
+    socialLinks.twitter;
 
   return (
     <div className="space-y-6 pt-2">
-      {/* Contact Information Section */}
-      <div>
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">
-          Contact Information
-        </h3>
+      {hasContact && (
+        <div>
+          <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            Contact Information
+          </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3.5 gap-x-6 text-sm">
-          {location && (
-            <div className="flex items-start gap-4">
-              <span className="w-28 shrink-0 font-medium text-slate-700 dark:text-slate-300">Address:</span>
-              <span className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                <MapPin size={15} className="text-slate-500 dark:text-slate-400 shrink-0" />
-                {location}
-              </span>
-            </div>
-          )}
+          <div className="grid grid-cols-1 gap-x-6 gap-y-3.5 sm:grid-cols-2">
+            {location && (
+              <Row label="Address:">
+                <MapPin className={iconClass} />
+                <span className="truncate">{location}</span>
+              </Row>
+            )}
 
-          {phone && (
-            <div className="flex items-center gap-4">
-              <span className="w-28 shrink-0 font-medium text-slate-700 dark:text-slate-300">Phone:</span>
-              <span className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                <Phone size={15} className="text-slate-500 dark:text-slate-400 shrink-0" />
-                {phone}
-              </span>
-            </div>
-          )}
+            {phone && (
+              <Row label="Phone:">
+                <Phone className={iconClass} />
+                <span className="truncate">{phone}</span>
+              </Row>
+            )}
 
-          {socialLinks.website && (
-            <div className="flex items-center gap-4">
-              <span className="w-28 shrink-0 font-medium text-slate-700 dark:text-slate-300">Site:</span>
-              <a
-                href={toHref(socialLinks.website)}
-                target="_blank"
-                rel="noreferrer"
-                className="font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1.5"
-              >
-                <Globe size={15} className="text-blue-500 shrink-0" />
-                {displayUrl(socialLinks.website)}
-              </a>
-            </div>
-          )}
+            {socialLinks.website && (
+              <Row label="Site:">
+                <a
+                  href={toHref(socialLinks.website)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={linkClass}
+                >
+                  <Globe className="size-4 shrink-0 text-blue-500" />
+                  <span className="truncate">
+                    {displayUrl(socialLinks.website)}
+                  </span>
+                </a>
+              </Row>
+            )}
 
-          {socialLinks.github && (
-            <div className="flex items-center gap-4">
-              <span className="w-28 shrink-0 font-medium text-slate-700 dark:text-slate-300">GitHub:</span>
-              <a
-                href={toHref(socialLinks.github)}
-                target="_blank"
-                rel="noreferrer"
-                className="font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1.5"
-              >
-                <SiGithub size={15} className="text-slate-700 dark:text-slate-300 shrink-0" />
-                {displayUrl(socialLinks.github)}
-              </a>
-            </div>
-          )}
+            {socialLinks.github && (
+              <Row label="GitHub:">
+                <a
+                  href={toHref(socialLinks.github)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={linkClass}
+                >
+                  <SiGithub className="size-4 shrink-0 text-slate-700 dark:text-slate-300" />
+                  <span className="truncate">
+                    {displayUrl(socialLinks.github)}
+                  </span>
+                </a>
+              </Row>
+            )}
 
-          {socialLinks.twitter && (
-            <div className="flex items-center gap-4">
-              <span className="w-28 shrink-0 font-medium text-slate-700 dark:text-slate-300">X (Twitter):</span>
-              <a
-                href={toHref(socialLinks.twitter)}
-                target="_blank"
-                rel="noreferrer"
-                className="font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1.5"
-              >
-                <SiX size={15} className="text-slate-700 dark:text-slate-300 shrink-0" />
-                {displayUrl(socialLinks.twitter)}
-              </a>
-            </div>
-          )}
+            {socialLinks.twitter && (
+              <Row label="X (Twitter):">
+                <a
+                  href={toHref(socialLinks.twitter)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={linkClass}
+                >
+                  <SiX className="size-4 shrink-0 text-slate-700 dark:text-slate-300" />
+                  <span className="truncate">
+                    {displayUrl(socialLinks.twitter)}
+                  </span>
+                </a>
+              </Row>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Basic Information Section */}
-      <div className="border-t border-slate-200/80 dark:border-slate-800 pt-5">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">
+      <div
+        className={
+          hasContact
+            ? "border-t border-slate-200/80 pt-5 dark:border-slate-800"
+            : undefined
+        }
+      >
+        <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           Basic Information
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3.5 gap-x-6 text-sm mb-4">
-          <div className="flex items-center gap-4">
-            <span className="w-28 shrink-0 font-medium text-slate-700 dark:text-slate-300">Member Since:</span>
-            <span className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-              <CalendarDays size={15} className="text-slate-500 dark:text-slate-400 shrink-0" />
-              {memberSince}
-            </span>
-          </div>
+        <div className="mb-4 grid grid-cols-1 gap-x-6 gap-y-3.5 sm:grid-cols-2">
+          <Row label="Member Since:">
+            <CalendarDays className={iconClass} />
+            <span className="truncate">{memberSince}</span>
+          </Row>
 
-          <div className="flex items-center gap-4">
-            <span className="w-28 shrink-0 font-medium text-slate-700 dark:text-slate-300">Community:</span>
-            <span className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <Users size={15} className="text-slate-500 dark:text-slate-400 shrink-0" />
-              <Link href={`/dashboard/profile/${username}/followers`} className="hover:text-blue-600 hover:underline">
+          <Row label="Community:">
+            <Users className={iconClass} />
+            {/* Wraps rather than truncates — both counts have to stay tappable */}
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <Link
+                href={`/dashboard/profile/${username}/followers`}
+                className="hover:text-blue-600 hover:underline dark:hover:text-blue-400"
+              >
                 {followers} followers
               </Link>
               <span className="text-slate-400">•</span>
-              <Link href={`/dashboard/profile/${username}/following`} className="hover:text-blue-600 hover:underline">
+              <Link
+                href={`/dashboard/profile/${username}/following`}
+                className="hover:text-blue-600 hover:underline dark:hover:text-blue-400"
+              >
                 {following} following
               </Link>
             </span>
-          </div>
+          </Row>
 
           {dateOfBirth && (
-            <div className="flex items-center gap-4">
-              <span className="w-28 shrink-0 font-medium text-slate-700 dark:text-slate-300">Date of Birth:</span>
-              <span className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                <Cake size={15} className="text-slate-500 dark:text-slate-400 shrink-0" />
-                {formatDateOfBirth(dateOfBirth)}
-              </span>
-            </div>
+            <Row label="Date of Birth:">
+              <Cake className={iconClass} />
+              <span className="truncate">{formatDateOfBirth(dateOfBirth)}</span>
+            </Row>
           )}
 
           {gender && (
-            <div className="flex items-center gap-4">
-              <span className="w-28 shrink-0 font-medium text-slate-700 dark:text-slate-300">Sex:</span>
-              <span className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                <VenusAndMars size={15} className="text-slate-500 dark:text-slate-400 shrink-0" />
-                {GENDER_LABELS[gender]}
-              </span>
-            </div>
+            <Row label="Sex:">
+              <VenusAndMars className={iconClass} />
+              <span className="truncate">{GENDER_LABELS[gender]}</span>
+            </Row>
           )}
         </div>
 
         {bio && (
-          <div className="mt-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 p-4 border border-slate-200/80 dark:border-slate-800">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">About</p>
-            <p className="text-sm leading-relaxed text-slate-800 dark:text-slate-200 font-normal">{bio}</p>
+          <div className="mt-3 rounded-2xl border border-slate-200/80 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+            <p className="mb-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              About
+            </p>
+            {/* Wrapping mid-word so an unbroken string can't widen the page */}
+            <p className="text-sm leading-relaxed text-slate-700 wrap-break-word dark:text-slate-300">
+              {bio}
+            </p>
           </div>
         )}
       </div>

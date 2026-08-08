@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ArrowRight,
   ChevronDown,
+  LayoutDashboard,
   Lightbulb,
   Loader2,
+  LogOut,
   Menu,
   Moon,
   Sun,
@@ -20,6 +23,9 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import darkModeLogo from "@/app/devsolve_dark_mode-removebg-preview.png";
 import { ThemeToggle, useThemeToggle } from "@/components/motion/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { NavbarUserMenu } from "@/components/navbar/NavbarUserMenu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { authClient } from "@/lib/auth/auth-client";
 import { cn } from "@/lib/utils";
 
@@ -101,6 +107,17 @@ const Navbar = () => {
   const [mobileCommunityOpen, setMobileCommunityOpen] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const reduce = useReducedMotion();
+  // Read here as well as in the menu so the mobile panel's footer can swap
+  // between account actions and the signed-out calls to action.
+  const { user: sessionUser, displayName, handleSignOut } = useSidebarAuth();
+  // Anything inside this is "the menu"; a press anywhere else dismisses it.
+  const headerRef = useRef<HTMLElement>(null);
+
+  const closeAllMenus = () => {
+    setCommunityMenuOpen(false);
+    setMobileMenuOpen(false);
+    setMobileCommunityOpen(false);
+  };
   const { isDark, mounted, toggle } = useThemeToggle({
     variant: "rectangle",
     start: "bottom-up",
@@ -235,21 +252,40 @@ const Navbar = () => {
     return () => query.removeEventListener("change", handleChange);
   }, []);
 
+  /**
+   * Dismissal, for whichever menu is open. Previously only the desktop flyout
+   * answered Escape, and nothing answered a press outside — so on a phone the
+   * panel could only be closed by finding the hamburger again, and on a touch
+   * screen the flyout had no way out at all (there is no `mouseleave` to
+   * close it).
+   */
   useEffect(() => {
-    if (!communityMenuOpen) {
+    if (!mobileMenuOpen && !communityMenuOpen) {
       return;
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setCommunityMenuOpen(false);
+        closeAllMenus();
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    const handlePointerDown = (event: PointerEvent) => {
+      // A press on the island itself is the trigger doing its own job.
+      if (headerRef.current?.contains(event.target as Node)) {
+        return;
+      }
+      closeAllMenus();
+    };
 
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [communityMenuOpen]);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [mobileMenuOpen, communityMenuOpen]);
 
   const handleLogin = async () => {
     if (isLoggingIn) {
@@ -301,9 +337,29 @@ const Navbar = () => {
           ? { duration: 0 }
           : { type: "spring", stiffness: 380, damping: 34, mass: 0.9 }
       }
+      ref={headerRef}
       className="fixed inset-x-0 top-0 z-[100] w-full"
     >
       <div className="pointer-events-none">
+        {/* Scrim under the open mobile panel. First child, so the island and
+            the panel paint over it. It makes "tap anywhere to close" visible
+            rather than something you have to guess at, and it stops taps
+            landing on the page behind. */}
+        <AnimatePresence>
+          {mobileMenuOpen ? (
+            <motion.button
+              type="button"
+              aria-label="Close navigation menu"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: reduce ? 0 : 0.2 }}
+              onClick={closeAllMenus}
+              className="pointer-events-auto fixed inset-0 cursor-default bg-slate-950/25 backdrop-blur-[2px] lg:hidden"
+            />
+          ) : null}
+        </AnimatePresence>
+
         <div className="mx-auto w-full max-w-7xl px-4 py-3 sm:px-6">
           {/* Translucent + blurred, because page content now passes directly
               behind it rather than under an opaque band. */}
@@ -590,39 +646,12 @@ const Navbar = () => {
                   iconClassName="size-[18px]"
                 />
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleLogin}
-                  disabled={isLoggingIn}
-                  className="hidden h-10 rounded-lg border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 shadow-xs transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-blue-500/40 dark:hover:bg-slate-800 dark:hover:text-blue-200 md:inline-flex xl:px-5"
-                >
-                  {isLoggingIn ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" />
-                      Connecting...
-                    </>
-                  ) : (
-                    "Log in"
-                  )}
-                </Button>
-
-                <motion.div
-                  whileHover={reduce ? undefined : { y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="hidden sm:block"
-                >
-                  <Button
-                    nativeButton={false}
-                    render={<Link href="/account-type" />}
-                    className="group h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-white shadow-xs transition-all hover:bg-[#1D4ED8] hover:shadow-[0_8px_18px_rgba(37,99,235,0.18)] dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500 dark:hover:shadow-[0_10px_24px_rgba(37,99,235,0.28)] xl:px-5"
-                  >
-                    Get Started
-                    {/* The arrow is decoration, and it is the first thing worth
-                        dropping when the row is tight. */}
-                    <ArrowRight className="hidden size-4 transition-transform duration-200 group-hover:translate-x-1 xl:block" />
-                  </Button>
-                </motion.div>
+                {/* Signed out: Log in + Get Started. Signed in: the account
+                    menu, so a session is visible outside /dashboard too. */}
+                <NavbarUserMenu
+                  onLogin={handleLogin}
+                  isLoggingIn={isLoggingIn}
+                />
 
                 <Button
                   type="button"
@@ -805,36 +834,92 @@ const Navbar = () => {
                   })}
 
                   <div className="mt-3 grid gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
-                    <Button
-                      nativeButton={false}
-                      render={
+                    {sessionUser ? (
+                      <>
+                        {/* The same account actions the desktop dropdown has,
+                            flattened — a dropdown inside a drawer is a menu
+                            inside a menu. */}
                         <Link
-                          href="/account-type"
+                          href="/dashboard/profile"
                           onClick={() => setMobileMenuOpen(false)}
-                        />
-                      }
-                      className="h-10 rounded-lg bg-primary text-sm font-semibold text-white hover:bg-[#1D4ED8] dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500"
-                    >
-                      Get Started
-                      <ArrowRight className="size-4" />
-                    </Button>
+                          className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900"
+                        >
+                          <Avatar className="size-9 shrink-0">
+                            {sessionUser.image && (
+                              <AvatarImage src={sessionUser.image} alt="" />
+                            )}
+                            <AvatarFallback className="bg-blue-600 text-xs font-bold text-white">
+                              {displayName.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-bold text-slate-900 dark:text-slate-100">
+                              {displayName}
+                            </span>
+                            <span className="block truncate text-sm text-slate-500 dark:text-slate-400">
+                              View profile
+                            </span>
+                          </span>
+                        </Link>
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleLogin}
-                      disabled={isLoggingIn}
-                      className="h-10 rounded-lg border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-blue-500/40 dark:hover:bg-slate-800 dark:hover:text-blue-200"
-                    >
-                      {isLoggingIn ? (
-                        <>
-                          <Loader2 className="size-4 animate-spin" />
-                          Connecting...
-                        </>
-                      ) : (
-                        "Log in"
-                      )}
-                    </Button>
+                        <Button
+                          nativeButton={false}
+                          render={
+                            <Link
+                              href="/dashboard"
+                              onClick={() => setMobileMenuOpen(false)}
+                            />
+                          }
+                          className="h-10 rounded-lg bg-primary text-sm font-semibold text-white hover:bg-[#1D4ED8] dark:bg-blue-600"
+                        >
+                          <LayoutDashboard className="size-4" />
+                          Dashboard
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleSignOut}
+                          className="h-10 rounded-lg border-slate-300 bg-white text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:border-slate-700/80 dark:bg-slate-900/80 dark:hover:bg-rose-950/40"
+                        >
+                          <LogOut className="size-4" />
+                          Log out
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          nativeButton={false}
+                          render={
+                            <Link
+                              href="/account-type"
+                              onClick={() => setMobileMenuOpen(false)}
+                            />
+                          }
+                          className="h-10 rounded-lg bg-primary text-sm font-semibold text-white hover:bg-[#1D4ED8] dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500"
+                        >
+                          Get Started
+                          <ArrowRight className="size-4" />
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleLogin}
+                          disabled={isLoggingIn}
+                          className="h-10 rounded-lg border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-blue-500/40 dark:hover:bg-slate-800 dark:hover:text-blue-200"
+                        >
+                          {isLoggingIn ? (
+                            <>
+                              <Loader2 className="size-4 animate-spin" />
+                              Connecting...
+                            </>
+                          ) : (
+                            "Log in"
+                          )}
+                        </Button>
+                      </>
+                    )}
 
                     <Button
                       type="button"

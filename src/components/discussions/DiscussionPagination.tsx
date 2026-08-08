@@ -21,6 +21,10 @@ interface DiscussionPaginationProps {
   totalCount: number;
   onPageChange: (page: number) => void;
   onLimitChange: (limit: number) => void;
+  /** Page sizes offered — a grid feed pages in different steps than a list. */
+  pageSizeOptions?: number[];
+  /** Accessible name, for feeds that page something other than discussions. */
+  label?: string;
 }
 
 export function DiscussionPagination({
@@ -30,6 +34,8 @@ export function DiscussionPagination({
   totalCount,
   onPageChange,
   onLimitChange,
+  pageSizeOptions = [3, 5, 10, 20],
+  label = "Discussion pagination",
 }: DiscussionPaginationProps) {
   const getPages = (): (number | "...")[] => {
     if (totalPages <= 5) {
@@ -56,7 +62,7 @@ export function DiscussionPagination({
 
   return (
     <nav
-      aria-label="Discussion pagination"
+      aria-label={label}
       className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-card p-3 shadow-xs ring-1 ring-foreground/5 sm:flex-row"
     >
       <div className="flex flex-wrap items-center gap-3 px-1 text-sm font-medium text-muted-foreground">
@@ -81,7 +87,7 @@ export function DiscussionPagination({
             </SelectTrigger>
             <SelectContent alignItemWithTrigger={false}>
               <SelectGroup>
-                {[3, 5, 10, 20].map((option) => (
+                {pageSizeOptions.map((option) => (
                   <SelectItem
                     key={option}
                     value={String(option)}

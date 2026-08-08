@@ -3,8 +3,6 @@ import {
   FileText,
   CircleDollarSign,
   Trophy,
-  Bell,
-  BookOpen,
   MessageSquare,
   Globe,
   Bookmark,
@@ -14,11 +12,11 @@ import {
   Users,
   Building2,
   ShieldCheck,
-  FileCheck,
   UserCheck,
   ShieldAlert,
   FilePen,
   Tags,
+  CircleUser,
   LucideIcon,
 } from "lucide-react";
 
@@ -34,9 +32,14 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   // Overview items
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
-  { name: "Programs", href: "/dashboard/programs", icon: Globe, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
-  { name: "Community", href: "/dashboard/discussions", icon: MessageSquare, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
-  { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
+  // Resolves to /dashboard/profile/{username} — never guess the slug.
+  { name: "My Profile", href: "/dashboard/profile", icon: CircleUser, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
+  // Browsing surfaces, not workspace surfaces — they point at the public
+  // pages, which carry the navbar instead of the dashboard sidebar. The navbar
+  // shows the signed-in account, so leaving the dashboard isn't a dead end.
+  { name: "Programs", href: "/programs", icon: Globe, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
+  { name: "Community", href: "/community", icon: MessageSquare, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
+  { name: "Leaderboard", href: "/leaderboard", icon: Trophy, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
 
   // USER Role items
   { name: "Reports", href: "/dashboard/my-reports", icon: FileText, roles: ["USER"], category: "Researcher" },
@@ -54,9 +57,7 @@ export const NAV_ITEMS: NavItem[] = [
  
   // ADMIN Role items
   { name: "Organization Verification", href: "/dashboard/company-verification", icon: ShieldCheck, roles: ["ADMIN"], category: "Administration" },
-  { name: "Report Confirmation", href: "/dashboard/report-confirmation", icon: FileCheck, roles: ["ADMIN"], category: "Administration" },
   { name: "Users", href: "/dashboard/users", icon: UserCheck, roles: ["ADMIN"], category: "Administration" },
-  { name: "Program management", href: "/dashboard/users", icon: UserCheck, roles: ["ADMIN"], category: "Administration" },
   { name: "Content Reports", href: "/dashboard/content-moderation", icon: ShieldAlert, roles: ["ADMIN"], category: "Administration" },
   { name: "Categories", href: "/dashboard/categories", icon: Tags, roles: ["ADMIN"], category: "Administration" },
 ];

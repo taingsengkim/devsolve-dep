@@ -4,9 +4,10 @@ import React, { useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { motion, AnimatePresence } from "motion/react";
 import {
+  Check,
   ChevronDown,
+  Code2,
   Copy,
-  GripVertical,
   ImageIcon,
   Network,
   Plus,
@@ -32,6 +33,10 @@ export const createEmptyStep = () => ({
   codeLanguage: "typescript",
   imageUrl: "",
   diagramUrl: "",
+  /* Chosen files wait here: their upload routes are scoped to a step that has
+     to exist first, so the publish sequence sends them. */
+  imageFile: undefined,
+  diagramFile: undefined,
 });
 
 /**
@@ -88,19 +93,30 @@ export function BuildStepsField() {
   const steps = watch("steps") ?? [];
   const stepErrors = errors.steps;
 
+  /* Only a step carrying both a title and a body satisfies the schema, so
+     that is what the marker reports — a numbered tile that has not turned
+     green is a step that will fail at publish. */
+  const readyCount = steps.filter(
+    (step) => step?.title?.trim() && step?.description?.trim(),
+  ).length;
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-            Build guide
-          </h3>
-          <p className="text-sm text-slate-500">
-            Walk through how it was built. At least one step is required.
-          </p>
-        </div>
-        <span className="shrink-0 rounded-lg bg-blue-50 px-2.5 py-1 text-sm font-semibold text-blue-700 tabular-nums dark:bg-blue-950/50 dark:text-blue-300">
-          {fields.length} {fields.length === 1 ? "step" : "steps"}
+      {/* The section header above already names this, so the toolbar carries
+          progress instead of repeating the title. */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Walk through how it was built. At least one step is required.
+        </p>
+        <span
+          className={cn(
+            "shrink-0 rounded-lg px-2.5 py-1 text-sm font-semibold tabular-nums transition-colors",
+            readyCount === fields.length
+              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+              : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+          )}
+        >
+          {readyCount}/{fields.length} ready
         </span>
       </div>
 
@@ -115,6 +131,9 @@ export function BuildStepsField() {
           const rowError = Array.isArray(stepErrors)
             ? stepErrors[index]
             : undefined;
+          const isReady = Boolean(
+            step?.title?.trim() && step?.description?.trim(),
+          );
 
           return (
             <motion.div
@@ -127,13 +146,38 @@ export function BuildStepsField() {
                 "overflow-hidden rounded-xl border bg-white transition-colors dark:bg-slate-900",
                 rowError
                   ? "border-rose-300 dark:border-rose-900"
-                  : "border-slate-200 dark:border-slate-800",
+                  : isOpen
+                    ? "border-blue-300 dark:border-blue-500/40"
+                    : "border-slate-200 dark:border-slate-800",
               )}
             >
               {/* ── Card header ── */}
               <div className="flex items-center gap-3 p-3 sm:p-4">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-sm font-bold text-white tabular-nums dark:bg-slate-700">
-                  {index + 1}
+                {/* The number is the step's identity and stays put — the tick
+                    rides alongside it rather than replacing it. */}
+                <span className="relative shrink-0">
+                  <span
+                    className={cn(
+                      "flex size-8 items-center justify-center rounded-lg text-sm font-bold text-white tabular-nums transition-colors duration-300",
+                      isReady
+                        ? "bg-emerald-500"
+                        : "bg-slate-900 dark:bg-slate-700",
+                    )}
+                  >
+                    {index + 1}
+                  </span>
+
+                  {isReady && (
+                    <motion.span
+                      aria-hidden
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 22 }}
+                      className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-white text-emerald-600 ring-1 ring-emerald-500/30 dark:bg-slate-900"
+                    >
+                      <Check className="size-2.5" strokeWidth={4} />
+                    </motion.span>
+                  )}
                 </span>
 
                 <button
@@ -163,12 +207,12 @@ export function BuildStepsField() {
                 <div className="flex shrink-0 items-center gap-0.5">
                   {/* Attachment hints, so a collapsed card still says what it holds */}
                   {step?.codeSnippet ? (
-                    <GripVertical className="hidden size-4 text-slate-300 sm:block" />
+                    <Code2 className="hidden size-4 text-slate-400 sm:block" />
                   ) : null}
-                  {step?.imageUrl ? (
+                  {step?.imageUrl || step?.imageFile ? (
                     <ImageIcon className="size-4 text-slate-400" />
                   ) : null}
-                  {step?.diagramUrl ? (
+                  {step?.diagramUrl || step?.diagramFile ? (
                     <Network className="size-4 text-slate-400" />
                   ) : null}
 
@@ -267,6 +311,10 @@ export function BuildStepsField() {
                           onChange={(url) =>
                             setValue(`steps.${index}.imageUrl`, url)
                           }
+                          file={step?.imageFile ?? null}
+                          onFileChange={(next) =>
+                            setValue(`steps.${index}.imageFile`, next ?? undefined)
+                          }
                         />
                         <ImageDropField
                           compact
@@ -276,6 +324,13 @@ export function BuildStepsField() {
                           value={step?.diagramUrl}
                           onChange={(url) =>
                             setValue(`steps.${index}.diagramUrl`, url)
+                          }
+                          file={step?.diagramFile ?? null}
+                          onFileChange={(next) =>
+                            setValue(
+                              `steps.${index}.diagramFile`,
+                              next ?? undefined,
+                            )
                           }
                         />
                       </div>

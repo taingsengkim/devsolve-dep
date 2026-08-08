@@ -5,7 +5,12 @@ import Link from "next/link";
 import { motion, useInView } from "motion/react";
 import { ArrowUpRight, Bug, Clock3, Cpu, Globe, Shield, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import SectionBackdrop, { ACCENT, PRIMARY, SECONDARY } from "./SectionBackdrop";
+import SectionBackdrop, {
+  ACCENT,
+  PRIMARY,
+  SECONDARY,
+  useInk,
+} from "./SectionBackdrop";
 
 /* ─── Programs ──────────────────────────────────────────────────────── */
 type Severity = "Critical" | "High" | "Medium";
@@ -76,17 +81,23 @@ const money = (n: number) => `$${n.toLocaleString()}`;
 
 /* Severity is an ordered scale, so it rides an ink-weight ramp rather than a
    set of unrelated hues — heavier ink reads as more severe. Every chip is
-   text-labelled, so the ordering never depends on colour alone. */
+   text-labelled, so the ordering never depends on colour alone. On a dark
+   surface the ramp inverts — strongest contrast is still most severe, it is
+   just reached with light ink rather than heavy. */
 const SEVERITY_CHIP: Record<Severity, string> = {
-  Critical: "bg-[#1E293B] text-white",
-  High: "bg-slate-200 text-slate-700",
-  Medium: "border border-slate-200 text-slate-500",
+  Critical: "bg-[#1E293B] text-white dark:bg-slate-100 dark:text-slate-900",
+  High: "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-100",
+  Medium:
+    "border border-slate-200 text-slate-500 dark:border-slate-700 dark:text-slate-400",
 };
 
 /* ─── Reward reach — max payout relative to the highest on the board ── */
 function RewardBar({ max, delay = 0 }: { max: number; delay?: number }) {
   return (
-    <div className="h-1 w-full overflow-hidden rounded-full bg-slate-200" aria-hidden>
+    <div
+      className="h-1 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
+      aria-hidden
+    >
       <motion.div
         className="h-full"
         style={{ backgroundColor: PRIMARY, borderRadius: "0 4px 4px 0" }}
@@ -102,7 +113,7 @@ function RewardBar({ max, delay = 0 }: { max: number; delay?: number }) {
 /* ─── Live indicator ────────────────────────────────────────────────── */
 function LivePill() {
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
       <span className="relative flex h-1.5 w-1.5">
         <span
           className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-70"
@@ -122,10 +133,14 @@ function LivePill() {
 export function BountyPreview() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+  const ink = useInk();
   const FeaturedIcon = FEATURED.icon;
 
   return (
-    <section ref={ref} className="relative overflow-hidden bg-slate-50 py-20 sm:py-24">
+    <section
+      ref={ref}
+      className="relative overflow-hidden bg-slate-50 py-20 sm:py-24 dark:bg-slate-950"
+    >
       <SectionBackdrop seed={4} gridSize={88} />
 
       <div className="relative mx-auto w-full max-w-7xl px-6 sm:px-12">
@@ -134,31 +149,30 @@ export function BountyPreview() {
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : undefined}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="flex flex-col justify-between gap-6 border-b border-slate-200 pb-8 sm:flex-row sm:items-end"
+          className="flex flex-col justify-between gap-6 border-b border-slate-200 pb-8 sm:flex-row sm:items-end dark:border-slate-800"
         >
           <div>
             <div className="mb-4 flex items-center gap-2.5">
               <span className="h-px w-8" style={{ backgroundColor: PRIMARY }} />
               <span
-                className="text-xs font-bold uppercase tracking-[0.22em]"
-                style={{ color: PRIMARY }}
+                className="text-xs font-bold uppercase tracking-[0.22em] text-[#2563EB] dark:text-blue-400"
               >
                 Live programs
               </span>
             </div>
             <h2
               className="text-3xl font-bold tracking-[-0.04em] sm:text-4xl lg:text-5xl"
-              style={{ color: SECONDARY }}
+              style={{ color: ink }}
             >
               Where the bounties are
-              <span style={{ color: PRIMARY }}>.</span>
+              <span className="text-[#2563EB] dark:text-blue-400">.</span>
             </h2>
           </div>
 
           <Link
             href="/programs"
-            className="group inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-white px-5 py-2.5 text-sm font-semibold shadow-[0_0_0_1px_rgba(30,41,59,0.12)] transition-colors hover:bg-slate-100 sm:self-auto"
-            style={{ color: SECONDARY }}
+            className="group inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-white px-5 py-2.5 text-sm font-semibold shadow-[0_0_0_1px_rgba(30,41,59,0.12)] transition-colors hover:bg-slate-100 sm:self-auto dark:bg-slate-900 dark:shadow-[0_0_0_1px_rgba(148,163,184,0.18)] dark:hover:bg-slate-800"
+            style={{ color: ink }}
           >
             All programs
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -172,24 +186,26 @@ export function BountyPreview() {
             initial={{ opacity: 0, y: 24 }}
             animate={inView ? { opacity: 1, y: 0 } : undefined}
             transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col rounded-2xl bg-white p-7 shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_2px_10px_rgba(30,41,59,0.05)] lg:col-span-5"
+            className="flex flex-col rounded-2xl bg-white p-7 shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_2px_10px_rgba(30,41,59,0.05)] lg:col-span-5 dark:bg-slate-900 dark:shadow-[0_0_0_1px_rgba(148,163,184,0.14),0_2px_10px_rgba(2,6,23,0.5)]"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
-                  <FeaturedIcon className="h-5 w-5" style={{ color: PRIMARY }} />
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-500/15">
+                  <FeaturedIcon className="h-5 w-5 text-[#2563EB] dark:text-blue-400" />
                 </span>
                 <div>
-                  <h3 className="text-lg font-bold tracking-tight" style={{ color: SECONDARY }}>
+                  <h3
+                    className="text-lg font-bold tracking-tight"
+                    style={{ color: ink }}
+                  >
                     {FEATURED.name}
                   </h3>
-                  <p className="text-sm text-slate-400">{FEATURED.tag}</p>
+                  <p className="text-sm text-slate-400 dark:text-slate-500">
+                    {FEATURED.tag}
+                  </p>
                 </div>
               </div>
-              <span
-                className="rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em]"
-                style={{ backgroundColor: "#EFF6FF", color: PRIMARY }}
-              >
+              <span className="rounded-full bg-[#EFF6FF] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#2563EB] dark:bg-blue-500/15 dark:text-blue-300">
                 Featured
               </span>
             </div>
@@ -199,7 +215,7 @@ export function BountyPreview() {
               {FEATURED.scope.map((s) => (
                 <span
                   key={s}
-                  className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-500"
+                  className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-500 dark:border-slate-700 dark:text-slate-400"
                 >
                   {s}
                 </span>
@@ -208,14 +224,16 @@ export function BountyPreview() {
 
             {/* Max payout — the number this card leads with */}
             <div className="mt-7">
-              <p className="text-sm font-medium text-slate-500">Maximum payout</p>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                Maximum payout
+              </p>
               <p
                 className="mt-1 text-5xl font-bold leading-none tracking-tighter sm:text-6xl"
-                style={{ color: SECONDARY }}
+                style={{ color: ink }}
               >
                 {money(FEATURED.max)}
               </p>
-              <p className="mt-2 text-sm text-slate-400">
+              <p className="mt-2 text-sm text-slate-400 dark:text-slate-500">
                 Range {money(FEATURED.min)} – {money(FEATURED.max)}
               </p>
               <div className="mt-4">
@@ -224,29 +242,41 @@ export function BountyPreview() {
             </div>
 
             {/* Metrics */}
-            <dl className="mt-7 grid grid-cols-3 gap-4 border-t border-slate-200 pt-6">
+            <dl className="mt-7 grid grid-cols-3 gap-4 border-t border-slate-200 pt-6 dark:border-slate-800">
               <div>
-                <dt className="text-xs uppercase tracking-[0.14em] text-slate-400">Reports</dt>
+                <dt className="text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+                  Reports
+                </dt>
                 <dd
                   className="mt-1.5 flex items-center gap-1.5 text-lg font-bold"
-                  style={{ color: SECONDARY }}
+                  style={{ color: ink }}
                 >
-                  <Bug className="h-4 w-4 text-slate-300" aria-hidden />
+                  <Bug
+                    className="h-4 w-4 text-slate-300 dark:text-slate-600"
+                    aria-hidden
+                  />
                   {FEATURED.reports}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-[0.14em] text-slate-400">Triage</dt>
+                <dt className="text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+                  Triage
+                </dt>
                 <dd
                   className="mt-1.5 flex items-center gap-1.5 text-lg font-bold"
-                  style={{ color: SECONDARY }}
+                  style={{ color: ink }}
                 >
-                  <Clock3 className="h-4 w-4 text-slate-300" aria-hidden />
+                  <Clock3
+                    className="h-4 w-4 text-slate-300 dark:text-slate-600"
+                    aria-hidden
+                  />
                   {FEATURED.triageDays}d
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-[0.14em] text-slate-400">Top tier</dt>
+                <dt className="text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+                  Top tier
+                </dt>
                 <dd className="mt-1.5">
                   <span
                     className={`inline-block rounded-lg px-2.5 py-1 text-xs font-bold ${SEVERITY_CHIP[FEATURED.severity]}`}
@@ -257,7 +287,7 @@ export function BountyPreview() {
               </div>
             </dl>
 
-            <div className="mt-7 flex items-center justify-between gap-4 border-t border-slate-200 pt-6">
+            <div className="mt-7 flex items-center justify-between gap-4 border-t border-slate-200 pt-6 dark:border-slate-800">
               <LivePill />
               <Link
                 href="/programs"
@@ -272,11 +302,11 @@ export function BountyPreview() {
 
           {/* Ledger — hairline rows rather than a four-up card grid */}
           <div className="lg:col-span-7">
-            <div className="flex items-baseline justify-between border-b border-slate-200 pb-3">
-              <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+            <div className="flex items-baseline justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
+              <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                 Also accepting reports
               </span>
-              <span className="text-xs font-medium text-slate-400">
+              <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
                 Reward reach vs. {money(CEILING)}
               </span>
             </div>
@@ -289,30 +319,30 @@ export function BountyPreview() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={inView ? { opacity: 1, y: 0 } : undefined}
                   transition={{ duration: 0.5, delay: 0.2 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                  className="border-b border-slate-200"
+                  className="border-b border-slate-200 dark:border-slate-800"
                 >
                   <Link
                     href="/programs"
-                    className="group -mx-4 block rounded-xl px-4 py-6 transition-colors hover:bg-white"
+                    className="group -mx-4 block rounded-xl px-4 py-6 transition-colors hover:bg-white dark:hover:bg-slate-900"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100">
-                          <Icon className="h-4.5 w-4.5 text-slate-500" />
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800">
+                          <Icon className="h-4.5 w-4.5 text-slate-500 dark:text-slate-300" />
                         </span>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <h3
                               className="truncate text-base font-bold tracking-tight"
-                              style={{ color: SECONDARY }}
+                              style={{ color: ink }}
                             >
                               {p.name}
                             </h3>
-                            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+                            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-300">
                               {p.tag}
                             </span>
                           </div>
-                          <p className="mt-1 truncate text-sm text-slate-400">
+                          <p className="mt-1 truncate text-sm text-slate-400 dark:text-slate-500">
                             {p.scope.join(" · ")}
                           </p>
                         </div>
@@ -324,17 +354,23 @@ export function BountyPreview() {
                         >
                           {p.severity}
                         </span>
-                        <span className="hidden items-center gap-1.5 text-sm font-semibold text-slate-500 sm:inline-flex">
-                          <Bug className="h-3.5 w-3.5 text-slate-300" aria-hidden />
+                        <span className="hidden items-center gap-1.5 text-sm font-semibold text-slate-500 sm:inline-flex dark:text-slate-400">
+                          <Bug
+                            className="h-3.5 w-3.5 text-slate-300 dark:text-slate-600"
+                            aria-hidden
+                          />
                           {p.reports}
                         </span>
-                        <ArrowUpRight className="h-4 w-4 text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-slate-600" />
+                        <ArrowUpRight className="h-4 w-4 text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-slate-600 dark:text-slate-600 dark:group-hover:text-slate-300" />
                       </div>
                     </div>
 
                     {/* Reward range + reach */}
                     <div className="mt-4 flex items-center gap-4 pl-13">
-                      <span className="w-40 shrink-0 text-sm font-semibold" style={{ color: SECONDARY }}>
+                      <span
+                        className="w-40 shrink-0 text-sm font-semibold"
+                        style={{ color: ink }}
+                      >
                         {money(p.min)} – {money(p.max)}
                       </span>
                       <RewardBar max={p.max} delay={0.3 + i * 0.1} />
