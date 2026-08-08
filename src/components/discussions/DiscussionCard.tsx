@@ -152,12 +152,13 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
 
         <CardContent className="pointer-events-none relative flex flex-col gap-4 px-5 py-4 sm:px-6">
           {isShowcase && post.thumbnailUrl && (
-            <div className="relative aspect-[16/7] overflow-hidden rounded-xl bg-muted ring-1 ring-foreground/5">
+            <div className="relative h-64 w-full overflow-hidden">
               <Image
                 src={post.thumbnailUrl}
                 alt={`${post.title} preview`}
                 fill
-                sizes="(max-width: 640px) calc(100vw - 3rem), (max-width: 1024px) calc(100vw - 5rem), 720px"
+                quality={90}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="object-cover transition-transform duration-300 group-hover:scale-[1.015]"
               />
             </div>
