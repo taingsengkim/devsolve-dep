@@ -13,8 +13,9 @@ import {
   Building2,
   ShieldCheck,
   UserCheck,
-  ShieldAlert,
+  PanelsTopLeft,
   FilePen,
+  PenSquare,
   Tags,
   CircleUser,
   LucideIcon,
@@ -39,6 +40,9 @@ export const NAV_ITEMS: NavItem[] = [
   // shows the signed-in account, so leaving the dashboard isn't a dead end.
   { name: "Programs", href: "/programs", icon: Globe, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
   { name: "Community", href: "/community", icon: MessageSquare, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
+  // A workspace surface, unlike the browse link above it: your own posts with
+  // their review status, including the ones not public yet.
+  { name: "My Community", href: "/dashboard/my-community", icon: PenSquare, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
   { name: "Leaderboard", href: "/leaderboard", icon: Trophy, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
 
   // USER Role items
@@ -58,6 +62,6 @@ export const NAV_ITEMS: NavItem[] = [
   // ADMIN Role items
   { name: "Organization Verification", href: "/dashboard/company-verification", icon: ShieldCheck, roles: ["ADMIN"], category: "Administration" },
   { name: "Users", href: "/dashboard/users", icon: UserCheck, roles: ["ADMIN"], category: "Administration" },
-  { name: "Content Reports", href: "/dashboard/content-moderation", icon: ShieldAlert, roles: ["ADMIN"], category: "Administration" },
+  { name: "Content Management", href: "/dashboard/content-moderation", icon: PanelsTopLeft, roles: ["ADMIN"], category: "Administration" },
   { name: "Categories", href: "/dashboard/categories", icon: Tags, roles: ["ADMIN"], category: "Administration" },
 ];

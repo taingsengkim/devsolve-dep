@@ -89,10 +89,65 @@ interface ProblemApiResponse {
   createdAt?: string;
 }
 
+// Real shape of GET /api/v1/user-profiles/{userId}/solutions content items.
+// A solution carries no title of its own — it is an answer to a problem, so
+// the problem it belongs to is the only heading it has.
+interface SolutionApiResponse {
+  id: string;
+  problemId?: string;
+  description?: string;
+  reviewStatus?: "PENDING" | "APPROVED" | "REJECTED" | "ACCEPTED";
+  createdAt?: string;
+}
+
+// Real shape of GET /api/v1/user-profiles/{userId}/showcases content items
+// (ShowCasesSummaryResponse), trimmed to what a portfolio card shows.
+interface ShowcaseApiResponse {
+  id: string;
+  title: string;
+  overview?: string;
+  coverImageUrl?: string;
+  reviewStatus?: "PENDING" | "APPROVED" | "REJECTED";
+  viewCount?: number;
+  createdAt?: string;
+}
+
 // Real shape of GET /api/v1/votes/{type}/{targetId}/summary — `score` is the
 // net (upvotes - downvotes) count, which is what the vote-count UI expects.
 interface VoteSummaryApiResponse {
   score?: number;
+}
+
+/**
+ * How many of each kind of post a portfolio pulls. Votes are not embedded in
+ * any of the three list responses, so this is also the bound on the per-item
+ * enrichment fan-out behind the community tab.
+ */
+const PORTFOLIO_PAGE_SIZE = 10;
+
+/**
+ * Problem descriptions, solution bodies and showcase overviews are all
+ * markdown. The card clamps them to two lines, where `##` and `[a](b)` read as
+ * noise rather than as formatting.
+ */
+function plainText(markdown: string): string {
+  return markdown
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/!\[[^\]]*]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]*)]\([^)]*\)/g, "$1")
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/^\s{0,3}>\s?/gm, "")
+    .replace(/^\s{0,3}[-*+]\s+/gm, "")
+    .replace(/[*_~]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** The opening sentence, for content that has no title of its own. */
+function firstLine(text: string, max = 90): string {
+  const opening = text.split(/(?<=[.!?])\s/)[0] ?? text;
+  return opening.length > max ? `${opening.slice(0, max).trimEnd()}…` : opening;
 }
 
 // socialLinks comes back as a flat platform/url array — map the platforms our
@@ -314,53 +369,146 @@ export const profileApi = baseApi.injectEndpoints({
       providesTags: ["Profile"],
     }),
 
-    // Built from GET /problems/mine (same "me only" constraint as the rest of
-    // this file). Only PUBLISHED/RESOLVED/CLOSED problems are shown — drafts,
-    // pending-approval, and rejected problems aren't real community content.
-    // Every entry is tagged "Problem": there's no backend concept of a
-    // standalone "Solutions" or "Discussion" post (solutions and comments are
-    // attached to a problem, not their own card), so those tags are never
-    // emitted rather than faked. Votes and answer counts require a per-problem
-    // lookup since neither is embedded in ProblemResponse.
+    /**
+     * Everything one person has posted, from the three portfolio endpoints:
+     * `/user-profiles/{userId}/problems`, `/solutions` and `/showcases`.
+     *
+     * Takes the viewed profile's user id rather than a username — the backend
+     * has no username lookup, and these endpoints are keyed by id. One list
+     * failing does not empty the tab: the other two still render, which matters
+     * because the three are independently permissioned upstream.
+     *
+     * Votes are not embedded in any of the three responses, so each item costs
+     * one `/votes/{type}/{id}/summary`; a problem costs one more for its answer
+     * count. `PORTFOLIO_PAGE_SIZE` is what bounds that fan-out.
+     */
     getCommunityPosts: builder.query<CommunityPost[], string>({
-      async queryFn(_username, _api, _extraOptions, fetchWithBQ) {
-        const problemsResult = await fetchWithBQ(`/problems/mine?size=20`);
-        if (problemsResult.error) return { error: problemsResult.error };
+      async queryFn(userId, _api, _extraOptions, fetchWithBQ) {
+        if (!userId) return { data: [] };
 
-        const visible = (
-          (problemsResult.data as { content?: ProblemApiResponse[] } | undefined)?.content ?? []
-        ).filter((problem) => problem.status === "PUBLISHED" || problem.status === "RESOLVED" || problem.status === "CLOSED");
+        const query = `?pageSize=${PORTFOLIO_PAGE_SIZE}`;
+        const [problemsResult, solutionsResult, showcasesResult] =
+          await Promise.all([
+            fetchWithBQ(`/user-profiles/${userId}/problems${query}`),
+            fetchWithBQ(`/user-profiles/${userId}/solutions${query}`),
+            fetchWithBQ(`/user-profiles/${userId}/showcases${query}`),
+          ]);
 
-        const enrichment = await Promise.all(
-          visible.map((problem) =>
-            Promise.all([
-              fetchWithBQ(`/votes/PROBLEM/${problem.id}/summary`),
-              fetchWithBQ(`/problems/${problem.id}/solutions?pageSize=1`),
-            ])
-          )
+        const contentOf = <T,>(result: { data?: unknown; error?: unknown }) =>
+          result.error
+            ? []
+            : ((result.data as { content?: T[] } | undefined)?.content ?? []);
+
+        /* Drafts, pending-approval and rejected problems are not community
+           content — only what someone can actually open is listed. */
+        const problems = contentOf<ProblemApiResponse>(problemsResult).filter(
+          (problem) =>
+            problem.status === "PUBLISHED" ||
+            problem.status === "RESOLVED" ||
+            problem.status === "CLOSED",
         );
+        const solutions = contentOf<SolutionApiResponse>(solutionsResult);
+        const showcases = contentOf<ShowcaseApiResponse>(showcasesResult);
 
-        const posts: CommunityPost[] = visible
-          .map((problem, index) => {
-            const [voteResult, solutionsResult] = enrichment[index];
-            const votes = !voteResult.error ? (voteResult.data as VoteSummaryApiResponse | undefined)?.score ?? 0 : 0;
-            const answers = !solutionsResult.error
-              ? (solutionsResult.data as { totalElements?: number } | undefined)?.totalElements ?? 0
-              : 0;
+        /* Every list failed — report it rather than showing an empty tab that
+           looks like "this person has posted nothing". */
+        if (problemsResult.error && solutionsResult.error && showcasesResult.error) {
+          return { error: problemsResult.error };
+        }
 
+        const votesFor = (type: string, id: string) =>
+          fetchWithBQ(`/votes/${type}/${id}/summary`);
+
+        const [problemExtras, solutionVotes, showcaseVotes] = await Promise.all([
+          Promise.all(
+            problems.map((problem) =>
+              Promise.all([
+                votesFor("PROBLEM", problem.id),
+                fetchWithBQ(`/problems/${problem.id}/solutions?pageSize=1`),
+              ]),
+            ),
+          ),
+          Promise.all(
+            solutions.map((solution) => votesFor("SOLUTION", solution.id)),
+          ),
+          Promise.all(
+            showcases.map((showcase) => votesFor("SHOWCASE", showcase.id)),
+          ),
+        ]);
+
+        const scoreOf = (result: { data?: unknown; error?: unknown }) =>
+          result.error
+            ? 0
+            : ((result.data as VoteSummaryApiResponse | undefined)?.score ?? 0);
+
+        const posts: CommunityPost[] = [
+          ...problems.map((problem, index): CommunityPost => {
+            const [voteResult, answersResult] = problemExtras[index];
             return {
               id: problem.id,
               title: problem.title,
-              description: problem.description ?? "",
-              tag: "Problem" as const,
-              votes,
-              answers,
+              description: plainText(problem.description ?? ""),
+              tag: "Problem",
+              votes: scoreOf(voteResult),
+              answers: answersResult.error
+                ? 0
+                : ((answersResult.data as { totalElements?: number } | undefined)
+                    ?.totalElements ?? 0),
               views: problem.viewCount ?? 0,
-              isSolved: problem.status === "RESOLVED",
-              date: problem.publishedAt || problem.createdAt || new Date().toISOString(),
+              status:
+                problem.status === "RESOLVED"
+                  ? { label: "Solved", tone: "positive" }
+                  : undefined,
+              date:
+                problem.publishedAt ||
+                problem.createdAt ||
+                new Date().toISOString(),
+              href: `/community/${problem.id}`,
             };
-          })
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          }),
+
+          ...solutions.map((solution, index): CommunityPost => {
+            const body = plainText(solution.description ?? "");
+            return {
+              id: solution.id,
+              /* A solution has no title upstream, so its opening line stands in
+                 rather than a placeholder like "Solution #3". */
+              title: firstLine(body) || "Solution",
+              description: body,
+              tag: "Solutions",
+              votes: scoreOf(solutionVotes[index]),
+              status:
+                solution.reviewStatus === "ACCEPTED"
+                  ? { label: "Accepted", tone: "positive" }
+                  : solution.reviewStatus === "PENDING"
+                    ? { label: "Pending review", tone: "pending" }
+                    : undefined,
+              date: solution.createdAt || new Date().toISOString(),
+              /* Solutions are read on the problem they answer. */
+              href: solution.problemId
+                ? `/community/${solution.problemId}`
+                : undefined,
+            };
+          }),
+
+          ...showcases.map((showcase, index): CommunityPost => ({
+            id: showcase.id,
+            title: showcase.title,
+            description: plainText(showcase.overview ?? ""),
+            tag: "Showcase",
+            votes: scoreOf(showcaseVotes[index]),
+            views: showcase.viewCount ?? 0,
+            status:
+              showcase.reviewStatus === "PENDING"
+                ? { label: "Pending review", tone: "pending" }
+                : showcase.reviewStatus === "REJECTED"
+                  ? { label: "Changes requested", tone: "pending" }
+                  : undefined,
+            date: showcase.createdAt || new Date().toISOString(),
+            href: `/showcases/${showcase.id}`,
+            thumbnailUrl: showcase.coverImageUrl,
+          })),
+        ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
         return { data: posts };
       },

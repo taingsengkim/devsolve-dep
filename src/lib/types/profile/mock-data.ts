@@ -4,7 +4,6 @@ import {
   ProfileStats,
   SeverityStats,
   HacktivityEntry,
-  CommunityPost,
   ThanksEntry,
   EditProfileFormData,
   AccountStatus,
@@ -68,30 +67,6 @@ export const mockHacktivity: HacktivityEntry[] = [
   { id: "h6", type: "resolved", actorHandle: "@ghostkode", date: "2025-05-28", severity: "critical", program: "AuthFlow", bounty: 12000 },
   { id: "h7", type: "badge", actorHandle: "@ghostkode", date: "2025-05-20", badgeName: "Century" },
   { id: "h8", type: "resolved", actorHandle: "@ghostkode", date: "2025-05-14", severity: "high", program: "ShieldNet", bounty: 4200 },
-];
-
-export const mockCommunityPosts: CommunityPost[] = [
-  {
-    id: "c1",
-    title: "JWT token leaks via Referer header on OAuth redirect",
-    description:
-      "When a user authenticates via OAuth and gets redirected back with the JWT as a query param, modern browsers send the full URL in the Referer header on subsequent requests — analytics scripts, CDN assets, etc. Is this a real exploitable vector or low risk in practice?",
-    tag: "Problem",
-    votes: 142,
-    answers: 2,
-    views: 2841,
-    isSolved: true,
-    date: "2025-06-12",
-  },
-  {
-    id: "c2",
-    title: "How to Resolve JWT Token",
-    description: "3 steps to resolve the jwt token",
-    tag: "Solutions",
-    votes: 1,
-    answers: 3,
-    date: "2025-06-12",
-  },
 ];
 
 export const mockThanks: ThanksEntry[] = [

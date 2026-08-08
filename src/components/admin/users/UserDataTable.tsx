@@ -20,10 +20,16 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Users } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -95,7 +101,7 @@ export function UserDataTable<TData, TValue>({
 
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       {/* Table Container */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xs">
         <Table>
@@ -142,13 +148,18 @@ export function UserDataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-48 text-center p-0"
                 >
-                  <Card className="border-none shadow-none p-8 bg-transparent space-y-3">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center">
-                      <Users className="w-6 h-6" />
-                    </div>
-                    <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      No matching users found
-                    </div>
+                  <Card className="gap-3 border-none bg-transparent py-8 shadow-none">
+                    <CardHeader className="grid justify-items-center gap-3 px-8 text-center">
+                      <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
+                        <Users className="size-6" />
+                      </div>
+                      <CardTitle className="text-base font-semibold text-slate-800 dark:text-slate-200">
+                        No matching users found
+                      </CardTitle>
+                      <CardDescription className="text-sm text-slate-500 dark:text-slate-400">
+                        Try another search or status filter.
+                      </CardDescription>
+                    </CardHeader>
                   </Card>
                 </TableCell>
               </TableRow>
@@ -161,7 +172,7 @@ export function UserDataTable<TData, TValue>({
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-slate-50/60 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800">
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Rows per page
                 </span>
                 <Select
@@ -170,24 +181,26 @@ export function UserDataTable<TData, TValue>({
                     if (val) table.setPageSize(Number(val));
                   }}
                 >
-                  <SelectTrigger className="h-8 w-16 px-2.5 rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer shadow-2xs">
+                  <SelectTrigger className="h-8 w-16 cursor-pointer rounded-xl border-slate-300 bg-white px-2.5 text-sm font-semibold text-slate-700 shadow-2xs dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
                     <SelectValue placeholder={String(table.getState().pagination.pageSize)} />
                   </SelectTrigger>
                   <SelectContent align="start" className="min-w-20 rounded-2xl shadow-lg">
-                    {[10, 20, 50, 100].map((pageSize) => (
-                      <SelectItem
-                        key={pageSize}
-                        value={String(pageSize)}
-                        className="text-xs font-semibold cursor-pointer"
-                      >
-                        {pageSize}
-                      </SelectItem>
-                    ))}
+                    <SelectGroup>
+                      {[10, 20, 50, 100].map((pageSize) => (
+                        <SelectItem
+                          key={pageSize}
+                          value={String(pageSize)}
+                          className="cursor-pointer text-sm font-semibold"
+                        >
+                          {pageSize}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Page{" "}
                 <span className="font-bold text-slate-700 dark:text-slate-200">
                   {table.getState().pagination.pageIndex + 1}
@@ -206,9 +219,9 @@ export function UserDataTable<TData, TValue>({
                 size="sm"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
-                className="h-8 px-3 rounded-xl border-slate-200 dark:border-slate-800 text-xs font-semibold cursor-pointer disabled:opacity-40"
+                className="h-8 cursor-pointer rounded-xl border-slate-200 px-3 text-sm font-semibold disabled:opacity-40 dark:border-slate-800"
               >
-                <ChevronLeft className="w-4 h-4 mr-1" />
+                <ChevronLeft data-icon="inline-start" />
                 Previous
               </Button>
               <Button
@@ -216,10 +229,10 @@ export function UserDataTable<TData, TValue>({
                 size="sm"
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
-                className="h-8 px-3 rounded-xl border-slate-200 dark:border-slate-800 text-xs font-semibold cursor-pointer disabled:opacity-40"
+                className="h-8 cursor-pointer rounded-xl border-slate-200 px-3 text-sm font-semibold disabled:opacity-40 dark:border-slate-800"
               >
                 Next
-                <ChevronRight className="w-4 h-4 ml-1" />
+                <ChevronRight data-icon="inline-end" />
               </Button>
             </div>
           </div>
