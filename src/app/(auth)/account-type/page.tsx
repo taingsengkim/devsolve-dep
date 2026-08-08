@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion, type Variants } from "motion/react";
-import { KeyRound, Loader2, ShieldCheck, Sparkles } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useKeycloakLogin } from "@/hooks/useKeycloakLogin";
 import { USER_FEATURES, COMPANY_FEATURES } from "@/lib/constants/auth";
 import { AccountTypeCard } from "@/components/account-type/AccountTypeCard";
@@ -30,13 +30,7 @@ const cardVariants: Variants = {
   },
 };
 
-/* Claims below are drawn from what the platform actually does — PKCE is on the
-   Keycloak client, and organizations really do sit in review before going live. */
-const ASSURANCES = [
-  { icon: KeyRound, text: "PKCE-secured sign-in through Keycloak" },
-  { icon: ShieldCheck, text: "Coordinated disclosure by default" },
-  { icon: Sparkles, text: "Free to join, no card required" },
-];
+
 
 export default function AccountTypeSelectionPage() {
   const { isLoggingIn, handleLogin } = useKeycloakLogin();
@@ -58,17 +52,19 @@ export default function AccountTypeSelectionPage() {
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link
             href="/"
-            className="flex items-center gap-2.5 text-lg font-bold tracking-tight text-[#1E293B] transition-opacity hover:opacity-70"
+            aria-label="Go to DevSolve homepage"
+            className="group flex shrink-0 items-center transition-opacity hover:opacity-85"
           >
-            <Image
-              src="/logo-1.png"
-              alt=""
-              width={32}
-              height={32}
-              className="h-8 w-8 object-contain"
-              priority
-            />
-            DevSolve
+            <span className="relative block h-10 w-36">
+              <Image
+                src="/devsolve-logo.png"
+                alt="DevSolve"
+                fill
+                priority
+                sizes="150px"
+                className="origin-left object-contain object-left scale-[1.15]"
+              />
+            </span>
           </Link>
 
           <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -100,23 +96,11 @@ export default function AccountTypeSelectionPage() {
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="mx-auto max-w-2xl text-center"
         >
-          <div className="mb-4 flex items-center justify-center gap-2.5">
-            <span className="h-px w-8 bg-blue-600" />
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-blue-600">
-              Step 1 of 2
-            </span>
-            <span className="h-px w-8 bg-blue-600" />
-          </div>
-
           <h1 className="text-3xl font-bold leading-[1.08] tracking-[-0.04em] text-[#1E293B] sm:text-4xl lg:text-5xl">
             How will you use DevSolve
             <span className="text-blue-600">?</span>
           </h1>
 
-          <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-slate-500">
-            Pick the account that matches your work. It decides what you sign up
-            with and what your dashboard opens on.
-          </p>
         </motion.div>
 
         <motion.div
@@ -128,12 +112,10 @@ export default function AccountTypeSelectionPage() {
           <AccountTypeCard
             eyebrow="For builders"
             title="Developer & Researcher"
-            description="One account for all of it — chase bounties, ask the questions you're stuck on, answer the ones you've solved, and let the record speak for you."
             art={<ResearcherArt />}
             features={USER_FEATURES}
             ctaLabel="Continue as developer"
             href="/register/user"
-            note="Browse programs and discussions the moment you sign up."
             accent="blue"
             variants={cardVariants}
           />
@@ -141,31 +123,16 @@ export default function AccountTypeSelectionPage() {
           <AccountTypeCard
             eyebrow="For companies"
             title="Organization"
-            description="Run your own bounty programs, triage what comes in, and keep the whole security workflow in one place."
             art={<OrganizationArt />}
             features={COMPANY_FEATURES}
             ctaLabel="Continue as organization"
             href="/register/company"
-            note="Organizations go through a short verification review before programs go live."
             accent="emerald"
             variants={cardVariants}
           />
         </motion.div>
 
-        {/* ── Assurances ── */}
-        <motion.ul
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-7 gap-y-3 text-sm text-slate-500"
-        >
-          {ASSURANCES.map((item) => (
-            <li key={item.text} className="flex items-center gap-2">
-              <item.icon className="h-4 w-4 text-slate-400" aria-hidden />
-              {item.text}
-            </li>
-          ))}
-        </motion.ul>
+
       </main>
     </div>
   );
