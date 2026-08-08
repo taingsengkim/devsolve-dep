@@ -38,7 +38,7 @@ import { useGetShowcaseReviewDetailQuery } from "@/lib/redux/services/admin/show
 const CARD =
   "rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs";
 
-const BACK_HREF = "/dashboard/content-moderation";
+const BACK_HREF = "/dashboard/content-moderation?tab=showcases";
 
 function formatDateTime(iso?: string) {
   if (!iso) return "—";

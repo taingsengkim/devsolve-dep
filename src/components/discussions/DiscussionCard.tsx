@@ -74,19 +74,41 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
     setLocalBookmarked(post.isBookmarked ?? false);
   }
 
+  /* The mutations take where the card is moving to, not a toggle, so the
+     optimistic state and the request can never disagree about direction. */
   const handleVote = async () => {
     if (isVoting) return;
 
-    setLocalVotes((votes) => (localUpvoted ? votes - 1 : votes + 1));
-    setLocalUpvoted((upvoted) => !upvoted);
-    await voteDiscussion({ id: post.id });
+    const upvote = !localUpvoted;
+    setLocalVotes((votes) => (upvote ? votes + 1 : votes - 1));
+    setLocalUpvoted(upvote);
+
+    const result = await voteDiscussion({
+      id: post.id,
+      category: post.category,
+      upvote,
+    });
+
+    // Nothing else holds the true count, so a rejected vote is rolled back here.
+    if ("error" in result) {
+      setLocalVotes((votes) => (upvote ? votes - 1 : votes + 1));
+      setLocalUpvoted(!upvote);
+    }
   };
 
   const handleBookmark = async () => {
     if (isBookmarking) return;
 
-    setLocalBookmarked((bookmarked) => !bookmarked);
-    await bookmarkDiscussion({ id: post.id });
+    const bookmarked = !localBookmarked;
+    setLocalBookmarked(bookmarked);
+
+    const result = await bookmarkDiscussion({
+      id: post.id,
+      category: post.category,
+      bookmarked,
+    });
+
+    if ("error" in result) setLocalBookmarked(!bookmarked);
   };
 
   const isShowcase = post.category === "Showcase";

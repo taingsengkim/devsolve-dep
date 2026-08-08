@@ -13,6 +13,47 @@ export const SDLC_PHASES = [
 
 export type SdlcPhase = (typeof SDLC_PHASES)[number];
 
+/** How each phase is written for a reader, wherever one is shown. */
+export const SDLC_LABELS: Record<SdlcPhase, string> = {
+  PLANNING: "Planning",
+  REQUIREMENTS_ANALYSIS: "Requirements analysis",
+  DESIGN: "Design",
+  DEVELOPMENT: "Development",
+  TESTING: "Testing",
+  DEPLOYMENT: "Deployment",
+  MAINTENANCE: "Maintenance",
+};
+
+/** Values of the backend `ProblemStatus` enum. */
+export const PROBLEM_STATUSES = [
+  "DRAFT",
+  "PENDING_APPROVAL",
+  "PUBLISHED",
+  "RESOLVED",
+  "CLOSED",
+  "REJECTED",
+] as const;
+
+export type ProblemStatus = (typeof PROBLEM_STATUSES)[number];
+
+/**
+ * Mirrors `ProblemModerationRequest`. The whole body is the status a moderator
+ * moves the problem to — `PUBLISHED` to approve, `REJECTED` to turn away.
+ *
+ * Unlike a showcase decision there is no reason field upstream, so nothing a
+ * reviewer types here could reach the author.
+ */
+export const problemModerationSchema = z.object({
+  status: z.enum(PROBLEM_STATUSES, {
+    message: `status must be one of ${PROBLEM_STATUSES.join(", ")}`,
+  }),
+});
+
+/** Validated body sent to `PATCH /api/v1/admin/problems/{id}/moderation`. */
+export type ProblemModerationRequest = z.output<
+  typeof problemModerationSchema
+>;
+
 /** Mirrors `ProblemTechnologyRequest`. Only `name` is required upstream. */
 export const problemTechnologySchema = z.object({
   name: z

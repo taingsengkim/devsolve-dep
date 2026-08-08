@@ -2,6 +2,7 @@ import { type NextRequest } from "next/server";
 import {
   badJson,
   bearerTokenFor,
+  forwardQuery,
   relay,
   unauthorized,
   unreachable,
@@ -9,6 +10,35 @@ import {
   validationFailed,
 } from "@/lib/api/proxy";
 import { problemCreateSchema } from "@/lib/validations/problem";
+
+/**
+ * GET /api/problems — the published problem feed (`findPublished` upstream).
+ *
+ * Only problems a moderator has approved come back here, so this is the public
+ * half of the pair whose other half is `/api/admin/problems`. A signed-in
+ * caller still sends its token, since the upstream personalises what it can.
+ */
+const LIST_PARAMS = [
+  "categoryId",
+  "sdlcPhase",
+  "tag",
+  "technology",
+  "page",
+  "size",
+  "sort",
+] as const;
+
+export async function GET(request: NextRequest) {
+  const token = await bearerTokenFor(request);
+  const query = forwardQuery(request.nextUrl.searchParams, LIST_PARAMS);
+
+  try {
+    const upstream = await upstreamFetch(`/problems${query}`, token);
+    return relay(upstream, "Unable to load problems.");
+  } catch {
+    return unreachable("problem");
+  }
+}
 
 /**
  * POST /api/problems — authenticated proxy for the backend's
