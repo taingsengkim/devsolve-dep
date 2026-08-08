@@ -67,6 +67,7 @@ export const baseApi = createApi({
     "ShowcaseReview",
     "Problem",
     "ProblemReview",
+    "Solution",
     "Category",
     "Vote",
     "Comment",

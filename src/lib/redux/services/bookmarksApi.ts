@@ -5,6 +5,7 @@ import {
   BookmarksResponse,
 } from "@/lib/types/bookmarks/types";
 import { MOCK_BOOKMARKS } from "@/lib/types/bookmarks/mock-data";
+import type { BookmarkTargetType } from "@/lib/validations/engagement";
 
 export * from "@/lib/types/bookmarks/types";
 export * from "@/lib/types/bookmarks/mock-data";
@@ -82,6 +83,20 @@ export const bookmarksApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Bookmark"],
     }),
+
+    /**
+     * GET /api/v1/bookmarks/{type}/{targetId}/status — real, unlike the list
+     * above, which is still the in-memory store the bookmarks dashboard uses.
+     */
+    getBookmarkStatus: builder.query<
+      { bookmarked: boolean },
+      { type: BookmarkTargetType; targetId: string }
+    >({
+      query: ({ type, targetId }) => `/bookmarks/${type}/${targetId}/status`,
+      providesTags: (_result, _error, { type, targetId }) => [
+        { type: "Bookmark" as const, id: `${type}-${targetId}` },
+      ],
+    }),
   }),
 });
 
@@ -89,4 +104,5 @@ export const {
   useGetBookmarksQuery,
   useRemoveBookmarkMutation,
   useAddBookmarkMutation,
+  useGetBookmarkStatusQuery,
 } = bookmarksApi;
