@@ -10,6 +10,8 @@ import {
   MOCK_TOPICS,
   MOCK_TRENDING_TAGS,
 } from "@/lib/types/dicussion/discussionMockData";
+import { excerptOf } from "@/lib/markdown-excerpt";
+import type { Page, ShowcaseResponse } from "./showcasesApi";
 
 // ─── Query param types ────────────────────────────────────────────────────────
 
@@ -72,14 +74,93 @@ MOCK_DISCUSSIONS.forEach((d) => {
   if (d.isBookmarked) bookmarksSet.add(d.id);
 });
 
+// ─── Showcases (real API) ─────────────────────────────────────────────────────
+
+/**
+ * Showcases in this feed are real: they come from `GET /api/v1/showcases`
+ * through the proxy, and only ones an admin has approved are returned. Problems
+ * are still the mock store, so the two are merged and then run through the same
+ * filter/sort/paginate below — one code path, whatever a post came from.
+ *
+ * The endpoint caps a page at 100. That is the ceiling on how many showcases
+ * one feed page can draw from; server-side paging can replace this once
+ * problems are real too and the merge goes away.
+ */
+const SHOWCASE_PAGE_SIZE = 100;
+
+function showcaseDate(iso?: string): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+/** `ShowCasesResponse` in the shape this feed's card already renders. */
+function showcaseToPost(showcase: ShowcaseResponse): DiscussionPost {
+  return {
+    id: showcase.id,
+    title: showcase.title,
+    category: "Showcase",
+    // A showcase has a category, not one of the mock topics.
+    topic: showcase.categoryName || "Showcase",
+    description: excerptOf(showcase.overview ?? "", 240),
+    // No tag or vote data on the showcase endpoints yet — an empty list renders
+    // no chips rather than inventing any.
+    tags: [],
+    thumbnailUrl: showcase.coverImageUrl,
+    votes: 0,
+    answersCount: 0,
+    viewsCount: showcase.viewCount ?? 0,
+    author: { name: showcase.authorName || "Unknown", avatarUrl: "" },
+    createdAt: showcaseDate(showcase.createdAt),
+    isBookmarked: false,
+    isUpvoted: false,
+  };
+}
+
 // ─── API slice ────────────────────────────────────────────────────────────────
 
 export const discussionsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // ── List discussions with filter + pagination ───────────────────────────
     getDiscussions: builder.query<DiscussionsResponse, DiscussionsFilterParams | void>({
-      queryFn: (params) => {
-        let results = MOCK_DISCUSSIONS.map((d) => ({
+      queryFn: async (params, _api, _extraOptions, fetchWithBQ) => {
+        const category = params?.category ?? "All";
+
+        /* Showcases come from the API, problems from the mock store, and the
+           category tab decides which halves are worth asking for. */
+        let showcases: DiscussionPost[] = [];
+        if (category !== "Problems") {
+          const response = await fetchWithBQ({
+            url: "/showcases",
+            params: {
+              pageSize: SHOWCASE_PAGE_SIZE,
+              sortBy: "createdAt",
+              sortDirection: "DESC",
+              // Narrowing upstream keeps the search from being limited to
+              // whatever the first page happened to contain.
+              ...(params?.searchQuery?.trim()
+                ? { query: params.searchQuery.trim() }
+                : {}),
+            },
+          });
+
+          if (response.error) return { error: response.error };
+
+          const page = response.data as Page<ShowcaseResponse>;
+          showcases = (page?.content ?? []).map(showcaseToPost);
+        }
+
+        const problems =
+          category === "Showcase"
+            ? []
+            : MOCK_DISCUSSIONS.filter((d) => d.category === "Problems");
+
+        let results = [...showcases, ...problems].map((d) => ({
           ...d,
           votes: votesMap[d.id]?.votes ?? d.votes,
           isUpvoted: votesMap[d.id]?.isUpvoted ?? false,
@@ -99,6 +180,10 @@ export const discussionsApi = baseApi.injectEndpoints({
           const q = params.searchQuery.toLowerCase();
           results = results.filter(
             (d) =>
+              // Showcases were already matched upstream, against their full
+              // overview rather than the excerpt held here — re-testing them
+              // against the excerpt would drop genuine matches.
+              d.category === "Showcase" ||
               d.title.toLowerCase().includes(q) ||
               d.description.toLowerCase().includes(q) ||
               d.tags.some((t) => t.toLowerCase().includes(q))
@@ -119,13 +204,19 @@ export const discussionsApi = baseApi.injectEndpoints({
           data: { data: paginatedData, totalCount, page, limit, totalPages },
         };
       },
+      /* Also tagged `Showcase/LIST`, so publishing or approving a showcase
+         refreshes this feed the same way it refreshes the showcase caches. */
       providesTags: (result) =>
         result
           ? [
               ...result.data.map(({ id }) => ({ type: "Discussion" as const, id })),
               { type: "Discussion" as const, id: "LIST" },
+              { type: "Showcase" as const, id: "LIST" },
             ]
-          : [{ type: "Discussion" as const, id: "LIST" }],
+          : [
+              { type: "Discussion" as const, id: "LIST" },
+              { type: "Showcase" as const, id: "LIST" },
+            ],
     }),
 
     // ── Fetch single discussion ─────────────────────────────────────────────

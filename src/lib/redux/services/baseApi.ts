@@ -66,6 +66,8 @@ export const baseApi = createApi({
     "ShowcaseRevision",
     "ShowcaseReview",
     "Category",
+    "Vote",
+    "Comment",
   ],
   endpoints: () => ({}),
 });

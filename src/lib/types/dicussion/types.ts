@@ -14,7 +14,12 @@ export interface DiscussionPost {
   id: string;
   title: string;
   category: "Problems" | "Showcase";
-  topic: TopicFilter;
+  /**
+   * The sidebar's topic vocabulary for a problem. A showcase carries its own
+   * category name here instead — that is what the backend gives it and what
+   * the card badge should read — so the field is wider than `TopicFilter`.
+   */
+  topic: TopicFilter | (string & {});
   description: string;
   tags: string[];
   techStack?: string[];

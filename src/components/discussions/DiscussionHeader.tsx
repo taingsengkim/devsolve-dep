@@ -28,9 +28,6 @@ interface DiscussionSearchProps {
   onSearch: (value: string) => void;
   onClearSearch: () => void;
   isSearching?: boolean;
-  /** Accessible name, for feeds that search something other than discussions. */
-  label?: string;
-  placeholder?: string;
 }
 
 interface DiscussionHeaderProps {
@@ -108,8 +105,6 @@ export function DiscussionSearch({
   onSearch,
   onClearSearch,
   isSearching,
-  label = "Search discussions",
-  placeholder = "Search problems, tags, keywords...",
 }: DiscussionSearchProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -162,7 +157,7 @@ export function DiscussionSearch({
     <div className="flex items-center gap-2 rounded-2xl bg-card p-2 shadow-xs ring-1 ring-foreground/5">
       <div className="relative min-w-0 flex-1">
         <label htmlFor="discussions-search" className="sr-only">
-          {label}
+          Search discussions
         </label>
         <Search
           aria-hidden="true"
@@ -174,7 +169,7 @@ export function DiscussionSearch({
           id="discussions-search"
           value={searchQuery}
           onChange={(event) => onSearch(event.target.value)}
-          placeholder={placeholder}
+          placeholder="Search problems, tags, keywords..."
           className="h-11 rounded-xl bg-muted/50 pr-4 pl-11 text-base shadow-none [&::-webkit-search-cancel-button]:hidden"
         />
       </div>
