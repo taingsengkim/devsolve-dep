@@ -108,6 +108,20 @@ export function canonicalizeTech(raw: string): string {
 
 export const MAX_TECH = 15;
 
+/* ─── Pending images ────────────────────────────────────────────────────
+   Every image route the backend publishes is scoped to a row that must
+   already exist — `PUT /showcases/{id}/cover-image`, `PUT
+   /showcase-steps/{showcaseId}/{stepId}/image`. A file chosen while writing
+   therefore waits in form state and is uploaded right after the row it
+   belongs to is created. Authors who paste a URL instead skip that entirely
+   and the matching `*Url` field carries the value. */
+
+const pendingImage = z
+  .custom<File>((value) => value instanceof File, {
+    message: "Choose a PNG, JPG, or WebP image",
+  })
+  .optional();
+
 /* ─── Build steps ───────────────────────────────────────────────────────
    `stepNumber` is deliberately absent: it comes from list position at
    submit time, so reordering or deleting can never leave a gap. */
@@ -115,6 +129,12 @@ export const MAX_TECH = 15;
 export const buildStepSchema = z.object({
   /** Client-side only — React key and collapse state, never sent. */
   key: z.string(),
+  /**
+   * The step's id upstream, set only on steps loaded for editing. Its absence
+   * is what marks a step as new, and what tells the save sequence to POST it
+   * rather than PATCH it.
+   */
+  serverId: z.string().optional(),
   title: z
     .string()
     .trim()
@@ -134,6 +154,10 @@ export const buildStepSchema = z.object({
     .trim()
     .max(500, "Diagram URL must not exceed 500 characters")
     .optional(),
+  /** Uploaded to the step's `/image` route once the step exists. */
+  imageFile: pendingImage,
+  /** Uploaded to the step's `/diagram` route once the step exists. */
+  diagramFile: pendingImage,
 });
 
 export type BuildStepValues = z.infer<typeof buildStepSchema>;
@@ -164,32 +188,113 @@ export type ResourceLinkValues = z.infer<typeof resourceLinkSchema>;
 
 /* ─── The form ──────────────────────────────────────────────────────── */
 
-export const createShowcaseSchema = z.object({
-  coverImageUrl: z
-    .string()
-    .trim()
-    .min(1, "A cover image is required")
-    .max(500, "Cover image URL must not exceed 500 characters"),
-  title: z
-    .string()
-    .trim()
-    .min(1, "Project title is required")
-    .max(255, "Title must not exceed 255 characters"),
-  categoryId: z.string().min(1, "Pick a category"),
-  overview: z.string().trim().min(1, "An overview is required"),
-  techStack: z.array(z.string()).max(MAX_TECH, `Up to ${MAX_TECH} technologies`),
-  steps: z.array(buildStepSchema).min(1, "Add at least one build step"),
-  repoUrl: optionalUrl(),
-  liveUrl: optionalUrl(),
-  videoUrl: optionalUrl(),
-  resourceLinks: z.array(resourceLinkSchema),
-});
+export const createShowcaseSchema = z
+  .object({
+    coverImageUrl: z
+      .string()
+      .trim()
+      .max(500, "Cover image URL must not exceed 500 characters")
+      .optional(),
+    /** Uploaded to `/showcases/{id}/cover-image` once the showcase exists. */
+    coverImageFile: pendingImage,
+    title: z
+      .string()
+      .trim()
+      .min(1, "Project title is required")
+      .max(255, "Title must not exceed 255 characters"),
+    categoryId: z.string().min(1, "Pick a category"),
+    overview: z.string().trim().min(1, "An overview is required"),
+    techStack: z
+      .array(z.string())
+      .max(MAX_TECH, `Up to ${MAX_TECH} technologies`),
+    steps: z.array(buildStepSchema).min(1, "Add at least one build step"),
+    repoUrl: optionalUrl(),
+    liveUrl: optionalUrl(),
+    videoUrl: optionalUrl(),
+    resourceLinks: z.array(resourceLinkSchema),
+  })
+  /* A cover can arrive either way, so the requirement is on the pair rather
+     than on one field. The message is reported against `coverImageUrl`, which
+     is where the field renders its error. */
+  .refine(
+    (values) => Boolean(values.coverImageUrl?.trim() || values.coverImageFile),
+    { message: "A cover image is required", path: ["coverImageUrl"] },
+  );
 
 /** What the fields hold while editing — before zod's URL transforms run. */
 export type CreateShowcaseFormValues = z.input<typeof createShowcaseSchema>;
 
 /** What `handleSubmit` hands back, with every URL normalised. */
 export type CreateShowcaseSubmitValues = z.output<typeof createShowcaseSchema>;
+
+/* ─── Wire schemas ──────────────────────────────────────────────────────
+   What the proxy routes under `src/app/api/showcases` and
+   `src/app/api/showcase-steps` validate before relaying. These mirror the
+   backend request bodies field for field, with no URL normalising: by the
+   time a value reaches a route the client has already resolved it, and
+   rewriting it here would hide what was actually sent. */
+
+export const SHOWCASE_REVIEW_STATUSES = [
+  "PENDING",
+  "APPROVED",
+  "REJECTED",
+] as const;
+
+export type ShowcaseReviewStatus = (typeof SHOWCASE_REVIEW_STATUSES)[number];
+
+/** Optional string field capped the way the backend caps it. */
+const wireText = (max: number, label: string) =>
+  z
+    .string()
+    .trim()
+    .max(max, `${label} must not exceed ${max} characters`)
+    .optional();
+
+/** Mirrors `CreateShowCasesRequest` — `title` and `overview` are required. */
+export const showcaseCreateSchema = z.object({
+  categoryId: z.uuid("Category id must be a UUID").optional(),
+  title: z
+    .string()
+    .trim()
+    .min(1, "Title is required")
+    .max(255, "Title must not exceed 255 characters"),
+  overview: z.string().trim().min(1, "An overview is required"),
+  coverImageUrl: wireText(500, "Cover image URL"),
+  liveUrl: wireText(500, "Live URL"),
+  repoUrl: wireText(500, "Repository URL"),
+  videoUrl: wireText(500, "Video URL"),
+});
+
+/** Mirrors `UpdateShowCasesRequest` — every field optional. */
+export const showcaseUpdateSchema = showcaseCreateSchema.partial();
+
+/** Mirrors `CreateShowcaseStepRequest`. */
+export const showcaseStepCreateSchema = z.object({
+  stepNumber: z.coerce
+    .number()
+    .int("Step number must be a whole number")
+    .min(1, "Step numbers start at 1"),
+  title: z
+    .string()
+    .trim()
+    .min(1, "Step title is required")
+    .max(255, "Step title must not exceed 255 characters"),
+  description: z.string().trim().min(1, "Step description is required"),
+  codeSnippet: z.string().optional(),
+  imageUrl: wireText(500, "Image URL"),
+  diagramUrl: wireText(500, "Diagram URL"),
+});
+
+/** Mirrors `UpdateShowcaseStepRequest` — every field optional. */
+export const showcaseStepUpdateSchema = showcaseStepCreateSchema.partial();
+
+/** Mirrors `UpdateShowcaseStatusRequest`, the admin review decision. */
+export const showcaseReviewStatusSchema = z.object({
+  reviewStatus: z.enum(SHOWCASE_REVIEW_STATUSES, {
+    message: `reviewStatus must be one of ${SHOWCASE_REVIEW_STATUSES.join(", ")}`,
+  }),
+  rejectionReason: wireText(2000, "Rejection reason"),
+});
 
 /* ─── Cover image constraints ───────────────────────────────────────── */
 

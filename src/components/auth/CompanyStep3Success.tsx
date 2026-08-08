@@ -56,9 +56,9 @@ export function CompanyStep3Success() {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <Link href="/dashboard" className="w-full sm:w-auto">
+        <Link href="/" className="w-full sm:w-auto">
           <Button className="w-full sm:w-auto h-11 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm shadow-md shadow-blue-500/20 cursor-pointer">
-            Go to Dashboard Overview
+            Back to Home
           </Button>
         </Link>
       </div>

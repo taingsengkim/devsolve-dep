@@ -124,7 +124,11 @@ export function parseApiError(
   }
 
   if (isRecord(body)) {
-    const fieldErrors = extractFieldErrors(body);
+    const details = isRecord(body.details) ? body.details : null;
+    const fieldErrors = {
+      ...(details ? extractFieldErrors(details) : {}),
+      ...extractFieldErrors(body),
+    };
 
     // `error` is Spring's default-handler wording ("Not Found"), useful only
     // when nothing better exists.

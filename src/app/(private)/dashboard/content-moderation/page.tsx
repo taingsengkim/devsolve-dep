@@ -14,6 +14,7 @@ import {
   SlidersHorizontal,
   ArrowLeft,
   History,
+  LayoutTemplate,
   ShieldAlert,
 } from "lucide-react";
 import Link from "next/link";
@@ -25,6 +26,7 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuLabel,
@@ -34,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
   SelectContent,
+  SelectGroup,
   SelectItem,
 } from "@/components/ui/select";
 import {
@@ -46,13 +49,28 @@ import { ContentReportCard } from "@/components/admin/ContentReportCard";
 import { ReportReasonsBreakdown } from "@/components/admin/ReportReasonsBreakdown";
 import { ModerationActionDialog } from "@/components/admin/ModerationActionDialog";
 import { ModerationHistoryTable } from "@/components/admin/ModerationHistoryTable";
+import { ShowcaseReviewQueue } from "@/components/admin/showcases/ShowcaseReviewQueue";
+import { useGetShowcaseReviewQueueQuery } from "@/lib/redux/services/admin/showcaseReviewApi";
 import type { ModerationActionType } from "@/lib/types/admin/types";
+import { cn } from "@/lib/utils";
 
-export default function ContentReportsPage() {
-  const [activeTab, setActiveTab] = useState<"queue" | "history">("queue");
+export default function ContentManagementPage() {
+  const [activeTab, setActiveTab] = useState<"queue" | "showcases" | "history">(
+    "queue",
+  );
 
   const { data, isLoading } = useGetContentReportsQuery();
   const [updateAction] = useUpdateContentReportActionMutation();
+
+  /* Two different jobs share this page: flags are raised against content that
+     is already public, while a showcase submission is not public until it is
+     approved. The count rides on the tab so a waiting queue is visible from
+     the flags view. */
+  const { data: showcaseQueue } = useGetShowcaseReviewQueueQuery({
+    reviewStatus: "PENDING",
+    pageSize: 1,
+  });
+  const pendingShowcases = showcaseQueue?.totalElements ?? 0;
 
   const reportsList = data?.items ?? [];
   const breakdown = data?.breakdown;
@@ -141,16 +159,16 @@ export default function ContentReportsPage() {
             </Link>
             <span>/</span>
             <span className="text-slate-700 dark:text-slate-300 font-bold">
-              Content Reports & Moderation
+              Content Management
             </span>
           </div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-              Content Reports & Moderation
+              Content Management
             </h1>
             {breakdown && (
-              <Badge className="bg-blue-600 text-white rounded-full px-2.5 py-0.5 text-xs font-semibold hover:bg-blue-600">
-                {breakdown.total} pending
+              <Badge variant="secondary" className="rounded-full tabular-nums">
+                {breakdown.total} pending reports
               </Badge>
             )}
           </div>
@@ -160,30 +178,50 @@ export default function ContentReportsPage() {
         </div>
 
         {/* Tab Selection Buttons */}
-        <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200/60 dark:border-slate-700 shrink-0">
+        <div className="flex max-w-full shrink-0 items-center gap-1 overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-50 p-1 dark:border-slate-800 dark:bg-slate-900">
           <button
             type="button"
             onClick={() => setActiveTab("queue")}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition cursor-pointer ${
+            className={cn(
+              "flex shrink-0 cursor-pointer items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors",
               activeTab === "queue"
-                ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-            }`}
+                ? "bg-white text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-slate-100"
+                : "text-slate-500 hover:bg-white/70 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100",
+            )}
           >
-            <ShieldAlert className="size-4 text-blue-600" />
+            <ShieldAlert className="size-4 text-slate-500" />
             Reports Queue
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab("history")}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition cursor-pointer ${
-              activeTab === "history"
-                ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-            }`}
+            onClick={() => setActiveTab("showcases")}
+            className={cn(
+              "flex shrink-0 cursor-pointer items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors",
+              activeTab === "showcases"
+                ? "bg-white text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-slate-100"
+                : "text-slate-500 hover:bg-white/70 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100",
+            )}
           >
-            <History className="size-4 text-purple-600" />
-            Moderation History Log
+            <LayoutTemplate className="size-4 text-slate-500" />
+            Showcase Approvals
+            {pendingShowcases > 0 && (
+              <Badge variant="secondary" className="min-w-5 rounded-full px-1.5 tabular-nums">
+                {pendingShowcases}
+              </Badge>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("history")}
+            className={cn(
+              "flex shrink-0 cursor-pointer items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors",
+              activeTab === "history"
+                ? "bg-white text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-slate-100"
+                : "text-slate-500 hover:bg-white/70 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100",
+            )}
+          >
+            <History className="size-4 text-slate-500" />
+            Moderation History
           </button>
         </div>
       </header>
@@ -201,11 +239,12 @@ export default function ContentReportsPage() {
                     key={opt.value}
                     type="button"
                     onClick={() => setTypeFilter(opt.value)}
-                    className={`rounded-full px-4 py-1.5 text-xs font-bold cursor-pointer transition shrink-0 ${
+                    className={cn(
+                      "shrink-0 cursor-pointer rounded-xl border px-4 py-1.5 text-sm font-semibold transition-colors",
                       isActive
-                        ? "bg-blue-600 text-white shadow-2xs"
-                        : "bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                    }`}
+                        ? "border-slate-900 bg-slate-900 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-900"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+                    )}
                   >
                     {opt.label}
                   </button>
@@ -222,7 +261,7 @@ export default function ContentReportsPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search reports..."
-                  className="h-8 pl-8 pr-3 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl text-xs"
+                  className="h-9 rounded-xl border-slate-300 bg-white pl-9 pr-3 text-sm dark:border-slate-700 dark:bg-slate-950"
                 />
               </div>
 
@@ -233,28 +272,30 @@ export default function ContentReportsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 px-3 rounded-xl border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                      className="h-9 cursor-pointer rounded-xl border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                     />
                   }
                 >
-                  <SlidersHorizontal className="size-3.5 text-slate-400" />
+                  <SlidersHorizontal data-icon="inline-start" className="text-slate-400" />
                   <span>
                     Reason: {reasonFilter === "ALL" ? "All" : reasonFilter}
                   </span>
-                  <ChevronDown className="size-3.5 text-slate-400" />
+                  <ChevronDown data-icon="inline-end" className="text-slate-400" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuLabel>Filter by Reason</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {reasonOptions.map((opt) => (
-                    <DropdownMenuItem
-                      key={opt.value}
-                      onClick={() => setReasonFilter(opt.value)}
-                      className={reasonFilter === opt.value ? "font-bold text-blue-600" : ""}
-                    >
-                      {opt.label}
-                    </DropdownMenuItem>
-                  ))}
+                  <DropdownMenuGroup>
+                    {reasonOptions.map((opt) => (
+                      <DropdownMenuItem
+                        key={opt.value}
+                        onClick={() => setReasonFilter(opt.value)}
+                        className={reasonFilter === opt.value ? "font-semibold text-slate-900 dark:text-slate-100" : ""}
+                      >
+                        {opt.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -265,30 +306,32 @@ export default function ContentReportsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 px-3 rounded-xl border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                      className="h-9 cursor-pointer rounded-xl border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                     />
                   }
                 >
-                  <span className="text-slate-400 font-normal uppercase text-[10px] tracking-wider">
+                  <span className="font-normal text-slate-400">
                     Sort:
                   </span>
                   <span>
                     {sortOptions.find((s) => s.value === sortBy)?.label || "Most Reported"}
                   </span>
-                  <ChevronDown className="size-3.5 text-slate-400" />
+                  <ChevronDown data-icon="inline-end" className="text-slate-400" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuLabel>Sort Order</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {sortOptions.map((opt) => (
-                    <DropdownMenuItem
-                      key={opt.value}
-                      onClick={() => setSortBy(opt.value)}
-                      className={sortBy === opt.value ? "font-bold text-blue-600" : ""}
-                    >
-                      {opt.label}
-                    </DropdownMenuItem>
-                  ))}
+                  <DropdownMenuGroup>
+                    {sortOptions.map((opt) => (
+                      <DropdownMenuItem
+                        key={opt.value}
+                        onClick={() => setSortBy(opt.value)}
+                        className={sortBy === opt.value ? "font-semibold text-slate-900 dark:text-slate-100" : ""}
+                      >
+                        {opt.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -299,9 +342,9 @@ export default function ContentReportsPage() {
                   variant="ghost"
                   size="sm"
                   onClick={resetFilters}
-                  className="h-8 px-2.5 rounded-xl text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                  className="h-9 cursor-pointer rounded-xl px-3 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                 >
-                  <RotateCcw className="size-3 mr-1" /> Reset
+                  <RotateCcw data-icon="inline-start" /> Reset
                 </Button>
               )}
             </div>
@@ -327,7 +370,7 @@ export default function ContentReportsPage() {
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                      No Content Reports Match Filters
+                      No flagged content matches your filters
                     </h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
                       {reportsList.filter((r) => r.status === "PENDING").length === 0
@@ -378,9 +421,11 @@ export default function ContentReportsPage() {
                               <SelectValue placeholder={String(rowsPerPage)} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="10">10</SelectItem>
-                              <SelectItem value="25">25</SelectItem>
-                              <SelectItem value="50">50</SelectItem>
+                              <SelectGroup>
+                                <SelectItem value="10">10</SelectItem>
+                                <SelectItem value="25">25</SelectItem>
+                                <SelectItem value="50">50</SelectItem>
+                              </SelectGroup>
                             </SelectContent>
                           </Select>
                         </div>
@@ -457,6 +502,10 @@ export default function ContentReportsPage() {
             onConfirm={handleConfirmModalAction}
           />
         </>
+      ) : activeTab === "showcases" ? (
+        /* Showcase Approvals Tab — the publication gate for community
+           showcases, which stay off the public index until approved here. */
+        <ShowcaseReviewQueue />
       ) : (
         /* Moderation History Audit Log Tab */
         <ModerationHistoryTable />

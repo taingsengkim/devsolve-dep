@@ -1,27 +1,31 @@
 "use client";
 
-import React from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { CompanyVerificationItem } from "@/lib/types/admin/types";
-import { StatusBadge } from "./statusUtils";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import type { ColumnDef } from "@tanstack/react-table";
+import Link from "next/link";
 import {
-  Building2,
+  ArrowUpDown,
+  Calendar,
+  ChevronRight,
+  Eye,
   Globe,
   Mail,
-  User,
-  Calendar,
-  ArrowUpDown,
-  Eye,
   ShieldCheck,
-  ChevronRight,
+  User,
 } from "lucide-react";
-import Link from "next/link";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import type { CompanyVerificationItem } from "@/lib/types/admin/types";
+
+import { StatusBadge } from "./statusUtils";
 
 interface ColumnCallbacks {
   onQuickAudit?: (company: CompanyVerificationItem) => void;
 }
+
+const sortableHeaderClassName =
+  "px-0 text-sm font-semibold text-slate-700 hover:bg-transparent dark:text-slate-300";
 
 export function getOrganizationColumns({
   onQuickAudit,
@@ -33,37 +37,43 @@ export function getOrganizationColumns({
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="px-0 hover:bg-transparent font-bold text-slate-700 dark:text-slate-300 cursor-pointer text-xs uppercase tracking-wider"
+          className={sortableHeaderClassName}
         >
           Company
-          <ArrowUpDown className="ml-1.5 h-3.5 w-3.5" />
+          <ArrowUpDown data-icon="inline-end" />
         </Button>
       ),
       cell: ({ row }) => {
         const item = row.original;
         const initial = item.companyName?.charAt(0)?.toUpperCase() || "C";
+
         return (
           <div className="flex items-center gap-3 py-1">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm shrink-0 border border-blue-100 dark:border-blue-900/50">
-              {initial}
-            </div>
+            <Avatar size="lg">
+              {item.logoUrl && (
+                <AvatarImage src={item.logoUrl} alt={`${item.companyName} logo`} />
+              )}
+              <AvatarFallback className="font-semibold text-slate-700 dark:text-slate-300">
+                {initial}
+              </AvatarFallback>
+            </Avatar>
             <div className="min-w-0">
               <Link
                 href={`/dashboard/company-verification/${item.id}`}
-                className="font-bold text-slate-900 dark:text-slate-100 text-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate block"
+                className="block truncate text-sm font-semibold text-slate-900 underline-offset-4 transition-colors hover:text-slate-600 hover:underline dark:text-slate-100 dark:hover:text-slate-300"
               >
                 {item.companyName}
               </Link>
-              <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 truncate">
+              <div className="flex items-center gap-1.5 truncate text-sm text-slate-500 dark:text-slate-400">
                 {item.domain && (
-                  <span className="flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300">
-                    <Globe className="w-3 h-3 text-slate-400" />
+                  <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
+                    <Globe className="size-3.5 text-slate-400" />
                     {item.domain.replace(/^https?:\/\//, "")}
                   </span>
                 )}
-                {item.domain && item.orgCode && <span>•</span>}
+                {item.domain && item.orgCode && <span aria-hidden="true">•</span>}
                 {item.orgCode && (
-                  <span className="font-mono text-slate-400 dark:text-slate-500 text-[11px]">
+                  <span className="font-mono text-slate-500 dark:text-slate-400">
                     {item.orgCode}
                   </span>
                 )}
@@ -79,24 +89,25 @@ export function getOrganizationColumns({
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="px-0 hover:bg-transparent font-bold text-slate-700 dark:text-slate-300 cursor-pointer text-xs uppercase tracking-wider"
+          className={sortableHeaderClassName}
         >
           Contact / Owner
-          <ArrowUpDown className="ml-1.5 h-3.5 w-3.5" />
+          <ArrowUpDown data-icon="inline-end" />
         </Button>
       ),
       cell: ({ row }) => {
         const item = row.original;
+
         return (
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-1.5 font-medium text-slate-900 dark:text-slate-100 text-sm">
-              <User className="w-3.5 h-3.5 text-slate-400" />
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-1.5 text-sm font-medium text-slate-900 dark:text-slate-100">
+              <User className="size-4 text-slate-400" />
               <span>{item.contactName || "—"}</span>
             </div>
             {item.email && (
-              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                <Mail className="w-3 h-3 text-slate-400" />
-                <span className="truncate max-w-[180px]">{item.email}</span>
+              <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+                <Mail className="size-3.5 text-slate-400" />
+                <span className="max-w-[180px] truncate">{item.email}</span>
               </div>
             )}
           </div>
@@ -109,25 +120,23 @@ export function getOrganizationColumns({
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="px-0 hover:bg-transparent font-bold text-slate-700 dark:text-slate-300 cursor-pointer text-xs uppercase tracking-wider"
+          className={sortableHeaderClassName}
         >
           Industry & Size
-          <ArrowUpDown className="ml-1.5 h-3.5 w-3.5" />
+          <ArrowUpDown data-icon="inline-end" />
         </Button>
       ),
       cell: ({ row }) => {
         const item = row.original;
         const industry = item.industry || item.businessType || "Technology";
+
         return (
-          <div className="space-y-1">
-            <Badge
-              variant="outline"
-              className="text-xs font-semibold rounded-lg px-2 py-0.5 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60"
-            >
+          <div className="flex flex-col gap-1">
+            <Badge variant="secondary" className="rounded-lg text-sm font-medium">
               {industry}
             </Badge>
             {item.companySize && (
-              <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+              <div className="text-sm text-slate-500 dark:text-slate-400">
                 {item.companySize} employees
               </div>
             )}
@@ -141,10 +150,10 @@ export function getOrganizationColumns({
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="px-0 hover:bg-transparent font-bold text-slate-700 dark:text-slate-300 cursor-pointer text-xs uppercase tracking-wider"
+          className={sortableHeaderClassName}
         >
           Status
-          <ArrowUpDown className="ml-1.5 h-3.5 w-3.5" />
+          <ArrowUpDown data-icon="inline-end" />
         </Button>
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
@@ -155,18 +164,19 @@ export function getOrganizationColumns({
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="px-0 hover:bg-transparent font-bold text-slate-700 dark:text-slate-300 cursor-pointer text-xs uppercase tracking-wider"
+          className={sortableHeaderClassName}
         >
           Submitted
-          <ArrowUpDown className="ml-1.5 h-3.5 w-3.5" />
+          <ArrowUpDown data-icon="inline-end" />
         </Button>
       ),
       cell: ({ row }) => {
-        const dateVal = row.original.submittedAt || row.original.registrationDate;
+        const dateValue = row.original.submittedAt || row.original.registrationDate;
+
         return (
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <span>{dateVal || "—"}</span>
+          <div className="flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-400">
+            <Calendar className="size-4 text-slate-400" />
+            <span>{dateValue || "—"}</span>
           </div>
         );
       },
@@ -174,38 +184,39 @@ export function getOrganizationColumns({
     {
       id: "actions",
       header: () => (
-        <div className="text-right text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+        <div className="text-right text-sm font-semibold text-slate-700 dark:text-slate-300">
           Actions
         </div>
       ),
       cell: ({ row }) => {
         const item = row.original;
+
         return (
           <div className="flex items-center justify-end gap-2">
-            {onQuickAudit && (item.status === "PENDING" || item.status === "UNDER_REVIEW") && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onQuickAudit(item)}
-                className="h-8 px-2.5 rounded-xl text-xs font-semibold border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer gap-1 shadow-2xs"
-              >
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Audit
-              </Button>
-            )}
+            {onQuickAudit &&
+              (item.status === "PENDING" || item.status === "UNDER_REVIEW") && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onQuickAudit(item)}
+                  className="rounded-lg text-sm font-medium"
+                >
+                  <ShieldCheck data-icon="inline-start" />
+                  Audit
+                </Button>
+              )}
 
             <Link
               href={`/dashboard/company-verification/${item.id}`}
               className={buttonVariants({
                 variant: "outline",
                 size: "sm",
-                className:
-                  "h-8 px-3 rounded-xl text-xs font-semibold border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer gap-1 shadow-2xs inline-flex items-center justify-center",
+                className: "rounded-lg text-sm font-medium",
               })}
             >
-              <Eye className="w-3.5 h-3.5" />
+              <Eye data-icon="inline-start" />
               Details
-              <ChevronRight className="w-3 h-3 text-slate-400 ml-0.5" />
+              <ChevronRight data-icon="inline-end" className="text-slate-400" />
             </Link>
           </div>
         );

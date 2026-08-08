@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import * as z from "zod";
 import { auth } from "@/lib/auth/auth";
 
 /**
@@ -50,6 +51,76 @@ export const badJson = () =>
     { status: 400 },
   );
 
+export const badRequest = (message: string) =>
+  NextResponse.json({ message }, { status: 400 });
+
+/** The shape every handler returns when a body fails its schema. */
+export const validationFailed = (error: z.ZodError) => {
+  const { formErrors, fieldErrors } = z.flattenError(error);
+  return NextResponse.json(
+    { message: "Validation failed", formErrors, fieldErrors },
+    { status: 400 },
+  );
+};
+
+const uuidSchema = z.uuid();
+
+/**
+ * Path ids are UUIDs upstream, so a malformed one is rejected here rather than
+ * spent on a round trip. Returns the id when it parses, null when it does not.
+ */
+export function asUuid(value: string | undefined): string | null {
+  return value && uuidSchema.safeParse(value).success ? value : null;
+}
+
+/**
+ * Forwards only the query parameters a route actually supports, dropping
+ * anything else so a caller cannot smuggle extra params upstream.
+ */
+export function forwardQuery(
+  params: URLSearchParams,
+  allowed: readonly string[],
+): string {
+  const forwarded = new URLSearchParams();
+  for (const key of allowed) {
+    const value = params.get(key);
+    if (value !== null && value !== "") forwarded.set(key, value);
+  }
+  const query = forwarded.toString();
+  return query ? `?${query}` : "";
+}
+
+/**
+ * Reads the single `file` part out of a multipart request and validates it.
+ *
+ * The part is re-encoded rather than streamed through — streaming would need
+ * `duplex: "half"` and would forward the bytes unchecked. Showcase images are
+ * capped at 5MB, so buffering one is cheap.
+ */
+export async function fileFrom(
+  request: NextRequest,
+  validate: (file: File) => string | null,
+): Promise<{ body: FormData } | { error: NextResponse }> {
+  let form: FormData;
+  try {
+    form = await request.formData();
+  } catch {
+    return { error: badRequest("Request must be multipart/form-data") };
+  }
+
+  const file = form.get("file");
+  if (!(file instanceof File)) {
+    return { error: badRequest("A `file` part is required") };
+  }
+
+  const reason = validate(file);
+  if (reason) return { error: badRequest(reason) };
+
+  const body = new FormData();
+  body.append("file", file, file.name);
+  return { body };
+}
+
 /**
  * Passes an upstream response through with its status intact.
  *
@@ -83,10 +154,16 @@ export async function relay(upstream: Response, fallbackMessage: string) {
   return NextResponse.json(body, { status: upstream.status });
 }
 
-/** Server-to-server request carrying the caller's bearer token. */
+/**
+ * Server-to-server request carrying the caller's bearer token.
+ *
+ * The token is nullable for the operations the backend serves to anyone —
+ * browsing showcases, reading a public program. Signed-in callers still send
+ * theirs, since the upstream personalises those responses when it can.
+ */
 export function upstreamFetch(
   path: string,
-  token: string,
+  token: string | null,
   init: RequestInit = {},
 ) {
   return fetch(`${BACKEND_API_URL}${path}`, {
@@ -100,7 +177,7 @@ export function upstreamFetch(
         ? { "Content-Type": "application/json" }
         : {}),
       ...init.headers,
-      Authorization: `Bearer ${token}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     cache: "no-store",
   });

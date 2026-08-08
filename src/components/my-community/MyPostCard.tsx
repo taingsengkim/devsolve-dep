@@ -1,0 +1,183 @@
+"use client";
+
+import React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { motion } from "motion/react";
+import {
+  AlertCircle,
+  Eye,
+  FilePen,
+  ImageOff,
+  Pencil,
+  SquareArrowOutUpRight,
+} from "lucide-react";
+
+import { Button, buttonVariants } from "@/components/ui/button";
+import type { MyPost } from "@/lib/redux/services/myCommunityApi";
+import { cn } from "@/lib/utils";
+
+/**
+ * One of the author's own posts. Unlike a public card this leads with the
+ * workflow state — whether it is live, waiting on a reviewer, or sent back —
+ * because that is the question someone opens this page to answer.
+ */
+
+const KIND_STYLES: Record<MyPost["kind"], string> = {
+  Problem: "bg-red-50 text-red-600 border border-red-100",
+  Solution: "bg-emerald-50 text-emerald-700 border border-emerald-100",
+  Showcase: "bg-blue-50 text-blue-700 border border-blue-100",
+};
+
+const STATE_STYLES: Record<MyPost["state"]["tone"], string> = {
+  live: "bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20",
+  pending:
+    "bg-amber-50 text-amber-700 border border-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20",
+  blocked:
+    "bg-rose-50 text-rose-700 border border-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20",
+  draft:
+    "bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+};
+
+function formatDate(iso: string) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export function MyPostCard({ post }: { post: MyPost }) {
+  return (
+    <motion.article
+      layout
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.2 }}
+      className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs sm:flex-row sm:p-5 dark:border-slate-800 dark:bg-slate-900"
+    >
+      {post.kind === "Showcase" && (
+        <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 sm:w-40 dark:border-slate-700 dark:bg-slate-800">
+          {post.coverImageUrl ? (
+            <Image
+              src={post.coverImageUrl}
+              alt=""
+              fill
+              quality={90}
+              sizes="160px"
+              className="object-cover"
+            />
+          ) : (
+            <span className="flex size-full items-center justify-center text-slate-400">
+              <ImageOff aria-hidden="true" className="size-5" />
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className={cn(
+              "rounded-lg px-2.5 py-0.5 text-xs font-semibold",
+              KIND_STYLES[post.kind],
+            )}
+          >
+            {post.kind}
+          </span>
+          <span
+            className={cn(
+              "rounded-lg px-2.5 py-0.5 text-xs font-semibold",
+              STATE_STYLES[post.state.tone],
+            )}
+          >
+            {post.state.label}
+          </span>
+          {post.hasPendingEdit && (
+            <span className="inline-flex items-center gap-1 rounded-lg border border-blue-100 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300">
+              <FilePen className="size-3" aria-hidden="true" />
+              Edit awaiting review
+            </span>
+          )}
+        </div>
+
+        <div className="min-w-0 space-y-1">
+          <h3 className="truncate text-base font-semibold text-slate-900 dark:text-slate-100">
+            {post.title}
+          </h3>
+          <p className="line-clamp-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+            {post.excerpt}
+          </p>
+        </div>
+
+        {/* What a reviewer asked for, where the author will look for it. */}
+        {post.note && (
+          <p className="flex gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm leading-relaxed text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-200">
+            <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            <span>{post.note}</span>
+          </p>
+        )}
+
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3 text-xs font-medium text-slate-400 dark:text-slate-500">
+            {post.views !== undefined && (
+              <span className="inline-flex items-center gap-1.5">
+                <Eye className="size-3.5" aria-hidden="true" />
+                {post.views.toLocaleString()}
+              </span>
+            )}
+            <span>{formatDate(post.createdAt)}</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {post.href && (
+              <Link
+                href={post.href}
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "sm" }),
+                  "rounded-xl",
+                )}
+              >
+                <SquareArrowOutUpRight
+                  data-icon="inline-start"
+                  aria-hidden="true"
+                />
+                View
+              </Link>
+            )}
+
+            {post.editHref ? (
+              <Link
+                href={post.editHref}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "rounded-xl",
+                )}
+              >
+                <Pencil data-icon="inline-start" aria-hidden="true" />
+                Edit
+              </Link>
+            ) : (
+              /* Problems and solutions have no edit screen in this app yet, so
+                 the affordance says so rather than going nowhere. */
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled
+                title="Editing this kind of post isn't available yet"
+                className="rounded-xl"
+              >
+                <Pencil data-icon="inline-start" aria-hidden="true" />
+                Edit
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    </motion.article>
+  );
+}

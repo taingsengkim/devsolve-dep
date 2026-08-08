@@ -3,8 +3,11 @@
 export const dynamic = "force-dynamic";
 
 import React, { useState, useMemo, useCallback } from "react";
+import Link from "next/link";
 import { motion } from "motion/react";
 import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   useGetAdminUsersQuery,
   useUpdateAdminUserStatusMutation,
@@ -178,9 +181,22 @@ export default function AdminUsersPage() {
     >
       {/* PAGE HEADER */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-1 transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+            >
+              <ArrowLeft className="size-3.5" />
+              Dashboard
+            </Link>
+            <span>/</span>
+            <span className="font-semibold text-slate-700 dark:text-slate-300">
+              Users
+            </span>
+          </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            Platform Users
+            Users
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Manage researchers, company representatives, admins, and moderators across the platform.
@@ -189,12 +205,15 @@ export default function AdminUsersPage() {
 
         {/* Suspended alert badge */}
         {suspendedCount > 0 && (
-          <div className="shrink-0 flex items-center gap-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl px-4 py-2.5">
-            <span className="w-2 h-2 rounded-full bg-rose-500" />
-            <span className="text-sm font-semibold text-rose-700 dark:text-rose-400">
+          <Badge
+            variant="outline"
+            className="h-9 shrink-0 gap-2 rounded-xl border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+          >
+            <span className="size-2 rounded-full bg-rose-500" />
+            <span>
               {suspendedCount} suspended account{suspendedCount > 1 ? "s" : ""}
             </span>
-          </div>
+          </Badge>
         )}
       </header>
 
@@ -226,7 +245,7 @@ export default function AdminUsersPage() {
       />
 
       {/* DATA TABLE */}
-      <main className="space-y-3">
+      <main className="flex flex-col gap-3">
         {isLoading || isFetching ? (
           <div className="space-y-3 animate-pulse">
             <div className="h-64 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
