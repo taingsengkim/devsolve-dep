@@ -56,7 +56,7 @@ export default function ProfileSidebar({
     isOwnProfile,
   } = profile;
 
-  const profileBasePath = baseProfilePath ?? (isOwnProfile ? "/dashboard/profile" : `/profile/${username}`);
+  const profileBasePath = baseProfilePath ?? `/dashboard/profile/${username}`;
 
   return (
     <motion.aside

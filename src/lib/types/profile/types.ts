@@ -123,6 +123,13 @@ export interface FollowRecord {
   followableType: FollowableType;
   followableId: string;
   createdAt: string; // ISO date
+  displayName?: string;
+  username?: string;
+  avatarUrl?: string;
+  avatarInitials?: string;
+  bio?: string;
+  reputation?: number;
+  isFollowing?: boolean;
 }
 
 export interface FollowingCounts {

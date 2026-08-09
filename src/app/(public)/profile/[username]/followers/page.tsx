@@ -43,7 +43,7 @@ export default function PublicFollowersPage() {
         </div>
 
         <div>
-          <FollowersList total={followers.total} items={followers.items} />
+          <FollowersList total={followers.total} items={followers.items} baseProfilePath="/profile" />
         </div>
       </motion.div>
     </div>

@@ -18,6 +18,7 @@ When performing any work related to UI components, layout, styling, theme, anima
    - Use the consistent page header pattern (`<header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">`) with breadcrumb navigation, a prominent `<h1>` title (`text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100`), and a descriptive subtext.
    - Ensure loading states use structured skeleton pulse containers (`animate-pulse`) matching the page structure instead of simple unstyled spinners.
 5. **No Native `<select>` Tags**: NEVER use raw HTML `<select>` tags or native browser select dropdowns. ALWAYS use the `shadcn/ui` Select component (`import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"`) for all dropdowns, select inputs, and rows-per-page pickers across the application.
+6. **No Explicit Mock Badges**: NEVER add explicit "Mock Preview Data", "Mock Data", or similar preview badges/indicators to UI headers or components. Render all fallback or mock data cleanly and seamlessly without explicit mock tag banners.
 
 # Data Fetching & Mutations
 
