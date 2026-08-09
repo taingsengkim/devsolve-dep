@@ -18,8 +18,6 @@ import {
   PenSquare,
   Tags,
   CircleUser,
-  Sparkles,
-  History,
   LucideIcon,
 } from "lucide-react";
 
@@ -64,11 +62,7 @@ export const NAV_ITEMS: NavItem[] = [
   // ADMIN Role items
   { name: "Organization Verification", href: "/dashboard/company-verification", icon: ShieldCheck, roles: ["ADMIN"], category: "Administration" },
   { name: "Program Review", href: "/dashboard/admin-program-management", icon: Building2, roles: ["ADMIN"], category: "Administration" },
-  { name: "Problem Moderation", href: "/dashboard/problem-moderation", icon: FileText, roles: ["ADMIN"], category: "Administration" },
-  { name: "Solution Review", href: "/dashboard/solution-review", icon: ClipboardList, roles: ["ADMIN"], category: "Administration" },
-  { name: "Showcase Review", href: "/dashboard/showcase-review", icon: Sparkles, roles: ["ADMIN"], category: "Administration" },
   { name: "Users", href: "/dashboard/users", icon: UserCheck, roles: ["ADMIN"], category: "Administration" },
   { name: "Content Management", href: "/dashboard/content-moderation", icon: PanelsTopLeft, roles: ["ADMIN"], category: "Administration" },
-  { name: "Moderation Log", href: "/dashboard/moderation-log", icon: History, roles: ["ADMIN"], category: "Administration" },
   { name: "Categories", href: "/dashboard/categories", icon: Tags, roles: ["ADMIN"], category: "Administration" },
 ];

@@ -15,7 +15,7 @@ interface ContentReportCardProps {
   onViewDetail?: (id: string) => void;
 }
 
-export function ContentReportCard({ report, onAction }: ContentReportCardProps) {
+export function ContentReportCard({ report, onAction, onViewDetail }: ContentReportCardProps) {
   return (
     <Card className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xs hover:shadow-xs transition duration-200">
       <CardContent className="p-0 space-y-4">

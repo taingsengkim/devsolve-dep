@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Flag,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Search,
@@ -188,6 +189,7 @@ function ContentManagement() {
   const [dialogActionType, setDialogActionType] =
     useState<ModerationActionType | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedFlagId, setSelectedFlagId] = useState<string | null>(null);
 
   const handleAction = (id: string, action: "DISMISS" | "WARN" | "REMOVE") => {
     if (action === "DISMISS") {
@@ -514,6 +516,7 @@ function ContentManagement() {
                         <ContentReportCard
                           report={report}
                           onAction={handleAction}
+                          onViewDetail={(id) => setSelectedFlagId(id)}
                         />
                       </motion.div>
                     ))}
