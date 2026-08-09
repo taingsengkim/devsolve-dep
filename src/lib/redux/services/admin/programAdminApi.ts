@@ -36,7 +36,7 @@ export const programAdminApi = proxyApi.injectEndpoints({
 
     getProgramDetail: builder.query<any, string>({
       query: (id) => ({
-        url: `/programs/${id}`,
+        url: `/admin/programs/${id}`,
       }),
       providesTags: (_result, _error, id) => [{ type: "AdminProgram", id }],
     }),

@@ -64,21 +64,22 @@ export default function AdminProgramDetailPage({
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
-  // Fetch via proxy /api/programs/${id} for all roles
-  const {
-    data: publicDetail,
-    isLoading: isPublicLoading,
-    refetch: refetchPublic,
-  } = useGetProgramByIdQuery(id);
-
-  // Admin-only detail query
+  // Admin uses /api/admin/programs/${id} which bypasses public visibility
+  // filters so PENDING_REVIEW / PRIVATE programs are always accessible.
   const {
     data: adminDetail,
     isLoading: isAdminDetailLoading,
     refetch: refetchAdmin,
   } = useGetProgramDetailQuery(id, { skip: !isAdmin });
 
-  // Admin-only list query fallback
+  // Company / public users fall back to the public programs endpoint.
+  const {
+    data: publicDetail,
+    isLoading: isPublicLoading,
+    refetch: refetchPublic,
+  } = useGetProgramByIdQuery(id, { skip: isAdmin });
+
+  // Admin-only list query fallback (used for stat counts on list page, skip here)
   const { data: adminListData, isLoading: isAdminListLoading } =
     useGetAdminProgramsQuery({ size: 100 }, { skip: !isAdmin });
 
@@ -90,23 +91,22 @@ export default function AdminProgramDetailPage({
   } = useGetMyCompanyProgramsQuery({ size: 100 }, { skip: isAdmin });
 
   const refetch = () => {
-    refetchPublic();
     if (isAdmin) refetchAdmin();
-    else refetchCompany();
+    else refetchPublic();
+    if (!isAdmin) refetchCompany();
   };
 
-  const program =
-    adminDetail ||
-    publicDetail ||
-    (isAdmin
-      ? adminListData?.content?.find((p: any) => p.id === id || p.handle === id)
-      : companyListData?.content?.find(
-          (p: any) => p.id === id || p.handle === id
-        ));
+  const program = isAdmin
+    ? adminDetail ||
+      adminListData?.content?.find((p: any) => p.id === id || p.handle === id)
+    : publicDetail ||
+      companyListData?.content?.find(
+        (p: any) => p.id === id || p.handle === id
+      );
 
   const isLoading = isAdmin
-    ? isAdminDetailLoading && isAdminListLoading && isPublicLoading
-    : isCompanyListLoading && isPublicLoading;
+    ? isAdminDetailLoading
+    : isPublicLoading && isCompanyListLoading;
   const isError = !isLoading && !program;
 
   const [approveProgram] = useApproveProgramMutation();
@@ -585,14 +585,25 @@ export default function AdminProgramDetailPage({
           </div>
 
           <div className="shrink-0 flex items-center gap-2">
-            {isAdmin ? (
-              isPending ? (
+              {isAdmin ? (
                 <div className="flex items-center gap-2 sm:gap-3">
+                  {/* Status label when already resolved */}
+                  {isApproved && (
+                    <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4" /> Approved
+                    </span>
+                  )}
+                  {isRejected && (
+                    <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                      <XCircle className="w-4 h-4" /> Rejected
+                    </span>
+                  )}
+
                   <Button
                     variant="destructive"
-                    disabled={isActionLoading}
+                    disabled={!isPending || isActionLoading}
                     onClick={() => setRejectDialogOpen(true)}
-                    className="rounded-xl font-semibold h-9 px-3 sm:px-4 cursor-pointer text-xs sm:text-sm"
+                    className="rounded-xl font-semibold h-9 px-3 sm:px-4 text-xs sm:text-sm disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <XCircle className="w-4 h-4 mr-1 sm:mr-1.5" />
                     <span className="hidden sm:inline">Reject Program</span>
@@ -600,29 +611,15 @@ export default function AdminProgramDetailPage({
                   </Button>
 
                   <Button
-                    disabled={isActionLoading}
+                    disabled={!isPending || isActionLoading}
                     onClick={() => setApproveDialogOpen(true)}
-                    className="rounded-xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white h-9 px-3 sm:px-4 cursor-pointer text-xs sm:text-sm shadow-2xs"
+                    className="rounded-xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white h-9 px-3 sm:px-4 text-xs sm:text-sm shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <CheckCircle2 className="w-4 h-4 mr-1 sm:mr-1.5" />
-                    <span className="hidden sm:inline">Approve & Publish</span>
+                    <span className="hidden sm:inline">Approve &amp; Publish</span>
                     <span className="sm:hidden">Approve</span>
                   </Button>
                 </div>
-              ) : (
-                <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  {isApproved && (
-                    <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4" /> Approved
-                    </span>
-                  )}
-                  {isRejected && (
-                    <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                      <XCircle className="w-4 h-4" /> Rejected
-                    </span>
-                  )}
-                </div>
-              )
             ) : (
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
                 {isPending && (
