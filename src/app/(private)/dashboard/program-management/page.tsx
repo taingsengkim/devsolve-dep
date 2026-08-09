@@ -5,20 +5,26 @@ export const dynamic = "force-dynamic";
 import React, { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import {
   useGetAdminProgramsQuery,
   ProgramManagementSummaryItem,
   ProgramSubmissionState,
   ProgramState,
 } from "@/lib/redux/services/admin/programAdminApi";
+import { useGetMyCompanyProgramsQuery } from "@/lib/redux/services/program/programsApi";
 import { ProgramStatCards } from "@/components/admin/programs/ProgramStatCards";
 import { ProgramFiltersBar } from "@/components/admin/programs/ProgramFiltersBar";
 import { ProgramDataTable } from "@/components/admin/programs/ProgramDataTable";
 import { getProgramColumns } from "@/components/admin/programs/programColumns";
 
-export default function AdminProgramManagementPage() {
+export default function ProgramManagementPage() {
+  const { user } = useSidebarAuth();
+  const isAdmin = user?.roles?.includes("ADMIN") ?? false;
+
   const [submissionStateFilter, setSubmissionStateFilter] = useState<
     ProgramSubmissionState | "ALL"
   >("ALL");
@@ -27,43 +33,77 @@ export default function AdminProgramManagementPage() {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(20);
 
-  /* Overall dataset for the stat cards and the tab counts. Without it the
-     figures would only describe the page currently on screen, which changes
-     every time a filter moves. */
-  const { data: overallResponse } = useGetAdminProgramsQuery({ size: 100 });
-
-  // Filtered dataset for the table itself.
+  // ADMIN queries
+  const { data: adminOverallResponse } = useGetAdminProgramsQuery(
+    { size: 100 },
+    { skip: !isAdmin }
+  );
   const {
-    data: response,
-    isLoading,
-    isFetching,
-  } = useGetAdminProgramsQuery({
-    submissionState:
-      submissionStateFilter === "ALL" ? undefined : submissionStateFilter,
-    state: stateFilter === "ALL" ? undefined : stateFilter,
-    page: pageIndex,
-    size: pageSize,
-  });
+    data: adminResponse,
+    isLoading: isAdminLoading,
+    isFetching: isAdminFetching,
+  } = useGetAdminProgramsQuery(
+    {
+      submissionState:
+        submissionStateFilter === "ALL" ? undefined : submissionStateFilter,
+      state: stateFilter === "ALL" ? undefined : stateFilter,
+      page: pageIndex,
+      size: pageSize,
+    },
+    { skip: !isAdmin }
+  );
+
+  // COMPANY queries (GET /organizations/me/programs)
+  const { data: companyOverallResponse } = useGetMyCompanyProgramsQuery(
+    { size: 100 },
+    { skip: isAdmin }
+  );
+  const {
+    data: companyResponse,
+    isLoading: isCompanyLoading,
+    isFetching: isCompanyFetching,
+  } = useGetMyCompanyProgramsQuery(
+    {
+      page: pageIndex,
+      size: pageSize,
+    },
+    { skip: isAdmin }
+  );
+
+  const activeResponse = isAdmin ? adminResponse : companyResponse;
+  const overallResponse = isAdmin ? adminOverallResponse : companyOverallResponse;
+  const isLoading = isAdmin ? isAdminLoading : isCompanyLoading;
+  const isFetching = isAdmin ? isAdminFetching : isCompanyFetching;
 
   const programs: ProgramManagementSummaryItem[] = useMemo(
-    () => response?.content ?? [],
-    [response],
+    () => activeResponse?.content ?? [],
+    [activeResponse]
   );
-  const totalElements = response?.totalElements ?? programs.length;
-  const totalPages = response?.totalPages ?? 1;
+  const totalElements = activeResponse?.totalElements ?? programs.length;
+  const totalPages = activeResponse?.totalPages ?? 1;
 
-  /* The admin endpoint takes no search parameter, so the query narrows the
-     page already fetched rather than the whole set. */
   const filteredPrograms = useMemo(() => {
+    let result = programs;
+
+    // Apply client-side filters for Company view if needed
+    if (!isAdmin) {
+      if (submissionStateFilter !== "ALL") {
+        result = result.filter((p) => p.submissionState === submissionStateFilter);
+      }
+      if (stateFilter !== "ALL") {
+        result = result.filter((p) => p.state === stateFilter);
+      }
+    }
+
     const q = searchQuery.toLowerCase().trim();
-    if (!q) return programs;
-    return programs.filter(
+    if (!q) return result;
+    return result.filter(
       (p) =>
         p.name?.toLowerCase().includes(q) ||
         p.handle?.toLowerCase().includes(q) ||
-        p.organizationName?.toLowerCase().includes(q),
+        p.organizationName?.toLowerCase().includes(q)
     );
-  }, [programs, searchQuery]);
+  }, [programs, searchQuery, isAdmin, submissionStateFilter, stateFilter]);
 
   const counts = useMemo(() => {
     const items = overallResponse?.content ?? programs;
@@ -81,7 +121,7 @@ export default function AdminProgramManagementPage() {
       setSubmissionStateFilter(state);
       setPageIndex(0);
     },
-    [],
+    []
   );
 
   const handleStateChange = useCallback((state: ProgramState | "ALL") => {
@@ -123,24 +163,37 @@ export default function AdminProgramManagementPage() {
             Program Management
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Review, audit, approve, and oversee corporate security bug bounty
-            programs.
+            {isAdmin
+              ? "Review, audit, approve, and oversee corporate security bug bounty programs."
+              : "Manage and monitor security programs for your organization."}
           </p>
         </div>
 
-        {/* Pending review alert badge */}
-        {counts.pendingReview > 0 && (
-          <Badge
-            variant="outline"
-            className="h-9 shrink-0 gap-2 rounded-xl border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-          >
-            <span className="size-2 rounded-full bg-amber-500" />
-            <span>
-              {counts.pendingReview} program
-              {counts.pendingReview > 1 ? "s" : ""} pending review
-            </span>
-          </Badge>
-        )}
+        <div className="flex items-center gap-3">
+          {/* Pending review alert badge for admin */}
+          {isAdmin && counts.pendingReview > 0 && (
+            <Badge
+              variant="outline"
+              className="h-9 shrink-0 gap-2 rounded-xl border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            >
+              <span className="size-2 rounded-full bg-amber-500" />
+              <span>
+                {counts.pendingReview} program
+                {counts.pendingReview > 1 ? "s" : ""} pending review
+              </span>
+            </Badge>
+          )}
+
+          {/* Create Program button for Company role */}
+          {!isAdmin && (
+            <Link href="/dashboard/create-program">
+              <Button className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm h-10 px-4 gap-2 shadow-xs cursor-pointer">
+                <Plus className="w-4 h-4" />
+                Create Program
+              </Button>
+            </Link>
+          )}
+        </div>
       </header>
 
       {/* STAT CARDS */}
