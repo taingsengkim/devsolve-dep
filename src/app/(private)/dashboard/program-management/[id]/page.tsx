@@ -172,8 +172,8 @@ export default function AdminProgramDetailPage({
       className="space-y-6 w-full pb-24"
     >
       {/* BREADCRUMB & BACK BUTTON */}
-      <div className="flex items-center gap-3">
-        <Link href="/dashboard/program-management">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 max-w-full overflow-hidden">
+        <Link href="/dashboard/program-management" className="shrink-0">
           <Button
             variant="ghost"
             size="sm"
@@ -183,29 +183,29 @@ export default function AdminProgramDetailPage({
             Back to Programs
           </Button>
         </Link>
-        <span className="text-slate-300 dark:text-slate-700">/</span>
-        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">
+        <span className="text-slate-300 dark:text-slate-700 shrink-0">/</span>
+        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate max-w-[180px] sm:max-w-xs md:max-w-md">
           {program.name}
         </span>
       </div>
 
       {/* HEADER CARD */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900 flex items-center justify-center shrink-0">
-              <Building2 className="w-7 h-7 text-blue-600 dark:text-blue-400" />
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-2xs space-y-4">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+          <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900 flex items-center justify-center shrink-0">
+              <Building2 className="w-6 h-6 sm:w-7 sm:h-7 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="space-y-1">
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <div className="space-y-1.5 min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 line-clamp-2 break-words leading-tight">
                 {program.name}
               </h1>
-              <div className="text-sm font-mono text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                <span>@{program.handle}</span>
+              <div className="text-xs sm:text-sm font-mono text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="truncate max-w-[220px] sm:max-w-xs md:max-w-md">@{program.handle}</span>
                 {program.organizationId && (
                   <>
-                    <span>•</span>
-                    <span className="text-xs text-slate-400">
+                    <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
+                    <span className="text-xs text-slate-400 truncate max-w-[180px] sm:max-w-xs">
                       Org ID: {program.organizationId}
                     </span>
                   </>
@@ -215,7 +215,7 @@ export default function AdminProgramDetailPage({
           </div>
 
           {/* STATUS BADGES */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             {isPending && (
               <Badge className="bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-1.5 text-xs font-semibold gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
@@ -572,72 +572,78 @@ export default function AdminProgramDetailPage({
       </Tabs>
 
       {/* STICKY BOTTOM ACTION BAR */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 p-4 shadow-lg">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-            <span className="font-semibold text-slate-900 dark:text-slate-100">
+      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-3 shadow-lg">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-4 min-w-0">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 min-w-0 flex-1">
+            <span className="font-semibold text-slate-900 dark:text-slate-100 truncate max-w-[160px] sm:max-w-xs md:max-w-md">
               {program.name}
             </span>
-            <span>•</span>
-            <span className="text-xs font-mono">@{program.handle}</span>
+            <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
+            <span className="text-xs font-mono truncate max-w-[120px] sm:max-w-[180px] hidden sm:inline text-slate-500">
+              @{program.handle}
+            </span>
           </div>
 
-          {isAdmin ? (
-            isPending ? (
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <Button
-                  variant="destructive"
-                  disabled={isActionLoading}
-                  onClick={() => setRejectDialogOpen(true)}
-                  className="rounded-xl font-semibold h-10 cursor-pointer w-full sm:w-auto text-sm"
-                >
-                  <XCircle className="w-4 h-4 mr-1.5" />
-                  Reject Program
-                </Button>
+          <div className="shrink-0 flex items-center gap-2">
+            {isAdmin ? (
+              isPending ? (
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Button
+                    variant="destructive"
+                    disabled={isActionLoading}
+                    onClick={() => setRejectDialogOpen(true)}
+                    className="rounded-xl font-semibold h-9 px-3 sm:px-4 cursor-pointer text-xs sm:text-sm"
+                  >
+                    <XCircle className="w-4 h-4 mr-1 sm:mr-1.5" />
+                    <span className="hidden sm:inline">Reject Program</span>
+                    <span className="sm:hidden">Reject</span>
+                  </Button>
 
-                <Button
-                  disabled={isActionLoading}
-                  onClick={() => setApproveDialogOpen(true)}
-                  className="rounded-xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white h-10 cursor-pointer w-full sm:w-auto text-sm shadow-2xs"
-                >
-                  <CheckCircle2 className="w-4 h-4 mr-1.5" />
-                  Approve & Publish Program
-                </Button>
-              </div>
+                  <Button
+                    disabled={isActionLoading}
+                    onClick={() => setApproveDialogOpen(true)}
+                    className="rounded-xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white h-9 px-3 sm:px-4 cursor-pointer text-xs sm:text-sm shadow-2xs"
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-1 sm:mr-1.5" />
+                    <span className="hidden sm:inline">Approve & Publish</span>
+                    <span className="sm:hidden">Approve</span>
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  {isApproved && (
+                    <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4" /> Approved
+                    </span>
+                  )}
+                  {isRejected && (
+                    <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                      <XCircle className="w-4 h-4" /> Rejected
+                    </span>
+                  )}
+                </div>
+              )
             ) : (
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {isPending && (
+                  <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1.5 font-semibold">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                    <span className="truncate max-w-[180px] sm:max-w-none">Under Review by DevSolve Admins</span>
+                  </span>
+                )}
                 {isApproved && (
                   <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4" /> This program has been approved.
+                    <CheckCircle2 className="w-4 h-4 shrink-0" /> Program Approved & Active
                   </span>
                 )}
                 {isRejected && (
                   <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                    <XCircle className="w-4 h-4" /> This program has been rejected.
+                    <XCircle className="w-4 h-4 shrink-0" /> Requires Revision
                   </span>
                 )}
               </div>
-            )
-          ) : (
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              {isPending && (
-                <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1.5 font-semibold">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                  Under Review by DevSolve Admins
-                </span>
-              )}
-              {isApproved && (
-                <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4" /> Program Approved & Active
-                </span>
-              )}
-              {isRejected && (
-                <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                  <XCircle className="w-4 h-4" /> Program Requires Revision
-                </span>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
