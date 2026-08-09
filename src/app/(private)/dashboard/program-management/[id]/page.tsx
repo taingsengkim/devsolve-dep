@@ -41,7 +41,10 @@ import {
   useApproveProgramMutation,
   useRejectProgramMutation,
 } from "@/lib/redux/services/admin/programAdminApi";
-import { useGetProgramByIdQuery } from "@/lib/redux/services/program/programsApi";
+import {
+  useGetProgramByIdQuery,
+  useGetMyCompanyProgramsQuery,
+} from "@/lib/redux/services/program/programsApi";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { ProgramRejectDialog } from "@/components/admin/programs/ProgramRejectDialog";
 import { toast } from "sonner";
@@ -76,24 +79,34 @@ export default function AdminProgramDetailPage({
   } = useGetProgramDetailQuery(id, { skip: !isAdmin });
 
   // Admin-only list query fallback
-  const { data: listData, isLoading: isListLoading } = useGetAdminProgramsQuery(
-    undefined,
-    { skip: !isAdmin }
-  );
+  const { data: adminListData, isLoading: isAdminListLoading } =
+    useGetAdminProgramsQuery({ size: 100 }, { skip: !isAdmin });
+
+  // Company-only list query fallback
+  const {
+    data: companyListData,
+    isLoading: isCompanyListLoading,
+    refetch: refetchCompany,
+  } = useGetMyCompanyProgramsQuery({ size: 100 }, { skip: isAdmin });
 
   const refetch = () => {
     refetchPublic();
     if (isAdmin) refetchAdmin();
+    else refetchCompany();
   };
 
   const program =
     adminDetail ||
     publicDetail ||
-    (isAdmin ? listData?.content?.find((p: any) => p.id === id) : undefined);
+    (isAdmin
+      ? adminListData?.content?.find((p: any) => p.id === id || p.handle === id)
+      : companyListData?.content?.find(
+          (p: any) => p.id === id || p.handle === id
+        ));
 
   const isLoading = isAdmin
-    ? isAdminDetailLoading && isListLoading && isPublicLoading
-    : isPublicLoading;
+    ? isAdminDetailLoading && isAdminListLoading && isPublicLoading
+    : isCompanyListLoading && isPublicLoading;
   const isError = !isLoading && !program;
 
   const [approveProgram] = useApproveProgramMutation();
