@@ -13,6 +13,7 @@ import {
   CircleDot,
   Download,
   MessageSquare,
+  Plus,
   RotateCcw,
   Send,
 } from "lucide-react";
@@ -23,7 +24,10 @@ import {
   useGetProblemByIdQuery,
   type ProblemResponse,
 } from "@/lib/redux/services/problemsApi";
-import { useGetSolutionsByProblemQuery } from "@/lib/redux/services/solutionsApi";
+import {
+  useGetMyProfileQuery,
+  useGetSolutionsByProblemQuery,
+} from "@/lib/redux/services/solutionsApi";
 import {
   useGetVoteSummaryQuery,
   useRemoveVoteMutation,
@@ -133,6 +137,13 @@ function Loaded({
       problemId: id,
       pageSize: SOLUTION_PAGE_SIZE,
     });
+
+  /* Who is reading. A signed-out visitor gets a 401 here, which is the answer
+     rather than an error: they cannot post either way. */
+  const { data: me } = useGetMyProfileQuery();
+  const isSignedIn = Boolean(me?.id);
+  const isOwnProblem = Boolean(me?.id && problem.author?.id === me.id);
+  const canAnswer = isSignedIn && !isOwnProblem;
 
   const { data: votes } = useGetVoteSummaryQuery({
     type: "PROBLEM",
@@ -409,7 +420,31 @@ function Loaded({
                   ))}
                 </div>
               </div>
+
+              {canAnswer && (
+                <Link
+                  href={`/community/${id}/solutions/create`}
+                  className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-2xs transition-colors hover:bg-emerald-700"
+                >
+                  <Plus className="size-4" />
+                  Post your solution
+                </Link>
+              )}
             </div>
+
+            {/* Why the composer is absent, when it is. Silence would read as a
+                bug to whoever came here to answer. */}
+            {isOwnProblem && (
+              <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+                This is your problem, so you cannot answer it yourself. You can
+                accept an answer once someone posts one.
+              </p>
+            )}
+            {!isSignedIn && (
+              <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+                Sign in to post a solution to this problem.
+              </p>
+            )}
 
             {isLoadingSolutions ? (
               <div className="animate-pulse space-y-4">
@@ -422,7 +457,9 @@ function Loaded({
               </div>
             ) : solutions.length === 0 ? (
               <p className={`${CARD} p-8 text-center text-sm text-slate-500 dark:text-slate-400`}>
-                No answers yet. Be the first to post one.
+                {canAnswer
+                  ? "No answers yet. Be the first to post one."
+                  : "No answers yet."}
               </p>
             ) : (
               <div className="space-y-4">

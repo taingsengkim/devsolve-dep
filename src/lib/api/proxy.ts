@@ -39,6 +39,29 @@ export async function bearerTokenFor(
 export const unauthorized = () =>
   NextResponse.json({ message: "Not authenticated" }, { status: 401 });
 
+export const forbidden = (message: string) =>
+  NextResponse.json({ message }, { status: 403 });
+
+/**
+ * The `sub` claim of an access token — the caller's id as the backend knows
+ * it, which is what `author.id` and friends carry.
+ *
+ * The payload is read, not verified: the token came from better-auth's own
+ * session and is only used here to decide what to show or refuse locally. The
+ * backend still authorizes every request on its own.
+ */
+export function subjectOf(token: string): string | null {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    const json = Buffer.from(payload, "base64url").toString("utf8");
+    const sub = (JSON.parse(json) as { sub?: unknown }).sub;
+    return typeof sub === "string" && sub ? sub : null;
+  } catch {
+    return null;
+  }
+}
+
 export const unreachable = (what: string) =>
   NextResponse.json(
     { message: `Unable to reach the ${what} service. Please try again.` },

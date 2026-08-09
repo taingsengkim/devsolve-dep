@@ -23,6 +23,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import {
   useDeleteCategoryMutation,
@@ -32,15 +38,10 @@ import {
 
 interface CategoryTableProps {
   categories: CategoryResponse[];
+  /** Everything before filtering, so the footer can say what was hidden. */
+  totalCount?: number;
   onEdit: (category: CategoryResponse) => void;
 }
-
-const SCOPE_STYLES: Record<string, string> = {
-  PROBLEM:
-    "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300",
-  SHOWCASE:
-    "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
-};
 
 /**
  * A stored `iconUrl` is not necessarily a reachable one — the backend
@@ -68,7 +69,11 @@ function CategoryIcon({ url }: { url?: string }) {
   );
 }
 
-export function CategoryTable({ categories, onEdit }: CategoryTableProps) {
+export function CategoryTable({
+  categories,
+  totalCount,
+  onEdit,
+}: CategoryTableProps) {
   const [updateCategory] = useUpdateCategoryMutation();
   const [deleteCategory, { isLoading: deleting }] = useDeleteCategoryMutation();
   const [pendingDelete, setPendingDelete] = useState<CategoryResponse | null>(
@@ -100,50 +105,61 @@ export function CategoryTable({ categories, onEdit }: CategoryTableProps) {
     }
   };
 
-  if (categories.length === 0) {
-    return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
-        <span className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
-          <Tags className="size-6" />
-        </span>
-        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
-          No categories yet
-        </h3>
-        <p className="mt-1 text-base text-slate-500">
-          Create one to give problems and showcases somewhere to live.
-        </p>
-      </div>
-    );
-  }
+  const shown = categories.length;
+  const total = totalCount ?? shown;
 
   return (
     <>
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
         <Table>
-          <TableHeader>
-            <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
-              <TableHead className="px-5 py-3.5 text-sm font-semibold text-slate-600 dark:text-slate-300">
-                Name
+          <TableHeader className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-800/60">
+            <TableRow className="border-none hover:bg-transparent">
+              <TableHead className="h-11 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Category
               </TableHead>
-              <TableHead className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+              <TableHead className="h-11 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Scope
               </TableHead>
-              <TableHead className="hidden text-sm font-semibold text-slate-600 lg:table-cell dark:text-slate-300">
+              <TableHead className="hidden h-11 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 lg:table-cell dark:text-slate-400">
                 Description
               </TableHead>
-              <TableHead className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+              <TableHead className="h-11 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Order
               </TableHead>
-              <TableHead className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+              <TableHead className="h-11 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Active
               </TableHead>
-              <TableHead className="pr-5 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">
+              <TableHead className="h-11 px-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Actions
               </TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
+            {shown === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="h-48 p-0 text-center">
+                  <Card className="gap-3 border-none bg-transparent py-8 shadow-none">
+                    <CardHeader className="grid justify-items-center gap-3 px-8 text-center">
+                      <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
+                        <Tags className="size-6" />
+                      </div>
+                      <CardTitle className="text-base font-semibold text-slate-800 dark:text-slate-200">
+                        {total === 0
+                          ? "No categories yet"
+                          : "No matching categories found"}
+                      </CardTitle>
+                      <CardDescription className="text-sm text-slate-500 dark:text-slate-400">
+                        {total === 0
+                          ? "Create one to give problems and showcases somewhere to live."
+                          : "Try another search, scope, or state filter."}
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                </TableCell>
+              </TableRow>
+            )}
+
             <AnimatePresence initial={false}>
               {categories.map((category) => (
                 <motion.tr
@@ -155,50 +171,46 @@ export function CategoryTable({ categories, onEdit }: CategoryTableProps) {
                   transition={{ duration: 0.18 }}
                   className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50/70 dark:border-slate-800 dark:hover:bg-slate-800/40"
                 >
-                  <TableCell className="px-5 py-4">
-                    <div className="flex items-center gap-3">
+                  <TableCell className="px-4 py-3">
+                    <div className="flex items-center gap-3 py-0.5">
                       <CategoryIcon url={category.iconUrl} />
 
                       <div className="min-w-0">
-                        <p className="truncate text-base font-semibold text-slate-900 dark:text-slate-100">
+                        <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
                           {category.name}
                         </p>
-                        <p className="truncate font-mono text-sm text-slate-400">
+                        <p className="truncate text-sm text-slate-500 dark:text-slate-400">
                           {category.slug}
                         </p>
                       </div>
                     </div>
                   </TableCell>
 
-                  <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className={`rounded-lg px-2.5 py-1 text-xs font-bold capitalize ${
-                        SCOPE_STYLES[category.scope] ?? ""
-                      }`}
-                    >
+                  <TableCell className="px-4 py-3">
+                    <Badge variant="secondary" className="rounded-lg capitalize">
                       {category.scope.toLowerCase()}
                     </Badge>
                   </TableCell>
 
-                  <TableCell className="hidden max-w-md lg:table-cell">
-                    <p className="truncate text-sm text-slate-500 dark:text-slate-400">
+                  <TableCell className="hidden max-w-md px-4 py-3 lg:table-cell">
+                    <p className="truncate text-sm text-slate-600 dark:text-slate-400">
                       {category.description || "—"}
                     </p>
                   </TableCell>
 
-                  <TableCell className="text-base text-slate-600 tabular-nums dark:text-slate-300">
+                  <TableCell className="px-4 py-3 text-sm font-medium text-slate-600 tabular-nums dark:text-slate-400">
                     {category.sortOrder ?? "—"}
                   </TableCell>
 
-                  <TableCell>
+                  <TableCell className="px-4 py-3">
                     <Switch
                       checked={category.isActive ?? false}
                       onCheckedChange={(next) => toggleActive(category, next)}
+                      aria-label={`${category.isActive ? "Deactivate" : "Activate"} ${category.name}`}
                     />
                   </TableCell>
 
-                  <TableCell className="pr-5">
+                  <TableCell className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
                       <button
                         type="button"
@@ -223,6 +235,24 @@ export function CategoryTable({ categories, onEdit }: CategoryTableProps) {
             </AnimatePresence>
           </TableBody>
         </Table>
+
+        {/* Footer. `GET /categories` returns the whole set rather than a page,
+            so there is nothing to page through — only a count to state. */}
+        {shown > 0 && (
+          <div className="flex items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/60 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/40">
+            <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              Showing{" "}
+              <span className="font-bold text-slate-700 dark:text-slate-200">
+                {shown}
+              </span>{" "}
+              of{" "}
+              <span className="font-bold text-slate-700 dark:text-slate-200">
+                {total}
+              </span>{" "}
+              {total === 1 ? "category" : "categories"}
+            </div>
+          </div>
+        )}
       </div>
 
       <AlertDialog

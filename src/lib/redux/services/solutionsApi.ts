@@ -1,5 +1,6 @@
 import { baseApi } from "./baseApi";
 import type { Page } from "./showcasesApi";
+import type { CreateSolutionRequest } from "@/lib/validations/solution";
 
 /**
  * Answers on a problem — `GET /api/v1/problems/{problemId}/solutions`.
@@ -57,9 +58,45 @@ export const solutionsApi = baseApi.injectEndpoints({
         { type: "Profile", id: userId },
       ],
     }),
+
+    /**
+     * GET /api/user-profiles/me — the caller's own id as the backend knows it.
+     *
+     * `author.id` on a problem is that same id, so this is what tells the page
+     * whether the reader is looking at their own post.
+     */
+    getMyProfile: builder.query<PublicProfileSummary, void>({
+      query: () => "/user-profiles/me",
+      providesTags: [{ type: "Profile", id: "ME" }],
+    }),
+
+    /**
+     * POST /api/v1/problems/{problemId}/solutions.
+     *
+     * Invalidates the problem's answer list so a freshly posted solution shows
+     * up without a reload.
+     */
+    createSolution: builder.mutation<
+      SolutionResponse,
+      { problemId: string; body: CreateSolutionRequest }
+    >({
+      query: ({ problemId, body }) => ({
+        url: `/problems/${problemId}/solutions`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (_result, _error, { problemId }) => [
+        { type: "Solution", id: problemId },
+        { type: "Problem", id: problemId },
+      ],
+    }),
   }),
   overrideExisting: true,
 });
 
-export const { useGetSolutionsByProblemQuery, useGetPublicProfileQuery } =
-  solutionsApi;
+export const {
+  useGetSolutionsByProblemQuery,
+  useGetPublicProfileQuery,
+  useGetMyProfileQuery,
+  useCreateSolutionMutation,
+} = solutionsApi;
