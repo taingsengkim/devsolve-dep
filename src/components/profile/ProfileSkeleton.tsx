@@ -14,15 +14,8 @@ export default function ProfileSkeleton() {
       transition={{ duration: 0.2 }}
       className="w-full space-y-6 pb-12"
     >
-      {/* Breadcrumb bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-20 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
-          <div className="h-3 w-3 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
-          <div className="h-4 w-16 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
-          <div className="h-3 w-3 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
-          <div className="h-4 w-24 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
-        </div>
+      {/* Share button bar */}
+      <div className="flex items-center justify-end">
         <div className="h-8 w-20 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800" />
       </div>
 

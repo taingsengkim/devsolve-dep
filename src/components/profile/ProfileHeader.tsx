@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, ChevronRight, Share2 } from "lucide-react";
+import { ArrowLeft, Check, Share2 } from "lucide-react";
 import { Profile } from "@/lib/types/profile/types";
 
 interface ProfileHeaderProps {
@@ -12,14 +12,12 @@ interface ProfileHeaderProps {
 }
 
 /**
- * A slim utility bar at the top: breadcrumb nav on the left,
- * share button on the right. The profile name / avatar / bio live
- * in the sidebar (GitHub-style) rather than in the page header.
+ * Utility bar at the top: optional back link on the left,
+ * share button on the right.
  */
 export default function ProfileHeader({
   profile,
   backHref,
-  isPublicView = false,
 }: ProfileHeaderProps) {
   const [copied, setCopied] = useState(false);
 
@@ -46,48 +44,7 @@ export default function ProfileHeader({
           Back to profile
         </Link>
       ) : (
-        <nav
-          aria-label="Breadcrumb"
-          className="flex items-center gap-1.5 text-sm font-medium text-slate-500"
-        >
-          {isPublicView ? (
-            <>
-              <Link
-                href="/"
-                className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
-              >
-                Home
-              </Link>
-              <ChevronRight className="size-3.5 text-slate-300 dark:text-slate-700" />
-              <Link
-                href="/leaderboard"
-                className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
-              >
-                Leaderboard
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/dashboard"
-                className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
-              >
-                Dashboard
-              </Link>
-              <ChevronRight className="size-3.5 text-slate-300 dark:text-slate-700" />
-              <Link
-                href="/dashboard/profile"
-                className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
-              >
-                Profile
-              </Link>
-            </>
-          )}
-          <ChevronRight className="size-3.5 text-slate-300 dark:text-slate-700" />
-          <span className="text-slate-900 dark:text-slate-200">
-            @{profile.username}
-          </span>
-        </nav>
+        <div />
       )}
 
       <button
