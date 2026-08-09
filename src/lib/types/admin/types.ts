@@ -33,6 +33,110 @@ export interface ReportStatusBreakdown {
   total: number;
 }
 
+// ─── Real API: GET /api/v1/admin/organizations/pending ────────────────────────
+
+export type PendingOrgIndustry =
+  | "TECHNOLOGY"
+  | "FINANCE"
+  | "HEALTHCARE"
+  | "EDUCATION"
+  | "RETAIL"
+  | "MANUFACTURING"
+  | "MEDIA"
+  | "GOVERNMENT"
+  | "NONPROFIT"
+  | string;
+
+export interface PendingOrganizationItem {
+  id: string;
+  name: string;
+  slug: string;
+  websiteUrl: string;
+  industry: PendingOrgIndustry;
+  companySize: string;
+  country: string;
+  status: "PENDING";
+  ownerId: string;
+  ownerFullName: string;
+  ownerEmail: string;
+  submissionVersion: number;
+  createdAt: string;
+}
+
+export interface PageableSort {
+  empty: boolean;
+  sorted: boolean;
+  unsorted: boolean;
+}
+
+export interface PageableInfo {
+  offset: number;
+  paged: boolean;
+  pageNumber: number;
+  pageSize: number;
+  sort: PageableSort;
+  unpaged: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  content: T[];
+  number: number;
+  first: boolean;
+  last: boolean;
+  numberOfElements: number;
+  pageable: PageableInfo;
+  sort: PageableSort;
+  empty: boolean;
+}
+
+export type PendingOrganizationsResponse = PaginatedResponse<PendingOrganizationItem>;
+
+export interface OrganizationResponse {
+  id: string;
+  ownerId?: string;
+  ownerFullName?: string;
+  ownerEmail?: string;
+  ownerJobTitle?: string;
+  joiningReason?: string;
+  emailVerified?: boolean;
+  submissionVersion?: number;
+  reviewedBy?: string;
+  reviewedAt?: string | null;
+  rejectionReason?: string | null;
+  name: string;
+  slug?: string;
+  domain?: string;
+  websiteUrl?: string;
+  logoUrl?: string;
+  description?: string;
+  industry?: string;
+  companySize?: string;
+  country?: string;
+  status: "PENDING" | "ACTIVE" | "REJECTED" | string;
+  verifiedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface OrganizationReviewHistoryItem {
+  id: string;
+  organizationId?: string;
+  submissionVersion?: number;
+  decision?: "APPROVED" | "REJECTED" | string;
+  action?: string;
+  reviewerId?: string;
+  reviewerName?: string;
+  reason?: string;
+  notes?: string;
+  reviewedAt?: string;
+  createdAt?: string;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+
 export interface CompanyVerificationItem {
   id: string;
   orgCode?: string;
@@ -52,7 +156,14 @@ export interface CompanyVerificationItem {
   website?: string;
   country?: string;
   industry?: string;
+  companySize?: string;
   description?: string;
+  joiningReason?: string;
+  emailVerified?: boolean;
+  submissionVersion?: number;
+  rejectionReason?: string | null;
+  reviewedAt?: string | null;
+  verifiedAt?: string | null;
   logoUrl?: string;
   riskIndicators?: {
     domainMatchesEmail: boolean;
@@ -121,14 +232,44 @@ export interface ReportConfirmationItem {
   }[];
 }
 
+export interface AdminUserSummaryItem {
+  id: string;
+  fullName?: string;
+  email?: string;
+  avatarUrl?: string;
+  country?: string;
+  status: "ACTIVE" | "SUSPENDED" | "REMOVED" | string;
+  reputation?: number;
+  totalReports?: number;
+  validReports?: number;
+  criticalReports?: number;
+  recognitionCount?: number;
+  lastLoginAt?: string;
+  createdAt: string;
+  roles?: string[];
+  role?: string;
+  realm_access?: {
+    roles?: string[];
+  };
+  realmAccess?: {
+    roles?: string[];
+  };
+}
+
+export type PageAdminUserSummaryResponse = PaginatedResponse<AdminUserSummaryItem>;
+
 export interface AdminUserItem {
   id: string;
   name: string;
   email: string;
-  role: "USER" | "COMPANY" | "ADMIN" | "MODERATOR";
-  status: "ACTIVE" | "SUSPENDED" | "PENDING";
+  role: "USER" | "COMPANY" | "ADMIN";
+  status: "ACTIVE" | "SUSPENDED" | "PENDING" | "REMOVED";
   joinedDate: string;
   reportsSubmitted?: number;
+  validReports?: number;
+  criticalReports?: number;
+  reputation?: number;
+  country?: string;
   programsManaged?: number;
   avatarUrl?: string;
 }
@@ -186,3 +327,56 @@ export interface AdminDashboardOverviewResponse {
   };
   recentActivity: AdminActivityFeedItem[];
 }
+
+// ─── Real API: Moderation Actions & Admin Users ─────────────────────────────
+
+export type ModerationActionTargetType =
+  | "PROGRAM"
+  | "PROBLEM"
+  | "SOLUTION"
+  | "COMMENT"
+  | "USER"
+  | "REPORT"
+  | "SHOWCASE";
+
+export type ModerationActionType = "WARN" | "SUSPEND" | "REMOVE" | "BAN" | "REINSTATE";
+
+export interface CreateModerationActionRequest {
+  targetType?: ModerationActionTargetType;
+  targetId?: string;
+  action: ModerationActionType;
+  reason: string;
+  expiresAt?: string;
+}
+
+export interface ModerationActionResponse {
+  id: string;
+  adminId: string;
+  adminName: string;
+  targetType: ModerationActionTargetType;
+  targetId: string;
+  action: ModerationActionType;
+  reason: string;
+  expiresAt?: string | null;
+  createdAt: string;
+}
+
+export type PageModerationActionResponse = PaginatedResponse<ModerationActionResponse>;
+
+export interface GetModerationHistoryParams {
+  targetType?: ModerationActionTargetType;
+  targetId?: string;
+  action?: ModerationActionType;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+export interface GetAdminUsersParams {
+  query?: string;
+  status?: "ACTIVE" | "SUSPENDED" | "REMOVED" | string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+export * from "./programAdminTypes";
+export * from "./problemAdminTypes";
+export * from "./solutionAdminTypes";

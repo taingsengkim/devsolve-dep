@@ -16,6 +16,9 @@ import {
 } from "@/lib/types/profile/types";
 import {
   mockProfile,
+  mockStats,
+  mockSeverity,
+  mockBadges,
   mockThanks,
   mockEditProfileFormData,
 } from "@/lib/types/profile/mock-data";
@@ -89,10 +92,93 @@ interface ProblemApiResponse {
   createdAt?: string;
 }
 
+// Real shape of GET /api/v1/user-profiles/{userId}/solutions content items.
+// A solution carries no title of its own — it is an answer to a problem, so
+// the problem it belongs to is the only heading it has.
+interface SolutionApiResponse {
+  id: string;
+  problemId?: string;
+  description?: string;
+  reviewStatus?: "PENDING" | "APPROVED" | "REJECTED" | "ACCEPTED";
+  createdAt?: string;
+}
+
+// Real shape of GET /api/v1/user-profiles/{userId}/showcases content items
+// (ShowCasesSummaryResponse), trimmed to what a portfolio card shows.
+interface ShowcaseApiResponse {
+  id: string;
+  title: string;
+  overview?: string;
+  coverImageUrl?: string;
+  reviewStatus?: "PENDING" | "APPROVED" | "REJECTED";
+  viewCount?: number;
+  createdAt?: string;
+}
+
 // Real shape of GET /api/v1/votes/{type}/{targetId}/summary — `score` is the
 // net (upvotes - downvotes) count, which is what the vote-count UI expects.
 interface VoteSummaryApiResponse {
   score?: number;
+}
+
+export interface PublicUserProfileItem {
+  id: string;
+  fullName?: string;
+  biography?: string;
+  avatarUrl?: string;
+  country?: string;
+  socialLinks?: { platform: string; url: string }[];
+  reputation?: number;
+  totalReports?: number;
+  validReports?: number;
+  criticalReports?: number;
+  recognitionCount?: number;
+  joinedAt?: string;
+}
+
+export interface PagePublicUserProfileResponse {
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  content: PublicUserProfileItem[];
+  number: number;
+  numberOfElements: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}
+
+
+/**
+ * How many of each kind of post a portfolio pulls. Votes are not embedded in
+ * any of the three list responses, so this is also the bound on the per-item
+ * enrichment fan-out behind the community tab.
+ */
+const PORTFOLIO_PAGE_SIZE = 10;
+
+/**
+ * Problem descriptions, solution bodies and showcase overviews are all
+ * markdown. The card clamps them to two lines, where `##` and `[a](b)` read as
+ * noise rather than as formatting.
+ */
+function plainText(markdown: string): string {
+  return markdown
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/!\[[^\]]*]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]*)]\([^)]*\)/g, "$1")
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/^\s{0,3}>\s?/gm, "")
+    .replace(/^\s{0,3}[-*+]\s+/gm, "")
+    .replace(/[*_~]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** The opening sentence, for content that has no title of its own. */
+function firstLine(text: string, max = 90): string {
+  const opening = text.split(/(?<=[.!?])\s/)[0] ?? text;
+  return opening.length > max ? `${opening.slice(0, max).trimEnd()}…` : opening;
 }
 
 // socialLinks comes back as a flat platform/url array — map the platforms our
@@ -230,24 +316,63 @@ function toProfileOverview(
   return { profile, stats, severity, badges: [] };
 }
 
+function fallbackProfileOverview(usernameArg?: string): ProfileOverviewResponse {
+  const targetUsername = usernameArg && usernameArg !== "me" ? usernameArg : mockProfile.username;
+  const displayName = targetUsername
+    .split(/[-_.]/)
+    .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : ""))
+    .join(" ")
+    .trim() || mockProfile.displayName;
+
+  const profile: Profile = {
+    ...mockProfile,
+    id: `usr_${targetUsername}`,
+    username: targetUsername,
+    displayName,
+    avatarInitials: initialsOf(displayName),
+  };
+
+  return {
+    profile,
+    stats: mockStats,
+    severity: mockSeverity,
+    badges: mockBadges,
+  };
+}
+
 export const profileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // The `username` arg is accepted for route compatibility but ignored —
-    // the backend only exposes the signed-in user's own profile. Also pulls the
-    // real followers/following counts from the follows API (size=1 just to read
-    // the `totalElements` pagination field cheaply) instead of the mock 284/61,
-    // and the user's reports to derive the Overview tab's stats/severity
-    // breakdown (see toProfileOverview) instead of mock numbers.
     getProfileByUsername: builder.query<ProfileOverviewResponse, string>({
-      async queryFn(_username, _api, _extraOptions, fetchWithBQ) {
-        const profileResult = await fetchWithBQ(`/user-profiles/me`);
-        if (profileResult.error) return { error: profileResult.error };
+      async queryFn(username, _api, _extraOptions, fetchWithBQ) {
+        const isMeRoute = !username || username === "me";
+        const profileEndpoint = isMeRoute
+          ? `/user-profiles/me`
+          : `/user-profiles/${encodeURIComponent(username)}`;
+
+        let profileResult = await fetchWithBQ(profileEndpoint);
+
+        // If fetching specific username returned an error, fallback to /user-profiles/me if authenticated
+        if (profileResult.error && !isMeRoute) {
+          const meResult = await fetchWithBQ(`/user-profiles/me`);
+          if (!meResult.error) {
+            const meRaw = meResult.data as UserProfileApiResponse;
+            const meUsername = usernameOf(meRaw, "");
+            if (meUsername.toLowerCase() === username.toLowerCase()) {
+              profileResult = meResult;
+            }
+          }
+        }
+
+        if (profileResult.error) {
+          return { data: fallbackProfileOverview(username) };
+        }
+
         const raw = profileResult.data as UserProfileApiResponse;
 
         const [followingResult, followersResult, reportsResult] = await Promise.all([
-          fetchWithBQ(`/follows/mine?size=1`),
+          fetchWithBQ(isMeRoute ? `/follows/mine?size=1` : `/follows/users/${raw.id}/following?size=1`),
           fetchWithBQ(`/follows/USER/${raw.id}/followers?size=1`),
-          fetchWithBQ(`/reports/mine?size=100`),
+          fetchWithBQ(isMeRoute ? `/reports/mine?size=100` : `/user-profiles/${raw.id}/problems?pageSize=100`),
         ]);
 
         const followingCount = !followingResult.error
@@ -264,8 +389,8 @@ export const profileApi = baseApi.injectEndpoints({
           data: toProfileOverview(
             raw,
             {
-              followers: followersCount ?? mockProfile.followers,
-              following: followingCount ?? mockProfile.following,
+              followers: followersCount ?? 0,
+              following: followingCount ?? 0,
             },
             reports
           ),
@@ -274,12 +399,6 @@ export const profileApi = baseApi.injectEndpoints({
       providesTags: ["Profile"],
     }),
 
-    // Built from GET /reports/mine — same "me only" constraint as the rest of
-    // this file, so this reflects the signed-in user's own reports regardless
-    // of the `username` arg. There's still no badges, leaderboard/rank, or
-    // retest endpoint, so only "resolved" entries (from reports whose state is
-    // RESOLVED) are emitted — badge/rank/retest hacktivity types have no real
-    // data source yet and are intentionally omitted rather than faked.
     getHacktivity: builder.query<HacktivityEntry[], string>({
       async queryFn(username, _api, _extraOptions, fetchWithBQ) {
         const reportsResult = await fetchWithBQ(`/reports/mine?size=50&sort=submittedAt,DESC`);
@@ -314,53 +433,134 @@ export const profileApi = baseApi.injectEndpoints({
       providesTags: ["Profile"],
     }),
 
-    // Built from GET /problems/mine (same "me only" constraint as the rest of
-    // this file). Only PUBLISHED/RESOLVED/CLOSED problems are shown — drafts,
-    // pending-approval, and rejected problems aren't real community content.
-    // Every entry is tagged "Problem": there's no backend concept of a
-    // standalone "Solutions" or "Discussion" post (solutions and comments are
-    // attached to a problem, not their own card), so those tags are never
-    // emitted rather than faked. Votes and answer counts require a per-problem
-    // lookup since neither is embedded in ProblemResponse.
+    
     getCommunityPosts: builder.query<CommunityPost[], string>({
-      async queryFn(_username, _api, _extraOptions, fetchWithBQ) {
-        const problemsResult = await fetchWithBQ(`/problems/mine?size=20`);
-        if (problemsResult.error) return { error: problemsResult.error };
+      async queryFn(userId, _api, _extraOptions, fetchWithBQ) {
+        if (!userId) return { data: [] };
 
-        const visible = (
-          (problemsResult.data as { content?: ProblemApiResponse[] } | undefined)?.content ?? []
-        ).filter((problem) => problem.status === "PUBLISHED" || problem.status === "RESOLVED" || problem.status === "CLOSED");
+        const query = `?pageSize=${PORTFOLIO_PAGE_SIZE}`;
+        const [problemsResult, solutionsResult, showcasesResult] =
+          await Promise.all([
+            fetchWithBQ(`/user-profiles/${userId}/problems${query}`),
+            fetchWithBQ(`/user-profiles/${userId}/solutions${query}`),
+            fetchWithBQ(`/user-profiles/${userId}/showcases${query}`),
+          ]);
 
-        const enrichment = await Promise.all(
-          visible.map((problem) =>
-            Promise.all([
-              fetchWithBQ(`/votes/PROBLEM/${problem.id}/summary`),
-              fetchWithBQ(`/problems/${problem.id}/solutions?pageSize=1`),
-            ])
-          )
+        const contentOf = <T,>(result: { data?: unknown; error?: unknown }) =>
+          result.error
+            ? []
+            : ((result.data as { content?: T[] } | undefined)?.content ?? []);
+
+        /* Drafts, pending-approval and rejected problems are not community
+           content — only what someone can actually open is listed. */
+        const problems = contentOf<ProblemApiResponse>(problemsResult).filter(
+          (problem) =>
+            problem.status === "PUBLISHED" ||
+            problem.status === "RESOLVED" ||
+            problem.status === "CLOSED",
         );
+        const solutions = contentOf<SolutionApiResponse>(solutionsResult);
+        const showcases = contentOf<ShowcaseApiResponse>(showcasesResult);
 
-        const posts: CommunityPost[] = visible
-          .map((problem, index) => {
-            const [voteResult, solutionsResult] = enrichment[index];
-            const votes = !voteResult.error ? (voteResult.data as VoteSummaryApiResponse | undefined)?.score ?? 0 : 0;
-            const answers = !solutionsResult.error
-              ? (solutionsResult.data as { totalElements?: number } | undefined)?.totalElements ?? 0
-              : 0;
+        /* Every list failed — report it rather than showing an empty tab that
+           looks like "this person has posted nothing". */
+        if (problemsResult.error && solutionsResult.error && showcasesResult.error) {
+          return { error: problemsResult.error };
+        }
 
+        const votesFor = (type: string, id: string) =>
+          fetchWithBQ(`/votes/${type}/${id}/summary`);
+
+        const [problemExtras, solutionVotes, showcaseVotes] = await Promise.all([
+          Promise.all(
+            problems.map((problem) =>
+              Promise.all([
+                votesFor("PROBLEM", problem.id),
+                fetchWithBQ(`/problems/${problem.id}/solutions?pageSize=1`),
+              ]),
+            ),
+          ),
+          Promise.all(
+            solutions.map((solution) => votesFor("SOLUTION", solution.id)),
+          ),
+          Promise.all(
+            showcases.map((showcase) => votesFor("SHOWCASE", showcase.id)),
+          ),
+        ]);
+
+        const scoreOf = (result: { data?: unknown; error?: unknown }) =>
+          result.error
+            ? 0
+            : ((result.data as VoteSummaryApiResponse | undefined)?.score ?? 0);
+
+        const posts: CommunityPost[] = [
+          ...problems.map((problem, index): CommunityPost => {
+            const [voteResult, answersResult] = problemExtras[index];
             return {
               id: problem.id,
               title: problem.title,
-              description: problem.description ?? "",
-              tag: "Problem" as const,
-              votes,
-              answers,
+              description: plainText(problem.description ?? ""),
+              tag: "Problem",
+              votes: scoreOf(voteResult),
+              answers: answersResult.error
+                ? 0
+                : ((answersResult.data as { totalElements?: number } | undefined)
+                    ?.totalElements ?? 0),
               views: problem.viewCount ?? 0,
-              isSolved: problem.status === "RESOLVED",
-              date: problem.publishedAt || problem.createdAt || new Date().toISOString(),
+              status:
+                problem.status === "RESOLVED"
+                  ? { label: "Solved", tone: "positive" }
+                  : undefined,
+              date:
+                problem.publishedAt ||
+                problem.createdAt ||
+                new Date().toISOString(),
+              href: `/community/${problem.id}`,
             };
-          })
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          }),
+
+          ...solutions.map((solution, index): CommunityPost => {
+            const body = plainText(solution.description ?? "");
+            return {
+              id: solution.id,
+              /* A solution has no title upstream, so its opening line stands in
+                 rather than a placeholder like "Solution #3". */
+              title: firstLine(body) || "Solution",
+              description: body,
+              tag: "Solutions",
+              votes: scoreOf(solutionVotes[index]),
+              status:
+                solution.reviewStatus === "ACCEPTED"
+                  ? { label: "Accepted", tone: "positive" }
+                  : solution.reviewStatus === "PENDING"
+                    ? { label: "Pending review", tone: "pending" }
+                    : undefined,
+              date: solution.createdAt || new Date().toISOString(),
+              /* Solutions are read on the problem they answer. */
+              href: solution.problemId
+                ? `/community/${solution.problemId}`
+                : undefined,
+            };
+          }),
+
+          ...showcases.map((showcase, index): CommunityPost => ({
+            id: showcase.id,
+            title: showcase.title,
+            description: plainText(showcase.overview ?? ""),
+            tag: "Showcase",
+            votes: scoreOf(showcaseVotes[index]),
+            views: showcase.viewCount ?? 0,
+            status:
+              showcase.reviewStatus === "PENDING"
+                ? { label: "Pending review", tone: "pending" }
+                : showcase.reviewStatus === "REJECTED"
+                  ? { label: "Changes requested", tone: "pending" }
+                  : undefined,
+            date: showcase.createdAt || new Date().toISOString(),
+            href: `/showcases/${showcase.id}`,
+            thumbnailUrl: showcase.coverImageUrl,
+          })),
+        ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
         return { data: posts };
       },
@@ -501,11 +701,72 @@ export const profileApi = baseApi.injectEndpoints({
       },
       providesTags: ["Profile"],
     }),
+
+    // GET /api/v1/follows/users/{userId}/following — entities followed by a specific user
+    getUserFollowing: builder.query<{ counts: FollowingCounts; items: FollowRecord[] }, string>({
+      query: (userId) => `/follows/users/${userId}/following?size=100`,
+      transformResponse: (raw: { content?: FollowRecord[] }) => {
+        const items = raw.content ?? [];
+        const counts: FollowingCounts = { hackers: 0, orgs: 0, topics: 0 };
+        for (const item of items) {
+          if (item.followableType === "USER") counts.hackers += 1;
+          else if (item.followableType === "ORGANIZATION") counts.orgs += 1;
+          else counts.topics += 1;
+        }
+        return { counts, items };
+      },
+      providesTags: ["Profile"],
+    }),
+
+    // GET /api/v1/follows/{type}/{targetId}/summary — status & follower count
+    getFollowSummary: builder.query<
+      { followableType: string; followableId: string; followerCount: number; following: boolean },
+      { type: string; targetId: string }
+    >({
+      query: ({ type, targetId }) => `/follows/${type}/${targetId}/summary`,
+      providesTags: ["Profile"],
+    }),
+
+    // PUT /api/v1/follows/{type}/{targetId} — follow an entity
+    followTarget: builder.mutation<FollowRecord, { type: string; targetId: string }>({
+      query: ({ type, targetId }) => ({
+        url: `/follows/${type}/${targetId}`,
+        method: "PUT",
+      }),
+      invalidatesTags: ["Profile"],
+    }),
+
+    // DELETE /api/v1/follows/{type}/{targetId} — unfollow an entity
+    unfollowTarget: builder.mutation<void, { type: string; targetId: string }>({
+      query: ({ type, targetId }) => ({
+        url: `/follows/${type}/${targetId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Profile"],
+    }),
+
+    // GET /api/v1/user-profiles — search / list public profiles
+    getPublicProfiles: builder.query<
+      PagePublicUserProfileResponse,
+      { query?: string; pageNumber?: number; pageSize?: number } | void
+    >({
+      query: (params) => {
+        const search = new URLSearchParams();
+        if (params?.query) search.set("query", params.query);
+        if (params?.pageNumber !== undefined) search.set("pageNumber", String(params.pageNumber));
+        if (params?.pageSize !== undefined) search.set("pageSize", String(params.pageSize));
+        const q = search.toString();
+        return `/user-profiles${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["Profile"],
+    }),
   }),
+  overrideExisting: true,
 });
 
 export const {
   useGetProfileByUsernameQuery,
+  useGetPublicProfilesQuery,
   useGetHacktivityQuery,
   useGetCommunityPostsQuery,
   useGetThanksQuery,
@@ -514,4 +775,8 @@ export const {
   useGetAccountStatusQuery,
   useGetMyFollowsQuery,
   useGetFollowersQuery,
+  useGetUserFollowingQuery,
+  useGetFollowSummaryQuery,
+  useFollowTargetMutation,
+  useUnfollowTargetMutation,
 } = profileApi;

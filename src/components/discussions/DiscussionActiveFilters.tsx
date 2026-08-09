@@ -7,12 +7,13 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type {
   DiscussionCategory,
-  TopicFilter,
+  TopicName,
 } from "@/lib/types/dicussion/types";
 
 interface DiscussionActiveFiltersProps {
   category: DiscussionCategory;
-  topic: TopicFilter | null;
+  defaultCategory: DiscussionCategory;
+  topic: TopicName | null;
   tag: string | null;
   searchQuery: string;
   onClearCategory: () => void;
@@ -31,6 +32,7 @@ interface FilterChip {
 
 export function DiscussionActiveFilters({
   category,
+  defaultCategory,
   topic,
   tag,
   searchQuery,
@@ -42,7 +44,7 @@ export function DiscussionActiveFilters({
 }: DiscussionActiveFiltersProps) {
   const chips: FilterChip[] = [];
 
-  if (category !== "All") {
+  if (category !== defaultCategory) {
     chips.push({
       key: "category",
       label: "Category",

@@ -5,6 +5,7 @@ import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { useTheme } from "next-themes";
 import { ArrowUpRight } from "lucide-react";
 import SectionBackdrop, { ACCENT, PRIMARY, SECONDARY } from "./SectionBackdrop";
 
@@ -13,7 +14,34 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, useGSAP);
 }
 
-const MUTED = "#CBD5E1";
+/* GSAP animates the tabs and step markers by writing straight onto their
+   style attributes, which outranks any `dark:` class. So the two themes are
+   resolved here in JS instead and the timeline is rebuilt when the theme
+   flips. The dark act tab inverts — it fills light on a dark masthead. */
+const TONES = {
+  light: {
+    tabBg: "#FFFFFF",
+    tabText: "#94A3B8",
+    tabBorder: "#E2E8F0",
+    tabActiveBg: SECONDARY,
+    tabActiveText: "#FFFFFF",
+    muted: "#CBD5E1",
+  },
+  dark: {
+    tabBg: "#0F172A",
+    tabText: "#64748B",
+    tabBorder: "#1E293B",
+    tabActiveBg: "#E2E8F0",
+    tabActiveText: "#0F172A",
+    muted: "#475569",
+  },
+} as const;
+
+/* The Showcase act's accent is the near-black brand secondary, which vanishes
+   against a dark surface. It flips to the light slate there; the blue and
+   green accents carry on unchanged, since both read on either surface. */
+const accentFor = (act: Act, dark: boolean) =>
+  dark && act.accent === SECONDARY ? "#E2E8F0" : act.accent;
 
 /* Fixed row height keeps the scroll maths deterministic across breakpoints. */
 const STEP_H = 320;
@@ -83,8 +111,8 @@ const ACTS: Act[] = [
     kicker: "How it works",
     title: ["Problems,", "Answered"],
     accent: ACCENT,
-    href: "/discussions",
-    hrefLabel: "Open the discussions",
+    href: "/problems",
+    hrefLabel: "Open the problems feed",
     steps: [
       {
         n: "01",
@@ -144,6 +172,10 @@ function arcPoint(f: number) {
   };
 }
 
+function formatPercent(value: number, total: number) {
+  return `${((value / total) * 100).toFixed(4)}%`;
+}
+
 /** Inset so the first and last dot never sit at the very ends of the sweep. */
 function dotFraction(index: number, total: number) {
   return total <= 1 ? 0.5 : 0.15 + (index / (total - 1)) * 0.7;
@@ -159,6 +191,9 @@ const ARC_PATH = (() => {
 export function FeatureHighlights() {
   const containerRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+  const tone = isDark ? TONES.dark : TONES.light;
 
   const totalUnits = ACTS.reduce(
     (sum, act) => sum + 0.6 + act.steps.length + 0.5,
@@ -175,18 +210,18 @@ export function FeatureHighlights() {
         gsap.set(`.stack-${ai}`, { y: -STEP_H / 2 });
         gsap.set(`.arcline-${ai}`, { strokeDashoffset: 1 });
         gsap.set(`.tab-${ai}`, {
-          backgroundColor: "#ffffff",
-          color: "#94A3B8",
-          borderColor: "#E2E8F0",
+          backgroundColor: tone.tabBg,
+          color: tone.tabText,
+          borderColor: tone.tabBorder,
         });
         act.steps.forEach((_, si) => {
           gsap.set(`.step-${ai}-${si}`, { opacity: si === 0 ? 1 : 0.16 });
           gsap.set(`.num-${ai}-${si}`, {
-            color: si === 0 ? act.accent : MUTED,
+            color: si === 0 ? accentFor(act, isDark) : tone.muted,
           });
           gsap.set(`.dot-${ai}-${si}`, {
             scale: si === 0 ? 1 : 0.5,
-            backgroundColor: si === 0 ? act.accent : MUTED,
+            backgroundColor: si === 0 ? accentFor(act, isDark) : tone.muted,
           });
         });
       });
@@ -226,9 +261,9 @@ export function FeatureHighlights() {
         tl.to(
           `.tab-${ai}`,
           {
-            backgroundColor: SECONDARY,
-            color: "#ffffff",
-            borderColor: SECONDARY,
+            backgroundColor: tone.tabActiveBg,
+            color: tone.tabActiveText,
+            borderColor: tone.tabActiveBg,
             duration: 0.3,
           },
           t,
@@ -271,12 +306,12 @@ export function FeatureHighlights() {
             st,
           );
           tl.to(`.step-${ai}-${si}`, { opacity: 1, duration: 0.45 }, st);
-          tl.to(`.num-${ai}-${si}`, { color: act.accent, duration: 0.45 }, st);
+          tl.to(`.num-${ai}-${si}`, { color: accentFor(act, isDark), duration: 0.45 }, st);
           tl.to(
             `.dot-${ai}-${si}`,
             {
               scale: 1,
-              backgroundColor: act.accent,
+              backgroundColor: accentFor(act, isDark),
               duration: 0.45,
               ease: "back.out(2)",
             },
@@ -299,10 +334,14 @@ export function FeatureHighlights() {
               { opacity: 0.16, duration: 0.45 },
               st,
             );
-            tl.to(`.num-${ai}-${si - 1}`, { color: MUTED, duration: 0.45 }, st);
+            tl.to(
+              `.num-${ai}-${si - 1}`,
+              { color: tone.muted, duration: 0.45 },
+              st,
+            );
             tl.to(
               `.dot-${ai}-${si - 1}`,
-              { scale: 0.5, backgroundColor: MUTED, duration: 0.45 },
+              { scale: 0.5, backgroundColor: tone.muted, duration: 0.45 },
               st,
             );
           }
@@ -320,9 +359,9 @@ export function FeatureHighlights() {
           tl.to(
             `.tab-${ai}`,
             {
-              backgroundColor: "#ffffff",
-              color: "#94A3B8",
-              borderColor: "#E2E8F0",
+              backgroundColor: tone.tabBg,
+              color: tone.tabText,
+              borderColor: tone.tabBorder,
               duration: 0.3,
             },
             t,
@@ -337,13 +376,15 @@ export function FeatureHighlights() {
         }
       });
     },
-    { scope: containerRef },
+    /* The timeline bakes the tone's hex values into its tweens, so a theme
+       flip has to tear it down and rebuild rather than just re-run. */
+    { scope: containerRef, dependencies: [tone], revertOnUpdate: true },
   );
 
   return (
-    <section ref={containerRef} className="relative bg-white">
+    <section ref={containerRef} className="relative bg-white dark:bg-slate-950">
       {/* Scroll progress rail */}
-      <div className="pointer-events-none fixed left-0 right-0 top-0 z-50 h-0.5 bg-slate-200/70">
+      <div className="pointer-events-none fixed left-0 right-0 top-0 z-50 h-0.5 bg-slate-200/70 dark:bg-slate-800/70">
         <div
           className="gsap-progress-bar h-full origin-left"
           style={{
@@ -362,21 +403,18 @@ export function FeatureHighlights() {
 
         {/* ── Masthead ── */}
         <header className="relative z-20 mx-auto w-full max-w-7xl px-6 pt-8 sm:px-12">
-          <div className="flex items-start justify-between gap-6 border-b border-slate-200 pb-6">
+          <div className="flex items-start justify-between gap-6 border-b border-slate-200 pb-6 dark:border-slate-800">
             <div>
-              <p
-                className="text-xl font-bold tracking-tight sm:text-2xl"
-                style={{ color: SECONDARY }}
-              >
+              <p className="text-xl font-bold tracking-tight text-[#1E293B] sm:text-2xl dark:text-slate-100">
                 DevSolve
               </p>
-              <p className="mt-1.5 text-sm font-medium tracking-[0.28em] text-slate-400">
+              <p className="mt-1.5 text-sm font-medium tracking-[0.28em] text-slate-400 dark:text-slate-500">
                 [ PLATFORM ]
               </p>
             </div>
 
-            {/* Act tabs — the active one fills dark */}
-            <nav className="grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200">
+            {/* Act tabs — the active one fills dark (and inverts in dark mode) */}
+            <nav className="grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200 dark:border-slate-800 dark:bg-slate-800">
               {ACTS.map((act, ai) => (
                 <div
                   key={act.id}
@@ -413,7 +451,7 @@ export function FeatureHighlights() {
                   <path
                     d={ARC_PATH}
                     fill="none"
-                    stroke={SECONDARY}
+                    stroke={isDark ? "#FFFFFF" : SECONDARY}
                     strokeOpacity="0.14"
                     strokeWidth="1"
                     vectorEffect="non-scaling-stroke"
@@ -422,7 +460,7 @@ export function FeatureHighlights() {
                     className={`arcline-${ai}`}
                     d={ARC_PATH}
                     fill="none"
-                    stroke={act.accent}
+                    stroke={accentFor(act, isDark)}
                     strokeWidth="1.5"
                     pathLength={1}
                     strokeDasharray={1}
@@ -436,11 +474,13 @@ export function FeatureHighlights() {
                   return (
                     <div
                       key={step.n}
-                      className={`dot-${ai}-${si} absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full`}
+                      /* No inline fill: GSAP writes the real one on mount,
+                         and the class keeps the pre-hydration paint right in
+                         both themes. */
+                      className={`dot-${ai}-${si} absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-300 dark:bg-slate-600`}
                       style={{
                         left: `${((p.x / ARC.w) * 100).toFixed(4)}%`,
                         top: `${((p.y / ARC.h) * 100).toFixed(4)}%`,
-                        backgroundColor: "rgb(203, 213, 225)",
                       }}
                     />
                   );
@@ -453,20 +493,19 @@ export function FeatureHighlights() {
                   <div className="mb-4 flex items-center gap-2.5">
                     <span
                       className="h-px w-8"
-                      style={{ backgroundColor: act.accent }}
+                      style={{ backgroundColor: accentFor(act, isDark) }}
                     />
                     <span
                       className="text-xs font-bold uppercase tracking-[0.22em]"
-                      style={{ color: act.accent }}
+                      style={{ color: accentFor(act, isDark) }}
                     >
                       {act.kicker}
                     </span>
                   </div>
 
                   <h2
-                    className={`act-title-${ai} font-bold leading-[1.02] tracking-[-0.045em]`}
+                    className={`act-title-${ai} font-bold leading-[1.02] tracking-[-0.045em] text-[#1E293B] dark:text-slate-100`}
                     style={{
-                      color: SECONDARY,
                       fontSize: "clamp(34px, 4.2vw, 60px)",
                     }}
                   >
@@ -485,7 +524,7 @@ export function FeatureHighlights() {
                           <span
                             className="t-char inline-block"
                             style={{
-                              color: act.accent,
+                              color: accentFor(act, isDark),
                               willChange: "transform, opacity",
                             }}
                           >
@@ -497,10 +536,9 @@ export function FeatureHighlights() {
                   </h2>
 
                   <div className={`act-meta-${ai} mt-7 space-y-5`}>
-                    <div className="flex items-baseline gap-2 font-mono text-sm text-slate-400">
+                    <div className="flex items-baseline gap-2 font-mono text-sm text-slate-400 dark:text-slate-500">
                       <span
-                        className={`counter-${ai} text-2xl font-bold tabular-nums`}
-                        style={{ color: SECONDARY }}
+                        className={`counter-${ai} text-2xl font-bold tabular-nums text-[#1E293B] dark:text-slate-100`}
                       >
                         1
                       </span>
@@ -516,7 +554,7 @@ export function FeatureHighlights() {
                     <Link
                       href={act.href}
                       className="group inline-flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-70"
-                      style={{ color: act.accent }}
+                      style={{ color: accentFor(act, isDark) }}
                     >
                       {act.hrefLabel}
                       <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -542,11 +580,12 @@ export function FeatureHighlights() {
                         style={{ height: STEP_H }}
                       >
                         <span
-                          className={`num-${ai}-${si} block pt-1 text-right font-bold tabular-nums leading-none tracking-[-0.06em]`}
+                          /* Resting colour as a class; GSAP takes it over
+                             from mount onwards. */
+                          className={`num-${ai}-${si} block pt-1 text-right font-bold tabular-nums leading-none tracking-[-0.06em] text-slate-300 dark:text-slate-600`}
                           style={{
                             fontSize: "clamp(52px, 7.5vw, 108px)",
                             width: "clamp(80px, 11vw, 160px)",
-                            color: MUTED,
                           }}
                         >
                           {step.n}
@@ -554,18 +593,15 @@ export function FeatureHighlights() {
 
                         <div className="pt-2">
                           <div className="mb-2 flex items-baseline gap-3">
-                            <h3
-                              className="text-2xl font-bold tracking-tight sm:text-3xl"
-                              style={{ color: SECONDARY }}
-                            >
+                            <h3 className="text-2xl font-bold tracking-tight text-[#1E293B] sm:text-3xl dark:text-slate-100">
                               {step.title}
-                              <span style={{ color: act.accent }}>.</span>
+                              <span style={{ color: accentFor(act, isDark) }}>.</span>
                             </h3>
-                            <span className="rounded-full border border-slate-200 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                            <span className="rounded-full border border-slate-200 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:border-slate-700 dark:text-slate-500">
                               {step.role}
                             </span>
                           </div>
-                          <p className="max-w-xl text-sm leading-[1.8] text-slate-500 sm:text-[15px]">
+                          <p className="max-w-xl text-sm leading-[1.8] text-slate-500 sm:text-[15px] dark:text-slate-400">
                             {step.body}
                           </p>
                         </div>
@@ -579,12 +615,12 @@ export function FeatureHighlights() {
         </div>
 
         {/* ── Footer hint ── */}
-        <footer className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 border-t border-slate-200 px-6 py-5 sm:px-12">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+        <footer className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 border-t border-slate-200 px-6 py-5 sm:px-12 dark:border-slate-800">
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
             Scroll to advance
           </span>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium tracking-[0.2em] text-slate-300">
+            <span className="text-xs font-medium tracking-[0.2em] text-slate-300 dark:text-slate-600">
               01 — {String(ACTS.length).padStart(2, "0")}
             </span>
             <span

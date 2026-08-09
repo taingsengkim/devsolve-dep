@@ -346,6 +346,32 @@
   }
 }
 
+.cn-toast {
+  @apply flex items-center justify-between gap-4 rounded-[2rem] bg-slate-950/95 px-6 py-4 min-w-[24rem] max-w-xl w-[clamp(24rem,90vw,36rem)] text-base font-semibold text-white shadow-[0_24px_96px_-32px_rgba(15,23,42,0.35)];
+  animation: toast-enter 0.26s ease-out;
+}
+
+.cn-toast[data-type="success"] {
+  @apply bg-emerald-600 text-white;
+}
+
+.cn-toast[data-type="error"] {
+  @apply bg-rose-500 text-white;
+}
+
+.cn-toast[data-type="info"] {
+  @apply bg-sky-500 text-white;
+}
+
+.cn-toast[data-type="warning"] {
+  @apply bg-amber-500 text-slate-950;
+}
+
+.cn-toast .toast-action,
+.cn-toast .toast-close {
+  @apply text-white opacity-80 transition-opacity duration-150 hover:opacity-100;
+}
+
 /* ==========================================================================
    3. Base Styles & Global Utilities
    ========================================================================== */

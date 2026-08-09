@@ -15,11 +15,13 @@ interface ProfileTabsContainerProps {
   severity: SeverityStats;
   badges: ProfileBadge[];
   username: string;
+  /** The profile's real user id — the portfolio endpoints are keyed by id. */
+  userId: string;
 }
 
 const VALID_TABS: ProfileTabId[] = ["overview", "hacktivity", "community", "hall-of-thanks"];
 
-export default function ProfileTabsContainer({ stats, severity, badges, username }: ProfileTabsContainerProps) {
+export default function ProfileTabsContainer({ stats, severity, badges, username, userId }: ProfileTabsContainerProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -42,15 +44,15 @@ export default function ProfileTabsContainer({ stats, severity, badges, username
   const { data: hacktivity, isLoading: hacktivityLoading } = useGetHacktivityQuery(username, {
     skip: activeTab !== "hacktivity",
   });
-  const { data: communityPosts, isLoading: communityLoading } = useGetCommunityPostsQuery(username, {
-    skip: activeTab !== "community",
+  const { data: communityPosts, isLoading: communityLoading } = useGetCommunityPostsQuery(userId, {
+    skip: activeTab !== "community" || !userId,
   });
   const { data: thanks, isLoading: thanksLoading } = useGetThanksQuery(username, {
     skip: activeTab !== "hall-of-thanks",
   });
 
   return (
-    <div className="mt-6">
+    <div>
       <ProfileTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
       <div className="mt-5">

@@ -78,10 +78,12 @@ export function ReportDetailHeader({ detail }: ReportDetailHeaderProps) {
           href="/dashboard/report-management"
           className={cn(
             buttonVariants({ variant: "outline", size: "sm" }),
-            "h-10 rounded-full border-slate-200 bg-white px-4 font-medium text-slate-700 shadow-[0_2px_8px_rgba(15,23,42,0.03)]"
+            "h-10 items-center justify-center gap-2.5 rounded-full border-slate-300 bg-white px-4 font-semibold text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.03)] transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:text-slate-700 hover:shadow-[0_8px_18px_rgba(15,23,42,0.06)]"
           )}
         >
-          <ArrowLeft data-icon="inline-start" />
+          <span className="flex size-4 items-center justify-center">
+            <ArrowLeft className="size-4" />
+          </span>
           Back to reports
         </Link>
       </div>

@@ -1,19 +1,26 @@
 "use client";
 
 import React from "react";
-import { Users, User, Building2, Shield } from "lucide-react";
+import { FileText, Shield, UserCheck, Users } from "lucide-react";
 import { AdminUserItem } from "@/lib/redux/services/adminApi";
 import { motion } from "motion/react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface UserStatCardsProps {
   users: AdminUserItem[];
+  totalCount?: number;
 }
 
-export function UserStatCards({ users }: UserStatCardsProps) {
-  const total = users.length;
-  const researchers = users.filter((u) => u.role === "USER").length;
-  const companies = users.filter((u) => u.role === "COMPANY").length;
-  const staff = users.filter((u) => u.role === "ADMIN" || u.role === "MODERATOR").length;
+export function UserStatCards({ users, totalCount }: UserStatCardsProps) {
+  const total = typeof totalCount === "number" ? totalCount : users.length;
+  const activeCount = users.filter((u) => u.status === "ACTIVE").length;
+  const totalReports = users.reduce((acc, u) => acc + (u.reportsSubmitted || 0), 0);
   const suspended = users.filter((u) => u.status === "SUSPENDED").length;
 
   const stats = [
@@ -22,32 +29,24 @@ export function UserStatCards({ users }: UserStatCardsProps) {
       value: total,
       subtext: `${suspended} suspended`,
       icon: Users,
-      color:
-        "text-blue-600 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-400 border-blue-200 dark:border-blue-800",
     },
     {
-      title: "Researchers",
-      value: researchers,
-      subtext: "Security researchers",
-      icon: User,
-      color:
-        "text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700",
+      title: "Active Users",
+      value: activeCount,
+      subtext: "Active accounts",
+      icon: UserCheck,
     },
     {
-      title: "Companies",
-      value: companies,
-      subtext: "VDP program owners",
-      icon: Building2,
-      color:
-        "text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800",
+      title: "Reports Submitted",
+      value: totalReports,
+      subtext: "Across active users",
+      icon: FileText,
     },
     {
-      title: "Platform Staff",
-      value: staff,
-      subtext: "Admins & Moderators",
+      title: "Suspended Accounts",
+      value: suspended,
+      subtext: "Require admin review",
       icon: Shield,
-      color:
-        "text-purple-600 bg-purple-50 dark:bg-purple-950/60 dark:text-purple-400 border-purple-200 dark:border-purple-800",
     },
   ];
 
@@ -57,26 +56,29 @@ export function UserStatCards({ users }: UserStatCardsProps) {
         const Icon = stat.icon;
         return (
           <motion.div
-            key={idx}
+            key={stat.title}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, delay: idx * 0.05 }}
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-all space-y-3"
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {stat.title}
-              </span>
-              <div className={`w-9 h-9 rounded-xl border flex items-center justify-center ${stat.color}`}>
-                <Icon className="w-4 h-4" />
-              </div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                {stat.value}
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{stat.subtext}</p>
-            </div>
+            <Card className="gap-3 rounded-2xl border border-slate-200 bg-white py-5 shadow-2xs transition-shadow hover:shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <CardHeader className="grid grid-cols-[1fr_auto] items-center gap-3 px-5">
+                <CardTitle className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                  {stat.title}
+                </CardTitle>
+                <div className="flex size-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+                  <Icon className="size-4" />
+                </div>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-0.5 px-5">
+                <div className="text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-100">
+                  {stat.value}
+                </div>
+                <CardDescription className="text-sm text-slate-500 dark:text-slate-400">
+                  {stat.subtext}
+                </CardDescription>
+              </CardContent>
+            </Card>
           </motion.div>
         );
       })}

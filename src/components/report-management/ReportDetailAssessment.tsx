@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardList, Lightbulb, Sparkles } from "lucide-react";
+import { ClipboardList, Lightbulb } from "lucide-react";
 
 import { ReportDetailSectionCard } from "@/components/report-management/ReportDetailSectionCard";
 import type { ReportManagementDetail } from "@/components/report-management/types";
@@ -80,10 +80,9 @@ export function ReportDetailAssessment({
                 href={`/dashboard/report-management/${detail.id}/severity-review`}
                 className={cn(
                   buttonVariants({ variant: "default", size: "lg" }),
-                  "h-11 rounded-full bg-slate-950 px-6 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)] transition-all hover:bg-slate-900 hover:shadow-[0_12px_28px_rgba(15,23,42,0.2)]"
+                  "h-11 rounded-full bg-slate-950 px-6 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(15,23,42,0.14)] transition-colors hover:bg-slate-900"
                 )}
               >
-                <Sparkles data-icon="inline-start" className="size-4" />
                 Next
               </Link>
             </div>

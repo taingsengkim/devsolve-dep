@@ -38,9 +38,6 @@ export interface Profile {
   displayName: string;
   avatarInitials: string;
   avatarUrl?: string;
-  isVerified: boolean;
-  rankBadgeLabel?: string; // e.g. "Top 10"
-  verifiedBadgeLabel?: string; // e.g. "Verified User"
   bio: string;
   location?: string;
   memberSince: string; // e.g. "March 2023"
@@ -76,7 +73,14 @@ export interface HacktivityEntry {
 
 // Community
 
-export type CommunityPostTag = "Problem" | "Solutions" | "Discussion";
+/** The three kinds of post a portfolio holds, one endpoint each. */
+export type CommunityPostTag = "Problem" | "Solutions" | "Showcase";
+
+/** A small status chip — "Solved" on a problem, "Pending review" on a showcase. */
+export interface CommunityPostStatus {
+  label: string;
+  tone: "positive" | "pending";
+}
 
 export interface CommunityPost {
   id: string;
@@ -84,10 +88,15 @@ export interface CommunityPost {
   description: string;
   tag: CommunityPostTag;
   votes: number;
-  answers: number;
+  /** Problems only: solutions are answers, showcases draw comments instead. */
+  answers?: number;
   views?: number;
-  isSolved?: boolean;
+  status?: CommunityPostStatus;
   date: string; // ISO date
+  /** Where the card opens — the problem thread, or the showcase page. */
+  href?: string;
+  /** Showcase cover, when there is one. */
+  thumbnailUrl?: string;
 }
 
 // Hall of Thanks
@@ -114,6 +123,13 @@ export interface FollowRecord {
   followableType: FollowableType;
   followableId: string;
   createdAt: string; // ISO date
+  displayName?: string;
+  username?: string;
+  avatarUrl?: string;
+  avatarInitials?: string;
+  bio?: string;
+  reputation?: number;
+  isFollowing?: boolean;
 }
 
 export interface FollowingCounts {

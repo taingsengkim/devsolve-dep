@@ -2,44 +2,112 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Building2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { useGetCompanyVerificationsQuery } from "@/lib/redux/services/adminApi";
+import React, { useState, useMemo, useCallback } from "react";
+import Link from "next/link";
+import { motion } from "motion/react";
+import { ArrowLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  useGetPendingOrganizationsQuery,
+  useApproveOrganizationMutation,
+  useRejectOrganizationMutation,
+} from "@/lib/redux/services/adminApi";
+import { CompanyVerificationItem } from "@/lib/types/admin/types";
 import { OrganizationStatCards } from "@/components/admin/organizations/OrganizationStatCards";
 import { OrganizationFiltersBar } from "@/components/admin/organizations/OrganizationFiltersBar";
-import { OrganizationCard } from "@/components/admin/organizations/OrganizationCard";
+import { OrganizationDataTable } from "@/components/admin/organizations/OrganizationDataTable";
+import { getOrganizationColumns } from "@/components/admin/organizations/organizationColumns";
+import { OrganizationKycModal } from "@/components/admin/organizations/OrganizationKycModal";
 
 type StatusFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED" | "UNDER_REVIEW";
 
 export default function OrganizationVerificationPage() {
-  const { data: verifications = [], isLoading, isFetching } =
-    useGetCompanyVerificationsQuery();
-
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedAuditCompany, setSelectedAuditCompany] = useState<CompanyVerificationItem | null>(null);
 
-  const counts = {
-    all: verifications.length,
-    pending: verifications.filter((v) => v.status === "PENDING").length,
-    approved: verifications.filter((v) => v.status === "APPROVED").length,
-    rejected: verifications.filter((v) => v.status === "REJECTED").length,
-    underReview: verifications.filter((v) => v.status === "UNDER_REVIEW").length,
-  };
+  // Real RTK Query hooks for pending organizations
+  const {
+    data: pendingData,
+    isLoading,
+    isFetching,
+  } = useGetPendingOrganizationsQuery({ pageNumber: 0, pageSize: 100 });
 
-  const filteredItems = verifications.filter((item) => {
-    const matchesFilter = statusFilter === "ALL" || item.status === statusFilter;
-    const q = searchQuery.toLowerCase().trim();
-    const matchesSearch =
-      !q ||
-      item.companyName.toLowerCase().includes(q) ||
-      item.domain.toLowerCase().includes(q) ||
-      item.taxId.toLowerCase().includes(q) ||
-      item.businessType.toLowerCase().includes(q) ||
-      item.email.toLowerCase().includes(q);
-    return matchesFilter && matchesSearch;
-  });
+  const [approveOrg] = useApproveOrganizationMutation();
+  const [rejectOrg] = useRejectOrganizationMutation();
+
+  // Map pending organization items from backend to CompanyVerificationItem format
+  const verifications: CompanyVerificationItem[] = useMemo(() => {
+    return (pendingData?.content ?? []).map((p) => ({
+      id: p.id,
+      orgCode: p.slug,
+      companyName: p.name,
+      email: p.ownerEmail || "—",
+      domain: p.websiteUrl ? p.websiteUrl.replace(/^https?:\/\//, "") : "—",
+      taxId: "—",
+      businessType: p.industry || "Technology",
+      registrationDate: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "—",
+      submittedAt: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "—",
+      status: "PENDING",
+      documentsCount: 0,
+      contactName: p.ownerFullName || "Owner",
+      country: p.country,
+      industry: p.industry,
+      companySize: p.companySize,
+      submissionVersion: p.submissionVersion,
+    }));
+  }, [pendingData]);
+
+  // Counts for summary metrics and status tabs
+  const counts = useMemo(
+    () => ({
+      all: verifications.length,
+      pending: verifications.filter((v) => v.status === "PENDING").length,
+      underReview: verifications.filter((v) => v.status === "UNDER_REVIEW").length,
+      approved: verifications.filter((v) => v.status === "APPROVED").length,
+      rejected: verifications.filter((v) => v.status === "REJECTED").length,
+    }),
+    [verifications]
+  );
+
+  // Filtering by status & text query
+  const filteredVerifications = useMemo(() => {
+    return verifications.filter((v) => {
+      const matchesStatus = statusFilter === "ALL" || v.status === statusFilter;
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        v.companyName.toLowerCase().includes(q) ||
+        v.email?.toLowerCase().includes(q) ||
+        v.domain?.toLowerCase().includes(q) ||
+        v.contactName?.toLowerCase().includes(q) ||
+        v.taxId?.toLowerCase().includes(q) ||
+        v.industry?.toLowerCase().includes(q) ||
+        v.orgCode?.toLowerCase().includes(q);
+
+      return matchesStatus && matchesSearch;
+    });
+  }, [verifications, statusFilter, searchQuery]);
+
+  // Audit modal status updater callback using real mutations
+  const handleUpdateStatus = useCallback(
+    async (id: string, status: "APPROVED" | "REJECTED", notes?: string) => {
+      if (status === "APPROVED") {
+        await approveOrg({ id }).unwrap();
+      } else {
+        await rejectOrg({ id, reason: notes || "Rejected during organization verification audit." }).unwrap();
+      }
+    },
+    [approveOrg, rejectOrg]
+  );
+
+  const columns = useMemo(
+    () =>
+      getOrganizationColumns({
+        onQuickAudit: (company) => setSelectedAuditCompany(company),
+      }),
+    []
+  );
 
   return (
     <motion.div
@@ -50,27 +118,56 @@ export default function OrganizationVerificationPage() {
     >
       {/* PAGE HEADER */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-1 transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+            >
+              <ArrowLeft className="size-3.5" />
+              Dashboard
+            </Link>
+            <span>/</span>
+            <span className="font-semibold text-slate-700 dark:text-slate-300">
+              Organization Verification
+            </span>
+          </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             Organization Verification
           </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Review, audit, and manage pending and verified corporate KYB / KYC requests.
+          </p>
         </div>
 
-        {/* Pending badge call-to-action */}
+        {/* Pending badge count alert */}
         {counts.pending > 0 && (
-          <div className="shrink-0 flex items-center gap-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-2.5">
-            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-            <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">
-              {counts.pending} pending review{counts.pending > 1 ? "s" : ""}
+          <Badge
+            variant="outline"
+            className="h-9 shrink-0 gap-2 rounded-xl border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+          >
+            <span className="size-2 rounded-full bg-amber-500" />
+            <span>
+              {counts.pending} pending review{counts.pending !== 1 ? "s" : ""}
             </span>
-          </div>
+          </Badge>
         )}
       </header>
 
       {/* STAT CARDS */}
-      <OrganizationStatCards verifications={verifications} />
+      {!isLoading && <OrganizationStatCards verifications={verifications} />}
+      {isLoading && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-24 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800"
+            />
+          ))}
+        </div>
+      )}
 
-      {/* FILTERS */}
+      {/* FILTER & SEARCH BAR */}
       <OrganizationFiltersBar
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
@@ -79,41 +176,23 @@ export default function OrganizationVerificationPage() {
         counts={counts}
       />
 
-      {/* LIST */}
-      <main className="space-y-3">
+      {/* DATA TABLE */}
+      <main className="flex flex-col gap-3">
         {isLoading || isFetching ? (
           <div className="space-y-3 animate-pulse">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="h-24 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800"
-              />
-            ))}
+            <div className="h-64 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
           </div>
-        ) : filteredItems.length === 0 ? (
-          <Card className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center space-y-4 shadow-2xs">
-            <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center">
-              <Building2 className="w-7 h-7" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                No Organizations Found
-              </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
-                No records match your current filter or search criteria.
-              </p>
-            </div>
-          </Card>
         ) : (
-          <div className="grid grid-cols-1 gap-3">
-            <AnimatePresence mode="popLayout">
-              {filteredItems.map((item) => (
-                <OrganizationCard key={item.id} item={item} />
-              ))}
-            </AnimatePresence>
-          </div>
+          <OrganizationDataTable columns={columns} data={filteredVerifications} />
         )}
       </main>
+
+      {/* QUICK AUDIT MODAL */}
+      <OrganizationKycModal
+        selectedCompany={selectedAuditCompany}
+        onClose={() => setSelectedAuditCompany(null)}
+        onUpdateStatus={handleUpdateStatus}
+      />
     </motion.div>
   );
 }

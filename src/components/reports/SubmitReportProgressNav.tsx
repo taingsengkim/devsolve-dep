@@ -11,11 +11,8 @@ export interface StepItem {
 }
 
 export const STEPS: StepItem[] = [
-  { id: 1, label: "Target & Scope", icon: Target },
-  { id: 2, label: "Classification", icon: Shield },
-  { id: 3, label: "Report Details", icon: FileText },
-  { id: 4, label: "Proof of Concept", icon: Terminal },
-  { id: 5, label: "Review & Submit", icon: Send },
+  { id: 1, label: "Target & Classification", icon: Target },
+  { id: 2, label: "PoC Write-up & Submit", icon: FileText },
 ];
 
 interface SubmitReportProgressNavProps {
@@ -36,9 +33,9 @@ export const SubmitReportProgressNav: React.FC<SubmitReportProgressNavProps> = (
       {/* Header & Monochromatic Micro Progress Bar */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400">
-          <span>Progress</span>
+          <span>Express Submission Progress</span>
           <span className="font-mono text-slate-900 dark:text-slate-100 font-bold">
-            {currentStep}/5 ({progressPercentage}%)
+            Step {currentStep} of {STEPS.length} ({progressPercentage}%)
           </span>
         </div>
 

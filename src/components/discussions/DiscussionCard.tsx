@@ -78,25 +78,41 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
     setLocalBookmarked(post.isBookmarked ?? false);
   }
 
+  /* The mutations take where the card is moving to, not a toggle, so the
+     optimistic state and the request can never disagree about direction. */
   const handleVote = async () => {
     if (isVoting) return;
 
-    const nextUpvoted = !localUpvoted;
-    setLocalVotes((votes) => (localUpvoted ? votes - 1 : votes + 1));
-    setLocalUpvoted(nextUpvoted);
-    await voteDiscussion({ id: post.id, type: bookmarkableType, isUpvoted: nextUpvoted });
+    const upvote = !localUpvoted;
+    setLocalVotes((votes) => (upvote ? votes + 1 : votes - 1));
+    setLocalUpvoted(upvote);
+
+    const result = await voteDiscussion({
+      id: post.id,
+      category: post.category,
+      upvote,
+    });
+
+    // Nothing else holds the true count, so a rejected vote is rolled back here.
+    if ("error" in result) {
+      setLocalVotes((votes) => (upvote ? votes - 1 : votes + 1));
+      setLocalUpvoted(!upvote);
+    }
   };
 
   const handleBookmark = async () => {
     if (isBookmarking) return;
 
-    const nextBookmarked = !localBookmarked;
-    setLocalBookmarked(nextBookmarked);
-    if (nextBookmarked) {
-      await addBookmark({ type: bookmarkableType, targetId: post.id });
-    } else {
-      await removeBookmark({ type: bookmarkableType, targetId: post.id });
-    }
+    const bookmarked = !localBookmarked;
+    setLocalBookmarked(bookmarked);
+
+    const result = await bookmarkDiscussion({
+      id: post.id,
+      category: post.category,
+      bookmarked,
+    });
+
+    if ("error" in result) setLocalBookmarked(!bookmarked);
   };
 
   const isShowcase = post.category === "Showcase";
@@ -115,8 +131,10 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
         aria-labelledby={titleId}
         className="group relative gap-0 overflow-hidden rounded-2xl bg-card py-0 shadow-xs ring-1 ring-foreground/5 transition-shadow duration-200 hover:shadow-sm hover:ring-foreground/10 focus-within:ring-2 focus-within:ring-primary/40"
       >
+        {/* A showcase is a real record with its own page; a problem is still
+            served by the mock detail route under /community. */}
         <Link
-          href={`/discussions/${post.id}`}
+          href={isShowcase ? `/showcases/${post.id}` : `/community/${post.id}`}
           className="absolute inset-0 rounded-2xl outline-none"
         >
           <span className="sr-only">Open discussion: {post.title}</span>
@@ -160,12 +178,13 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
 
         <CardContent className="pointer-events-none relative flex flex-col gap-4 px-5 py-4 sm:px-6">
           {isShowcase && post.thumbnailUrl && (
-            <div className="relative aspect-[16/7] overflow-hidden rounded-xl bg-muted ring-1 ring-foreground/5">
+            <div className="relative h-64 w-full overflow-hidden">
               <Image
                 src={post.thumbnailUrl}
                 alt={`${post.title} preview`}
                 fill
-                sizes="(max-width: 640px) calc(100vw - 3rem), (max-width: 1024px) calc(100vw - 5rem), 720px"
+                quality={90}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="object-cover transition-transform duration-300 group-hover:scale-[1.015]"
               />
             </div>

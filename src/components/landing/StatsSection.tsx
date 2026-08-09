@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
+import { useTheme } from "next-themes";
 import { ArrowUpRight } from "lucide-react";
 import SectionBackdrop, { PRIMARY, SECONDARY } from "./SectionBackdrop";
 
@@ -13,9 +14,39 @@ import SectionBackdrop, { PRIMARY, SECONDARY } from "./SectionBackdrop";
                  in emerald-700 (#047857, 5.48:1) instead.
      · #1E293B — fails the chroma floor as a mark (reads gray), so it is
                  used strictly as ink.
+
+   Every one of those was measured against white, so none of them carries
+   over to the near-black surface — each is restated below against
+   slate-950, keeping the same roles and the same 4.5:1 floor for anything
+   set as text:
+     · #60A5FA (blue-400)    — 6.9:1. The trend mark and the kicker.
+     · #34D399 (emerald-400) — 8.3:1. The delta, which is text.
+     · #475569 (slate-600)   — the de-emphasised baseline, a mark only.
    ──────────────────────────────────────────────────────────────────── */
-const DEEMPHASIS = "#CBD5E1";
-const DELTA_INK = "#047857";
+const TONES = {
+  light: {
+    deemphasis: "#CBD5E1",
+    deltaInk: "#047857",
+    trend: PRIMARY,
+    /* Ring that lifts the endpoint dot off the card behind it. */
+    dotRing: "#FFFFFF",
+    ink: SECONDARY,
+  },
+  dark: {
+    deemphasis: "#475569",
+    deltaInk: "#34D399",
+    trend: "#60A5FA",
+    dotRing: "#020617",
+    ink: "#F1F5F9",
+  },
+} as const;
+
+type Tone = (typeof TONES)[keyof typeof TONES];
+
+function useTone(): Tone {
+  const { resolvedTheme } = useTheme();
+  return resolvedTheme === "dark" ? TONES.dark : TONES.light;
+}
 
 /* ─── Data — 12 monthly points per metric ──────────────────────────── */
 type Stat = {
@@ -126,6 +157,7 @@ function Sparkline({
   delay?: number;
 }) {
   const reduce = useReducedMotion();
+  const tone = useTone();
   const pad = 5;
   const min = Math.min(...series);
   const max = Math.max(...series);
@@ -157,7 +189,7 @@ function Sparkline({
       <motion.path
         d={d}
         fill="none"
-        stroke={DEEMPHASIS}
+        stroke={tone.deemphasis}
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -169,7 +201,7 @@ function Sparkline({
       <motion.path
         d={current}
         fill="none"
-        stroke={PRIMARY}
+        stroke={tone.trend}
         strokeWidth={2}
         strokeLinecap="round"
         initial={{ pathLength: reduce ? 1 : 0 }}
@@ -181,8 +213,8 @@ function Sparkline({
         cx={last.x}
         cy={last.y}
         r={4}
-        fill={PRIMARY}
-        stroke="#ffffff"
+        fill={tone.trend}
+        stroke={tone.dotRing}
         strokeWidth={2}
         initial={{ scale: reduce ? 1 : 0, opacity: reduce ? 1 : 0 }}
         animate={inView ? { scale: 1, opacity: 1 } : undefined}
@@ -201,14 +233,17 @@ function Sparkline({
 
 /* ─── Delta chip — sign + arrow + named period, never colour alone ──── */
 function Delta({ value }: { value: number }) {
+  const tone = useTone();
   return (
     <span
       className="inline-flex items-baseline gap-1.5 text-sm font-semibold"
-      style={{ color: DELTA_INK }}
+      style={{ color: tone.deltaInk }}
     >
       <ArrowUpRight className="h-3.5 w-3.5 self-center" aria-hidden />
       {`+${value.toFixed(1)}%`}
-      <span className="text-xs font-medium text-slate-400">vs. 3 months ago</span>
+      <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+        vs. 3 months ago
+      </span>
     </span>
   );
 }
@@ -217,6 +252,7 @@ function Delta({ value }: { value: number }) {
 export function StatsSection() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+  const tone = useTone();
 
   const heroTarget = HERO.series[HERO.series.length - 1];
   const heroDelta = quarterDelta(HERO.series);
@@ -224,7 +260,7 @@ export function StatsSection() {
   return (
     <section
       ref={ref}
-      className="relative overflow-hidden border-y border-slate-200 bg-white py-20 sm:py-24"
+      className="relative overflow-hidden border-y border-slate-200 bg-white py-20 sm:py-24 dark:border-slate-800 dark:bg-slate-950"
     >
       <SectionBackdrop seed={2} gridSize={88} />
 
@@ -234,28 +270,31 @@ export function StatsSection() {
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : undefined}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="flex flex-col justify-between gap-6 border-b border-slate-200 pb-8 sm:flex-row sm:items-end"
+          className="flex flex-col justify-between gap-6 border-b border-slate-200 pb-8 sm:flex-row sm:items-end dark:border-slate-800"
         >
           <div>
             <div className="mb-4 flex items-center gap-2.5">
-              <span className="h-px w-8" style={{ backgroundColor: PRIMARY }} />
+              <span
+                className="h-px w-8"
+                style={{ backgroundColor: tone.trend }}
+              />
               <span
                 className="text-xs font-bold uppercase tracking-[0.22em]"
-                style={{ color: PRIMARY }}
+                style={{ color: tone.trend }}
               >
                 Platform activity
               </span>
             </div>
             <h2
               className="text-3xl font-bold tracking-[-0.04em] sm:text-4xl lg:text-5xl"
-              style={{ color: SECONDARY }}
+              style={{ color: tone.ink }}
             >
               By the numbers
-              <span style={{ color: PRIMARY }}>.</span>
+              <span style={{ color: tone.trend }}>.</span>
             </h2>
           </div>
 
-          <p className="max-w-sm text-sm leading-relaxed text-slate-500">
+          <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-slate-400">
             Twelve months of activity across programs, reports and community
             solutions. Every figure below is a monthly reading, not a lifetime total.
           </p>
@@ -268,13 +307,15 @@ export function StatsSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : undefined}
             transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col justify-center border-b border-slate-200 py-10 lg:col-span-5 lg:border-b-0 lg:border-r lg:pr-12"
+            className="flex flex-col justify-center border-b border-slate-200 py-10 lg:col-span-5 lg:border-b-0 lg:border-r lg:pr-12 dark:border-slate-800"
           >
-            <p className="text-base font-medium text-slate-500">{HERO.label}</p>
+            <p className="text-base font-medium text-slate-500 dark:text-slate-400">
+              {HERO.label}
+            </p>
 
             <p
               className="mt-3 font-bold leading-none tracking-tighter"
-              style={{ color: SECONDARY, fontSize: "clamp(56px, 7vw, 92px)" }}
+              style={{ color: tone.ink, fontSize: "clamp(56px, 7vw, 92px)" }}
             >
               <CountUp target={heroTarget} format={HERO.format} inView={inView} />
             </p>
@@ -289,7 +330,7 @@ export function StatsSection() {
                 height={52}
                 inView={inView}
               />
-              <span className="text-xs font-medium uppercase leading-relaxed tracking-[0.16em] text-slate-400">
+              <span className="text-xs font-medium uppercase leading-relaxed tracking-[0.16em] text-slate-400 dark:text-slate-500">
                 Last 12
                 <br />
                 months
@@ -314,12 +355,16 @@ export function StatsSection() {
                   animate={inView ? { opacity: 1, y: 0 } : undefined}
                   transition={{ duration: 0.5, delay: 0.2 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                   className={`flex items-center justify-between gap-6 py-7 ${
-                    i < STATS.length - 1 ? "border-b border-slate-200" : ""
+                    i < STATS.length - 1
+                      ? "border-b border-slate-200 dark:border-slate-800"
+                      : ""
                   }`}
                 >
                   <div className="min-w-0">
-                    <p className="text-base font-medium text-slate-500">{stat.label}</p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <p className="text-base font-medium text-slate-500 dark:text-slate-400">
+                      {stat.label}
+                    </p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">
                       {stat.unit}
                     </p>
                     <div className="mt-3">
@@ -341,7 +386,7 @@ export function StatsSection() {
 
                     <p
                       className="text-right text-4xl font-bold leading-none tracking-[-0.04em] sm:text-5xl"
-                      style={{ color: SECONDARY }}
+                      style={{ color: tone.ink }}
                     >
                       <CountUp target={target} format={stat.format} inView={inView} />
                     </p>

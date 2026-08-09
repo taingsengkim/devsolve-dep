@@ -1,12 +1,14 @@
 import { CircleCheckBig, Clock3, ShieldAlert, type LucideIcon } from "lucide-react";
 
-import { REVIEW_QUEUE_LANES } from "@/components/report-management/review-queue/mock-data";
-import type { ReviewQueueLaneFilter } from "@/components/report-management/review-queue/types";
+import type {
+  ReviewQueueLane,
+  ReviewQueueLaneFilter,
+} from "@/components/report-management/review-queue/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-const LANE_ICONS: Record<(typeof REVIEW_QUEUE_LANES)[number]["accent"], LucideIcon> = {
+const LANE_ICONS: Record<ReviewQueueLane["accent"], LucideIcon> = {
   amber: Clock3,
   blue: ShieldAlert,
   emerald: CircleCheckBig,
@@ -15,15 +17,17 @@ const LANE_ICONS: Record<(typeof REVIEW_QUEUE_LANES)[number]["accent"], LucideIc
 type ReviewQueueLanesProps = {
   activeQueue: ReviewQueueLaneFilter;
   onQueueChange: (queue: ReviewQueueLaneFilter) => void;
+  lanes: ReviewQueueLane[];
 };
 
 export function ReviewQueueLanes({
   activeQueue,
   onQueueChange,
+  lanes,
 }: ReviewQueueLanesProps) {
   return (
     <section className="grid grid-cols-1 gap-3 xl:grid-cols-3">
-      {REVIEW_QUEUE_LANES.map((lane) => {
+      {lanes.map((lane) => {
         const Icon = LANE_ICONS[lane.accent];
         const isActive = activeQueue === lane.title;
 

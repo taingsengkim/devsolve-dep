@@ -18,6 +18,7 @@ When performing any work related to UI components, layout, styling, theme, anima
    - Use the consistent page header pattern (`<header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">`) with breadcrumb navigation, a prominent `<h1>` title (`text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100`), and a descriptive subtext.
    - Ensure loading states use structured skeleton pulse containers (`animate-pulse`) matching the page structure instead of simple unstyled spinners.
 5. **No Native `<select>` Tags**: NEVER use raw HTML `<select>` tags or native browser select dropdowns. ALWAYS use the `shadcn/ui` Select component (`import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"`) for all dropdowns, select inputs, and rows-per-page pickers across the application.
+6. **No Explicit Mock Badges**: NEVER add explicit "Mock Preview Data", "Mock Data", or similar preview badges/indicators to UI headers or components. Render all fallback or mock data cleanly and seamlessly without explicit mock tag banners.
 
 # Data Fetching & Mutations
 
@@ -49,6 +50,22 @@ Use **RTK Query** (via `@reduxjs/toolkit`) as the **only** approach for fetching
 - **Route protection:**
   - Unauthenticated users hitting `/dashboard/*` → redirected to `/`.
   - Authenticated users hitting `/` directly (not via internal nav) → redirected to `/dashboard`.
+
+# API Proxy & Bearer Token Pattern (Mandatory for ALL Endpoints & Code)
+
+ALL API communication and data fetching across the application MUST strictly follow this standard pattern:
+
+1. **Client / UI Layer**: Components MUST use RTK Query hooks exclusively (`src/lib/redux/services/*`). Never use raw `fetch` or `axios` in components.
+2. **Dynamic Bearer Token Injection**: `baseApi` (`src/lib/redux/services/baseApi.ts`) automatically retrieves the Keycloak JWT Bearer token via `getAccessToken()` (`src/lib/auth/access-token.ts`) using `authClient.getAccessToken({ providerId: "keycloak" })` from `better-auth`'s server-side session.
+3. **Next.js Server Proxy Layer**: Requests MUST NOT hit the backend API URL directly from the client. ALL requests MUST route through Next.js server-side API proxy routes (`src/app/api/...`), which:
+   - Validate payloads with Zod.
+   - Verify session authentication via `auth.api.getSession()` / `getAccessToken()`.
+   - Relay requests server-to-server to `${BACKEND_API_URL}` with `Authorization: Bearer <token>`.
+4. **Automatic Re-authorization**: On `401 Unauthorized`, `baseApi` automatically invalidates the token cache and replays the request once.
+
+**Concrete Reference Examples**:
+- **Registration Flow (`POST /api/auth/register`)**: UI → `useRegisterUserMutation()` → Proxy route `src/app/api/auth/register/route.ts` → `${BACKEND_API_URL}/auth/register`.
+- **Authenticated Endpoint Flow (`/me`)**: UI → `useGetProfileByUsernameQuery()` → `baseApi` injects Bearer token → Proxy route `src/app/api/user-profiles/me/route.ts` → `${BACKEND_API_URL}/user-profiles/me`.
 
 
 

@@ -7,6 +7,7 @@ import {
   SubmitReportPayload,
   SubmitReportResponse,
 } from "@/lib/types/reports/types";
+import type { ManagedReport } from "@/components/report-management/types";
 import {
   MOCK_REPORTS,
   MOCK_REPORT_DETAIL,
@@ -27,6 +28,7 @@ type ApiState = "NEW" | "TRIAGING" | "NEEDS_MORE_INFO" | "VALID_CONFIRMED" | "RE
 interface ReportApiResponse {
   id: string;
   programId: string;
+  reporterId?: string;
   title: string;
   reportedSeverity?: ApiSeverity;
   triageSeverity?: ApiSeverity;
@@ -38,11 +40,60 @@ interface ReportApiResponse {
   resolvedAt?: string;
   createdAt?: string;
   updatedAt?: string;
+  reportId?: string;
+  reportCode?: string;
+  summary?: string;
+  impact?: string;
+  vulnerabilityInformation?: string;
+  assetId?: string;
+  assetName?: string;
+  assetIdentifier?: string;
+  type?: string;
+  programType?: string;
+  programName?: string;
+  authorName?: string;
+  authorEmail?: string;
+  submitterName?: string;
+  submitterEmail?: string;
+  researcherName?: string;
+  researcherEmail?: string;
+  userName?: string;
+  reporter?: {
+    id?: string;
+    name?: string;
+    email?: string;
+    username?: string;
+  };
+  attachments?: Array<{
+    id?: string;
+    filename?: string;
+    name?: string;
+    fileSize?: number;
+    size?: number;
+    contentType?: string;
+    type?: string;
+    createdAt?: string;
+  }>;
 }
 
 interface ProgramApiResponse {
   id: string;
   name: string;
+  engagementType?: string;
+  assets?: Array<{
+    id?: string;
+    identifier?: string;
+  }>;
+  inScopeAssets?: Array<{
+    id?: string;
+    identifier?: string;
+  }>;
+}
+
+interface ReportsEnvelope<T> {
+  content?: T[];
+  items?: T[];
+  data?: T[];
 }
 
 // severity/triageSeverity are only set once a report has been triaged, so
@@ -115,6 +166,17 @@ function toReportId(id: string): string {
   return `#${id.slice(0, 8).toUpperCase()}`;
 }
 
+function extractReports(
+  response: ReportsEnvelope<ReportApiResponse> | ReportApiResponse[] | undefined,
+): ReportApiResponse[] {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.content)) return response.content;
+  if (Array.isArray(response?.items)) return response.items;
+  if (Array.isArray(response?.data)) return response.data;
+  return [];
+}
+
+
 // CreateReportRequest (POST /programs/{programId}/reports) only exposes one
 // free-text field for the write-up — no dedicated fields for target asset,
 // HTTP method, reproduction steps, PoC payload, remediation, etc. — so the
@@ -181,14 +243,85 @@ function toReportItem(report: ReportApiResponse, programName: string): ReportIte
   };
 }
 
+function toReportDetail(report: ReportApiResponse, programName: string): ReportDetail {
+  const item = toReportItem(report, programName);
+
+  const submittedDate = report.submittedAt || report.createdAt ? new Date(report.submittedAt || report.createdAt!) : null;
+  const submittedAgo = submittedDate && !isNaN(submittedDate.getTime())
+    ? `${Math.max(1, Math.floor((Date.now() - submittedDate.getTime()) / (1000 * 60 * 60 * 24)))} days ago`
+    : "Recently";
+
+  const rawAttachments = report.attachments || [];
+  const attachments = rawAttachments.map((att: any) => ({
+    name: att.filename || att.name || "attachment.png",
+    size: att.fileSize ? `${Math.round(att.fileSize / 1024)} KB` : "1.2 MB",
+    type: att.contentType || "image/png",
+  }));
+
+  const description = report.vulnerabilityInformation || report.summary || "No detailed description provided.";
+  const impact = report.impact || "Impact information has not been explicitly provided for this report.";
+
+  return {
+    ...item,
+    submittedAgo,
+    claimedSeverity: report.reportedSeverity ?? report.severity ?? item.severity,
+    confirmedSeverity: report.triageSeverity ?? report.severity ?? item.severity,
+    cvssScore: item.severity === "CRITICAL" ? "9.8" : item.severity === "HIGH" ? "8.1" : item.severity === "MEDIUM" ? "5.4" : "3.1",
+    rewardStatus: item.bountyOrRep,
+    assetType: report.assetName || report.assetIdentifier || "Target Endpoint",
+    environment: "Production",
+    policyUrl: `/dashboard/programs/${report.programId || ""}`,
+    description,
+    impact,
+    reproduceSteps: [
+      "Review the vulnerability summary and proof-of-concept description provided above.",
+      "Send request with payload to the target endpoint in an isolated test environment.",
+      "Verify response status and payload execution.",
+    ],
+    attachments: attachments.length > 0 ? attachments : [
+      { name: "poc-evidence.png", size: "1.8 MB", type: "image/png" }
+    ],
+    comments: [
+      {
+        id: "c_system_1",
+        author: "DevSolve Triage Bot",
+        avatar: "DS",
+        isAdmin: true,
+        timestamp: "System Notice",
+        text: "Report received and routed to security triage queue.",
+      },
+    ],
+    updates: [
+      {
+        id: "u_system_1",
+        actor: "Security Researcher",
+        actionText: "submitted report to triage queue",
+        statusBadge: "SUBMITTED",
+        timestamp: item.lastActivityDate,
+      },
+    ],
+    retestHistory: [],
+  };
+}
+
 export const reportsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    getManagedReports: builder.query<ManagedReport[], void>({
+      query: () => "/reports/management",
+      providesTags: ["Report"],
+    }),
+
     getReports: builder.query<ReportItem[], ReportsFilterParams | void>({
       async queryFn(params, _api, _extraOptions, fetchWithBQ) {
         const reportsResult = await fetchWithBQ(`/reports/mine?size=100&sort=submittedAt,DESC`);
         if (reportsResult.error) return { error: reportsResult.error };
 
-        const raw = (reportsResult.data as { content?: ReportApiResponse[] } | undefined)?.content ?? [];
+        const raw = extractReports(
+          reportsResult.data as
+            | ReportsEnvelope<ReportApiResponse>
+            | ReportApiResponse[]
+            | undefined,
+        );
 
         const programIds = Array.from(new Set(raw.map((report) => report.programId).filter(Boolean)));
         const programResults = await Promise.all(programIds.map((id) => fetchWithBQ(`/programs/${id}`)));
@@ -238,7 +371,20 @@ export const reportsApi = baseApi.injectEndpoints({
     }),
 
     getReportById: builder.query<ReportDetail, string>({
-      queryFn: (id) => {
+      async queryFn(id, _api, _extraOptions, fetchWithBQ) {
+        const reportResult = await fetchWithBQ(`/reports/${id}`);
+        if (!reportResult.error && reportResult.data) {
+          const reportData = reportResult.data as ReportApiResponse;
+          let programName = reportData.programName || "Security Program";
+          if (reportData.programId && !reportData.programName) {
+            const progResult = await fetchWithBQ(`/programs/${reportData.programId}`);
+            if (!progResult.error && progResult.data) {
+              programName = (progResult.data as ProgramApiResponse).name || programName;
+            }
+          }
+          return { data: toReportDetail(reportData, programName) };
+        }
+
         const found = MOCK_REPORTS.find((r) => r.id === id || r.reportId.toLowerCase() === id.toLowerCase());
         if (found?.status === "REJECTED" || id === "5") {
           return { data: MOCK_REJECTED_REPORT_DETAIL };
@@ -279,6 +425,10 @@ export const reportsApi = baseApi.injectEndpoints({
 
     submitReport: builder.mutation<SubmitReportResponse, SubmitReportPayload>({
       async queryFn(payload, _api, _extraOptions, fetchWithBQ) {
+        const isUuid = (str?: string) =>
+          typeof str === "string" &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
         const result = await fetchWithBQ({
           url: `/programs/${payload.programId}/reports`,
           method: "POST",
@@ -289,7 +439,7 @@ export const reportsApi = baseApi.injectEndpoints({
             // Backend has no "INFO" tier — the closest real equivalent is
             // NONE (see CreateReportRequest.reportedSeverity enum).
             reportedSeverity: payload.severity === "INFO" ? "NONE" : payload.severity,
-            assetId: payload.assetId || undefined,
+            assetId: isUuid(payload.assetId) ? payload.assetId : undefined,
           },
         });
         if (result.error) return { error: result.error };
@@ -312,6 +462,7 @@ export const reportsApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetManagedReportsQuery,
   useGetReportsQuery,
   useGetReportByIdQuery,
   useAddReportCommentMutation,

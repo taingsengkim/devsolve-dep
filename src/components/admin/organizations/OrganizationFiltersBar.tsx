@@ -2,8 +2,10 @@
 
 import React from "react";
 import { Search, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 type StatusFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED" | "UNDER_REVIEW";
 
@@ -37,54 +39,55 @@ export const OrganizationFiltersBar: React.FC<OrganizationFiltersBarProps> = ({
   counts,
 }) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+    <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs md:flex-row md:items-center dark:border-slate-800 dark:bg-slate-900">
       {/* STATUS FILTER TABS */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
+      <ToggleGroup
+        multiple={false}
+        value={[statusFilter]}
+        onValueChange={(values) => {
+          const nextStatus = values[values.length - 1] as StatusFilter | undefined;
+          if (nextStatus) onStatusFilterChange(nextStatus);
+        }}
+        spacing={1}
+        className="max-w-full shrink-0 overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800/80"
+      >
         {TABS.map((tab) => {
           const isActive = statusFilter === tab.key;
           return (
-            <Button
+            <ToggleGroupItem
               key={tab.key}
-              variant={isActive ? "default" : "ghost"}
-              onClick={() => onStatusFilterChange(tab.key)}
-              className={`rounded-xl text-sm font-semibold h-9 px-3.5 cursor-pointer transition-all shrink-0 ${
-                isActive
-                  ? "bg-blue-600 hover:bg-blue-700 text-white shadow-2xs"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-              }`}
+              value={tab.key}
+              className="h-9 shrink-0 cursor-pointer rounded-lg px-3 text-sm font-semibold text-slate-600 data-[state=on]:bg-white data-[state=on]:text-slate-900 data-[state=on]:shadow-2xs dark:text-slate-400 dark:data-[state=on]:bg-slate-900 dark:data-[state=on]:text-slate-100"
             >
               {tab.label}
-              <span
-                className={`ml-1.5 px-1.5 py-0.5 rounded-full text-xs font-bold ${
-                  isActive
-                    ? "bg-blue-500/40 text-white"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                }`}
-              >
+              <Badge variant={isActive ? "default" : "secondary"} className="rounded-full tabular-nums">
                 {counts[tab.countKey]}
-              </span>
-            </Button>
+              </Badge>
+            </ToggleGroupItem>
           );
         })}
-      </div>
+      </ToggleGroup>
 
       {/* SEARCH INPUT BAR */}
       <div className="relative w-full md:w-80 shrink-0">
-        <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+        <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
         <Input
           value={searchQuery}
           onChange={(e) => onSearchQueryChange(e.target.value)}
           placeholder="Search company, domain, Tax ID..."
-          className="pl-9 pr-9 h-10 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl text-sm focus-visible:ring-blue-500 shadow-2xs"
+          className="h-10 rounded-xl border-slate-300 bg-white pl-9 pr-10 text-sm shadow-2xs dark:border-slate-700 dark:bg-slate-950"
         />
         {searchQuery && (
-          <button
+          <Button
             type="button"
+            size="icon"
+            variant="ghost"
+            aria-label="Clear organization search"
             onClick={() => onSearchQueryChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+            className="absolute right-1 top-1/2 size-8 -translate-y-1/2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           >
-            <X className="w-4 h-4" />
-          </button>
+            <X />
+          </Button>
         )}
       </div>
     </div>

@@ -25,6 +25,7 @@ export interface DiscussionsResponse {
   totalPages: number;
 }
 
+/** Platform totals the list endpoints can actually answer. */
 export interface DiscussionStats {
   problems: number;
   showcases: number;
@@ -168,11 +169,16 @@ function createdAtTime(value: string): number {
   return Number.isNaN(parsed) ? Date.now() : parsed;
 }
 
-function sortDiscussions<T extends DiscussionPost>(list: T[], sort: DiscussionSort): T[] {
+function sortDiscussions<T extends DiscussionPost>(
+  list: T[],
+  sort: DiscussionSort,
+): T[] {
   const sorted = [...list];
   switch (sort) {
     case "oldest":
-      return sorted.sort((a, b) => createdAtTime(a.createdAt) - createdAtTime(b.createdAt));
+      return sorted.sort(
+        (a, b) => createdAtTime(a.createdAt) - createdAtTime(b.createdAt),
+      );
     case "top":
       return sorted.sort((a, b) => b.votes - a.votes);
     case "discussed":
@@ -181,7 +187,9 @@ function sortDiscussions<T extends DiscussionPost>(list: T[], sort: DiscussionSo
       return sorted.sort((a, b) => b.viewsCount - a.viewsCount);
     case "newest":
     default:
-      return sorted.sort((a, b) => createdAtTime(b.createdAt) - createdAtTime(a.createdAt));
+      return sorted.sort(
+        (a, b) => createdAtTime(b.createdAt) - createdAtTime(a.createdAt),
+      );
   }
 }
 
@@ -233,18 +241,22 @@ export const discussionsApi = baseApi.injectEndpoints({
         ];
 
         if (params?.topic) {
-          results = results.filter((d) => d.topic === params.topic);
+          results = results.filter((post) => post.topic === params.topic);
         }
         if (params?.tag) {
-          results = results.filter((d) => d.tags.includes(params.tag!));
+          results = results.filter((post) => post.tags.includes(params.tag!));
         }
-        if (params?.searchQuery?.trim()) {
-          const q = params.searchQuery.toLowerCase();
+        if (search) {
+          const q = search.toLowerCase();
           results = results.filter(
-            (d) =>
-              d.title.toLowerCase().includes(q) ||
-              d.description.toLowerCase().includes(q) ||
-              d.tags.some((t) => t.toLowerCase().includes(q))
+            (post) =>
+              // Showcases were already matched upstream, against their full
+              // overview rather than the excerpt held here — re-testing them
+              // against the excerpt would drop genuine matches.
+              post.category === "Showcase" ||
+              post.title.toLowerCase().includes(q) ||
+              post.description.toLowerCase().includes(q) ||
+              post.tags.some((tag) => tag.toLowerCase().includes(q)),
           );
         }
 
@@ -258,16 +270,26 @@ export const discussionsApi = baseApi.injectEndpoints({
         const totalPages = Math.max(1, Math.ceil(totalCount / limit));
         const page = Math.min(Math.max(1, params?.page ?? 1), totalPages);
         const start = (page - 1) * limit;
-        const paginatedData = results.slice(start, start + limit);
 
         return {
-          data: { data: paginatedData, totalCount, page, limit, totalPages },
+          data: {
+            data: results.slice(start, start + limit),
+            totalCount,
+            page,
+            limit,
+            totalPages,
+          },
         };
       },
+      /* Tagged against both source caches, so publishing or approving either
+         kind of post refreshes this feed the same way it refreshes theirs. */
       providesTags: (result) =>
         result
           ? [
-              ...result.data.map(({ id }) => ({ type: "Discussion" as const, id })),
+              ...result.data.map(({ id }) => ({
+                type: "Discussion" as const,
+                id,
+              })),
               { type: "Discussion" as const, id: "LIST" },
             ]
           : [{ type: "Discussion" as const, id: "LIST" }],
@@ -360,6 +382,10 @@ export const discussionsApi = baseApi.injectEndpoints({
     }),
 
     // ── Platform stats ──────────────────────────────────────────────────────
+    /**
+     * Both totals are the `totalElements` the list endpoints report, so they
+     * count everything published rather than the page fetched above.
+     */
     getDiscussionStats: builder.query<DiscussionStats, void>({
       async queryFn(_arg, _api, _extraOptions, fetchWithBQ) {
         const [problemsResult, showcasesResult] = await Promise.all([
@@ -383,6 +409,11 @@ export const discussionsApi = baseApi.injectEndpoints({
     }),
 
     // ── Vote mutation ───────────────────────────────────────────────────────
+    /**
+     * `PUT /api/v1/votes/{type}/{targetId}` sets the caller's vote; `DELETE`
+     * withdraws it. The card sends where it is moving to, not a toggle, so a
+     * double-tap cannot leave the two out of step.
+     */
     voteDiscussion: builder.mutation<
       { id: string; votes: number; isUpvoted: boolean },
       { id: string; type: "PROBLEM" | "SHOWCASE"; isUpvoted: boolean }
@@ -455,7 +486,6 @@ export const discussionsApi = baseApi.injectEndpoints({
 
 export const {
   useGetDiscussionsQuery,
-  useGetDiscussionByIdQuery,
   useGetDiscussionTopicsQuery,
   useGetTrendingTagsQuery,
   useGetDiscussionStatsQuery,

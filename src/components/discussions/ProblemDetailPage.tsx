@@ -1,524 +1,697 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { getProblemDetailById } from "@/lib/types/dicussion/problemDetailMockdata";
-import { SolutionCard } from "@/components/discussions/SolutionCard";
-import { ProblemDetail , SolutionItem  } from "@/lib/types/dicussion/types";
+import { motion } from "motion/react";
 import {
+  AlertCircle,
   ArrowLeft,
-  ChevronUp,
-  ChevronDown,
   Bookmark,
-  Share2,
-  Flag,
-  Plus,
   CheckCircle2,
+  ChevronUp,
   CircleDot,
-
-  ExternalLink,
-  Terminal,
-  LayoutTemplate,
+  Download,
   MessageSquare,
+  Plus,
+  RotateCcw,
   Send,
-  Code2,
-  Network,
-  Cpu,
 } from "lucide-react";
 
-import { motion } from "motion/react";
+import { SolutionCard } from "@/components/discussions/SolutionCard";
+import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
+import {
+  useGetProblemByIdQuery,
+  type ProblemResponse,
+} from "@/lib/redux/services/problemsApi";
+import {
+  useGetMyProfileQuery,
+  useGetSolutionsByProblemQuery,
+} from "@/lib/redux/services/solutionsApi";
+import {
+  useGetVoteSummaryQuery,
+  useRemoveVoteMutation,
+  useSetVoteMutation,
+} from "@/lib/redux/services/votesApi";
+import { useGetBookmarkStatusQuery } from "@/lib/redux/services/bookmarksApi";
+import { useBookmarkDiscussionMutation } from "@/lib/redux/services/discussionsApi";
+import {
+  useCreateCommentMutation,
+  useGetCommentsQuery,
+} from "@/lib/redux/services/commentsApi";
+import { SDLC_LABELS } from "@/lib/validations/problem";
+
+/**
+ * One problem, read from the API — `GET /api/v1/problems/{id}` for the post,
+ * `/problems/{id}/solutions` for the answers, `/comments` for the thread, and
+ * the vote and bookmark endpoints for the two buttons.
+ *
+ * Only problems reach this route: a showcase card links to `/showcases/{id}`,
+ * which has its own page. That is why nothing here branches on the two.
+ */
+
+const CARD =
+  "rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs";
+
+const SOLUTION_PAGE_SIZE = 50;
+const COMMENT_PAGE_SIZE = 50;
+
+function formatDate(iso?: string) {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatBytes(bytes?: number) {
+  if (bytes === undefined || Number.isNaN(bytes)) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export default function ProblemDetailPage() {
   const params = useParams();
   const problemId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+  const id = problemId ?? "";
 
-  const problem: ProblemDetail | undefined = getProblemDetailById(problemId || "1");
+  const {
+    data: problem,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useGetProblemByIdQuery(id, { skip: !id });
 
-  const [problemVotes, setProblemVotes] = useState<number>(() => problem?.votes ?? 0);
-  const [hasVotedProblem, setHasVotedProblem] = useState(false);
-  const [sortOrder, setSortOrder] = useState<"votes" | "newest">("votes");
-  const [showcaseTab, setShowcaseTab] = useState<"overview" | "diagram" | "code">("overview");
+  const [sortOrder, setSortOrder] = useState<"votes" | "newest">("newest");
 
-  // Get primary solution data if available (e.g. for step-by-step or diagram)
-  const primarySolution = problem?.solutions?.[0];
+  if (isLoading) return <DetailSkeleton />;
 
-  const [showcaseComments, setShowcaseComments] = useState<
-    Array<{ id: string; author: { name: string; avatarUrl: string }; content: string; createdAt: string }>
-  >(() => {
-    if (primarySolution?.comments && primarySolution.comments.length > 0) {
-      return primarySolution.comments;
-    }
-    return [
-      {
-        id: "c-1",
-        author: {
-          name: "Alex Dev",
-          avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Alex",
-        },
-        content: "Great breakdown! The architecture layout really helps clarify the data flow.",
-        createdAt: "2 hours ago",
-      },
-    ];
-  });
-  const [newShowcaseComment, setNewShowcaseComment] = useState("");
+  if (isError || !problem) {
+    const status =
+      typeof error === "object" && error !== null && "status" in error
+        ? (error as { status?: number }).status
+        : undefined;
 
-  if (!problem) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 flex flex-col items-center justify-center text-slate-800 dark:text-slate-100">
-        <h1 className="text-2xl font-bold mb-2">Post Not Found</h1>
-        <p className="text-slate-500 dark:text-slate-400 mb-4">
-          The requested discussion or post does not exist.
-        </p>
-        <Link
-          href="/discussions"
-          className="inline-flex items-center space-x-2 text-sm font-semibold text-blue-600 hover:underline"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Back to Community</span>
-        </Link>
-      </div>
+      <NotFound
+        title={status === 404 ? "Problem not found" : "Something went wrong"}
+        body={
+          status === 404
+            ? "It may have been removed, or the link may be wrong."
+            : "This problem could not be loaded right now."
+        }
+        onRetry={status === 404 ? undefined : () => void refetch()}
+      />
     );
   }
 
-  const handleVoteProblem = () => {
-    if (hasVotedProblem) {
-      setProblemVotes((v) => v - 1);
-      setHasVotedProblem(false);
-    } else {
-      setProblemVotes((v) => v + 1);
-      setHasVotedProblem(true);
-    }
-  };
+  return (
+    <Loaded
+      id={id}
+      problem={problem}
+      sortOrder={sortOrder}
+      onSortChange={setSortOrder}
+    />
+  );
+}
 
-  const handleAddShowcaseComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newShowcaseComment.trim()) return;
-    setShowcaseComments([
-      ...showcaseComments,
-      {
-        id: `sc-${Date.now()}`,
-        author: {
-          name: "Lor Vengroth",
-          avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Lor",
-        },
-        content: newShowcaseComment,
-        createdAt: "Just now",
-      },
-    ]);
-    setNewShowcaseComment("");
-  };
+/** Split out so the hooks below only run once a problem is actually loaded. */
+function Loaded({
+  id,
+  problem,
+  sortOrder,
+  onSortChange,
+}: {
+  id: string;
+  problem: ProblemResponse;
+  sortOrder: "votes" | "newest";
+  onSortChange: (order: "votes" | "newest") => void;
+}) {
+  const { data: solutionPage, isLoading: isLoadingSolutions } =
+    useGetSolutionsByProblemQuery({
+      problemId: id,
+      pageSize: SOLUTION_PAGE_SIZE,
+    });
 
-  const sortedSolutions: SolutionItem[] = [...(problem.solutions || [])].sort((a, b) => {
-    if (sortOrder === "votes") {
-      return b.votes - a.votes;
-    }
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  /* Who is reading. A signed-out visitor gets a 401 here, which is the answer
+     rather than an error: they cannot post either way. */
+  const { data: me } = useGetMyProfileQuery();
+  const isSignedIn = Boolean(me?.id);
+  const isOwnProblem = Boolean(me?.id && problem.author?.id === me.id);
+  const canAnswer = isSignedIn && !isOwnProblem;
+
+  const { data: votes } = useGetVoteSummaryQuery({
+    type: "PROBLEM",
+    targetId: id,
   });
+  const [setVote, { isLoading: isSettingVote }] = useSetVoteMutation();
+  const [removeVote, { isLoading: isRemovingVote }] = useRemoveVoteMutation();
+  const isVoting = isSettingVote || isRemovingVote;
+  const hasUpvoted = votes?.currentUserVote === 1;
 
-  const isShowcase = problem.category === "Showcase";
+  /* A signed-out visitor gets a 401 from the status endpoint, which is not
+     worth surfacing — the button simply shows as un-bookmarked. */
+  const { data: bookmark } = useGetBookmarkStatusQuery({
+    type: "PROBLEM",
+    targetId: id,
+  });
+  const [toggleBookmark, { isLoading: isBookmarking }] =
+    useBookmarkDiscussionMutation();
+
+  const { data: commentPage } = useGetCommentsQuery({
+    commentableType: "PROBLEM",
+    commentableId: id,
+    pageSize: COMMENT_PAGE_SIZE,
+  });
+  const [createComment, { isLoading: isPostingComment }] =
+    useCreateCommentMutation();
+  const [draft, setDraft] = useState("");
+  const [commentError, setCommentError] = useState<string | null>(null);
+
+  const solutions = useMemo(() => {
+    const list = [...(solutionPage?.content ?? [])];
+    /* `SolutionResponse` carries no score, so "votes" can only put accepted
+       answers first — the per-card scores are fetched by the cards themselves. */
+    if (sortOrder === "votes") {
+      return list.sort(
+        (a, b) =>
+          Number(b.reviewStatus === "ACCEPTED") -
+          Number(a.reviewStatus === "ACCEPTED"),
+      );
+    }
+    return list.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+  }, [solutionPage, sortOrder]);
+
+  const comments = commentPage?.content ?? [];
+  const attachments = problem.attachments ?? [];
+  const tags = problem.tags ?? [];
+  const technologies = problem.technologies ?? [];
+  const isResolved = problem.status === "RESOLVED";
+
+  const onVote = async () => {
+    if (isVoting) return;
+    const target = { type: "PROBLEM" as const, targetId: id };
+    if (hasUpvoted) await removeVote(target);
+    else await setVote({ ...target, value: 1 });
+  };
+
+  const onBookmark = async () => {
+    if (isBookmarking) return;
+    await toggleBookmark({
+      id,
+      category: "Problems",
+      bookmarked: !bookmark?.bookmarked,
+    });
+  };
+
+  const onComment = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const content = draft.trim();
+    if (!content || isPostingComment) return;
+
+    try {
+      await createComment({
+        commentableType: "PROBLEM",
+        commentableId: id,
+        content,
+      }).unwrap();
+      setDraft("");
+      setCommentError(null);
+    } catch (caught) {
+      setCommentError(messageOf(caught, "Your comment could not be posted."));
+    }
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans pb-16"
+      className="min-h-screen bg-[#F8FAFC] pb-16 font-sans text-slate-800 dark:bg-slate-950 dark:text-slate-100"
     >
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Link
-          href="/discussions"
-          className="inline-flex items-center space-x-2 text-base font-semibold text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 mb-6 transition-colors"
+          href="/community"
+          className="mb-6 inline-flex items-center gap-2 text-base font-semibold text-slate-500 transition-colors hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
         >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Back to Community</span>
+          <ArrowLeft className="size-4" />
+          Back to Community
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3 space-y-6">
-            {/* Main Title Header Card */}
-            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs">
-              <div className="flex items-center space-x-2 mb-3">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+          <div className="space-y-6 lg:col-span-3">
+            {/* ── The problem ── */}
+            <section className={`${CARD} p-6`}>
+              <div className="mb-3 flex flex-wrap items-center gap-2">
                 <span
-                  className={`inline-flex items-center space-x-1.5 rounded-full px-3 py-1 text-xs font-bold ${
-                    isShowcase
-                      ? "bg-blue-100 text-blue-700"
-                      : problem.status === "Solved"
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-blue-100 text-blue-700"
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
+                    isResolved
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+                      : "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300"
                   }`}
                 >
-                  {isShowcase ? (
-                    <LayoutTemplate className="h-3.5 w-3.5" />
-                  ) : problem.status === "Solved" ? (
-                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  {isResolved ? (
+                    <CheckCircle2 className="size-3.5" />
                   ) : (
-                    <CircleDot className="h-3.5 w-3.5" />
+                    <CircleDot className="size-3.5" />
                   )}
-                  <span>{problem.category}</span>
+                  {isResolved ? "Solved" : "Open"}
                 </span>
 
                 {problem.sdlcPhase && (
-                  <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                    {problem.sdlcPhase}
+                  <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    {SDLC_LABELS[problem.sdlcPhase]}
+                  </span>
+                )}
+                {problem.category?.name && (
+                  <span className="rounded-md border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                    {problem.category.name}
                   </span>
                 )}
               </div>
 
               <div className="flex items-start justify-between gap-4">
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
-                  {problem.title}
+                <h1 className="text-2xl font-extrabold leading-snug tracking-tight text-slate-900 sm:text-3xl dark:text-slate-100">
+                  {problem.title ?? "Untitled problem"}
                 </h1>
 
-                <div className="flex items-center space-x-1 rounded-xl border border-slate-200 bg-slate-50 p-1 shrink-0">
+                <div className="flex shrink-0 items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800">
                   <button
-                    onClick={handleVoteProblem}
-                    className={`rounded-lg p-1.5 transition-colors ${
-                      hasVotedProblem
+                    type="button"
+                    onClick={() => void onVote()}
+                    disabled={isVoting}
+                    aria-pressed={hasUpvoted}
+                    aria-label={hasUpvoted ? "Remove upvote" : "Upvote"}
+                    className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
+                      hasUpvoted
                         ? "bg-blue-600 text-white"
-                        : "text-slate-500 hover:bg-slate-200"
+                        : "text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700"
                     }`}
                   >
-                    <ChevronUp className="h-4 w-4" />
+                    <ChevronUp className="size-4" />
                   </button>
-                  <span className="text-sm font-bold text-slate-800 px-1.5 tabular-nums">
-                    {problemVotes}
+                  <span className="px-1.5 text-sm font-bold tabular-nums text-slate-800 dark:text-slate-100">
+                    {votes?.score ?? 0}
                   </span>
-                  <button className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-200">
-                    <ChevronDown className="h-4 w-4" />
-                  </button>
                 </div>
               </div>
 
-              <div className="mt-3.5 flex flex-wrap gap-1.5">
-                {problem.tags.map((tag, i) => (
-                  <span
-                    key={i}
-                    className={`rounded-lg px-2.5 py-1 text-xs font-mono font-medium ${
-                      isShowcase
-                        ? "bg-blue-50 border border-blue-200/60 text-blue-800"
-                        : "bg-slate-100 border border-slate-200/60 text-slate-700"
-                    }`}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              <div className="mt-6 border-t border-slate-100 pt-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                  {isShowcase ? "Project Overview" : "Description"}
-                </h3>
-                <p className="text-base text-slate-700 leading-relaxed whitespace-pre-wrap">
-                  {problem.description}
-                </p>
-              </div>
-
-              <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4 text-sm">
-                <div className="flex items-center space-x-3">
-                  <button className="flex items-center space-x-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 text-slate-600 hover:bg-slate-50 font-medium">
-                    <Bookmark className="h-4 w-4" />
-                    <span>Bookmark</span>
-                  </button>
-                  <button className="flex items-center space-x-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 text-slate-600 hover:bg-slate-50 font-medium">
-                    <Share2 className="h-4 w-4" />
-                    <span>Share</span>
-                  </button>
-                  <button className="p-2 text-slate-400 hover:text-slate-600 rounded-lg">
-                    <Flag className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* SHOWCASE VIEW vs REGULAR PROBLEM VIEW */}
-            {isShowcase ? (
-              <div className="space-y-6">
-                {/* Navigation Tabs for Showcase Features */}
-                <div className="flex items-center space-x-2 border-b border-slate-200 pb-2">
-                  <button
-                    onClick={() => setShowcaseTab("overview")}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
-                      showcaseTab === "overview"
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <Terminal className="h-4 w-4" />
-                    <span>Steps & Implementation</span>
-                  </button>
-                  <button
-                    onClick={() => setShowcaseTab("diagram")}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
-                      showcaseTab === "diagram"
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <Network className="h-4 w-4" />
-                    <span>Architecture Diagram</span>
-                  </button>
-                  <button
-                    onClick={() => setShowcaseTab("code")}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
-                      showcaseTab === "code"
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <Code2 className="h-4 w-4" />
-                    <span>Key Code Snippet</span>
-                  </button>
-                </div>
-
-                {/* Tab 1: Steps & Implementation */}
-                {showcaseTab === "overview" && (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-                    <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-                      <Terminal className="h-4 w-4 text-blue-600" />
-                      <span>Implementation Flow</span>
-                    </h3>
-                    <div className="space-y-3">
-                      {(primarySolution?.stepByStep || [
-                        "Initialize project repository and configure Next.js App Router setup with Tailwind CSS.",
-                        "Set up OAuth 2.0 Client credentials and configure PKCE code verifier and challenge generators.",
-                        "Build interactive UI state machine to visualize authorization code swaps in real-time.",
-                        "Add defense-in-depth security policies: HttpOnly cookies and strict Referrer-Policy headers.",
-                      ]).map((step, idx) => (
-                        <div
-                          key={idx}
-                          className="flex gap-3 items-start bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm"
-                        >
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-xs">
-                            {idx + 1}
-                          </span>
-                          <p className="text-slate-700 leading-relaxed">{step}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Tab 2: Architecture Diagram */}
-                {showcaseTab === "diagram" && (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-                    <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center space-x-2">
-                      <Network className="h-4 w-4 text-blue-600" />
-                      <span>Security Architecture Sequence Flow</span>
-                    </h3>
-                    <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-6 font-mono text-sm text-slate-800 leading-relaxed overflow-x-auto">
-                      <pre className="text-slate-700">
-{` +------------------+           +--------------------+           +----------------------+
- | Client Browser   |           |  Auth Server       |           |  Resource API        |
- +------------------+           +--------------------+           +----------------------+
-          |                               |                                |
-          | 1. Generate code_verifier     |                                |
-          |    and code_challenge (S256)  |                                |
-          |------------------------------>|                                |
-          |    Get Authorization Code     |                                |
-          |                               |                                |
-          | 2. Exchange Code + Verifier   |                                |
-          |------------------------------>|                                |
-          |    Validate SHA256 match      |                                |
-          |<------------------------------|                                |
-          |    Return Access Token        |                                |
-          |                               |                                |
-          | 3. Authenticated API Call (Bearer Token)                       |
-          |--------------------------------------------------------------->|
-          |                                                                |`}
-                      </pre>
-                    </div>
-                  </div>
-                )}
-
-                {/* Tab 3: Code Snippet */}
-                {showcaseTab === "code" && (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-                    <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center space-x-2">
-                      <Code2 className="h-4 w-4 text-blue-600" />
-                      <span>Core Logic / Implementation Code</span>
-                    </h3>
-                    <pre className="rounded-xl bg-slate-900 p-4 text-sm font-mono text-blue-300 overflow-x-auto leading-relaxed">
-                      {problem.codeSnippet || primarySolution?.codeFix || `// Core PKCE Challenge logic`}
-                    </pre>
-                  </div>
-                )}
-
-                {/* Comments Thread for Showcase */}
-                <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-                  <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center space-x-2">
-                    <MessageSquare className="h-4 w-4 text-slate-500" />
-                    <span>Comments ({showcaseComments.length})</span>
-                  </h3>
-
-                  <div className="space-y-3 mb-4">
-                    {showcaseComments.map((comment) => (
-                      <div
-                        key={comment.id}
-                        className="text-sm text-slate-600 flex items-start space-x-3 bg-slate-50 p-4 rounded-xl border border-slate-100"
-                      >
-                        <img
-                          src={comment.author.avatarUrl}
-                          alt={comment.author.name}
-                          className="h-8 w-8 rounded-full bg-slate-200"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-slate-800">
-                              {comment.author.name}
-                            </span>
-                            <span className="text-xs text-slate-400">
-                              {comment.createdAt}
-                            </span>
-                          </div>
-                          <p className="text-slate-700 leading-relaxed">
-                            {comment.content}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <form onSubmit={handleAddShowcaseComment} className="flex items-center space-x-2">
-                    <input
-                      type="text"
-                      value={newShowcaseComment}
-                      onChange={(e) => setNewShowcaseComment(e.target.value)}
-                      placeholder="Share feedback on this showcase..."
-                      className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
-                    />
-                    <button
-                      type="submit"
-                      className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-xs"
+              {(tags.length > 0 || technologies.length > 0) && (
+                <div className="mt-3.5 flex flex-wrap gap-1.5">
+                  {technologies.map((tech, i) => (
+                    <span
+                      key={tech.id ?? `${tech.name}-${i}`}
+                      className="rounded-lg border border-slate-200/60 bg-slate-100 px-2.5 py-1 font-mono text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                     >
-                      <Send className="h-4 w-4" />
-                    </button>
-                  </form>
-                </div>
-              </div>
-            ) : (
-              /* REGULAR PROBLEM VIEW */
-              <>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-base font-bold text-slate-800">
-                      {problem.solutions.length} Solutions
+                      {tech.name}
+                      {tech.version ? ` ${tech.version}` : ""}
                     </span>
-                    <div className="flex items-center bg-slate-200/60 p-0.5 rounded-lg text-xs font-bold">
-                      <button
-                        onClick={() => setSortOrder("votes")}
-                        className={`px-3 py-1 rounded-md transition-colors ${
-                          sortOrder === "votes"
-                            ? "bg-white text-slate-900 shadow-xs"
-                            : "text-slate-500"
-                        }`}
-                      >
-                        votes
-                      </button>
-                      <button
-                        onClick={() => setSortOrder("newest")}
-                        className={`px-3 py-1 rounded-md transition-colors ${
-                          sortOrder === "newest"
-                            ? "bg-white text-slate-900 shadow-xs"
-                            : "text-slate-500"
-                        }`}
-                      >
-                        newest
-                      </button>
-                    </div>
-                  </div>
-
-                  <button className="flex items-center space-x-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-emerald-700 transition-colors">
-                    <Plus className="h-4 w-4" />
-                    <span>Your Solution</span>
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  {sortedSolutions.map((sol, index) => (
-                    <SolutionCard key={sol.id} solution={sol} index={index} />
+                  ))}
+                  {tags.map((tag, i) => (
+                    <span
+                      key={tag.id ?? `${tag.name}-${i}`}
+                      className="rounded-lg border border-blue-200/60 bg-blue-50 px-2.5 py-1 font-mono text-xs font-medium text-blue-800 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300"
+                    >
+                      #{tag.name}
+                    </span>
                   ))}
                 </div>
-              </>
-            )}
-          </div>
+              )}
 
-          {/* Right Sidebar */}
-          <div className="space-y-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3.5 text-sm">
-              <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2 uppercase tracking-wider text-xs text-slate-400">
-                {isShowcase ? "Showcase Metadata" : "Problem Details"}
-              </h3>
-              {problem.sdlcPhase && (
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 text-xs">SDLC Phase</span>
-                  <span className="font-semibold text-slate-800 text-sm">
-                    {problem.sdlcPhase}
-                  </span>
+              <div className="mt-6 border-t border-slate-100 pt-4 dark:border-slate-800">
+                <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  Description
+                </h2>
+                {problem.description ? (
+                  <MarkdownView source={problem.description} />
+                ) : (
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    This problem was posted without a description.
+                  </p>
+                )}
+              </div>
+
+              {attachments.length > 0 && (
+                <div className="mt-6 space-y-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    Attachments
+                  </h2>
+                  {attachments.map((file, i) => (
+                    <div
+                      key={file.id ?? `${file.fileName}-${i}`}
+                      className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-800/60"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
+                          {file.fileName ?? "Unnamed file"}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {[file.mimeType, formatBytes(file.sizeBytes)]
+                            .filter(Boolean)
+                            .join(" · ") || "—"}
+                        </p>
+                      </div>
+                      {file.downloadUrl?.startsWith("https://") && (
+                        <a
+                          href={file.downloadUrl}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                        >
+                          <Download className="size-3.5" />
+                          Download
+                        </a>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 text-xs">Category</span>
-                <span className="font-semibold text-slate-800 text-sm">
-                  {problem.category}
-                </span>
+
+              <div className="mt-6 flex items-center gap-3 border-t border-slate-100 pt-4 text-sm dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => void onBookmark()}
+                  disabled={isBookmarking}
+                  aria-pressed={Boolean(bookmark?.bookmarked)}
+                  className={`flex cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 py-1.5 font-medium transition disabled:opacity-50 ${
+                    bookmark?.bookmarked
+                      ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300"
+                      : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  <Bookmark
+                    className={`size-4 ${bookmark?.bookmarked ? "fill-current" : ""}`}
+                  />
+                  {bookmark?.bookmarked ? "Bookmarked" : "Bookmark"}
+                </button>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 text-xs">Views</span>
-                <span className="font-semibold text-slate-800 text-sm">
-                  {problem.viewsCount.toLocaleString()}
-                </span>
+            </section>
+
+            {/* ── Answers ── */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">
+                  {solutionPage?.totalElements ?? 0}{" "}
+                  {solutionPage?.totalElements === 1 ? "Solution" : "Solutions"}
+                </h2>
+                <div className="flex items-center rounded-lg bg-slate-200/60 p-0.5 text-xs font-bold dark:bg-slate-800">
+                  {(["newest", "votes"] as const).map((order) => (
+                    <button
+                      key={order}
+                      type="button"
+                      onClick={() => onSortChange(order)}
+                      aria-pressed={sortOrder === order}
+                      className={`cursor-pointer rounded-md px-3 py-1 transition-colors ${
+                        sortOrder === order
+                          ? "bg-white text-slate-900 shadow-xs dark:bg-slate-900 dark:text-slate-100"
+                          : "text-slate-500 dark:text-slate-400"
+                      }`}
+                    >
+                      {order === "votes" ? "accepted" : "newest"}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 text-xs">Posted</span>
-                <span className="font-semibold text-slate-800 text-sm">
-                  {problem.postedDate}
-                </span>
-              </div>
+
+              {canAnswer && (
+                <Link
+                  href={`/community/${id}/solutions/create`}
+                  className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-2xs transition-colors hover:bg-emerald-700"
+                >
+                  <Plus className="size-4" />
+                  Post your solution
+                </Link>
+              )}
             </div>
 
-            {isShowcase && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs text-sm space-y-3">
-                <h3 className="font-bold text-slate-900 uppercase tracking-wider text-xs text-slate-400">
-                  Project Links
-                </h3>
-                <a
-                  href="https://github.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
-                >
-                  <div className="flex items-center space-x-2 font-semibold text-slate-700 text-sm">
-                    <span>GitHub Repository</span>
-                  </div>
-                  <ExternalLink className="h-4 w-4 text-slate-400" />
-                </a>
+            {/* Why the composer is absent, when it is. Silence would read as a
+                bug to whoever came here to answer. */}
+            {isOwnProblem && (
+              <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+                This is your problem, so you cannot answer it yourself. You can
+                accept an answer once someone posts one.
+              </p>
+            )}
+            {!isSignedIn && (
+              <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+                Sign in to post a solution to this problem.
+              </p>
+            )}
+
+            {isLoadingSolutions ? (
+              <div className="animate-pulse space-y-4">
+                {[0, 1].map((i) => (
+                  <div
+                    key={i}
+                    className="h-32 rounded-2xl bg-slate-200 dark:bg-slate-800"
+                  />
+                ))}
+              </div>
+            ) : solutions.length === 0 ? (
+              <p className={`${CARD} p-8 text-center text-sm text-slate-500 dark:text-slate-400`}>
+                {canAnswer
+                  ? "No answers yet. Be the first to post one."
+                  : "No answers yet."}
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {solutions.map((solution, index) => (
+                  <SolutionCard
+                    key={solution.id}
+                    solution={solution}
+                    index={index}
+                  />
+                ))}
               </div>
             )}
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs text-sm">
-              <h3 className="font-bold text-slate-900 mb-3 uppercase tracking-wider text-xs text-slate-400">
-                Posted By
-              </h3>
-              <div className="flex items-center space-x-3">
-                <img
-                  src={problem.postedBy.avatarUrl}
-                  alt={problem.postedBy.name}
-                  className="h-10 w-10 rounded-full bg-slate-100 border border-slate-200"
+            {/* ── Comments ── */}
+            <section className={`${CARD} p-6`}>
+              <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-slate-900 dark:text-slate-100">
+                <MessageSquare className="size-4 text-slate-500" />
+                Comments ({commentPage?.totalElements ?? comments.length})
+              </h2>
+
+              {comments.length > 0 && (
+                <div className="mb-4 space-y-3">
+                  {comments.map((comment) => (
+                    <div
+                      key={comment.id}
+                      className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-800/60"
+                    >
+                      {comment.authorAvatarUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={comment.authorAvatarUrl}
+                          alt=""
+                          className="size-8 rounded-full bg-slate-200 object-cover dark:bg-slate-700"
+                        />
+                      ) : (
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                          {(comment.authorName || "?").slice(0, 1).toUpperCase()}
+                        </span>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1 flex items-center justify-between gap-3">
+                          <span className="font-bold text-slate-800 dark:text-slate-100">
+                            {comment.authorName || "Unknown"}
+                          </span>
+                          <span className="shrink-0 text-xs text-slate-400">
+                            {formatDate(comment.createdAt)}
+                          </span>
+                        </div>
+                        <p className="whitespace-pre-wrap leading-relaxed text-slate-700 dark:text-slate-300">
+                          {comment.content}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <form onSubmit={onComment} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={draft}
+                  onChange={(event) => {
+                    setDraft(event.target.value);
+                    if (commentError) setCommentError(null);
+                  }}
+                  maxLength={5000}
+                  aria-label="Write a comment"
+                  placeholder="Add a comment…"
+                  className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-950"
                 />
-                <div>
-                  <p className="font-bold text-slate-900 text-base">
-                    {problem.postedBy.name}
+                <button
+                  type="submit"
+                  disabled={isPostingComment || !draft.trim()}
+                  className="cursor-pointer rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-blue-700 disabled:opacity-50"
+                >
+                  <Send className="size-4" />
+                </button>
+              </form>
+              {commentError && (
+                <p className="mt-2 text-sm font-medium text-rose-600" role="alert">
+                  {commentError}
+                </p>
+              )}
+            </section>
+          </div>
+
+          {/* ── Sidebar ── */}
+          <div className="space-y-6">
+            <section className={`${CARD} space-y-3.5 p-5 text-sm`}>
+              <h2 className="border-b border-slate-100 pb-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:border-slate-800 dark:text-slate-500">
+                Problem Details
+              </h2>
+              {problem.sdlcPhase && (
+                <Row
+                  label="SDLC Phase"
+                  value={SDLC_LABELS[problem.sdlcPhase]}
+                />
+              )}
+              <Row label="Category" value={problem.category?.name ?? "—"} />
+              <Row
+                label="Views"
+                value={(problem.viewCount ?? 0).toLocaleString()}
+              />
+              <Row label="Posted" value={formatDate(problem.createdAt)} />
+              <Row label="Published" value={formatDate(problem.publishedAt)} />
+            </section>
+
+            <section className={`${CARD} p-5 text-sm`}>
+              <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                Posted By
+              </h2>
+              <div className="flex items-center gap-3">
+                {problem.author?.avatarUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={problem.author.avatarUrl}
+                    alt=""
+                    className="size-10 rounded-full border border-slate-200 bg-slate-100 object-cover dark:border-slate-700"
+                  />
+                ) : (
+                  <span className="flex size-10 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                    {(problem.author?.fullName || "?")
+                      .slice(0, 1)
+                      .toUpperCase()}
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <p className="truncate text-base font-bold text-slate-900 dark:text-slate-100">
+                    {problem.author?.fullName ?? "Unknown author"}
                   </p>
-                  <p className="text-xs text-slate-500 font-medium">
-                    {problem.postedBy.reputation.toLocaleString()} reputation
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {(problem.author?.reputation ?? 0).toLocaleString()}{" "}
+                    reputation
                   </p>
                 </div>
               </div>
-            </div>
+            </section>
           </div>
         </div>
       </main>
     </motion.div>
   );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
+      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function DetailSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-label="Loading the problem"
+      className="min-h-screen animate-pulse bg-[#F8FAFC] pb-16 dark:bg-slate-950"
+    >
+      <span className="sr-only">Loading the problem…</span>
+      <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="h-5 w-44 rounded-lg bg-slate-200 dark:bg-slate-800" />
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+          <div className="space-y-6 lg:col-span-3">
+            <div className={`${CARD} space-y-4 p-6`}>
+              <div className="h-6 w-32 rounded-full bg-slate-200 dark:bg-slate-800" />
+              <div className="h-8 w-3/4 rounded-lg bg-slate-200 dark:bg-slate-800" />
+              <div className="h-24 w-full rounded-lg bg-slate-200 dark:bg-slate-800" />
+            </div>
+            <div className={`${CARD} h-32`} />
+          </div>
+          <div className="space-y-6">
+            <div className={`${CARD} h-48`} />
+            <div className={`${CARD} h-28`} />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function NotFound({
+  title,
+  body,
+  onRetry,
+}: {
+  title: string;
+  body: string;
+  onRetry?: () => void;
+}) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#F8FAFC] px-4 text-center text-slate-800 dark:bg-slate-950 dark:text-slate-100">
+      <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+        <AlertCircle className="size-7" />
+      </div>
+      <h1 className="mb-2 text-2xl font-bold">{title}</h1>
+      <p className="mb-4 text-slate-500 dark:text-slate-400">{body}</p>
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700"
+          >
+            <RotateCcw className="size-4" />
+            Try again
+          </button>
+        )}
+        <Link
+          href="/community"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:underline"
+        >
+          <ArrowLeft className="size-4" />
+          Back to Community
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+/** Pulls something readable out of an RTK Query error. */
+function messageOf(error: unknown, fallback: string): string {
+  if (typeof error === "object" && error !== null && "data" in error) {
+    const data = (error as { data?: unknown }).data;
+    if (typeof data === "string" && data) return data;
+    if (typeof data === "object" && data !== null && "message" in data) {
+      const message = (data as { message?: unknown }).message;
+      if (typeof message === "string" && message) return message;
+    }
+  }
+  return fallback;
 }

@@ -2,11 +2,36 @@
 
 import React, { useId, useMemo } from "react";
 import { motion, useReducedMotion } from "motion/react";
+import { useTheme } from "next-themes";
 
 /* ─── Brand palette (design.md) ────────────────────────────────────── */
 export const PRIMARY = "#2563EB";
 export const SECONDARY = "#1E293B";
 export const ACCENT = "#10B981";
+
+/** Near-white counterpart to SECONDARY, for headings on a dark surface. */
+export const INK_DARK = "#F1F5F9";
+
+/**
+ * Heading ink for the current theme.
+ *
+ * The landing sections set their headings through inline `style`, which no
+ * `dark:` variant can override, so the value has to be resolved in JS. Before
+ * the theme is known (server render, first client render) this reports the
+ * light ink, matching what the markup already paints.
+ */
+export function useInk() {
+  return useIsDark() ? INK_DARK : SECONDARY;
+}
+
+/**
+ * Whether the dark theme is active. Reports `false` until the theme resolves,
+ * which matches the light markup the server sent.
+ */
+export function useIsDark() {
+  const { resolvedTheme } = useTheme();
+  return resolvedTheme === "dark";
+}
 
 /* Deterministic PRNG so server and client render identical positions. */
 function mulberry32(seed: number) {
@@ -23,7 +48,11 @@ function mulberry32(seed: number) {
 type Tone = "light" | "dark";
 
 export type SectionBackdropProps = {
-  /** Surface the backdrop sits on — drives grid and particle contrast. */
+  /**
+   * Surface the backdrop sits on — drives grid and particle contrast.
+   * Left off, it follows the active theme. Pass it only to pin a section
+   * that is dark in both themes (the CTA banner).
+   */
   tone?: Tone;
   /** Seeds the deterministic particle and cell layout. Vary per section. */
   seed?: number;
@@ -48,7 +77,7 @@ const PARTICLE_COUNT = 14;
  * opacity animate, and every infinite loop is gated behind reduced motion.
  */
 export function SectionBackdrop({
-  tone = "light",
+  tone,
   seed = 1,
   particles = true,
   beams = true,
@@ -60,7 +89,12 @@ export function SectionBackdrop({
   const reduce = useReducedMotion();
   const rawId = useId();
   const uid = rawId.replace(/[^a-zA-Z0-9]/g, "");
-  const dark = tone === "dark";
+  // `resolvedTheme` is undefined on the server and on the first client render,
+  // so both agree on the light backdrop and hydration stays quiet; it then
+  // repaints once the real theme is known. Safe here because the whole layer
+  // is decorative and aria-hidden.
+  const { resolvedTheme } = useTheme();
+  const dark = tone ? tone === "dark" : resolvedTheme === "dark";
 
   const gridStroke = dark ? "#ffffff" : SECONDARY;
   const gridOpacity = dark ? 0.07 : 0.05;

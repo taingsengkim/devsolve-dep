@@ -47,7 +47,7 @@ export const INDUSTRIES = [
   "Healthcare & Biotech",
   "E-Commerce & Retail",
   "Government & Public Sector",
-  "Telecommunications",
+  "Education",
   "Other",
 ];
 
@@ -75,10 +75,10 @@ export interface FeatureItem {
 /* One line per pillar the platform actually runs on — bounty, problems,
    solutions, showcase — rather than four ways of saying "security". */
 export const USER_FEATURES: FeatureItem[] = [
-  { icon: Bug, text: "Hunt live bounty programs and get paid for what you find" },
-  { icon: MessagesSquare, text: "Post the problems you hit, with the stack and the error" },
-  { icon: Lightbulb, text: "Answer with solutions that stay searchable for the next person" },
-  { icon: Trophy, text: "Show the whole record — reputation, badges, leaderboard rank" },
+  { icon: Bug, text: "Hunt live bounty programs & earn rewards" },
+  { icon: MessagesSquare, text: "Ask & discuss technical dev problems" },
+  { icon: Lightbulb, text: "Share searchable solutions with the community" },
+  { icon: Trophy, text: "Build your reputation, badges & rank" },
 ];
 
 export const COMPANY_FEATURES: FeatureItem[] = [

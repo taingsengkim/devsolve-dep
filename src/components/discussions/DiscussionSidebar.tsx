@@ -15,19 +15,16 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { DiscussionStats } from "@/lib/redux/services/discussionsApi";
-import type {
-  TopicCount,
-  TopicFilter,
-} from "@/lib/types/dicussion/types";
+import type { TopicCount, TopicName } from "@/lib/types/dicussion/types";
 import { cn } from "@/lib/utils";
 
 interface DiscussionSidebarProps {
   topics: TopicCount[];
   tags: string[];
   stats?: DiscussionStats;
-  selectedTopic: TopicFilter | null;
+  selectedTopic: TopicName | null;
   selectedTag: string | null;
-  onSelectTopic: (topic: TopicFilter | null) => void;
+  onSelectTopic: (topic: TopicName | null) => void;
   onSelectTag: (tag: string | null) => void;
   isLoadingTopics?: boolean;
   isLoadingTags?: boolean;
@@ -47,6 +44,8 @@ export function DiscussionSidebar({
   isLoadingStats,
 }: DiscussionSidebarProps) {
   const totalTopics = topics.reduce((sum, topic) => sum + topic.count, 0);
+  /* Only what a list endpoint can answer. There is no platform-wide count of
+     solutions or of researchers, so neither is shown rather than shown wrong. */
   const metrics = [
     { label: "Problems", value: stats?.problems ?? 0 },
     { label: "Showcases", value: stats?.showcases ?? 0 },

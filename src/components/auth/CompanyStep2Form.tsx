@@ -4,7 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { UseFormReturn } from "react-hook-form";
-import * as z from "zod";
 import {
   Building2,
   Globe,
@@ -26,7 +25,6 @@ import { useAutoDetectCountry } from "@/hooks/useAutoDetectCountry";
 import { INDUSTRIES, COMPANY_SIZES, REASONS } from "@/lib/constants/auth";
 
 import {
-  companyRegisterSchema,
   type CompanyRegisterFormValues,
 } from "@/lib/validations/auth";
 

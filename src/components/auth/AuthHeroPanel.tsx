@@ -20,6 +20,10 @@ interface AuthHeroPanelProps {
   description: string;
   glowColor1?: string;
   glowColor2?: string;
+  /** Where the top-left link goes. Defaults to the account-type chooser,
+   *  which is the step the registration screens come from. */
+  backHref?: string;
+  backLabel?: string;
 }
 
 export function AuthHeroPanel({
@@ -29,6 +33,8 @@ export function AuthHeroPanel({
   description,
   glowColor1 = "bg-blue-400/20",
   glowColor2 = "bg-emerald-400/20",
+  backHref = "/account-type",
+  backLabel = "Back to choose account type",
 }: AuthHeroPanelProps) {
   return (
     <motion.div
@@ -45,11 +51,11 @@ export function AuthHeroPanel({
         {/* Back Navigation Link */}
         <div className="w-full flex justify-start items-center mb-4">
           <Link
-            href="/account-type"
+            href={backHref}
             className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1 text-blue-600" />
-            <span>Back to choose account type</span>
+            <span>{backLabel}</span>
           </Link>
         </div>
 
