@@ -1,4 +1,5 @@
 import {
+  Home,
   LayoutDashboard,
   FileText,
   CircleDollarSign,
@@ -32,9 +33,8 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   // Overview items
+  { name: "Home", href: "/", icon: Home, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
-  // Resolves to /dashboard/profile/{username} — never guess the slug.
-  { name: "My Profile", href: "/dashboard/profile", icon: CircleUser, roles: ["USER", "COMPANY", "ADMIN"], category: "Overview" },
   // Browsing surfaces, not workspace surfaces — they point at the public
   // pages, which carry the navbar instead of the dashboard sidebar. The navbar
   // shows the signed-in account, so leaving the dashboard isn't a dead end.

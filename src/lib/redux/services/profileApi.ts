@@ -121,6 +121,34 @@ interface VoteSummaryApiResponse {
   score?: number;
 }
 
+export interface PublicUserProfileItem {
+  id: string;
+  fullName?: string;
+  biography?: string;
+  avatarUrl?: string;
+  country?: string;
+  socialLinks?: { platform: string; url: string }[];
+  reputation?: number;
+  totalReports?: number;
+  validReports?: number;
+  criticalReports?: number;
+  recognitionCount?: number;
+  joinedAt?: string;
+}
+
+export interface PagePublicUserProfileResponse {
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  content: PublicUserProfileItem[];
+  number: number;
+  numberOfElements: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}
+
+
 /**
  * How many of each kind of post a portfolio pulls. Votes are not embedded in
  * any of the three list responses, so this is also the bound on the per-item
@@ -342,7 +370,7 @@ export const profileApi = baseApi.injectEndpoints({
         const raw = profileResult.data as UserProfileApiResponse;
 
         const [followingResult, followersResult, reportsResult] = await Promise.all([
-          fetchWithBQ(isMeRoute ? `/follows/mine?size=1` : `/follows/USER/${raw.id}/followers?size=1`),
+          fetchWithBQ(isMeRoute ? `/follows/mine?size=1` : `/follows/users/${raw.id}/following?size=1`),
           fetchWithBQ(`/follows/USER/${raw.id}/followers?size=1`),
           fetchWithBQ(isMeRoute ? `/reports/mine?size=100` : `/user-profiles/${raw.id}/problems?pageSize=100`),
         ]);
@@ -361,8 +389,8 @@ export const profileApi = baseApi.injectEndpoints({
           data: toProfileOverview(
             raw,
             {
-              followers: followersCount ?? mockProfile.followers,
-              following: followingCount ?? mockProfile.following,
+              followers: followersCount ?? 0,
+              following: followingCount ?? 0,
             },
             reports
           ),
@@ -371,12 +399,6 @@ export const profileApi = baseApi.injectEndpoints({
       providesTags: ["Profile"],
     }),
 
-    // Built from GET /reports/mine — same "me only" constraint as the rest of
-    // this file, so this reflects the signed-in user's own reports regardless
-    // of the `username` arg. There's still no badges, leaderboard/rank, or
-    // retest endpoint, so only "resolved" entries (from reports whose state is
-    // RESOLVED) are emitted — badge/rank/retest hacktivity types have no real
-    // data source yet and are intentionally omitted rather than faked.
     getHacktivity: builder.query<HacktivityEntry[], string>({
       async queryFn(username, _api, _extraOptions, fetchWithBQ) {
         const reportsResult = await fetchWithBQ(`/reports/mine?size=50&sort=submittedAt,DESC`);
@@ -411,19 +433,7 @@ export const profileApi = baseApi.injectEndpoints({
       providesTags: ["Profile"],
     }),
 
-    /**
-     * Everything one person has posted, from the three portfolio endpoints:
-     * `/user-profiles/{userId}/problems`, `/solutions` and `/showcases`.
-     *
-     * Takes the viewed profile's user id rather than a username — the backend
-     * has no username lookup, and these endpoints are keyed by id. One list
-     * failing does not empty the tab: the other two still render, which matters
-     * because the three are independently permissioned upstream.
-     *
-     * Votes are not embedded in any of the three responses, so each item costs
-     * one `/votes/{type}/{id}/summary`; a problem costs one more for its answer
-     * count. `PORTFOLIO_PAGE_SIZE` is what bounds that fan-out.
-     */
+    
     getCommunityPosts: builder.query<CommunityPost[], string>({
       async queryFn(userId, _api, _extraOptions, fetchWithBQ) {
         if (!userId) return { data: [] };
@@ -691,11 +701,72 @@ export const profileApi = baseApi.injectEndpoints({
       },
       providesTags: ["Profile"],
     }),
+
+    // GET /api/v1/follows/users/{userId}/following — entities followed by a specific user
+    getUserFollowing: builder.query<{ counts: FollowingCounts; items: FollowRecord[] }, string>({
+      query: (userId) => `/follows/users/${userId}/following?size=100`,
+      transformResponse: (raw: { content?: FollowRecord[] }) => {
+        const items = raw.content ?? [];
+        const counts: FollowingCounts = { hackers: 0, orgs: 0, topics: 0 };
+        for (const item of items) {
+          if (item.followableType === "USER") counts.hackers += 1;
+          else if (item.followableType === "ORGANIZATION") counts.orgs += 1;
+          else counts.topics += 1;
+        }
+        return { counts, items };
+      },
+      providesTags: ["Profile"],
+    }),
+
+    // GET /api/v1/follows/{type}/{targetId}/summary — status & follower count
+    getFollowSummary: builder.query<
+      { followableType: string; followableId: string; followerCount: number; following: boolean },
+      { type: string; targetId: string }
+    >({
+      query: ({ type, targetId }) => `/follows/${type}/${targetId}/summary`,
+      providesTags: ["Profile"],
+    }),
+
+    // PUT /api/v1/follows/{type}/{targetId} — follow an entity
+    followTarget: builder.mutation<FollowRecord, { type: string; targetId: string }>({
+      query: ({ type, targetId }) => ({
+        url: `/follows/${type}/${targetId}`,
+        method: "PUT",
+      }),
+      invalidatesTags: ["Profile"],
+    }),
+
+    // DELETE /api/v1/follows/{type}/{targetId} — unfollow an entity
+    unfollowTarget: builder.mutation<void, { type: string; targetId: string }>({
+      query: ({ type, targetId }) => ({
+        url: `/follows/${type}/${targetId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Profile"],
+    }),
+
+    // GET /api/v1/user-profiles — search / list public profiles
+    getPublicProfiles: builder.query<
+      PagePublicUserProfileResponse,
+      { query?: string; pageNumber?: number; pageSize?: number } | void
+    >({
+      query: (params) => {
+        const search = new URLSearchParams();
+        if (params?.query) search.set("query", params.query);
+        if (params?.pageNumber !== undefined) search.set("pageNumber", String(params.pageNumber));
+        if (params?.pageSize !== undefined) search.set("pageSize", String(params.pageSize));
+        const q = search.toString();
+        return `/user-profiles${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["Profile"],
+    }),
   }),
+  overrideExisting: true,
 });
 
 export const {
   useGetProfileByUsernameQuery,
+  useGetPublicProfilesQuery,
   useGetHacktivityQuery,
   useGetCommunityPostsQuery,
   useGetThanksQuery,
@@ -704,4 +775,8 @@ export const {
   useGetAccountStatusQuery,
   useGetMyFollowsQuery,
   useGetFollowersQuery,
+  useGetUserFollowingQuery,
+  useGetFollowSummaryQuery,
+  useFollowTargetMutation,
+  useUnfollowTargetMutation,
 } = profileApi;

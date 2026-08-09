@@ -108,7 +108,7 @@ export default function ProfileSidebar({
             </Link>
           </>
         ) : (
-          <FollowButton />
+          <FollowButton type="USER" targetId={profile.id} />
         )}
       </div>
 

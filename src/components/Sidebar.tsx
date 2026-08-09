@@ -35,6 +35,7 @@ function getInitials(text: string): string {
 
 /** Does this path sit under that nav href? */
 function matches(pathname: string, href: string): boolean {
+  if (href === "/") return pathname === "/";
   if (href === "/dashboard") return pathname === "/dashboard";
   return pathname === href || pathname.startsWith(`${href}/`);
 }

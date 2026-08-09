@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { User, Building2, Hash, Search, UserCheck } from "lucide-react";
 import { FollowRecord, FollowingCounts } from "@/lib/types/profile/types";
-import { mockFollowingList, mockFollowingCounts } from "@/lib/types/profile/mock-data";
 import FollowingItem from "./FollowingItem";
 
 interface FollowingListProps {
@@ -24,18 +23,13 @@ export default function FollowingList({ counts, items, baseProfilePath }: Follow
   const [filter, setFilter] = useState<FilterId>("hackers");
   const [search, setSearch] = useState("");
 
-  // Fallback to mock data if backend returns empty list (0 following)
-  const isUsingMock = items.length === 0;
-  const displayItems = isUsingMock ? mockFollowingList : items;
-  const displayCounts = isUsingMock ? mockFollowingCounts : counts;
-
   const pills: { id: FilterId; label: string; count: number; icon: typeof User }[] = [
-    { id: "hackers", label: "users", count: displayCounts.hackers, icon: User },
-    { id: "orgs", label: "orgs", count: displayCounts.orgs, icon: Building2 },
-    { id: "topics", label: "topics", count: displayCounts.topics, icon: Hash },
+    { id: "hackers", label: "users", count: counts.hackers, icon: User },
+    { id: "orgs", label: "orgs", count: counts.orgs, icon: Building2 },
+    { id: "topics", label: "topics", count: counts.topics, icon: Hash },
   ];
 
-  const filteredItems = displayItems
+  const filteredItems = items
     .filter((item) => bucketOf(item) === filter)
     .filter((item) => {
       const q = search.toLowerCase().trim();

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Users, Search } from "lucide-react";
 import { FollowRecord } from "@/lib/types/profile/types";
-import { mockFollowersList } from "@/lib/types/profile/mock-data";
 import FollowerItem from "./FollowerItem";
 
 interface FollowersListProps {
@@ -15,12 +14,7 @@ interface FollowersListProps {
 export default function FollowersList({ total, items, baseProfilePath }: FollowersListProps) {
   const [search, setSearch] = useState("");
 
-  // Use mock data fallback if backend returns empty list (e.g. 0 followers)
-  const isUsingMock = items.length === 0;
-  const displayItems = isUsingMock ? mockFollowersList : items;
-  const displayTotal = isUsingMock ? mockFollowersList.length : total;
-
-  const filteredItems = displayItems.filter((item) => {
+  const filteredItems = items.filter((item) => {
     const q = search.toLowerCase().trim();
     if (!q) return true;
     const nameMatch = item.displayName?.toLowerCase().includes(q) ?? false;
@@ -39,7 +33,7 @@ export default function FollowersList({ total, items, baseProfilePath }: Followe
               Followers
             </h2>
             <span className="rounded-full bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 text-xs font-bold text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-900/50">
-              {displayTotal}
+              {total}
             </span>
           </div>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">

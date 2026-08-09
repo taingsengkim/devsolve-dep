@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import {
   ArrowRight,
   ChevronDown,
+  Flame,
   LayoutDashboard,
   Lightbulb,
   Loader2,
@@ -33,7 +34,7 @@ type NavItem = {
   name: string;
   href: string;
   description?: string;
-  icon?: "problem" | "showcase";
+  icon?: "problem" | "showcase" | "hacktivity";
 };
 
 type NavLink = {
@@ -45,13 +46,16 @@ type NavLink = {
 const navLinks: NavLink[] = [
   { name: "Home", href: "/" },
   { name: "Programs", href: "/programs" },
-  // "Hacktivity" everywhere else in the product, and ~60px narrower than
-  // "Hacker Activity" — which is most of what made the bar overflow at lg.
-  { name: "Hacktivity", href: "/hacktivity" },
   {
     name: "Community",
     href: "/community",
     items: [
+      {
+        name: "Hacktivity",
+        href: "/hacktivity",
+        description: "Real-time security activity feed and disclosures.",
+        icon: "hacktivity",
+      },
       {
         name: "Problem",
         href: "/problems",
@@ -93,6 +97,9 @@ function isNavLinkActive(pathname: string, link: NavLink) {
 function CommunityMenuIcon({ icon }: { icon?: NavItem["icon"] }) {
   if (icon === "showcase") {
     return <Trophy className="size-4.5" />;
+  }
+  if (icon === "hacktivity") {
+    return <Flame className="size-4.5" />;
   }
 
   return <Lightbulb className="size-4.5" />;

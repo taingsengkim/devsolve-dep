@@ -3,8 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { UserCheck, UserPlus, ShieldCheck, User } from "lucide-react";
+import { UserCheck, UserPlus, ShieldCheck, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { FollowRecord } from "@/lib/types/profile/types";
+import {
+  useFollowTargetMutation,
+  useUnfollowTargetMutation,
+} from "@/lib/redux/services/profileApi";
 
 interface FollowerItemProps {
   record: FollowRecord;
@@ -19,6 +24,33 @@ function formatFollowedSince(iso: string) {
 
 export default function FollowerItem({ record, baseProfilePath = "/dashboard/profile" }: FollowerItemProps) {
   const [isFollowing, setIsFollowing] = useState(record.isFollowing ?? false);
+  const [followTarget, { isLoading: isFollowingLoading }] = useFollowTargetMutation();
+  const [unfollowTarget, { isLoading: isUnfollowingLoading }] = useUnfollowTargetMutation();
+
+  const isPending = isFollowingLoading || isUnfollowingLoading;
+  const targetId = record.followableId || record.id;
+  const targetType = record.followableType || "USER";
+
+  const handleToggleFollow = async () => {
+    if (isPending) return;
+
+    const previousState = isFollowing;
+    setIsFollowing(!previousState);
+
+    try {
+      if (previousState) {
+        await unfollowTarget({ type: targetType, targetId }).unwrap();
+        toast.success("Unfollowed successfully");
+      } else {
+        await followTarget({ type: targetType, targetId }).unwrap();
+        toast.success("Following back");
+      }
+    } catch (err: unknown) {
+      setIsFollowing(previousState);
+      const message = (err as { data?: { message?: string } })?.data?.message ?? "Failed to update follow status";
+      toast.error(message);
+    }
+  };
 
   const displayName = record.displayName ?? (record.username ? record.username : `Follower #${record.id.slice(0, 8)}`);
   const handle = record.username ? `@${record.username}` : `#${record.id.slice(0, 8)}`;
@@ -83,14 +115,17 @@ export default function FollowerItem({ record, baseProfilePath = "/dashboard/pro
       <div className="shrink-0 flex items-center gap-2 self-end sm:self-center">
         <button
           type="button"
-          onClick={() => setIsFollowing(!isFollowing)}
-          className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition cursor-pointer ${
+          disabled={isPending}
+          onClick={handleToggleFollow}
+          className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition cursor-pointer disabled:opacity-70 ${
             isFollowing
               ? "border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               : "bg-blue-600 hover:bg-blue-700 text-white shadow-2xs"
           }`}
         >
-          {isFollowing ? (
+          {isPending ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : isFollowing ? (
             <>
               <UserCheck size={14} className="text-emerald-500 dark:text-emerald-400" />
               <span>Following</span>
