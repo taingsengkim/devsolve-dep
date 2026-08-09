@@ -31,7 +31,8 @@ export default function ResearcherAvatar({
         alt={displayName}
         width={size}
         height={size}
-        className={`shrink-0 rounded-full object-cover ring-1 ring-slate-200 ${className}`}
+        style={{ width: `${size}px`, height: `${size}px` }}
+        className={`shrink-0 rounded-full object-cover aspect-square overflow-hidden ring-1 ring-slate-200 ${className}`}
       />
     );
   }
@@ -39,7 +40,7 @@ export default function ResearcherAvatar({
   return (
     <span
       aria-hidden
-      style={{ width: size, height: size, fontSize: Math.round(size * 0.36) }}
+      style={{ width: `${size}px`, height: `${size}px`, fontSize: Math.round(size * 0.36) }}
       className={`inline-flex shrink-0 items-center justify-center rounded-full font-semibold tracking-tight ring-1 ${tintFor(
         username,
       )} ${className}`}
