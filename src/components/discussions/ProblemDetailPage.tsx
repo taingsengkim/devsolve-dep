@@ -4,25 +4,37 @@ import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion } from "motion/react";
+import { toast } from "sonner";
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowLeft,
   Bookmark,
   CheckCircle2,
+  ChevronDown,
   ChevronUp,
   CircleDot,
   Download,
+  Eye,
+  FolderGit2,
+  ListOrdered,
   MessageSquare,
   Plus,
   RotateCcw,
   Send,
+  Server,
+  Target,
+  TerminalSquare,
+  Wrench,
 } from "lucide-react";
 
 import { SolutionCard } from "@/components/discussions/SolutionCard";
 import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
 import {
   useGetProblemByIdQuery,
+  useSetAcceptedSolutionMutation,
   type ProblemResponse,
+  type ProblemSeverity,
 } from "@/lib/redux/services/problemsApi";
 import {
   useGetMyProfileQuery,
@@ -39,12 +51,27 @@ import {
   useCreateCommentMutation,
   useGetCommentsQuery,
 } from "@/lib/redux/services/commentsApi";
-import { SDLC_LABELS } from "@/lib/validations/problem";
+import {
+  PROBLEM_TYPE_LABELS,
+  SDLC_LABELS,
+  SEVERITY_LABELS,
+} from "@/lib/validations/problem";
+import {
+  formatBytes,
+  formatDate,
+  initialsOf,
+  messageOf,
+} from "@/lib/discussions/format";
 
 /**
  * One problem, read from the API — `GET /api/v1/problems/{id}` for the post,
  * `/problems/{id}/solutions` for the answers, `/comments` for the thread, and
  * the vote and bookmark endpoints for the two buttons.
+ *
+ * A problem carries far more than a title and a description: what was expected
+ * against what happened, the steps to reproduce it, the environment it broke
+ * in, what the author already tried. Each is rendered only when present, so a
+ * one-line question stays one line and a fully filled report reads as a report.
  *
  * Only problems reach this route: a showcase card links to `/showcases/{id}`,
  * which has its own page. That is why nothing here branches on the two.
@@ -56,23 +83,13 @@ const CARD =
 const SOLUTION_PAGE_SIZE = 50;
 const COMMENT_PAGE_SIZE = 50;
 
-function formatDate(iso?: string) {
-  if (!iso) return "—";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function formatBytes(bytes?: number) {
-  if (bytes === undefined || Number.isNaN(bytes)) return "";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
+const SEVERITY_STYLES: Record<ProblemSeverity, string> = {
+  LOW: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  MEDIUM:
+    "bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300",
+  HIGH: "bg-orange-100 text-orange-800 dark:bg-orange-500/10 dark:text-orange-300",
+  CRITICAL: "bg-rose-100 text-rose-800 dark:bg-rose-500/10 dark:text-rose-300",
+};
 
 export default function ProblemDetailPage() {
   const params = useParams();
@@ -87,7 +104,7 @@ export default function ProblemDetailPage() {
     refetch,
   } = useGetProblemByIdQuery(id, { skip: !id });
 
-  const [sortOrder, setSortOrder] = useState<"votes" | "newest">("newest");
+  const [sortOrder, setSortOrder] = useState<"votes" | "newest">("votes");
 
   if (isLoading) return <DetailSkeleton />;
 
@@ -144,6 +161,9 @@ function Loaded({
   const isSignedIn = Boolean(me?.id);
   const isOwnProblem = Boolean(me?.id && problem.author?.id === me.id);
   const canAnswer = isSignedIn && !isOwnProblem;
+  /* The backend decides who may accept; `canAcceptSolution` is that decision.
+     Ownership is the fallback for a response that predates the field. */
+  const canAccept = problem.canAcceptSolution ?? isOwnProblem;
 
   const { data: votes } = useGetVoteSummaryQuery({
     type: "PROBLEM",
@@ -153,6 +173,8 @@ function Loaded({
   const [removeVote, { isLoading: isRemovingVote }] = useRemoveVoteMutation();
   const isVoting = isSettingVote || isRemovingVote;
   const hasUpvoted = votes?.currentUserVote === 1;
+  const hasDownvoted = votes?.currentUserVote === -1;
+  const score = votes?.score ?? problem.voteScore ?? 0;
 
   /* A signed-out visitor gets a 401 from the status endpoint, which is not
      worth surfacing — the button simply shows as un-bookmarked. */
@@ -162,6 +184,10 @@ function Loaded({
   });
   const [toggleBookmark, { isLoading: isBookmarking }] =
     useBookmarkDiscussionMutation();
+  const isBookmarked = bookmark?.bookmarked ?? problem.isBookmarkedByViewer;
+
+  const [acceptSolution, { isLoading: isAccepting }] =
+    useSetAcceptedSolutionMutation();
 
   const { data: commentPage } = useGetCommentsQuery({
     commentableType: "PROBLEM",
@@ -175,18 +201,18 @@ function Loaded({
 
   const solutions = useMemo(() => {
     const list = [...(solutionPage?.content ?? [])];
-    /* `SolutionResponse` carries no score, so "votes" can only put accepted
-       answers first — the per-card scores are fetched by the cards themselves. */
-    if (sortOrder === "votes") {
-      return list.sort(
-        (a, b) =>
-          Number(b.reviewStatus === "ACCEPTED") -
-          Number(a.reviewStatus === "ACCEPTED"),
-      );
-    }
+    const newest = (a: (typeof list)[number], b: (typeof list)[number]) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+
+    if (sortOrder === "newest") return list.sort(newest);
+
+    /* Accepted first, then by score — the order someone scanning for the
+       answer wants, and now possible since `voteScore` rides along. */
     return list.sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        Number(Boolean(b.isAccepted)) - Number(Boolean(a.isAccepted)) ||
+        (b.voteScore ?? 0) - (a.voteScore ?? 0) ||
+        newest(a, b),
     );
   }, [solutionPage, sortOrder]);
 
@@ -194,13 +220,18 @@ function Loaded({
   const attachments = problem.attachments ?? [];
   const tags = problem.tags ?? [];
   const technologies = problem.technologies ?? [];
+  const environment = (problem.environment ?? []).filter(
+    (entry) => entry.technology,
+  );
+  const reproductionSteps = (problem.reproductionSteps ?? []).filter(Boolean);
   const isResolved = problem.status === "RESOLVED";
+  const answerCount = solutionPage?.totalElements ?? problem.solutionCount ?? 0;
 
-  const onVote = async () => {
+  const onVote = async (value: 1 | -1) => {
     if (isVoting) return;
     const target = { type: "PROBLEM" as const, targetId: id };
-    if (hasUpvoted) await removeVote(target);
-    else await setVote({ ...target, value: 1 });
+    if (votes?.currentUserVote === value) await removeVote(target);
+    else await setVote({ ...target, value });
   };
 
   const onBookmark = async () => {
@@ -208,8 +239,19 @@ function Loaded({
     await toggleBookmark({
       id,
       category: "Problems",
-      bookmarked: !bookmark?.bookmarked,
+      bookmarked: !isBookmarked,
     });
+  };
+
+  const onAccept = async (solutionId: string) => {
+    try {
+      await acceptSolution({ problemId: id, solutionId }).unwrap();
+      toast.success("Answer accepted", {
+        description: "It now sits at the top of this problem.",
+      });
+    } catch (caught) {
+      toast.error(messageOf(caught, "That answer could not be accepted."));
+    }
   };
 
   const onComment = async (event: React.FormEvent) => {
@@ -235,21 +277,21 @@ function Loaded({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="min-h-screen bg-[#F8FAFC] pb-16 font-sans text-slate-800 dark:bg-slate-950 dark:text-slate-100"
+      className="min-h-screen bg-slate-50 pb-16 font-sans text-slate-800 dark:bg-slate-950 dark:text-slate-100"
     >
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <Link
           href="/community"
-          className="mb-6 inline-flex items-center gap-2 text-base font-semibold text-slate-500 transition-colors hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
+          className="mb-5 inline-flex items-center gap-2 text-base font-semibold text-slate-500 transition-colors hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
         >
-          <ArrowLeft className="size-4" />
+          <ArrowLeft aria-hidden="true" className="size-4" />
           Back to Community
         </Link>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-          <div className="space-y-6 lg:col-span-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8 xl:grid-cols-4">
+          <div className="min-w-0 space-y-6 lg:col-span-2 xl:col-span-3">
             {/* ── The problem ── */}
-            <section className={`${CARD} p-6`}>
+            <section className={`${CARD} p-4 sm:p-6`}>
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
@@ -259,13 +301,25 @@ function Loaded({
                   }`}
                 >
                   {isResolved ? (
-                    <CheckCircle2 className="size-3.5" />
+                    <CheckCircle2 aria-hidden="true" className="size-3.5" />
                   ) : (
-                    <CircleDot className="size-3.5" />
+                    <CircleDot aria-hidden="true" className="size-3.5" />
                   )}
                   {isResolved ? "Solved" : "Open"}
                 </span>
 
+                {problem.problemType && (
+                  <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    {PROBLEM_TYPE_LABELS[problem.problemType]}
+                  </span>
+                )}
+                {problem.severity && (
+                  <span
+                    className={`rounded-md px-2.5 py-1 text-xs font-bold ${SEVERITY_STYLES[problem.severity]}`}
+                  >
+                    {SEVERITY_LABELS[problem.severity]}
+                  </span>
+                )}
                 {problem.sdlcPhase && (
                   <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                     {SDLC_LABELS[problem.sdlcPhase]}
@@ -279,28 +333,44 @@ function Loaded({
               </div>
 
               <div className="flex items-start justify-between gap-4">
-                <h1 className="text-2xl font-extrabold leading-snug tracking-tight text-slate-900 sm:text-3xl dark:text-slate-100">
+                <h1 className="text-xl font-extrabold leading-snug tracking-tight text-slate-900 sm:text-2xl lg:text-3xl dark:text-slate-100">
                   {problem.title ?? "Untitled problem"}
                 </h1>
 
-                <div className="flex shrink-0 items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800">
+                {/* Vote rail — vertical, so it reads the same as the one on
+                    every answer below it. */}
+                <div className="flex shrink-0 flex-col items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800">
                   <button
                     type="button"
-                    onClick={() => void onVote()}
+                    onClick={() => void onVote(1)}
                     disabled={isVoting}
                     aria-pressed={hasUpvoted}
                     aria-label={hasUpvoted ? "Remove upvote" : "Upvote"}
                     className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
                       hasUpvoted
                         ? "bg-blue-600 text-white"
-                        : "text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700"
+                        : "text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700"
                     }`}
                   >
-                    <ChevronUp className="size-4" />
+                    <ChevronUp aria-hidden="true" className="size-4" />
                   </button>
                   <span className="px-1.5 text-sm font-bold tabular-nums text-slate-800 dark:text-slate-100">
-                    {votes?.score ?? 0}
+                    {score}
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => void onVote(-1)}
+                    disabled={isVoting}
+                    aria-pressed={hasDownvoted}
+                    aria-label={hasDownvoted ? "Remove downvote" : "Downvote"}
+                    className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
+                      hasDownvoted
+                        ? "bg-rose-600 text-white"
+                        : "text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    }`}
+                  >
+                    <ChevronDown aria-hidden="true" className="size-4" />
+                  </button>
                 </div>
               </div>
 
@@ -326,10 +396,7 @@ function Loaded({
                 </div>
               )}
 
-              <div className="mt-6 border-t border-slate-100 pt-4 dark:border-slate-800">
-                <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  Description
-                </h2>
+              <Section title="Description">
                 {problem.description ? (
                   <MarkdownView source={problem.description} />
                 ) : (
@@ -337,73 +404,180 @@ function Loaded({
                     This problem was posted without a description.
                   </p>
                 )}
-              </div>
+              </Section>
 
-              {attachments.length > 0 && (
-                <div className="mt-6 space-y-2 border-t border-slate-100 pt-4 dark:border-slate-800">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Attachments
-                  </h2>
-                  {attachments.map((file, i) => (
-                    <div
-                      key={file.id ?? `${file.fileName}-${i}`}
-                      className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-800/60"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
-                          {file.fileName ?? "Unnamed file"}
-                        </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {[file.mimeType, formatBytes(file.sizeBytes)]
-                            .filter(Boolean)
-                            .join(" · ") || "—"}
+              {/* ── Expected against actual, side by side where there is room ── */}
+              {(problem.expectedBehavior || problem.actualBehavior) && (
+                <Section
+                  title="Expected vs actual"
+                  icon={<Target aria-hidden="true" className="size-3.5" />}
+                >
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {problem.expectedBehavior && (
+                      <div className="rounded-xl border border-emerald-200/70 bg-emerald-50/60 p-4 dark:border-emerald-500/25 dark:bg-emerald-500/5">
+                        <h3 className="mb-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                          Expected
+                        </h3>
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                          {problem.expectedBehavior}
                         </p>
                       </div>
-                      {file.downloadUrl?.startsWith("https://") && (
-                        <a
-                          href={file.downloadUrl}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-                        >
-                          <Download className="size-3.5" />
-                          Download
-                        </a>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                    )}
+                    {problem.actualBehavior && (
+                      <div className="rounded-xl border border-rose-200/70 bg-rose-50/60 p-4 dark:border-rose-500/25 dark:bg-rose-500/5">
+                        <h3 className="mb-1.5 text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">
+                          Actual
+                        </h3>
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                          {problem.actualBehavior}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </Section>
               )}
 
-              <div className="mt-6 flex items-center gap-3 border-t border-slate-100 pt-4 text-sm dark:border-slate-800">
+              {reproductionSteps.length > 0 && (
+                <Section
+                  title="Steps to reproduce"
+                  icon={<ListOrdered aria-hidden="true" className="size-3.5" />}
+                >
+                  <ol className="space-y-2">
+                    {reproductionSteps.map((step, i) => (
+                      <li key={i} className="flex gap-3">
+                        <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[11px] font-bold tabular-nums text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                          {i + 1}
+                        </span>
+                        <p className="min-w-0 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                          {step}
+                        </p>
+                      </li>
+                    ))}
+                  </ol>
+                </Section>
+              )}
+
+              {problem.errorMessage && (
+                <Section
+                  title="Error output"
+                  icon={
+                    <TerminalSquare aria-hidden="true" className="size-3.5" />
+                  }
+                >
+                  {/* The one place a horizontal scrollbar is right: wrapping a
+                      stack trace destroys the thing being read. */}
+                  <pre className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900 p-4 text-xs leading-relaxed text-slate-100 dark:border-slate-700 dark:bg-slate-950">
+                    <code>{problem.errorMessage}</code>
+                  </pre>
+                </Section>
+              )}
+
+              {problem.attemptsTried && (
+                <Section
+                  title="Already tried"
+                  icon={<Wrench aria-hidden="true" className="size-3.5" />}
+                >
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                    {problem.attemptsTried}
+                  </p>
+                </Section>
+              )}
+
+              {environment.length > 0 && (
+                <Section
+                  title="Environment"
+                  icon={<Server aria-hidden="true" className="size-3.5" />}
+                >
+                  <div className="flex flex-wrap gap-1.5">
+                    {environment.map((entry, i) => (
+                      <span
+                        key={`${entry.technology}-${i}`}
+                        className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                      >
+                        {entry.technology}
+                        {entry.version ? ` ${entry.version}` : ""}
+                      </span>
+                    ))}
+                  </div>
+                </Section>
+              )}
+
+              {attachments.length > 0 && (
+                <Section title="Attachments">
+                  <div className="space-y-2">
+                    {attachments.map((file, i) => (
+                      <div
+                        key={file.id ?? `${file.originalFileName}-${i}`}
+                        className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-800/60"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
+                            {file.originalFileName ?? "Unnamed file"}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {[file.mimeType, formatBytes(file.sizeBytes)]
+                              .filter(Boolean)
+                              .join(" · ") || "—"}
+                          </p>
+                        </div>
+                        {file.downloadUrl?.startsWith("https://") && (
+                          <a
+                            href={file.downloadUrl}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                          >
+                            <Download aria-hidden="true" className="size-3.5" />
+                            Download
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </Section>
+              )}
+
+              <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4 text-sm dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => void onBookmark()}
                   disabled={isBookmarking}
-                  aria-pressed={Boolean(bookmark?.bookmarked)}
+                  aria-pressed={Boolean(isBookmarked)}
                   className={`flex cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 py-1.5 font-medium transition disabled:opacity-50 ${
-                    bookmark?.bookmarked
+                    isBookmarked
                       ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300"
                       : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                   }`}
                 >
                   <Bookmark
-                    className={`size-4 ${bookmark?.bookmarked ? "fill-current" : ""}`}
+                    aria-hidden="true"
+                    className={`size-4 ${isBookmarked ? "fill-current" : ""}`}
                   />
-                  {bookmark?.bookmarked ? "Bookmarked" : "Bookmark"}
+                  {isBookmarked ? "Bookmarked" : "Bookmark"}
                 </button>
+
+                {problem.repositoryUrl?.startsWith("https://") && (
+                  <a
+                    href={problem.repositoryUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    <FolderGit2 aria-hidden="true" className="size-4" />
+                    Repository
+                  </a>
+                )}
               </div>
             </section>
 
             {/* ── Answers ── */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">
-                  {solutionPage?.totalElements ?? 0}{" "}
-                  {solutionPage?.totalElements === 1 ? "Solution" : "Solutions"}
+                  {answerCount} {answerCount === 1 ? "Solution" : "Solutions"}
                 </h2>
                 <div className="flex items-center rounded-lg bg-slate-200/60 p-0.5 text-xs font-bold dark:bg-slate-800">
-                  {(["newest", "votes"] as const).map((order) => (
+                  {(["votes", "newest"] as const).map((order) => (
                     <button
                       key={order}
                       type="button"
@@ -415,7 +589,7 @@ function Loaded({
                           : "text-slate-500 dark:text-slate-400"
                       }`}
                     >
-                      {order === "votes" ? "accepted" : "newest"}
+                      {order === "votes" ? "top" : "newest"}
                     </button>
                   ))}
                 </div>
@@ -426,7 +600,7 @@ function Loaded({
                   href={`/community/${id}/solutions/create`}
                   className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-2xs transition-colors hover:bg-emerald-700"
                 >
-                  <Plus className="size-4" />
+                  <Plus aria-hidden="true" className="size-4" />
                   Post your solution
                 </Link>
               )}
@@ -456,7 +630,9 @@ function Loaded({
                 ))}
               </div>
             ) : solutions.length === 0 ? (
-              <p className={`${CARD} p-8 text-center text-sm text-slate-500 dark:text-slate-400`}>
+              <p
+                className={`${CARD} p-8 text-center text-sm text-slate-500 dark:text-slate-400`}
+              >
                 {canAnswer
                   ? "No answers yet. Be the first to post one."
                   : "No answers yet."}
@@ -468,15 +644,21 @@ function Loaded({
                     key={solution.id}
                     solution={solution}
                     index={index}
+                    canAccept={canAccept}
+                    onAccept={(solutionId) => void onAccept(solutionId)}
+                    isAccepting={isAccepting}
                   />
                 ))}
               </div>
             )}
 
             {/* ── Comments ── */}
-            <section className={`${CARD} p-6`}>
+            <section className={`${CARD} p-4 sm:p-6`}>
               <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-slate-900 dark:text-slate-100">
-                <MessageSquare className="size-4 text-slate-500" />
+                <MessageSquare
+                  aria-hidden="true"
+                  className="size-4 text-slate-500"
+                />
                 Comments ({commentPage?.totalElements ?? comments.length})
               </h2>
 
@@ -492,23 +674,23 @@ function Loaded({
                         <img
                           src={comment.authorAvatarUrl}
                           alt=""
-                          className="size-8 rounded-full bg-slate-200 object-cover dark:bg-slate-700"
+                          className="size-8 shrink-0 rounded-full bg-slate-200 object-cover dark:bg-slate-700"
                         />
                       ) : (
                         <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-200">
-                          {(comment.authorName || "?").slice(0, 1).toUpperCase()}
+                          {initialsOf(comment.authorName || "?")}
                         </span>
                       )}
                       <div className="min-w-0 flex-1">
                         <div className="mb-1 flex items-center justify-between gap-3">
-                          <span className="font-bold text-slate-800 dark:text-slate-100">
+                          <span className="truncate font-bold text-slate-800 dark:text-slate-100">
                             {comment.authorName || "Unknown"}
                           </span>
                           <span className="shrink-0 text-xs text-slate-400">
-                            {formatDate(comment.createdAt)}
+                            {formatDate(comment.createdAt, "")}
                           </span>
                         </div>
-                        <p className="whitespace-pre-wrap leading-relaxed text-slate-700 dark:text-slate-300">
+                        <p className="whitespace-pre-wrap wrap-break-word leading-relaxed text-slate-700 dark:text-slate-300">
                           {comment.content}
                         </p>
                       </div>
@@ -528,18 +710,22 @@ function Loaded({
                   maxLength={5000}
                   aria-label="Write a comment"
                   placeholder="Add a comment…"
-                  className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-950"
+                  className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                 />
                 <button
                   type="submit"
                   disabled={isPostingComment || !draft.trim()}
-                  className="cursor-pointer rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-blue-700 disabled:opacity-50"
+                  aria-label="Post comment"
+                  className="shrink-0 cursor-pointer rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-blue-700 disabled:opacity-50"
                 >
-                  <Send className="size-4" />
+                  <Send aria-hidden="true" className="size-4" />
                 </button>
               </form>
               {commentError && (
-                <p className="mt-2 text-sm font-medium text-rose-600" role="alert">
+                <p
+                  className="mt-2 text-sm font-medium text-rose-600 dark:text-rose-400"
+                  role="alert"
+                >
                   {commentError}
                 </p>
               )}
@@ -547,29 +733,50 @@ function Loaded({
           </div>
 
           {/* ── Sidebar ── */}
-          <div className="space-y-6">
-            <section className={`${CARD} space-y-3.5 p-5 text-sm`}>
+          <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
+            {/* The figures, as tiles — quicker to read than a list of rows. */}
+            <section className={`${CARD} p-4 sm:p-5`}>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <Stat label="Score" value={score.toLocaleString()} />
+                <Stat label="Answers" value={answerCount.toLocaleString()} />
+                <Stat
+                  label="Views"
+                  value={(problem.viewCount ?? 0).toLocaleString()}
+                  icon={<Eye aria-hidden="true" className="size-3" />}
+                />
+              </div>
+            </section>
+
+            <section className={`${CARD} space-y-3.5 p-4 text-sm sm:p-5`}>
               <h2 className="border-b border-slate-100 pb-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:border-slate-800 dark:text-slate-500">
-                Problem Details
+                Problem details
               </h2>
+              {problem.problemType && (
+                <Row
+                  label="Type"
+                  value={PROBLEM_TYPE_LABELS[problem.problemType]}
+                />
+              )}
+              {problem.severity && (
+                <Row
+                  label="Severity"
+                  value={SEVERITY_LABELS[problem.severity]}
+                />
+              )}
               {problem.sdlcPhase && (
                 <Row
-                  label="SDLC Phase"
+                  label="SDLC phase"
                   value={SDLC_LABELS[problem.sdlcPhase]}
                 />
               )}
               <Row label="Category" value={problem.category?.name ?? "—"} />
-              <Row
-                label="Views"
-                value={(problem.viewCount ?? 0).toLocaleString()}
-              />
               <Row label="Posted" value={formatDate(problem.createdAt)} />
               <Row label="Published" value={formatDate(problem.publishedAt)} />
             </section>
 
-            <section className={`${CARD} p-5 text-sm`}>
+            <section className={`${CARD} p-4 text-sm sm:p-5`}>
               <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                Posted By
+                Posted by
               </h2>
               <div className="flex items-center gap-3">
                 {problem.author?.avatarUrl ? (
@@ -577,18 +784,16 @@ function Loaded({
                   <img
                     src={problem.author.avatarUrl}
                     alt=""
-                    className="size-10 rounded-full border border-slate-200 bg-slate-100 object-cover dark:border-slate-700"
+                    className="size-10 shrink-0 rounded-full border border-slate-200 bg-slate-100 object-cover dark:border-slate-700 dark:bg-slate-800"
                   />
                 ) : (
-                  <span className="flex size-10 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-                    {(problem.author?.fullName || "?")
-                      .slice(0, 1)
-                      .toUpperCase()}
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                    {initialsOf(problem.author?.displayName || "?")}
                   </span>
                 )}
                 <div className="min-w-0">
                   <p className="truncate text-base font-bold text-slate-900 dark:text-slate-100">
-                    {problem.author?.fullName ?? "Unknown author"}
+                    {problem.author?.displayName ?? "Unknown author"}
                   </p>
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                     {(problem.author?.reputation ?? 0).toLocaleString()}{" "}
@@ -597,18 +802,77 @@ function Loaded({
                 </div>
               </div>
             </section>
-          </div>
+
+            {problem.contentWarnings && problem.contentWarnings.length > 0 && (
+              <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm dark:border-amber-500/30 dark:bg-amber-500/10 sm:p-5">
+                <h2 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">
+                  <AlertTriangle aria-hidden="true" className="size-3.5" />
+                  Content warnings
+                </h2>
+                <ul className="space-y-1 text-amber-800 dark:text-amber-200">
+                  {problem.contentWarnings.map((warning, i) => (
+                    <li key={i}>{warning}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </aside>
         </div>
       </main>
     </motion.div>
   );
 }
 
+/** A titled block inside the problem card, with its own rule above it. */
+function Section({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mt-6 border-t border-slate-100 pt-4 dark:border-slate-800">
+      <h2 className="mb-2.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        {icon}
+        {title}
+      </h2>
+      {children}
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl bg-slate-50 px-2 py-3 dark:bg-slate-800/60">
+      <p className="text-lg font-extrabold tabular-nums text-slate-900 dark:text-slate-100">
+        {value}
+      </p>
+      <p className="flex items-center justify-center gap-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+        {icon}
+        {label}
+      </p>
+    </div>
+  );
+}
+
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
-      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+      <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
+        {label}
+      </span>
+      <span className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
         {value}
       </span>
     </div>
@@ -620,21 +884,26 @@ function DetailSkeleton() {
     <div
       role="status"
       aria-label="Loading the problem"
-      className="min-h-screen animate-pulse bg-[#F8FAFC] pb-16 dark:bg-slate-950"
+      className="min-h-screen animate-pulse bg-slate-50 pb-16 dark:bg-slate-950"
     >
       <span className="sr-only">Loading the problem…</span>
-      <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <div className="h-5 w-44 rounded-lg bg-slate-200 dark:bg-slate-800" />
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-          <div className="space-y-6 lg:col-span-3">
-            <div className={`${CARD} space-y-4 p-6`}>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8 xl:grid-cols-4">
+          <div className="space-y-6 lg:col-span-2 xl:col-span-3">
+            <div className={`${CARD} space-y-4 p-4 sm:p-6`}>
               <div className="h-6 w-32 rounded-full bg-slate-200 dark:bg-slate-800" />
               <div className="h-8 w-3/4 rounded-lg bg-slate-200 dark:bg-slate-800" />
               <div className="h-24 w-full rounded-lg bg-slate-200 dark:bg-slate-800" />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="h-20 rounded-xl bg-slate-200 dark:bg-slate-800" />
+                <div className="h-20 rounded-xl bg-slate-200 dark:bg-slate-800" />
+              </div>
             </div>
             <div className={`${CARD} h-32`} />
           </div>
           <div className="space-y-6">
+            <div className={`${CARD} h-24`} />
             <div className={`${CARD} h-48`} />
             <div className={`${CARD} h-28`} />
           </div>
@@ -654,9 +923,9 @@ function NotFound({
   onRetry?: () => void;
 }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#F8FAFC] px-4 text-center text-slate-800 dark:bg-slate-950 dark:text-slate-100">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 text-center text-slate-800 dark:bg-slate-950 dark:text-slate-100">
       <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
-        <AlertCircle className="size-7" />
+        <AlertCircle aria-hidden="true" className="size-7" />
       </div>
       <h1 className="mb-2 text-2xl font-bold">{title}</h1>
       <p className="mb-4 text-slate-500 dark:text-slate-400">{body}</p>
@@ -667,31 +936,18 @@ function NotFound({
             onClick={onRetry}
             className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700"
           >
-            <RotateCcw className="size-4" />
+            <RotateCcw aria-hidden="true" className="size-4" />
             Try again
           </button>
         )}
         <Link
           href="/community"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400"
         >
-          <ArrowLeft className="size-4" />
+          <ArrowLeft aria-hidden="true" className="size-4" />
           Back to Community
         </Link>
       </div>
     </div>
   );
-}
-
-/** Pulls something readable out of an RTK Query error. */
-function messageOf(error: unknown, fallback: string): string {
-  if (typeof error === "object" && error !== null && "data" in error) {
-    const data = (error as { data?: unknown }).data;
-    if (typeof data === "string" && data) return data;
-    if (typeof data === "object" && data !== null && "message" in data) {
-      const message = (data as { message?: unknown }).message;
-      if (typeof message === "string" && message) return message;
-    }
-  }
-  return fallback;
 }

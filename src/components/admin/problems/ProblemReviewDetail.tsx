@@ -160,7 +160,7 @@ export function ProblemReviewDetail({ id }: { id: string }) {
             <p className="text-sm text-slate-500 dark:text-slate-400">
               by{" "}
               <span className="font-semibold text-slate-800 dark:text-slate-200">
-                {problem.author?.fullName ?? "Unknown author"}
+                {problem.author?.displayName ?? "Unknown author"}
               </span>{" "}
               · submitted {formatDateTime(problem.createdAt)}
             </p>
@@ -256,7 +256,7 @@ export function ProblemReviewDetail({ id }: { id: string }) {
               <div className="space-y-2">
                 {attachments.map((file, index) => (
                   <div
-                    key={file.id ?? `${file.fileName}-${index}`}
+                    key={file.id ?? `${file.originalFileName}-${index}`}
                     className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-800/60"
                   >
                     <FileText
@@ -265,7 +265,7 @@ export function ProblemReviewDetail({ id }: { id: string }) {
                     />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
-                        {file.fileName ?? "Unnamed file"}
+                        {file.originalFileName ?? "Unnamed file"}
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {[file.mimeType, formatBytes(file.sizeBytes)]
@@ -371,7 +371,7 @@ export function ProblemReviewDetail({ id }: { id: string }) {
               Author
             </h2>
             <p className="text-base font-bold text-slate-900 dark:text-slate-100">
-              {problem.author?.fullName ?? "Unknown author"}
+              {problem.author?.displayName ?? "Unknown author"}
             </p>
             <dl className="space-y-2">
               <FactRow
@@ -382,7 +382,10 @@ export function ProblemReviewDetail({ id }: { id: string }) {
                     : String(problem.author.reputation)
                 }
               />
-              <FactRow label="Submitted" value={formatDateTime(problem.createdAt)} />
+              <FactRow
+                label="Submitted"
+                value={formatDateTime(problem.createdAt)}
+              />
               <FactRow
                 label="Revision"
                 value={

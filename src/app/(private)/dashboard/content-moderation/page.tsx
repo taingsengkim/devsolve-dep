@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   History,
   LayoutTemplate,
+  Lightbulb,
   MessageSquareWarning,
   ShieldAlert,
   type LucideIcon,
@@ -53,21 +54,25 @@ import { ModerationActionDialog } from "@/components/admin/ModerationActionDialo
 import { ModerationHistoryTable } from "@/components/admin/ModerationHistoryTable";
 import { ShowcaseReviewQueue } from "@/components/admin/showcases/ShowcaseReviewQueue";
 import { ProblemReviewQueue } from "@/components/admin/problems/ProblemReviewQueue";
+import { SolutionReviewQueue } from "@/components/admin/solutions/SolutionReviewQueue";
 import { useGetShowcaseReviewQueueQuery } from "@/lib/redux/services/admin/showcaseReviewApi";
 import { useGetProblemReviewQueueQuery } from "@/lib/redux/services/admin/problemReviewApi";
+import { useGetAdminSolutionsQuery } from "@/lib/redux/services/admin/solutionAdminApi";
 import { FlagDetailSheet } from "@/components/admin/FlagDetailSheet";
 import type { ModerationActionType } from "@/lib/types/admin/types";
 import { cn } from "@/lib/utils";
 
 /**
- * Four jobs share this screen, and each is a different question. Flags are
- * raised against content that is already public; a showcase or a problem is
- * not public until it is approved; the history is a record rather than a
- * queue. They live together because one person does all four, and the tab row
- * carries every backlog at once so none of them is discovered by accident.
+ * Five jobs share this screen, and each is a different question. Flags are
+ * raised against content that is already public; a showcase, a problem or a
+ * solution is not public until it is approved; the history is a record rather
+ * than a queue. They live together because one person does all five, and the
+ * tab row carries every backlog at once so none of them is discovered by
+ * accident — which is exactly what happened to solutions, whose queue sat on
+ * a page nothing linked to.
  */
 
-type TabId = "queue" | "showcases" | "problems" | "history";
+type TabId = "queue" | "showcases" | "problems" | "solutions" | "history";
 
 const TABS: {
   value: TabId;
@@ -95,6 +100,13 @@ const TABS: {
     icon: MessageSquareWarning,
     blurb:
       "Problems waiting on a decision. Approving one publishes it to the feed, open for solutions.",
+  },
+  {
+    value: "solutions",
+    label: "Solutions",
+    icon: Lightbulb,
+    blurb:
+      "Answers waiting on a decision. Approving one publishes it on the problem it answers, where the asker can accept it.",
   },
   {
     value: "history",
@@ -136,7 +148,7 @@ function ContentManagement() {
   const { data, isLoading } = useGetContentReportsQuery();
   const [updateAction] = useUpdateContentReportActionMutation();
 
-  /* Both approval queues are asked for a single row: the response is fetched
+  /* Each approval queue is asked for a single row: the response is fetched
      for its total, which is what the tab badge shows. */
   const { data: showcaseQueue } = useGetShowcaseReviewQueueQuery({
     reviewStatus: "PENDING",
@@ -145,6 +157,10 @@ function ContentManagement() {
   const { data: problemQueue } = useGetProblemReviewQueueQuery({
     status: "PENDING_APPROVAL",
     size: 1,
+  });
+  const { data: solutionQueue } = useGetAdminSolutionsQuery({
+    reviewStatus: "PENDING",
+    pageSize: 1,
   });
 
   const reportsList = useMemo(() => data?.items ?? [], [data]);
@@ -159,6 +175,7 @@ function ContentManagement() {
     queue: pendingReports,
     showcases: showcaseQueue?.totalElements ?? 0,
     problems: problemQueue?.totalElements ?? 0,
+    solutions: solutionQueue?.totalElements ?? 0,
     history: undefined,
   };
 
@@ -653,6 +670,8 @@ function ContentManagement() {
         <ShowcaseReviewQueue />
       ) : activeTab === "problems" ? (
         <ProblemReviewQueue />
+      ) : activeTab === "solutions" ? (
+        <SolutionReviewQueue />
       ) : (
         <ModerationHistoryTable />
       )}

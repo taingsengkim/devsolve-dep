@@ -4,17 +4,19 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { useForm, useWatch } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import {
   AlertCircle,
   Check,
   Circle,
+  ListChecks,
   LoaderCircle,
-  Network,
+  Plus,
+  Scale,
   Send,
-  Video,
+  Trash2,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -29,12 +31,28 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { MarkdownEditor } from "@/components/reports/MarkdownEditor";
 import { useCreateSolutionMutation } from "@/lib/redux/services/solutionsApi";
 import type { ProblemResponse } from "@/lib/redux/services/problemsApi";
 import { excerptOf } from "@/lib/markdown-excerpt";
+import { messageOf } from "@/lib/discussions/format";
 import {
+  APPROACH_DESCRIPTIONS,
+  APPROACH_LABELS,
+  APPROACH_TYPES,
+  RESOURCE_LABELS,
+  RESOURCE_TYPES,
   solutionFormSchema,
+  type ApproachType,
+  type SolutionFormInput,
   type SolutionFormValues,
 } from "@/lib/validations/solution";
 
@@ -45,6 +63,10 @@ import {
  * column on the right — because the two are the same kind of task and a writer
  * moving between them should not have to relearn the screen. The right column
  * keeps the problem itself in view, which is the thing being answered.
+ *
+ * The three fields the backend requires (a summary, the body, and what kind of
+ * answer this is) come first; evidence — how to verify it, what it was tested
+ * against, what it costs, what to read — follows in optional cards.
  */
 
 const CARD_CLASS =
@@ -53,8 +75,15 @@ const CARD_CLASS =
 const CONTROL_CLASS =
   "h-12 rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900";
 
-const MAX_DESCRIPTION = 20_000;
-const MIN_DESCRIPTION = 30;
+const MAX_SUMMARY = 250;
+const MIN_SUMMARY = 10;
+const MAX_BODY = 30_000;
+const MIN_BODY = 30;
+const MAX_TRADEOFFS = 5_000;
+
+const MAX_VERIFICATION_STEPS = 20;
+const MAX_TESTED_WITH = 20;
+const MAX_RESOURCES = 10;
 
 interface CreateSolutionFormProps {
   problemId: string;
@@ -86,27 +115,66 @@ export function CreateSolutionForm({
     control,
     setValue,
     formState: { errors },
-  } = useForm<SolutionFormValues>({
+  } = useForm<SolutionFormInput, unknown, SolutionFormValues>({
     resolver: zodResolver(solutionFormSchema),
-    defaultValues: { description: "", videoUrl: "", diagramUrl: "" },
+    defaultValues: {
+      summary: "",
+      bodyMarkdown: "",
+      approachType: "FIX",
+      verificationSteps: [],
+      testedWith: [],
+      tradeoffs: "",
+      resources: [],
+    },
   });
+
+  const steps = useFieldArray({ control, name: "verificationSteps" });
+  const tested = useFieldArray({ control, name: "testedWith" });
+  const resources = useFieldArray({ control, name: "resources" });
 
   /* `useWatch` rather than `watch()`, matching `CreateProblemForm` — the
      latter returns a function the React Compiler cannot memoize safely. */
-  const description = useWatch({ control, name: "description" }) ?? "";
-  const videoUrl = useWatch({ control, name: "videoUrl" }) ?? "";
-  const diagramUrl = useWatch({ control, name: "diagramUrl" }) ?? "";
+  const summary = useWatch({ control, name: "summary" }) ?? "";
+  const bodyMarkdown = useWatch({ control, name: "bodyMarkdown" }) ?? "";
+  const approachType = useWatch({ control, name: "approachType" }) ?? "FIX";
+  const tradeoffs = useWatch({ control, name: "tradeoffs" }) ?? "";
 
   const onSubmit = async (values: SolutionFormValues) => {
     setSubmitError(null);
+
+    /* Half-filled rows are how a repeatable field looks while it is being
+       used. They are dropped here rather than rejected mid-edit. */
+    const verificationSteps = (values.verificationSteps ?? []).filter(
+      (step) => step.instruction.trim() && step.expectedResult.trim(),
+    );
+    const testedWith = (values.testedWith ?? [])
+      .filter((entry) => entry.technology.trim())
+      .map((entry) => ({
+        technology: entry.technology.trim(),
+        version: entry.version?.trim() || undefined,
+      }));
+    const links = (values.resources ?? [])
+      .filter((item) => item.label.trim() && item.url?.trim())
+      .map((item) => ({
+        type: item.type,
+        label: item.label.trim(),
+        url: (item.url ?? "").trim(),
+      }));
+
     try {
       await createSolution({
         problemId,
         body: {
-          description: values.description,
-          // Empty optional fields are dropped rather than sent as "".
-          videoUrl: values.videoUrl?.trim() || undefined,
-          diagramUrl: values.diagramUrl?.trim() || undefined,
+          summary: values.summary.trim(),
+          bodyMarkdown: values.bodyMarkdown,
+          approachType: values.approachType,
+          // Empty collections are dropped rather than sent as `[]`.
+          verificationSteps: verificationSteps.length
+            ? verificationSteps
+            : undefined,
+          testedWith: testedWith.length ? testedWith : undefined,
+          tradeoffs: values.tradeoffs?.trim() || undefined,
+          resources: links.length ? links : undefined,
         },
       }).unwrap();
 
@@ -129,13 +197,16 @@ export function CreateSolutionForm({
     >
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3 lg:gap-8">
         {/* ── The answer ── */}
-        <div className="flex flex-col gap-6 lg:col-span-2">
+        <div className="flex min-w-0 flex-col gap-6 lg:col-span-2">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
           >
-            <Card className={CARD_CLASS} aria-labelledby="solution-body-heading">
+            <Card
+              className={CARD_CLASS}
+              aria-labelledby="solution-body-heading"
+            >
               <CardHeader className="border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-3">
                   <Badge variant="outline" className="mt-0.5 font-mono">
@@ -147,7 +218,7 @@ export function CreateSolutionForm({
                         id="solution-body-heading"
                         className="text-lg font-bold"
                       >
-                        Your explanation
+                        Your answer
                       </h2>
                     </CardTitle>
                     <CardDescription className="text-sm">
@@ -158,58 +229,145 @@ export function CreateSolutionForm({
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-2 pt-6">
-                <div className="flex items-baseline justify-between gap-3">
-                  <Label
-                    htmlFor="solution-description"
-                    className="text-base font-semibold"
-                  >
-                    Explanation <span className="text-rose-500">*</span>
-                  </Label>
-                  <span className="text-sm tabular-nums text-slate-400">
-                    {description.length.toLocaleString()}/
-                    {MAX_DESCRIPTION.toLocaleString()}
-                  </span>
+              <CardContent className="space-y-6 pt-6">
+                {/* ── The one-liner ── */}
+                <div className="space-y-2">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <Label
+                      htmlFor="solution-summary"
+                      className="text-base font-semibold"
+                    >
+                      Summary <span className="text-rose-500">*</span>
+                    </Label>
+                    <span className="text-sm tabular-nums text-slate-400">
+                      {summary.length}/{MAX_SUMMARY}
+                    </span>
+                  </div>
+                  <Input
+                    id="solution-summary"
+                    {...register("summary")}
+                    maxLength={MAX_SUMMARY}
+                    placeholder="The fix in one line — e.g. “Await the client before reading its config”"
+                    disabled={submitting}
+                    aria-invalid={Boolean(errors.summary)}
+                    className={CONTROL_CLASS}
+                  />
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    This is the line people scan to choose between answers.
+                  </p>
+                  {errors.summary && (
+                    <p
+                      role="alert"
+                      className="text-sm font-medium text-rose-600"
+                    >
+                      {errors.summary.message}
+                    </p>
+                  )}
                 </div>
 
-                <MarkdownEditor
-                  id="solution-description"
-                  value={description}
-                  onChange={(value) =>
-                    setValue("description", value ?? "", {
-                      shouldValidate: true,
-                    })
-                  }
-                  placeholder={
-                    "Start with the fix, then the reasoning.\n\n```ts\n// the change that mattered\n```"
-                  }
-                  height={420}
-                  maxLength={MAX_DESCRIPTION}
-                  error={Boolean(errors.description)}
-                  disabled={submitting}
-                  required
-                  ariaDescribedBy="solution-description-error"
-                />
-
-                {errors.description && (
-                  <p
-                    id="solution-description-error"
-                    role="alert"
-                    className="text-sm font-medium text-rose-600"
+                {/* ── What kind of answer this is ── */}
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="solution-approach"
+                    className="text-base font-semibold"
                   >
-                    {errors.description.message}
+                    Approach <span className="text-rose-500">*</span>
+                  </Label>
+                  <Select
+                    value={approachType}
+                    onValueChange={(value) =>
+                      setValue("approachType", value as ApproachType, {
+                        shouldValidate: true,
+                      })
+                    }
+                    disabled={submitting}
+                  >
+                    <SelectTrigger
+                      id="solution-approach"
+                      aria-invalid={Boolean(errors.approachType)}
+                      className="h-12! w-full rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900"
+                    >
+                      <SelectValue placeholder="Choose an approach" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {APPROACH_TYPES.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {APPROACH_LABELS[type]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {APPROACH_DESCRIPTIONS[approachType as ApproachType]}
                   </p>
-                )}
+                  {errors.approachType && (
+                    <p
+                      role="alert"
+                      className="text-sm font-medium text-rose-600"
+                    >
+                      {errors.approachType.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* ── The answer itself ── */}
+                <div className="space-y-2">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <Label
+                      htmlFor="solution-body"
+                      className="text-base font-semibold"
+                    >
+                      Explanation <span className="text-rose-500">*</span>
+                    </Label>
+                    <span className="text-sm tabular-nums text-slate-400">
+                      {bodyMarkdown.length.toLocaleString()}/
+                      {MAX_BODY.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <MarkdownEditor
+                    id="solution-body"
+                    value={bodyMarkdown}
+                    onChange={(value) =>
+                      setValue("bodyMarkdown", value ?? "", {
+                        shouldValidate: true,
+                      })
+                    }
+                    placeholder={
+                      "Start with the fix, then the reasoning.\n\n```ts\n// the change that mattered\n```"
+                    }
+                    height={420}
+                    maxLength={MAX_BODY}
+                    error={Boolean(errors.bodyMarkdown)}
+                    disabled={submitting}
+                    required
+                    ariaDescribedBy="solution-body-error"
+                  />
+
+                  {errors.bodyMarkdown && (
+                    <p
+                      id="solution-body-error"
+                      role="alert"
+                      className="text-sm font-medium text-rose-600"
+                    >
+                      {errors.bodyMarkdown.message}
+                    </p>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </motion.div>
 
+          {/* ── Proof ── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: 0.04, ease: "easeOut" }}
           >
-            <Card className={CARD_CLASS} aria-labelledby="solution-links-heading">
+            <Card
+              className={CARD_CLASS}
+              aria-labelledby="solution-proof-heading"
+            >
               <CardHeader className="border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-3">
                   <Badge variant="outline" className="mt-0.5 font-mono">
@@ -218,69 +376,347 @@ export function CreateSolutionForm({
                   <div className="space-y-1">
                     <CardTitle>
                       <h2
-                        id="solution-links-heading"
+                        id="solution-proof-heading"
                         className="text-lg font-bold"
                       >
-                        Supporting links
+                        Proof it works
                       </h2>
                     </CardTitle>
                     <CardDescription className="text-sm">
-                      Optional. A recording or a diagram often explains a fix
-                      faster than prose can.
+                      Optional, and the difference between an answer people
+                      trust and one they have to test themselves.
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
 
-              <CardContent className="grid gap-5 pt-6 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="solution-video"
-                    className="flex items-center gap-2 text-base font-semibold"
+              <CardContent className="space-y-6 pt-6">
+                {/* ── How to verify ── */}
+                <fieldset className="space-y-3">
+                  <legend className="flex items-center gap-2 text-base font-semibold">
+                    <ListChecks
+                      aria-hidden="true"
+                      className="size-4 text-slate-400"
+                    />
+                    Verification steps
+                  </legend>
+
+                  {steps.fields.length === 0 && (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Add the commands to run and what each should print.
+                    </p>
+                  )}
+
+                  {steps.fields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"
+                    >
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                          Step {index + 1}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={submitting}
+                          onClick={() => steps.remove(index)}
+                          aria-label={`Remove step ${index + 1}`}
+                          className="h-8 cursor-pointer text-slate-400 hover:text-rose-600"
+                        >
+                          <Trash2 aria-hidden="true" className="size-4" />
+                        </Button>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor={`step-instruction-${index}`}
+                            className="text-sm font-medium"
+                          >
+                            Do this
+                          </Label>
+                          <Input
+                            id={`step-instruction-${index}`}
+                            {...register(
+                              `verificationSteps.${index}.instruction`,
+                            )}
+                            placeholder="npm run build"
+                            disabled={submitting}
+                            className={CONTROL_CLASS}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor={`step-expected-${index}`}
+                            className="text-sm font-medium"
+                          >
+                            Expect this
+                          </Label>
+                          <Input
+                            id={`step-expected-${index}`}
+                            {...register(
+                              `verificationSteps.${index}.expectedResult`,
+                            )}
+                            placeholder="Build completes with no type errors"
+                            disabled={submitting}
+                            className={CONTROL_CLASS}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={
+                      submitting ||
+                      steps.fields.length >= MAX_VERIFICATION_STEPS
+                    }
+                    onClick={() =>
+                      steps.append({ instruction: "", expectedResult: "" })
+                    }
+                    className="h-10 cursor-pointer rounded-xl"
                   >
-                    <Video aria-hidden="true" className="size-4 text-slate-400" />
-                    Walkthrough video
-                  </Label>
-                  <Input
-                    id="solution-video"
-                    {...register("videoUrl")}
-                    placeholder="https://…"
+                    <Plus data-icon="inline-start" aria-hidden="true" />
+                    Add step
+                  </Button>
+                </fieldset>
+
+                {/* ── What it was proven against ── */}
+                <fieldset className="space-y-3 border-t border-slate-100 pt-6 dark:border-slate-800">
+                  <legend className="text-base font-semibold">
+                    Tested with
+                  </legend>
+
+                  {tested.fields.length === 0 && (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      The versions you actually ran this against.
+                    </p>
+                  )}
+
+                  {tested.fields.map((field, index) => (
+                    <div key={field.id} className="flex items-end gap-2">
+                      <div className="min-w-0 flex-1 space-y-1.5">
+                        <Label
+                          htmlFor={`tested-tech-${index}`}
+                          className="text-sm font-medium"
+                        >
+                          Technology
+                        </Label>
+                        <Input
+                          id={`tested-tech-${index}`}
+                          {...register(`testedWith.${index}.technology`)}
+                          placeholder="Next.js"
+                          disabled={submitting}
+                          className={CONTROL_CLASS}
+                        />
+                      </div>
+                      <div className="w-28 shrink-0 space-y-1.5 sm:w-36">
+                        <Label
+                          htmlFor={`tested-version-${index}`}
+                          className="text-sm font-medium"
+                        >
+                          Version
+                        </Label>
+                        <Input
+                          id={`tested-version-${index}`}
+                          {...register(`testedWith.${index}.version`)}
+                          placeholder="16.2"
+                          disabled={submitting}
+                          className={CONTROL_CLASS}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        disabled={submitting}
+                        onClick={() => tested.remove(index)}
+                        aria-label={`Remove tested-with row ${index + 1}`}
+                        className="size-12 shrink-0 cursor-pointer text-slate-400 hover:text-rose-600"
+                      >
+                        <Trash2 aria-hidden="true" className="size-4" />
+                      </Button>
+                    </div>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={
+                      submitting || tested.fields.length >= MAX_TESTED_WITH
+                    }
+                    onClick={() =>
+                      tested.append({ technology: "", version: "" })
+                    }
+                    className="h-10 cursor-pointer rounded-xl"
+                  >
+                    <Plus data-icon="inline-start" aria-hidden="true" />
+                    Add technology
+                  </Button>
+                </fieldset>
+
+                {/* ── What it costs ── */}
+                <div className="space-y-2 border-t border-slate-100 pt-6 dark:border-slate-800">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <Label
+                      htmlFor="solution-tradeoffs"
+                      className="flex items-center gap-2 text-base font-semibold"
+                    >
+                      <Scale
+                        aria-hidden="true"
+                        className="size-4 text-slate-400"
+                      />
+                      Trade-offs
+                    </Label>
+                    <span className="text-sm tabular-nums text-slate-400">
+                      {tradeoffs.length.toLocaleString()}/
+                      {MAX_TRADEOFFS.toLocaleString()}
+                    </span>
+                  </div>
+                  <Textarea
+                    id="solution-tradeoffs"
+                    {...register("tradeoffs")}
+                    maxLength={MAX_TRADEOFFS}
+                    rows={4}
+                    placeholder="What this costs — performance, complexity, anything it gives up."
                     disabled={submitting}
-                    aria-invalid={Boolean(errors.videoUrl)}
-                    className={CONTROL_CLASS}
+                    className="rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900"
                   />
-                  {errors.videoUrl && (
-                    <p role="alert" className="text-sm font-medium text-rose-600">
-                      {errors.videoUrl.message}
+                  {errors.tradeoffs && (
+                    <p
+                      role="alert"
+                      className="text-sm font-medium text-rose-600"
+                    >
+                      {errors.tradeoffs.message}
                     </p>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="solution-diagram"
-                    className="flex items-center gap-2 text-base font-semibold"
-                  >
-                    <Network
-                      aria-hidden="true"
-                      className="size-4 text-slate-400"
-                    />
-                    Diagram
-                  </Label>
-                  <Input
-                    id="solution-diagram"
-                    {...register("diagramUrl")}
-                    placeholder="https://…"
-                    disabled={submitting}
-                    aria-invalid={Boolean(errors.diagramUrl)}
-                    className={CONTROL_CLASS}
-                  />
-                  {errors.diagramUrl && (
-                    <p role="alert" className="text-sm font-medium text-rose-600">
-                      {errors.diagramUrl.message}
+                {/* ── Further reading ── */}
+                <fieldset className="space-y-3 border-t border-slate-100 pt-6 dark:border-slate-800">
+                  <legend className="text-base font-semibold">Resources</legend>
+
+                  {resources.fields.length === 0 && (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Docs, a repository, a recording — anything that backs the
+                      answer up.
                     </p>
                   )}
-                </div>
+
+                  {resources.fields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="space-y-3 rounded-xl border border-slate-200 p-3 dark:border-slate-700"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                          Link {index + 1}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={submitting}
+                          onClick={() => resources.remove(index)}
+                          aria-label={`Remove link ${index + 1}`}
+                          className="h-8 cursor-pointer text-slate-400 hover:text-rose-600"
+                        >
+                          <Trash2 aria-hidden="true" className="size-4" />
+                        </Button>
+                      </div>
+
+                      <div className="grid gap-3 sm:grid-cols-[10rem_1fr]">
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor={`resource-type-${index}`}
+                            className="text-sm font-medium"
+                          >
+                            Kind
+                          </Label>
+                          <ResourceTypeSelect
+                            index={index}
+                            control={control}
+                            disabled={submitting}
+                            onChange={(value) =>
+                              setValue(`resources.${index}.type`, value, {
+                                shouldValidate: true,
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor={`resource-label-${index}`}
+                            className="text-sm font-medium"
+                          >
+                            Label
+                          </Label>
+                          <Input
+                            id={`resource-label-${index}`}
+                            {...register(`resources.${index}.label`)}
+                            placeholder="Next.js caching docs"
+                            disabled={submitting}
+                            className={CONTROL_CLASS}
+                          />
+                          {errors.resources?.[index]?.label && (
+                            <p
+                              role="alert"
+                              className="text-sm font-medium text-rose-600"
+                            >
+                              {errors.resources[index]?.label?.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label
+                          htmlFor={`resource-url-${index}`}
+                          className="text-sm font-medium"
+                        >
+                          URL
+                        </Label>
+                        <Input
+                          id={`resource-url-${index}`}
+                          {...register(`resources.${index}.url`)}
+                          placeholder="https://…"
+                          disabled={submitting}
+                          className={CONTROL_CLASS}
+                        />
+                        {errors.resources?.[index]?.url && (
+                          <p
+                            role="alert"
+                            className="text-sm font-medium text-rose-600"
+                          >
+                            {errors.resources[index]?.url?.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={
+                      submitting || resources.fields.length >= MAX_RESOURCES
+                    }
+                    onClick={() =>
+                      resources.append({
+                        type: "DOCUMENTATION",
+                        label: "",
+                        url: "",
+                      })
+                    }
+                    className="h-10 cursor-pointer rounded-xl"
+                  >
+                    <Plus data-icon="inline-start" aria-hidden="true" />
+                    Add resource
+                  </Button>
+                </fieldset>
               </CardContent>
             </Card>
           </motion.div>
@@ -288,7 +724,7 @@ export function CreateSolutionForm({
 
         {/* ── What is being answered, and the actions ── */}
         <aside
-          className="flex flex-col gap-5 lg:sticky"
+          className="flex flex-col gap-5 lg:sticky lg:self-start"
           style={{ top: stickyTop } as React.CSSProperties}
         >
           <motion.div
@@ -322,12 +758,13 @@ export function CreateSolutionForm({
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   by{" "}
                   <span className="font-semibold text-slate-700 dark:text-slate-300">
-                    {problem?.author?.fullName ?? "Unknown author"}
+                    {problem?.author?.displayName ?? "Unknown author"}
                   </span>
                 </p>
 
-                {(problem?.technologies?.length ||
-                  problem?.tags?.length) && (
+                {Boolean(
+                  problem?.technologies?.length || problem?.tags?.length,
+                ) && (
                   <div className="flex flex-wrap gap-1.5 border-t border-slate-100 pt-3 dark:border-slate-800">
                     {(problem?.technologies ?? []).map((tech, i) => (
                       <span
@@ -356,7 +793,10 @@ export function CreateSolutionForm({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: 0.08, ease: "easeOut" }}
           >
-            <Card className={CARD_CLASS} aria-labelledby="solution-ready-heading">
+            <Card
+              className={CARD_CLASS}
+              aria-labelledby="solution-ready-heading"
+            >
               <CardHeader className="border-b border-slate-100 dark:border-slate-800">
                 <CardTitle>
                   <h2 id="solution-ready-heading" className="text-lg font-bold">
@@ -367,17 +807,35 @@ export function CreateSolutionForm({
 
               <CardContent className="space-y-2.5 pt-6">
                 <RequirementRow
-                  label={`Explanation (${MIN_DESCRIPTION}+ characters)`}
-                  met={description.trim().length >= MIN_DESCRIPTION}
+                  label={`Summary (${MIN_SUMMARY}+ characters)`}
+                  met={summary.trim().length >= MIN_SUMMARY}
                 />
                 <RequirementRow
-                  label="Walkthrough video"
-                  met={videoUrl.trim().length > 0}
+                  label={`Explanation (${MIN_BODY}+ characters)`}
+                  met={bodyMarkdown.trim().length >= MIN_BODY}
+                />
+                <RequirementRow
+                  label="Approach chosen"
+                  met={Boolean(approachType)}
+                />
+                <RequirementRow
+                  label="Verification steps"
+                  met={steps.fields.length > 0}
                   optional
                 />
                 <RequirementRow
-                  label="Diagram"
-                  met={diagramUrl.trim().length > 0}
+                  label="Tested with"
+                  met={tested.fields.length > 0}
+                  optional
+                />
+                <RequirementRow
+                  label="Trade-offs"
+                  met={tradeoffs.trim().length > 0}
+                  optional
+                />
+                <RequirementRow
+                  label="Resources"
+                  met={resources.fields.length > 0}
                   optional
                 />
               </CardContent>
@@ -438,6 +896,48 @@ export function CreateSolutionForm({
   );
 }
 
+/** The kind of link a resource row points at. Watched so the trigger shows it. */
+function ResourceTypeSelect({
+  index,
+  control,
+  disabled,
+  onChange,
+}: {
+  index: number;
+  control: ReturnType<
+    typeof useForm<SolutionFormInput, unknown, SolutionFormValues>
+  >["control"];
+  disabled: boolean;
+  onChange: (value: (typeof RESOURCE_TYPES)[number]) => void;
+}) {
+  const value =
+    useWatch({ control, name: `resources.${index}.type` }) ?? "DOCUMENTATION";
+
+  return (
+    <Select
+      value={value}
+      onValueChange={(next) =>
+        onChange(next as (typeof RESOURCE_TYPES)[number])
+      }
+      disabled={disabled}
+    >
+      <SelectTrigger
+        id={`resource-type-${index}`}
+        className="h-12! w-full rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900"
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {RESOURCE_TYPES.map((type) => (
+          <SelectItem key={type} value={type}>
+            {RESOURCE_LABELS[type]}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 function RequirementRow({
   label,
   met,
@@ -463,17 +963,4 @@ function RequirementRow({
       {optional && <Badge variant="outline">Optional</Badge>}
     </div>
   );
-}
-
-/** Pulls something readable out of an RTK Query error. */
-function messageOf(error: unknown, fallback: string): string {
-  if (typeof error === "object" && error !== null && "data" in error) {
-    const data = (error as { data?: unknown }).data;
-    if (typeof data === "string" && data) return data;
-    if (typeof data === "object" && data !== null && "message" in data) {
-      const message = (data as { message?: unknown }).message;
-      if (typeof message === "string" && message) return message;
-    }
-  }
-  return fallback;
 }

@@ -24,6 +24,57 @@ export const SDLC_LABELS: Record<SdlcPhase, string> = {
   MAINTENANCE: "Maintenance",
 };
 
+/** Values accepted by `CreateProblemRequest.problemType`. */
+export const PROBLEM_TYPES = [
+  "BUG",
+  "HOW_TO",
+  "ARCHITECTURE",
+  "PERFORMANCE",
+  "SECURITY",
+  "DEPLOYMENT",
+  "GENERAL",
+] as const;
+
+export type ProblemType = (typeof PROBLEM_TYPES)[number];
+
+export const PROBLEM_TYPE_LABELS: Record<ProblemType, string> = {
+  BUG: "Bug",
+  HOW_TO: "How-to",
+  ARCHITECTURE: "Architecture",
+  PERFORMANCE: "Performance",
+  SECURITY: "Security",
+  DEPLOYMENT: "Deployment",
+  GENERAL: "General",
+};
+
+/** What each type is for, so the picker does not need a guess. */
+export const PROBLEM_TYPE_DESCRIPTIONS: Record<ProblemType, string> = {
+  BUG: "Something behaves wrongly and you can show it.",
+  HOW_TO: "You know the goal, not the route to it.",
+  ARCHITECTURE: "How to structure or split the thing.",
+  PERFORMANCE: "It works, but too slowly or too expensively.",
+  SECURITY: "A weakness, hardening question, or auth problem.",
+  DEPLOYMENT: "Builds, pipelines, environments, releases.",
+  GENERAL: "Anything the other six do not cover.",
+};
+
+/** Values accepted by `CreateProblemRequest.severity`. */
+export const PROBLEM_SEVERITIES = [
+  "LOW",
+  "MEDIUM",
+  "HIGH",
+  "CRITICAL",
+] as const;
+
+export type ProblemSeverity = (typeof PROBLEM_SEVERITIES)[number];
+
+export const SEVERITY_LABELS: Record<ProblemSeverity, string> = {
+  LOW: "Low",
+  MEDIUM: "Medium",
+  HIGH: "High",
+  CRITICAL: "Critical",
+};
+
 /** Values of the backend `ProblemStatus` enum. */
 export const PROBLEM_STATUSES = [
   "DRAFT",
@@ -69,20 +120,38 @@ export type ProblemTechnologyRequest = z.output<
   typeof problemTechnologySchema
 >;
 
+/** Mirrors `ProblemEnvironmentRequest`. Only `technology` is required upstream. */
+export const problemEnvironmentSchema = z.object({
+  technology: z
+    .string()
+    .max(100, "An environment name must not exceed 100 characters"),
+  version: z
+    .string()
+    .max(50, "An environment version must not exceed 50 characters")
+    .optional(),
+});
+
+export type ProblemEnvironmentRequest = z.output<
+  typeof problemEnvironmentSchema
+>;
+
 const uniqueStrings = (values: string[]) =>
   new Set(values).size === values.length;
 
 /**
- * Mirrors the backend `CreateProblemRequest` wire contract. The OpenAPI
- * document requires only `title`; every other field deliberately remains
- * optional here so proxy validation cannot reject a valid backend payload.
+ * Mirrors the backend `CreateProblemRequest` wire contract. `categoryId`,
+ * `description`, `problemType` and `title` are the four the backend requires;
+ * the rest of the detail fields are optional and left to the writer.
  */
 export const problemCreateSchema = z.object({
-  categoryId: z.uuid("Category id must be a UUID").optional(),
+  categoryId: z.uuid("Category id must be a UUID"),
   title: z
     .string()
     .min(10, "Title must be at least 10 characters")
     .max(180, "Title must not exceed 180 characters"),
+  problemType: z.enum(PROBLEM_TYPES, {
+    message: `problemType must be one of ${PROBLEM_TYPES.join(", ")}`,
+  }),
   sdlcPhase: z
     .enum(SDLC_PHASES, {
       message: `sdlcPhase must be one of ${SDLC_PHASES.join(", ")}`,
@@ -90,7 +159,41 @@ export const problemCreateSchema = z.object({
     .optional(),
   description: z
     .string()
-    .max(20_000, "Description must not exceed 20000 characters")
+    .min(30, "Description must be at least 30 characters")
+    .max(20_000, "Description must not exceed 20000 characters"),
+  severity: z
+    .enum(PROBLEM_SEVERITIES, {
+      message: `severity must be one of ${PROBLEM_SEVERITIES.join(", ")}`,
+    })
+    .optional(),
+  expectedBehavior: z
+    .string()
+    .max(5000, "Expected behaviour must not exceed 5000 characters")
+    .optional(),
+  actualBehavior: z
+    .string()
+    .max(5000, "Actual behaviour must not exceed 5000 characters")
+    .optional(),
+  reproductionSteps: z
+    .array(z.string().max(1000, "A step must not exceed 1000 characters"))
+    .max(20, "Up to 20 reproduction steps are allowed")
+    .optional(),
+  environment: z
+    .array(problemEnvironmentSchema)
+    .max(20, "Up to 20 environment entries are allowed")
+    .optional(),
+  attemptsTried: z
+    .string()
+    .max(5000, "What you tried must not exceed 5000 characters")
+    .optional(),
+  errorMessage: z
+    .string()
+    .max(10_000, "The error output must not exceed 10000 characters")
+    .optional(),
+  repositoryUrl: z
+    .string()
+    .max(1000, "Repository URL must not exceed 1000 characters")
+    .regex(/^https:\/\/\S+$/i, "Repository URL must start with https://")
     .optional(),
   technologies: z
     .array(problemTechnologySchema)
@@ -101,7 +204,9 @@ export const problemCreateSchema = z.object({
     .max(10, "Up to 10 tag ids are allowed")
     .refine(uniqueStrings, { message: "Tag ids must be unique" })
     .optional(),
-  tags: z
+  /* Upstream calls these `newTagNames` — free-text tags that do not exist yet.
+     The old `tags` name was silently dropped by the backend. */
+  newTagNames: z
     .array(z.string().max(50, "Each tag must not exceed 50 characters"))
     .max(10, "Up to 10 tags are allowed")
     .refine(uniqueStrings, { message: "Tags must be unique" })
@@ -128,9 +233,9 @@ const problemTechnologyFormSchema = z.object({
 });
 
 /**
- * Form-level rules can be stricter than the wire contract. A useful problem
- * post needs a substantive description, while the API still permits clients
- * to omit it from `CreateProblemRequest`.
+ * Form-level rules can be stricter than the wire contract, except where the
+ * form has to be looser: a repeatable field is empty for as long as it takes
+ * to fill in, so blank rows pass here and the submit handler drops them.
  */
 export const createProblemFormSchema = problemCreateSchema.extend({
   title: z
@@ -138,14 +243,42 @@ export const createProblemFormSchema = problemCreateSchema.extend({
     .trim()
     .min(10, "Title must be at least 10 characters")
     .max(180, "Title must not exceed 180 characters"),
+  categoryId: z.uuid("Choose a category"),
   description: z
     .string()
     .trim()
-    .min(20, "Description must be at least 20 characters")
+    .min(30, "Description must be at least 30 characters")
     .max(20_000, "Description must not exceed 20000 characters"),
   technologies: z
     .array(problemTechnologyFormSchema)
     .max(20, "Up to 20 technologies are allowed")
+    .optional(),
+  reproductionSteps: z
+    .array(z.string().max(1000, "A step must not exceed 1000 characters"))
+    .max(20, "Up to 20 reproduction steps are allowed")
+    .optional(),
+  environment: z
+    .array(
+      z.object({
+        technology: z
+          .string()
+          .max(100, "An environment name must not exceed 100 characters"),
+        version: z
+          .string()
+          .max(50, "An environment version must not exceed 50 characters")
+          .optional(),
+      }),
+    )
+    .max(20, "Up to 20 environment entries are allowed")
+    .optional(),
+  repositoryUrl: z
+    .union([
+      z.literal(""),
+      z
+        .string()
+        .max(1000, "Repository URL must not exceed 1000 characters")
+        .regex(/^https:\/\/\S+$/i, "Repository URL must start with https://"),
+    ])
     .optional(),
 });
 

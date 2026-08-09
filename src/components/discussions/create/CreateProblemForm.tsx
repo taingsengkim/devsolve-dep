@@ -50,14 +50,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { MarkdownEditor } from "@/components/reports/MarkdownEditor";
 import { parseApiError } from "@/lib/api/errors";
 import { useGetActiveCategoriesQuery } from "@/lib/redux/services/categoriesApi";
 import { useCreateProblemMutation } from "@/lib/redux/services/problemsApi";
 import {
   createProblemFormSchema,
+  PROBLEM_SEVERITIES,
+  PROBLEM_TYPE_DESCRIPTIONS,
+  PROBLEM_TYPE_LABELS,
+  PROBLEM_TYPES,
   SDLC_LABELS,
   SDLC_PHASES,
+  SEVERITY_LABELS,
+  type ProblemType,
 } from "@/lib/validations/problem";
 import { cn } from "@/lib/utils";
 
@@ -65,6 +72,8 @@ type ProblemFormInput = z.input<typeof createProblemFormSchema>;
 type ProblemFormValues = z.output<typeof createProblemFormSchema>;
 
 const MAX_TECHNOLOGIES = 20;
+const MAX_ENVIRONMENTS = 20;
+const MAX_REPRODUCTION_STEPS = 20;
 const MAX_TAGS = 10;
 
 const SDLC_ITEMS = SDLC_PHASES.map((value) => ({
@@ -77,6 +86,21 @@ const SDLC_SELECT_ITEMS = [
   ...SDLC_ITEMS,
 ];
 
+const PROBLEM_TYPE_ITEMS = PROBLEM_TYPES.map((value) => ({
+  value,
+  label: PROBLEM_TYPE_LABELS[value],
+}));
+
+const SEVERITY_ITEMS = PROBLEM_SEVERITIES.map((value) => ({
+  value,
+  label: SEVERITY_LABELS[value],
+}));
+
+const SEVERITY_SELECT_ITEMS = [
+  { value: null, label: "Not specified" },
+  ...SEVERITY_ITEMS,
+];
+
 const CARD_CLASS =
   "rounded-2xl border border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900";
 
@@ -86,10 +110,19 @@ const CONTROL_CLASS =
 const SERVER_FIELDS = new Set([
   "categoryId",
   "title",
+  "problemType",
   "sdlcPhase",
   "description",
+  "severity",
+  "expectedBehavior",
+  "actualBehavior",
+  "reproductionSteps",
+  "environment",
+  "attemptsTried",
+  "errorMessage",
+  "repositoryUrl",
   "technologies",
-  "tags",
+  "newTagNames",
 ]);
 
 function serverFieldPath(field: string): FieldPath<ProblemFormInput> | null {
@@ -101,8 +134,14 @@ function serverFieldPath(field: string): FieldPath<ProblemFormInput> | null {
   if (/^technologies\.\d+\.(name|version)$/.test(normalized)) {
     return normalized as FieldPath<ProblemFormInput>;
   }
-  if (/^tags\.\d+$/.test(normalized)) {
-    return "tags";
+  if (/^environment\.\d+\.(technology|version)$/.test(normalized)) {
+    return normalized as FieldPath<ProblemFormInput>;
+  }
+  if (/^reproductionSteps\.\d+$/.test(normalized)) {
+    return normalized as FieldPath<ProblemFormInput>;
+  }
+  if (/^newTagNames\.\d+$/.test(normalized)) {
+    return "newTagNames";
   }
 
   return null;
@@ -140,6 +179,8 @@ export function CreateProblemForm({
       })),
     [categories],
   );
+  /* A category is required upstream, so the list offers no "none" — only the
+     placeholder the trigger falls back to while nothing is chosen. */
   const categorySelectItems = useMemo(
     () => [
       {
@@ -148,7 +189,7 @@ export function CreateProblemForm({
           ? "Loading categories…"
           : categoryItems.length === 0
             ? "No categories available"
-            : "No category",
+            : "Choose a category",
       },
       ...categoryItems,
     ],
@@ -168,8 +209,15 @@ export function CreateProblemForm({
     defaultValues: {
       title: "",
       description: "",
+      expectedBehavior: "",
+      actualBehavior: "",
+      attemptsTried: "",
+      errorMessage: "",
+      repositoryUrl: "",
       technologies: [],
-      tags: [],
+      environment: [],
+      reproductionSteps: [],
+      newTagNames: [],
     },
   });
 
@@ -179,19 +227,41 @@ export function CreateProblemForm({
     remove: removeTechnology,
   } = useFieldArray({ control, name: "technologies" });
 
+  const {
+    fields: environmentFields,
+    append: appendEnvironment,
+    remove: removeEnvironment,
+  } = useFieldArray({ control, name: "environment" });
+
+  /* `reproductionSteps` is an array of bare strings, which `useFieldArray`
+     cannot key on. It is driven through `setValue` instead. */
   const title = useWatch({ control, name: "title" }) ?? "";
   const description = useWatch({ control, name: "description" }) ?? "";
   const categoryId = useWatch({ control, name: "categoryId" });
+  const problemType = useWatch({ control, name: "problemType" });
+  const severity = useWatch({ control, name: "severity" });
   const sdlcPhase = useWatch({ control, name: "sdlcPhase" });
+  const expectedBehavior = useWatch({ control, name: "expectedBehavior" }) ?? "";
+  const actualBehavior = useWatch({ control, name: "actualBehavior" }) ?? "";
+  const errorMessage = useWatch({ control, name: "errorMessage" }) ?? "";
+  const attemptsTried = useWatch({ control, name: "attemptsTried" }) ?? "";
   const technologies = useWatch({ control, name: "technologies" }) ?? [];
-  const tags = useWatch({ control, name: "tags" }) ?? [];
+  const reproductionSteps =
+    useWatch({ control, name: "reproductionSteps" }) ?? [];
+  const tags = useWatch({ control, name: "newTagNames" }) ?? [];
+
+  const setSteps = (next: string[]) =>
+    setValue("reproductionSteps", next, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
 
   const submitting = isSubmitting || mutationLoading;
   const titleLength = title.trim().length;
   const descriptionLength = description.trim().length;
   const titleReady = titleLength >= 10 && titleLength <= 180;
   const descriptionReady =
-    descriptionLength >= 20 && descriptionLength <= 20_000;
+    descriptionLength >= 30 && descriptionLength <= 20_000;
   const technologiesReady = technologies.every(
     (technology) =>
       technology.name.trim().length >= 1 &&
@@ -209,8 +279,15 @@ export function CreateProblemForm({
     !tagDraftError &&
     pendingTagLength <= 50 &&
     tags.length + (pendingTagAddsNewValue ? 1 : 0) <= MAX_TAGS;
+  /* The backend requires a category and a type as well as a title and a body,
+     so "ready" means all four rather than the two it used to check. */
   const formReady =
-    titleReady && descriptionReady && technologiesReady && tagsReady;
+    titleReady &&
+    descriptionReady &&
+    Boolean(categoryId) &&
+    Boolean(problemType) &&
+    technologiesReady &&
+    tagsReady;
 
   const addTag = () => {
     const tag = tagDraft.trim().replace(/^#+/, "");
@@ -229,7 +306,7 @@ export function CreateProblemForm({
       return;
     }
 
-    setValue("tags", [...tags, tag], {
+    setValue("newTagNames", [...tags, tag], {
       shouldDirty: true,
       shouldValidate: true,
     });
@@ -239,7 +316,7 @@ export function CreateProblemForm({
 
   const removeTag = (tag: string) => {
     setValue(
-      "tags",
+      "newTagNames",
       tags.filter((value) => value !== tag),
       { shouldDirty: true, shouldValidate: true },
     );
@@ -250,7 +327,7 @@ export function CreateProblemForm({
     setSubmitError(null);
 
     const pendingTag = tagDraft.trim().replace(/^#+/, "");
-    let submittedTags = values.tags ?? [];
+    let submittedTags = values.newTagNames ?? [];
 
     if (pendingTag) {
       if (pendingTag.length > 50) {
@@ -270,15 +347,38 @@ export function CreateProblemForm({
       }
     }
 
+    /* Blank rows and empty optional text are dropped rather than sent: the
+       backend treats "" as a value, and an empty string fails its URL and
+       length rules where an absent field passes. */
+    const trimmedOrUndefined = (value?: string) => value?.trim() || undefined;
+
+    const environment = (values.environment ?? [])
+      .filter((entry) => entry.technology.trim())
+      .map((entry) => ({
+        technology: entry.technology.trim(),
+        version: entry.version?.trim() || undefined,
+      }));
+    const steps = (values.reproductionSteps ?? [])
+      .map((step) => step.trim())
+      .filter(Boolean);
+
     try {
       const problem = await createProblem({
         ...values,
-        categoryId: values.categoryId || undefined,
         technologies: values.technologies?.map((technology) => ({
           name: technology.name.trim(),
           version: technology.version?.trim() || undefined,
         })),
-        tags: submittedTags.map((tag) => tag.trim()),
+        environment: environment.length ? environment : undefined,
+        reproductionSteps: steps.length ? steps : undefined,
+        expectedBehavior: trimmedOrUndefined(values.expectedBehavior),
+        actualBehavior: trimmedOrUndefined(values.actualBehavior),
+        attemptsTried: trimmedOrUndefined(values.attemptsTried),
+        errorMessage: trimmedOrUndefined(values.errorMessage),
+        repositoryUrl: trimmedOrUndefined(values.repositoryUrl),
+        newTagNames: submittedTags.length
+          ? submittedTags.map((tag) => tag.trim())
+          : undefined,
       }).unwrap();
 
       toast.success(
@@ -462,12 +562,12 @@ export function CreateProblemForm({
                         id="problem-environment-heading"
                         className="text-lg font-bold"
                       >
-                        Environment
+                        Technologies
                       </h2>
                     </CardTitle>
                     <CardDescription>
-                      Add the technologies and versions that matter to this
-                      problem. This section is optional.
+                      The stack this problem is about. Optional, and how people
+                      filtering by technology will find it.
                     </CardDescription>
                   </div>
                 </div>
@@ -614,6 +714,392 @@ export function CreateProblemForm({
               </CardFooter>
             </Card>
           </motion.div>
+
+          {/* ── What is actually going wrong ──
+              Every field here is optional. Together they are the difference
+              between a question someone can answer and one they have to ask
+              three follow-ups about first. */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: 0.12, ease: "easeOut" }}
+          >
+            <Card
+              className={CARD_CLASS}
+              aria-labelledby="problem-diagnosis-heading"
+            >
+              <CardHeader className="border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-start gap-3">
+                  <Badge variant="outline" className="mt-0.5 font-mono">
+                    03
+                  </Badge>
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <CardTitle>
+                      <h2
+                        id="problem-diagnosis-heading"
+                        className="text-lg font-bold"
+                      >
+                        Diagnosis
+                      </h2>
+                    </CardTitle>
+                    <CardDescription>
+                      Optional, and worth the minutes: a problem with steps and
+                      error output gets answered far sooner.
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent>
+                <FieldGroup>
+                  {/* ── Expected against actual ── */}
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <Field
+                      data-invalid={Boolean(errors.expectedBehavior)}
+                      data-disabled={submitting || undefined}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <FieldLabel htmlFor="problem-expected">
+                          Expected behaviour
+                        </FieldLabel>
+                        <Badge variant="secondary" className="tabular-nums">
+                          {expectedBehavior.length}/5,000
+                        </Badge>
+                      </div>
+                      <Textarea
+                        id="problem-expected"
+                        maxLength={5_000}
+                        rows={4}
+                        placeholder="What should have happened."
+                        aria-invalid={Boolean(errors.expectedBehavior)}
+                        disabled={submitting}
+                        className="rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900"
+                        {...register("expectedBehavior")}
+                      />
+                      <FieldError>{errors.expectedBehavior?.message}</FieldError>
+                    </Field>
+
+                    <Field
+                      data-invalid={Boolean(errors.actualBehavior)}
+                      data-disabled={submitting || undefined}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <FieldLabel htmlFor="problem-actual">
+                          Actual behaviour
+                        </FieldLabel>
+                        <Badge variant="secondary" className="tabular-nums">
+                          {actualBehavior.length}/5,000
+                        </Badge>
+                      </div>
+                      <Textarea
+                        id="problem-actual"
+                        maxLength={5_000}
+                        rows={4}
+                        placeholder="What happens instead."
+                        aria-invalid={Boolean(errors.actualBehavior)}
+                        disabled={submitting}
+                        className="rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900"
+                        {...register("actualBehavior")}
+                      />
+                      <FieldError>{errors.actualBehavior?.message}</FieldError>
+                    </Field>
+                  </div>
+
+                  {/* ── Steps to reproduce ── */}
+                  <FieldSet>
+                    <div className="flex items-center justify-between gap-3">
+                      <FieldLegend className="text-base">
+                        Steps to reproduce
+                      </FieldLegend>
+                      <Badge variant="secondary" className="tabular-nums">
+                        {reproductionSteps.length}/{MAX_REPRODUCTION_STEPS}
+                      </Badge>
+                    </div>
+
+                    {reproductionSteps.length === 0 ? (
+                      <FieldDescription>
+                        No steps yet. The smallest sequence that triggers it is
+                        the most useful thing on this page.
+                      </FieldDescription>
+                    ) : (
+                      <FieldGroup className="gap-3">
+                        <AnimatePresence initial={false}>
+                          {reproductionSteps.map((step, index) => (
+                            <motion.div
+                              key={index}
+                              layout
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -8 }}
+                              transition={{ duration: 0.2 }}
+                              className="flex items-center gap-2"
+                            >
+                              <span
+                                aria-hidden="true"
+                                className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                              >
+                                {index + 1}
+                              </span>
+                              <Input
+                                aria-label={`Step ${index + 1}`}
+                                maxLength={1_000}
+                                value={step}
+                                placeholder="e.g. Sign in, then refresh the callback page"
+                                disabled={submitting}
+                                className={cn(CONTROL_CLASS, "flex-1")}
+                                onChange={(event) => {
+                                  const next = [...reproductionSteps];
+                                  next[index] = event.target.value;
+                                  setSteps(next);
+                                }}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-lg"
+                                aria-label={`Remove step ${index + 1}`}
+                                disabled={submitting}
+                                onClick={() =>
+                                  setSteps(
+                                    reproductionSteps.filter(
+                                      (_, i) => i !== index,
+                                    ),
+                                  )
+                                }
+                                className="shrink-0 rounded-xl"
+                              >
+                                <Trash2 aria-hidden="true" />
+                              </Button>
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
+                      </FieldGroup>
+                    )}
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={
+                        submitting ||
+                        reproductionSteps.length >= MAX_REPRODUCTION_STEPS
+                      }
+                      onClick={() => setSteps([...reproductionSteps, ""])}
+                      className="w-full rounded-xl sm:w-auto sm:self-start"
+                    >
+                      <Plus data-icon="inline-start" aria-hidden="true" />
+                      Add step
+                    </Button>
+                    <FieldError>{errors.reproductionSteps?.message}</FieldError>
+                  </FieldSet>
+
+                  {/* ── The error itself ── */}
+                  <Field
+                    data-invalid={Boolean(errors.errorMessage)}
+                    data-disabled={submitting || undefined}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <FieldLabel htmlFor="problem-error">
+                        Error output
+                      </FieldLabel>
+                      <Badge variant="secondary" className="tabular-nums">
+                        {errorMessage.length.toLocaleString()}/10,000
+                      </Badge>
+                    </div>
+                    <Textarea
+                      id="problem-error"
+                      maxLength={10_000}
+                      rows={6}
+                      spellCheck={false}
+                      placeholder="Paste the stack trace or console output, unedited."
+                      aria-invalid={Boolean(errors.errorMessage)}
+                      disabled={submitting}
+                      className="rounded-xl border-slate-300 bg-white font-mono text-sm dark:border-slate-700 dark:bg-slate-900"
+                      {...register("errorMessage")}
+                    />
+                    <FieldDescription>
+                      Paste it whole. The line you think is irrelevant is often
+                      the one that matters.
+                    </FieldDescription>
+                    <FieldError>{errors.errorMessage?.message}</FieldError>
+                  </Field>
+
+                  {/* ── What has already been ruled out ── */}
+                  <Field
+                    data-invalid={Boolean(errors.attemptsTried)}
+                    data-disabled={submitting || undefined}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <FieldLabel htmlFor="problem-attempts">
+                        What you have already tried
+                      </FieldLabel>
+                      <Badge variant="secondary" className="tabular-nums">
+                        {attemptsTried.length.toLocaleString()}/5,000
+                      </Badge>
+                    </div>
+                    <Textarea
+                      id="problem-attempts"
+                      maxLength={5_000}
+                      rows={4}
+                      placeholder="Saves everyone from suggesting it again."
+                      aria-invalid={Boolean(errors.attemptsTried)}
+                      disabled={submitting}
+                      className="rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900"
+                      {...register("attemptsTried")}
+                    />
+                    <FieldError>{errors.attemptsTried?.message}</FieldError>
+                  </Field>
+
+                  {/* ── Where it happens ── */}
+                  <FieldSet>
+                    <div className="flex items-center justify-between gap-3">
+                      <FieldLegend className="text-base">
+                        Where it happens
+                      </FieldLegend>
+                      <Badge variant="secondary" className="tabular-nums">
+                        {environmentFields.length}/{MAX_ENVIRONMENTS}
+                      </Badge>
+                    </div>
+
+                    {environmentFields.length === 0 ? (
+                      <FieldDescription>
+                        Operating system, browser, runtime — whatever the
+                        problem depends on.
+                      </FieldDescription>
+                    ) : (
+                      <FieldGroup className="gap-3">
+                        <AnimatePresence initial={false}>
+                          {environmentFields.map((entry, index) => (
+                            <motion.div
+                              key={entry.id}
+                              layout
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -8 }}
+                              transition={{ duration: 0.2 }}
+                              className="grid grid-cols-1 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,0.65fr)_auto]"
+                            >
+                              <Field
+                                data-invalid={Boolean(
+                                  errors.environment?.[index]?.technology,
+                                )}
+                                data-disabled={submitting || undefined}
+                              >
+                                <FieldLabel
+                                  htmlFor={`problem-environment-${index}`}
+                                >
+                                  Name
+                                </FieldLabel>
+                                <Input
+                                  id={`problem-environment-${index}`}
+                                  maxLength={100}
+                                  placeholder="e.g. macOS"
+                                  disabled={submitting}
+                                  className={CONTROL_CLASS}
+                                  {...register(
+                                    `environment.${index}.technology`,
+                                  )}
+                                />
+                                <FieldError>
+                                  {
+                                    errors.environment?.[index]?.technology
+                                      ?.message
+                                  }
+                                </FieldError>
+                              </Field>
+
+                              <Field
+                                data-invalid={Boolean(
+                                  errors.environment?.[index]?.version,
+                                )}
+                                data-disabled={submitting || undefined}
+                              >
+                                <FieldLabel
+                                  htmlFor={`problem-environment-version-${index}`}
+                                >
+                                  Version
+                                </FieldLabel>
+                                <Input
+                                  id={`problem-environment-version-${index}`}
+                                  maxLength={50}
+                                  placeholder="e.g. 15.2"
+                                  disabled={submitting}
+                                  className={CONTROL_CLASS}
+                                  {...register(`environment.${index}.version`)}
+                                />
+                                <FieldError>
+                                  {errors.environment?.[index]?.version?.message}
+                                </FieldError>
+                              </Field>
+
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-lg"
+                                aria-label={`Remove environment ${index + 1}`}
+                                disabled={submitting}
+                                onClick={() => removeEnvironment(index)}
+                                className="justify-self-end rounded-xl sm:mt-7"
+                              >
+                                <Trash2 aria-hidden="true" />
+                              </Button>
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
+                      </FieldGroup>
+                    )}
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={
+                        submitting ||
+                        environmentFields.length >= MAX_ENVIRONMENTS
+                      }
+                      onClick={() =>
+                        appendEnvironment({ technology: "", version: "" })
+                      }
+                      className="w-full rounded-xl sm:w-auto sm:self-start"
+                    >
+                      <Plus data-icon="inline-start" aria-hidden="true" />
+                      Add environment
+                    </Button>
+                  </FieldSet>
+
+                  {/* ── Somewhere to look ── */}
+                  <Field
+                    data-invalid={Boolean(errors.repositoryUrl)}
+                    data-disabled={submitting || undefined}
+                  >
+                    <FieldLabel htmlFor="problem-repository">
+                      Repository URL
+                    </FieldLabel>
+                    <Input
+                      id="problem-repository"
+                      maxLength={1_000}
+                      inputMode="url"
+                      placeholder="https://github.com/…"
+                      aria-invalid={Boolean(errors.repositoryUrl)}
+                      aria-describedby={
+                        errors.repositoryUrl
+                          ? "problem-repository-error"
+                          : "problem-repository-help"
+                      }
+                      disabled={submitting}
+                      className={CONTROL_CLASS}
+                      {...register("repositoryUrl")}
+                    />
+                    <FieldDescription id="problem-repository-help">
+                      A public repository that reproduces it, if you have one.
+                      Must start with https://.
+                    </FieldDescription>
+                    <FieldError id="problem-repository-error">
+                      {errors.repositoryUrl?.message}
+                    </FieldError>
+                  </Field>
+                </FieldGroup>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
 
         <aside
@@ -701,7 +1187,6 @@ export function CreateProblemForm({
                             className="rounded-xl"
                           >
                             <SelectGroup>
-                              <SelectItem value={null}>No category</SelectItem>
                               {categoryItems.map((item) => (
                                 <SelectItem
                                   key={item.value}
@@ -717,11 +1202,133 @@ export function CreateProblemForm({
                     />
                     <FieldDescription id="problem-category-help">
                       {categoriesFailed
-                        ? "Categories could not be loaded. You can still submit without one."
-                        : "Optional, but useful for discovery."}
+                        ? "Categories could not be loaded. Reload the page to try again."
+                        : "Required. This is how the problem is filed and found."}
                     </FieldDescription>
                     <FieldError id="problem-category-error">
                       {errors.categoryId?.message}
+                    </FieldError>
+                  </Field>
+
+                  {/* Required upstream, so it is asked for rather than guessed. */}
+                  <Field
+                    data-invalid={Boolean(errors.problemType)}
+                    data-disabled={submitting || undefined}
+                  >
+                    <FieldLabel htmlFor="problem-type">
+                      Problem type
+                      <span aria-hidden="true" className="text-destructive">
+                        *
+                      </span>
+                      <span className="sr-only"> (required)</span>
+                    </FieldLabel>
+                    <Controller
+                      control={control}
+                      name="problemType"
+                      render={({ field }) => (
+                        <Select
+                          items={PROBLEM_TYPE_ITEMS}
+                          name={field.name}
+                          value={field.value ?? null}
+                          onValueChange={(value) =>
+                            field.onChange(value ?? undefined)
+                          }
+                          disabled={submitting}
+                        >
+                          <SelectTrigger
+                            ref={field.ref}
+                            id="problem-type"
+                            onBlur={field.onBlur}
+                            aria-invalid={Boolean(errors.problemType)}
+                            aria-describedby={
+                              errors.problemType
+                                ? "problem-type-error"
+                                : "problem-type-help"
+                            }
+                            className={cn(CONTROL_CLASS, "w-full")}
+                          >
+                            <SelectValue placeholder="Choose a type" />
+                          </SelectTrigger>
+                          <SelectContent
+                            alignItemWithTrigger={false}
+                            className="rounded-xl"
+                          >
+                            <SelectGroup>
+                              {PROBLEM_TYPE_ITEMS.map((item) => (
+                                <SelectItem key={item.value} value={item.value}>
+                                  {item.label}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    <FieldDescription id="problem-type-help">
+                      {problemType
+                        ? PROBLEM_TYPE_DESCRIPTIONS[problemType as ProblemType]
+                        : "What kind of problem this is."}
+                    </FieldDescription>
+                    <FieldError id="problem-type-error">
+                      {errors.problemType?.message}
+                    </FieldError>
+                  </Field>
+
+                  <Field
+                    data-invalid={Boolean(errors.severity)}
+                    data-disabled={submitting || undefined}
+                  >
+                    <FieldLabel htmlFor="problem-severity">Severity</FieldLabel>
+                    <Controller
+                      control={control}
+                      name="severity"
+                      render={({ field }) => (
+                        <Select
+                          items={SEVERITY_SELECT_ITEMS}
+                          name={field.name}
+                          value={field.value ?? null}
+                          onValueChange={(value) =>
+                            field.onChange(value ?? undefined)
+                          }
+                          disabled={submitting}
+                        >
+                          <SelectTrigger
+                            ref={field.ref}
+                            id="problem-severity"
+                            onBlur={field.onBlur}
+                            aria-invalid={Boolean(errors.severity)}
+                            aria-describedby={
+                              errors.severity
+                                ? "problem-severity-error"
+                                : "problem-severity-help"
+                            }
+                            className={cn(CONTROL_CLASS, "w-full")}
+                          >
+                            <SelectValue placeholder="Not specified" />
+                          </SelectTrigger>
+                          <SelectContent
+                            alignItemWithTrigger={false}
+                            className="rounded-xl"
+                          >
+                            <SelectGroup>
+                              <SelectItem value={null}>
+                                Not specified
+                              </SelectItem>
+                              {SEVERITY_ITEMS.map((item) => (
+                                <SelectItem key={item.value} value={item.value}>
+                                  {item.label}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    <FieldDescription id="problem-severity-help">
+                      Optional. How much this is costing you.
+                    </FieldDescription>
+                    <FieldError id="problem-severity-error">
+                      {errors.severity?.message}
                     </FieldError>
                   </Field>
 
@@ -817,7 +1424,7 @@ export function CreateProblemForm({
 
               <CardContent>
                 <Field
-                  data-invalid={Boolean(errors.tags) || Boolean(tagDraftError)}
+                  data-invalid={Boolean(errors.newTagNames) || Boolean(tagDraftError)}
                   data-disabled={
                     submitting || tags.length >= MAX_TAGS || undefined
                   }
@@ -835,10 +1442,10 @@ export function CreateProblemForm({
                       maxLength={51}
                       placeholder="e.g. oauth"
                       aria-invalid={
-                        Boolean(errors.tags) || Boolean(tagDraftError)
+                        Boolean(errors.newTagNames) || Boolean(tagDraftError)
                       }
                       aria-describedby={
-                        errors.tags || tagDraftError
+                        errors.newTagNames || tagDraftError
                           ? "problem-tags-error"
                           : "problem-tags-help"
                       }
@@ -881,7 +1488,7 @@ export function CreateProblemForm({
                     The leading # is optional and is removed before submission.
                   </FieldDescription>
                   <FieldError id="problem-tags-error">
-                    {tagDraftError ?? errors.tags?.message}
+                    {tagDraftError ?? errors.newTagNames?.message}
                   </FieldError>
 
                   {tags.length > 0 && (
@@ -959,6 +1566,14 @@ export function CreateProblemForm({
                   label="A useful description"
                   met={descriptionReady}
                 />
+                <RequirementRow
+                  label="Category selected"
+                  met={Boolean(categoryId)}
+                />
+                <RequirementRow
+                  label="Problem type selected"
+                  met={Boolean(problemType)}
+                />
                 {technologies.length > 0 && (
                   <RequirementRow
                     label="Technology details complete"
@@ -969,8 +1584,25 @@ export function CreateProblemForm({
                   <RequirementRow label="Tag limits satisfied" met={tagsReady} />
                 )}
                 <RequirementRow
-                  label="Category selected"
-                  met={Boolean(categoryId)}
+                  label="Expected vs actual"
+                  met={Boolean(
+                    expectedBehavior.trim() && actualBehavior.trim(),
+                  )}
+                  optional
+                />
+                <RequirementRow
+                  label="Steps to reproduce"
+                  met={reproductionSteps.some((step) => step.trim())}
+                  optional
+                />
+                <RequirementRow
+                  label="Error output"
+                  met={Boolean(errorMessage.trim())}
+                  optional
+                />
+                <RequirementRow
+                  label="Severity set"
+                  met={Boolean(severity)}
                   optional
                 />
                 <RequirementRow

@@ -93,13 +93,17 @@ interface ProblemApiResponse {
 }
 
 // Real shape of GET /api/v1/user-profiles/{userId}/solutions content items.
-// A solution carries no title of its own — it is an answer to a problem, so
-// the problem it belongs to is the only heading it has.
+// `summary` is the one-line heading the author wrote; `isAccepted` is the
+// asker having picked this answer, which is separate from moderation.
 interface SolutionApiResponse {
   id: string;
   problemId?: string;
-  description?: string;
-  reviewStatus?: "PENDING" | "APPROVED" | "REJECTED" | "ACCEPTED";
+  summary?: string;
+  bodyMarkdown?: string;
+  approachType?: "FIX" | "WORKAROUND" | "EXPLANATION" | "ALTERNATIVE";
+  isAccepted?: boolean;
+  voteScore?: number;
+  moderation?: { status?: "PENDING" | "APPROVED" | "REJECTED" };
   createdAt?: string;
 }
 
@@ -520,21 +524,20 @@ export const profileApi = baseApi.injectEndpoints({
           }),
 
           ...solutions.map((solution, index): CommunityPost => {
-            const body = plainText(solution.description ?? "");
+            const body = plainText(solution.bodyMarkdown ?? "");
             return {
               id: solution.id,
-              /* A solution has no title upstream, so its opening line stands in
-                 rather than a placeholder like "Solution #3". */
-              title: firstLine(body) || "Solution",
+              /* The author's own summary is the heading. Its opening line
+                 stands in for answers posted before that field existed. */
+              title: solution.summary?.trim() || firstLine(body) || "Solution",
               description: body,
               tag: "Solutions",
-              votes: scoreOf(solutionVotes[index]),
-              status:
-                solution.reviewStatus === "ACCEPTED"
-                  ? { label: "Accepted", tone: "positive" }
-                  : solution.reviewStatus === "PENDING"
-                    ? { label: "Pending review", tone: "pending" }
-                    : undefined,
+              votes: scoreOf(solutionVotes[index]) || solution.voteScore || 0,
+              status: solution.isAccepted
+                ? { label: "Accepted", tone: "positive" }
+                : solution.moderation?.status === "PENDING"
+                  ? { label: "Pending review", tone: "pending" }
+                  : undefined,
               date: solution.createdAt || new Date().toISOString(),
               /* Solutions are read on the problem they answer. */
               href: solution.problemId

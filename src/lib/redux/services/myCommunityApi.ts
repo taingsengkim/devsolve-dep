@@ -58,12 +58,21 @@ interface MyProblem {
   createdAt?: string;
 }
 
+/**
+ * `SolutionResponse`, trimmed to what a row here shows. Acceptance and review
+ * are two separate things upstream: `isAccepted` is the asker picking this
+ * answer, `moderation.status` is a moderator letting it be seen at all.
+ */
 interface MySolution {
   id: string;
   problemId?: string;
-  description?: string;
-  reviewStatus?: "PENDING" | "APPROVED" | "REJECTED" | "ACCEPTED";
-  rejectionReason?: string;
+  summary?: string;
+  bodyMarkdown?: string;
+  isAccepted?: boolean;
+  moderation?: {
+    status?: "PENDING" | "APPROVED" | "REJECTED";
+    rejectionReason?: string;
+  };
   createdAt?: string;
 }
 
@@ -143,26 +152,28 @@ export const myCommunityApi = baseApi.injectEndpoints({
 
         const solutions = contentOf<MySolution>(solutionsResult).map(
           (solution): MyPost => {
-            const body = excerptOf(solution.description ?? "", 200);
+            const body = excerptOf(solution.bodyMarkdown ?? "", 200);
+            /* The summary is written to be the title. Falling back to the
+               first line of the body covers answers posted before it existed. */
+            const review = solution.moderation?.status;
             return {
               id: solution.id,
               kind: "Solution",
-              title: firstLine(body) || "Solution",
+              title: solution.summary?.trim() || firstLine(body) || "Solution",
               excerpt: body,
               href: solution.problemId
                 ? `/community/${solution.problemId}`
                 : undefined,
               problemId: solution.problemId,
               createdAt: solution.createdAt || new Date().toISOString(),
-              state:
-                solution.reviewStatus === "ACCEPTED"
-                  ? { label: "Accepted", tone: "live" }
-                  : solution.reviewStatus === "APPROVED"
-                    ? { label: "Published", tone: "live" }
-                    : solution.reviewStatus === "REJECTED"
-                      ? { label: "Rejected", tone: "blocked" }
-                      : { label: "Awaiting review", tone: "pending" },
-              note: solution.rejectionReason,
+              state: solution.isAccepted
+                ? { label: "Accepted", tone: "live" }
+                : review === "APPROVED"
+                  ? { label: "Published", tone: "live" }
+                  : review === "REJECTED"
+                    ? { label: "Rejected", tone: "blocked" }
+                    : { label: "Awaiting review", tone: "pending" },
+              note: solution.moderation?.rejectionReason,
             };
           },
         );

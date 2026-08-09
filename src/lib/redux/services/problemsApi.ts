@@ -2,11 +2,13 @@ import { baseApi } from "./baseApi";
 import type { Page } from "./showcasesApi";
 import type {
   CreateProblemRequest,
+  ProblemSeverity,
   ProblemStatus,
+  ProblemType,
   SdlcPhase,
 } from "@/lib/validations/problem";
 
-export type { ProblemStatus };
+export type { ProblemSeverity, ProblemStatus, ProblemType };
 
 /** Query parameters `findPublished` accepts. */
 export interface ProblemFeedParams {
@@ -23,7 +25,7 @@ export interface ProblemFeedParams {
 
 export interface AuthorSummary {
   id?: string;
-  fullName?: string;
+  displayName?: string;
   avatarUrl?: string;
   reputation?: number;
 }
@@ -49,12 +51,19 @@ export interface TagSummary {
 
 export interface AttachmentSummary {
   id?: string;
-  fileName?: string;
+  /** The upstream field. `fileName` was the old, wrong name for it. */
+  originalFileName?: string;
   downloadUrl?: string;
   mimeType?: string;
   sizeBytes?: number;
   uploadedBy?: string;
   createdAt?: string;
+}
+
+/** `EnvironmentSummary` — where the problem was seen, as opposed to what it uses. */
+export interface EnvironmentSummary {
+  technology?: string;
+  version?: string;
 }
 
 /** Mirrors the backend `ProblemResponse` returned after submission. */
@@ -64,13 +73,34 @@ export interface ProblemResponse {
   category?: CategorySummary;
   title?: string;
   description?: string;
+  problemType?: ProblemType;
   sdlcPhase?: SdlcPhase;
+  severity?: ProblemSeverity;
+  expectedBehavior?: string;
+  actualBehavior?: string;
+  reproductionSteps?: string[];
+  environment?: EnvironmentSummary[];
+  attemptsTried?: string;
+  errorMessage?: string;
+  repositoryUrl?: string;
   status?: ProblemStatus;
   viewCount?: number;
   technologies?: TechnologySummary[];
   tags?: TagSummary[];
   attachments?: AttachmentSummary[];
   contentWarnings?: string[];
+  /* Counts and viewer state the detail response carries, so a page that has
+     the problem does not have to fetch them a second time. */
+  solutionCount?: number;
+  commentCount?: number;
+  voteScore?: number;
+  bookmarkCount?: number;
+  acceptedSolutionId?: string;
+  isBookmarkedByViewer?: boolean;
+  viewerVote?: string;
+  canEdit?: boolean;
+  canDelete?: boolean;
+  canAcceptSolution?: boolean;
   publishedAt?: string;
   deletedAt?: string;
   version?: number;
@@ -106,6 +136,38 @@ export const problemsApi = baseApi.injectEndpoints({
       ],
     }),
 
+    /**
+     * PUT /api/problems/{problemId}/accepted-solution — the asker marking one
+     * answer as the one that worked. Only the problem's author may do it, and
+     * the backend is what enforces that.
+     */
+    setAcceptedSolution: builder.mutation<
+      ProblemResponse,
+      { problemId: string; solutionId: string }
+    >({
+      query: ({ problemId, solutionId }) => ({
+        url: `/problems/${problemId}/accepted-solution`,
+        method: "PUT",
+        body: { solutionId },
+      }),
+      invalidatesTags: (_result, _error, { problemId }) => [
+        { type: "Problem", id: problemId },
+        { type: "Solution", id: problemId },
+      ],
+    }),
+
+    /** DELETE of the same — un-accepting an answer. */
+    removeAcceptedSolution: builder.mutation<ProblemResponse, string>({
+      query: (problemId) => ({
+        url: `/problems/${problemId}/accepted-solution`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, problemId) => [
+        { type: "Problem", id: problemId },
+        { type: "Solution", id: problemId },
+      ],
+    }),
+
     /** GET /api/problems -> the published feed. Approved problems only. */
     getProblems: builder.query<Page<ProblemResponse>, ProblemFeedParams | void>({
       query: (args) => {
@@ -127,4 +189,6 @@ export const {
   useGetProblemByIdQuery,
   useGetProblemsQuery,
   useDeleteProblemMutation,
+  useSetAcceptedSolutionMutation,
+  useRemoveAcceptedSolutionMutation,
 } = problemsApi;

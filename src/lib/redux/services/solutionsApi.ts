@@ -1,26 +1,72 @@
 import { baseApi } from "./baseApi";
 import type { Page } from "./showcasesApi";
-import type { CreateSolutionRequest } from "@/lib/validations/solution";
+import type {
+  ApproachType,
+  CreateSolutionRequest,
+  ResourceType,
+} from "@/lib/validations/solution";
+import type { AttachmentSummary, AuthorSummary } from "./problemsApi";
 
 /**
  * Answers on a problem — `GET /api/v1/problems/{problemId}/solutions`.
  *
- * The response names its author by id only, so anything that wants a name
- * resolves it through `/user-profiles/{userId}`.
+ * The response embeds its author and carries its own vote score, so a card
+ * rendering one needs no follow-up request for either.
  */
+
+export type { ApproachType, ResourceType };
+
+/** `VerificationStep` — one thing to run, and what it should print. */
+export interface VerificationStep {
+  instruction?: string;
+  expectedResult?: string;
+}
+
+/** `TestedWith` — a stack the answer was actually verified against. */
+export interface TestedWith {
+  technology?: string;
+  version?: string;
+}
+
+/** `ResourceSummary` — a link the answer leans on. */
+export interface ResourceSummary {
+  id?: string;
+  type?: ResourceType;
+  label?: string;
+  url?: string;
+  displayOrder?: number;
+}
+
+/** `ModerationDetails` — where the answer stands in the review queue. */
+export interface ModerationDetails {
+  revisionId?: string;
+  revisionNumber?: number;
+  status?: "PENDING" | "APPROVED" | "REJECTED";
+  rejectionReason?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+}
 
 /** `SolutionResponse`. */
 export interface SolutionResponse {
   id: string;
-  problemId: string;
-  authorId: string;
-  description: string;
-  videoUrl?: string;
-  diagramUrl?: string;
-  reviewStatus?: "PENDING" | "APPROVED" | "REJECTED" | "ACCEPTED";
-  reviewedBy?: string;
-  reviewedAt?: string;
-  rejectionReason?: string;
+  problemId?: string;
+  author?: AuthorSummary;
+  summary?: string;
+  bodyMarkdown?: string;
+  approachType?: ApproachType;
+  verificationSteps?: VerificationStep[];
+  testedWith?: TestedWith[];
+  tradeoffs?: string;
+  resources?: ResourceSummary[];
+  attachments?: AttachmentSummary[];
+  isAccepted?: boolean;
+  voteScore?: number;
+  commentCount?: number;
+  viewerVote?: string;
+  /** Sent back as the `If-Match` header on an update. */
+  version?: number;
+  moderation?: ModerationDetails;
   createdAt: string;
   updatedAt?: string;
 }

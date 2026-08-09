@@ -1,63 +1,92 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Check, ChevronUp, Network, Video } from "lucide-react";
+import {
+  BookOpen,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  FileCode2,
+  FolderGit2,
+  Link2,
+  ListChecks,
+  MonitorPlay,
+  Network,
+  Scale,
+  Video,
+  type LucideIcon,
+} from "lucide-react";
 
 import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
-import {
-  useGetPublicProfileQuery,
-  type SolutionResponse,
+import type {
+  ResourceSummary,
+  SolutionResponse,
 } from "@/lib/redux/services/solutionsApi";
 import {
   useGetVoteSummaryQuery,
   useRemoveVoteMutation,
   useSetVoteMutation,
 } from "@/lib/redux/services/votesApi";
+import {
+  APPROACH_LABELS,
+  RESOURCE_LABELS,
+  type ApproachType,
+  type ResourceType,
+} from "@/lib/validations/solution";
+import { formatBytes, formatDate, initialsOf } from "@/lib/discussions/format";
 
 /**
- * One answer on a problem, straight off `SolutionResponse`.
+ * One answer on a problem, off `SolutionResponse`.
  *
- * That response is thin: a description, an optional video and diagram link,
- * and a review status. It carries no vote count and names its author by id
- * only, so both are fetched here — the score from the vote endpoint, the name
- * from the author's public profile.
+ * The response embeds its author and its own `voteScore`, so neither needs a
+ * follow-up request; the vote summary is still read because it is the only
+ * thing that says how *this* reader voted.
+ *
+ * Long answers are collapsed by default. A page with six of them is unreadable
+ * otherwise, and the summary line is written to be enough to choose by.
  */
 
 interface SolutionCardProps {
   solution: SolutionResponse;
   index: number;
+  /** Shown only to whoever may accept — the problem's author. */
+  canAccept?: boolean;
+  onAccept?: (solutionId: string) => void;
+  isAccepting?: boolean;
 }
 
-function formatDate(iso?: string) {
-  if (!iso) return "";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
+/** Roughly a screenful. Past this the body is worth folding away. */
+const COLLAPSE_OVER = 900;
 
-function initialsOf(name: string) {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}
+const APPROACH_STYLES: Record<ApproachType, string> = {
+  FIX: "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/20",
+  WORKAROUND:
+    "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/20",
+  EXPLANATION:
+    "bg-sky-50 text-sky-700 ring-sky-600/20 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-400/20",
+  ALTERNATIVE:
+    "bg-violet-50 text-violet-700 ring-violet-600/20 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-400/20",
+};
+
+const RESOURCE_ICONS: Record<ResourceType, LucideIcon> = {
+  DOCUMENTATION: BookOpen,
+  REPOSITORY: FolderGit2,
+  VIDEO: Video,
+  DIAGRAM: Network,
+  DEMO: MonitorPlay,
+  ARTICLE: FileCode2,
+};
 
 export const SolutionCard: React.FC<SolutionCardProps> = ({
   solution,
   index,
+  canAccept = false,
+  onAccept,
+  isAccepting = false,
 }) => {
-  const { data: author } = useGetPublicProfileQuery(solution.authorId, {
-    skip: !solution.authorId,
-  });
-
   const { data: votes } = useGetVoteSummaryQuery({
     type: "SOLUTION",
     targetId: solution.id,
@@ -67,16 +96,38 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
   const [removeVote, { isLoading: isRemovingVote }] = useRemoveVoteMutation();
   const isVoting = isSettingVote || isRemovingVote;
 
-  const hasUpvoted = votes?.currentUserVote === 1;
-  const isAccepted = solution.reviewStatus === "ACCEPTED";
-  const name = author?.fullName || "Unknown author";
+  const body = solution.bodyMarkdown ?? "";
+  const [expanded, setExpanded] = useState(body.length <= COLLAPSE_OVER);
+  const isLong = body.length > COLLAPSE_OVER;
 
-  const toggleVote = async () => {
+  const hasUpvoted = votes?.currentUserVote === 1;
+  const hasDownvoted = votes?.currentUserVote === -1;
+  /* The summary is authoritative once loaded; until then the score that came
+     with the solution itself is the better guess than zero. */
+  const score = votes?.score ?? solution.voteScore ?? 0;
+
+  const isAccepted = Boolean(solution.isAccepted);
+  const author = solution.author;
+  const name = author?.displayName || "Unknown author";
+
+  const verificationSteps = (solution.verificationSteps ?? []).filter(
+    (step) => step.instruction || step.expectedResult,
+  );
+  const testedWith = (solution.testedWith ?? []).filter(
+    (entry) => entry.technology,
+  );
+  const resources = (solution.resources ?? []).filter((item) => item.url);
+  const attachments = (solution.attachments ?? []).filter(
+    (file) => file.downloadUrl,
+  );
+
+  const castVote = async (value: 1 | -1) => {
     if (isVoting) return;
     const target = { type: "SOLUTION" as const, targetId: solution.id };
-    // The summary is refetched by the mutation's tag, so nothing is held here.
-    if (hasUpvoted) await removeVote(target);
-    else await setVote({ ...target, value: 1 });
+    const current = votes?.currentUserVote;
+    // Voting the same way twice clears the vote, the way every such rail works.
+    if (current === value) await removeVote(target);
+    else await setVote({ ...target, value });
   };
 
   return (
@@ -84,46 +135,70 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: "easeOut", delay: index * 0.05 }}
-      className={`rounded-2xl border bg-white p-5 shadow-xs dark:bg-slate-900 ${
+      className={`overflow-hidden rounded-2xl border bg-white shadow-xs transition-colors dark:bg-slate-900 ${
         isAccepted
-          ? "border-emerald-300 dark:border-emerald-500/40"
+          ? "border-emerald-400 ring-1 ring-emerald-400/30 dark:border-emerald-500/50 dark:ring-emerald-500/20"
           : "border-slate-200/80 dark:border-slate-800"
       }`}
     >
-      <div className="flex gap-4">
-        {/* Vote rail */}
-        <div className="flex shrink-0 flex-col items-center gap-1">
+      {isAccepted && (
+        <p className="flex items-center gap-1.5 bg-emerald-50 px-4 py-2 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+          <CheckCircle2 aria-hidden="true" className="size-3.5" />
+          Accepted answer
+        </p>
+      )}
+
+      <div className="flex flex-col gap-4 p-4 sm:flex-row sm:p-5">
+        {/* Vote rail — a row on a phone, a column from `sm` up. */}
+        <div className="flex shrink-0 flex-row items-center gap-1 sm:flex-col">
           <button
             type="button"
-            onClick={() => void toggleVote()}
+            onClick={() => void castVote(1)}
             disabled={isVoting}
             aria-pressed={hasUpvoted}
             aria-label={hasUpvoted ? "Remove upvote" : "Upvote this answer"}
             className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
               hasUpvoted
                 ? "bg-blue-600 text-white"
-                : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
             }`}
           >
-            <ChevronUp className="size-4" />
+            <ChevronUp aria-hidden="true" className="size-4" />
           </button>
           <span className="text-sm font-bold tabular-nums text-slate-800 dark:text-slate-100">
-            {votes?.score ?? 0}
+            {score}
           </span>
+          <button
+            type="button"
+            onClick={() => void castVote(-1)}
+            disabled={isVoting}
+            aria-pressed={hasDownvoted}
+            aria-label={
+              hasDownvoted ? "Remove downvote" : "Downvote this answer"
+            }
+            className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
+              hasDownvoted
+                ? "bg-rose-600 text-white"
+                : "text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            <ChevronDown aria-hidden="true" className="size-4" />
+          </button>
         </div>
 
-        <div className="min-w-0 flex-1 space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
+        <div className="min-w-0 flex-1 space-y-4">
+          {/* ── Who, and what kind of answer ── */}
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2.5">
               {author?.avatarUrl ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={author.avatarUrl}
                   alt=""
-                  className="size-8 rounded-full border border-slate-200 bg-slate-100 object-cover dark:border-slate-700"
+                  className="size-9 shrink-0 rounded-full border border-slate-200 bg-slate-100 object-cover dark:border-slate-700 dark:bg-slate-800"
                 />
               ) : (
-                <span className="flex size-8 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
                   {initialsOf(name)}
                 </span>
               )}
@@ -140,32 +215,164 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
               </div>
             </div>
 
-            {isAccepted && (
-              <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                <Check className="size-3.5" />
-                Accepted
-              </span>
-            )}
+            <div className="flex shrink-0 items-center gap-2">
+              {solution.approachType && (
+                <span
+                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold ring-1 ring-inset ${
+                    APPROACH_STYLES[solution.approachType]
+                  }`}
+                >
+                  {APPROACH_LABELS[solution.approachType]}
+                </span>
+              )}
+
+              {canAccept && !isAccepted && onAccept && (
+                <button
+                  type="button"
+                  onClick={() => onAccept(solution.id)}
+                  disabled={isAccepting}
+                  className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl border border-emerald-300 px-3 text-xs font-bold text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-500/40 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
+                >
+                  <Check aria-hidden="true" className="size-3.5" />
+                  Accept
+                </button>
+              )}
+            </div>
           </div>
 
-          <MarkdownView source={solution.description ?? ""} />
+          {/* ── The one-liner ── */}
+          {solution.summary && (
+            <h3 className="text-base font-bold leading-snug text-slate-900 sm:text-lg dark:text-slate-100">
+              {solution.summary}
+            </h3>
+          )}
 
-          {(solution.videoUrl || solution.diagramUrl) && (
+          {/* ── The answer itself ── */}
+          {body ? (
+            <div className="relative">
+              <div
+                id={`solution-body-${solution.id}`}
+                className={
+                  expanded
+                    ? undefined
+                    : "max-h-72 overflow-hidden mask-[linear-gradient(to_bottom,black_60%,transparent)]"
+                }
+              >
+                <MarkdownView source={body} />
+              </div>
+
+              {isLong && (
+                <button
+                  type="button"
+                  onClick={() => setExpanded((open) => !open)}
+                  aria-expanded={expanded}
+                  aria-controls={`solution-body-${solution.id}`}
+                  className="mt-2 inline-flex cursor-pointer items-center gap-1 text-sm font-bold text-blue-600 hover:underline dark:text-blue-400"
+                >
+                  {expanded ? (
+                    <>
+                      <ChevronUp aria-hidden="true" className="size-4" />
+                      Show less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown aria-hidden="true" className="size-4" />
+                      Read the full answer
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              This answer was posted without a body.
+            </p>
+          )}
+
+          {/* ── How to check it worked ── */}
+          {verificationSteps.length > 0 && (
+            <Panel
+              icon={<ListChecks aria-hidden="true" className="size-3.5" />}
+              title="How to verify"
+            >
+              <ol className="space-y-2.5">
+                {verificationSteps.map((step, i) => (
+                  <li key={i} className="flex gap-3">
+                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[11px] font-bold tabular-nums text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0 space-y-0.5">
+                      <p className="text-sm text-slate-700 dark:text-slate-200">
+                        {step.instruction}
+                      </p>
+                      {step.expectedResult && (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          <span className="font-semibold">Expect: </span>
+                          {step.expectedResult}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </Panel>
+          )}
+
+          {/* ── What it was proven against ── */}
+          {testedWith.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                Tested with
+              </span>
+              {testedWith.map((entry, i) => (
+                <span
+                  key={`${entry.technology}-${i}`}
+                  className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                >
+                  {entry.technology}
+                  {entry.version ? ` ${entry.version}` : ""}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* ── What it costs ── */}
+          {solution.tradeoffs && (
+            <Panel
+              icon={<Scale aria-hidden="true" className="size-3.5" />}
+              title="Trade-offs"
+            >
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                {solution.tradeoffs}
+              </p>
+            </Panel>
+          )}
+
+          {/* ── Links and files ── */}
+          {(resources.length > 0 || attachments.length > 0) && (
             <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
-              {solution.videoUrl && (
-                <SolutionLink
-                  href={solution.videoUrl}
-                  label="Walkthrough video"
-                  icon={<Video className="size-3.5" />}
-                />
-              )}
-              {solution.diagramUrl && (
-                <SolutionLink
-                  href={solution.diagramUrl}
-                  label="Diagram"
-                  icon={<Network className="size-3.5" />}
-                />
-              )}
+              {resources.map((resource, i) => (
+                <ResourceLink key={resource.id ?? i} resource={resource} />
+              ))}
+              {attachments.map((file, i) => (
+                <a
+                  key={file.id ?? i}
+                  href={file.downloadUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex h-8 max-w-full items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                >
+                  <Download aria-hidden="true" className="size-3.5 shrink-0" />
+                  <span className="truncate">
+                    {file.originalFileName ?? "Attachment"}
+                  </span>
+                  {file.sizeBytes !== undefined && (
+                    <span className="shrink-0 font-medium text-slate-400">
+                      {formatBytes(file.sizeBytes)}
+                    </span>
+                  )}
+                </a>
+              ))}
             </div>
           )}
         </div>
@@ -174,24 +381,42 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
   );
 };
 
-function SolutionLink({
-  href,
-  label,
+/** A labelled block inside a card — used for anything with a heading and body. */
+function Panel({
   icon,
+  title,
+  children,
 }: {
-  href: string;
-  label: string;
   icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
 }) {
   return (
+    <section className="rounded-xl border border-slate-100 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-800/40">
+      <h4 className="mb-2.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        {icon}
+        {title}
+      </h4>
+      {children}
+    </section>
+  );
+}
+
+function ResourceLink({ resource }: { resource: ResourceSummary }) {
+  const Icon = resource.type ? RESOURCE_ICONS[resource.type] : Link2;
+  const label =
+    resource.label ||
+    (resource.type ? RESOURCE_LABELS[resource.type] : "Resource");
+
+  return (
     <a
-      href={href}
+      href={resource.url}
       target="_blank"
       rel="noreferrer noopener"
-      className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+      className="inline-flex h-8 max-w-full items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
     >
-      {icon}
-      {label}
+      <Icon aria-hidden="true" className="size-3.5 shrink-0" />
+      <span className="truncate">{label}</span>
     </a>
   );
 }
