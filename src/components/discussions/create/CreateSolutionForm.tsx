@@ -43,7 +43,7 @@ import { MarkdownEditor } from "@/components/reports/MarkdownEditor";
 import { useCreateSolutionMutation } from "@/lib/redux/services/solutionsApi";
 import type { ProblemResponse } from "@/lib/redux/services/problemsApi";
 import { excerptOf } from "@/lib/markdown-excerpt";
-import { messageOf } from "@/lib/discussions/format";
+import { authorNameOf, messageOf } from "@/lib/discussions/format";
 import {
   APPROACH_DESCRIPTIONS,
   APPROACH_LABELS,
@@ -758,7 +758,7 @@ export function CreateSolutionForm({
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   by{" "}
                   <span className="font-semibold text-slate-700 dark:text-slate-300">
-                    {problem?.author?.fullName ?? "Unknown author"}
+                    {authorNameOf(problem?.author)}
                   </span>
                 </p>
 

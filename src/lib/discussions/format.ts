@@ -38,6 +38,32 @@ export function initialsOf(name: string): string {
   return initials || "?";
 }
 
+/**
+ * An author's name, whichever of the two names the endpoint used for it.
+ *
+ * The API is not consistent here, and this is verified against the live
+ * service rather than assumed: `/problems` serves `author.fullName`, while
+ * `/problems/{id}/solutions` serves `author.displayName` on the same-shaped
+ * object. (The OpenAPI document declares `fullName` for both, so it is not the
+ * thing to trust on this field.)
+ *
+ * Reading one name means every byline on half the app renders the fallback, so
+ * both are accepted. Should the backend settle on one, this keeps working and
+ * the loser can simply be dropped from `AuthorLike`.
+ */
+export interface AuthorLike {
+  fullName?: string;
+  displayName?: string;
+}
+
+export function authorNameOf(
+  author?: AuthorLike | null,
+  fallback = "Unknown author",
+): string {
+  const name = author?.fullName?.trim() || author?.displayName?.trim();
+  return name || fallback;
+}
+
 /** Pulls something readable out of an RTK Query error. */
 export function messageOf(error: unknown, fallback: string): string {
   if (typeof error === "object" && error !== null && "data" in error) {

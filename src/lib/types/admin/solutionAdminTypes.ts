@@ -13,10 +13,17 @@ import { PaginatedResponse } from "./types";
 /** What `UpdateSolutionReviewStatusRequest.reviewStatus` accepts. */
 export type SolutionReviewStatus = "PENDING" | "APPROVED" | "REJECTED";
 
+/**
+ * Mirrors `AuthorSummary`. The name arrives as `displayName` on a solution and
+ * as `fullName` on a problem, whatever the schema says, so both are declared
+ * and `authorNameOf` is what reads them — never either field directly.
+ */
 export interface SolutionAuthor {
   id?: string;
+  fullName?: string;
   displayName?: string;
   avatarUrl?: string;
+  /** Absent on the author embedded in a solution. */
   reputation?: number;
 }
 

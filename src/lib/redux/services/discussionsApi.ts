@@ -4,6 +4,7 @@ import {
   DiscussionSort,
   TopicCount,
 } from "@/lib/types/dicussion/types";
+import { authorNameOf } from "@/lib/discussions/format";
 
 // ─── Query param types ────────────────────────────────────────────────────────
 
@@ -126,7 +127,7 @@ function toProblemPost(
     answersCount: 0,
     viewsCount: raw.viewCount ?? 0,
     author: {
-      name: raw.author?.fullName || "Community Member",
+      name: authorNameOf(raw.author, "Community Member"),
       avatarUrl: raw.author?.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${raw.id}`,
     },
     createdAt: toRelativeDate(raw.publishedAt || raw.createdAt),

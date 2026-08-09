@@ -23,10 +23,18 @@ export interface ProblemFeedParams {
   sort?: string;
 }
 
+/**
+ * Mirrors `AuthorSummary`, with one caveat the schema does not capture: the
+ * name arrives as `fullName` from `/problems` and as `displayName` from
+ * `/problems/{id}/solutions`. Both are declared, and `authorNameOf` is what
+ * reads them — never either field directly.
+ */
 export interface AuthorSummary {
   id?: string;
   fullName?: string;
+  displayName?: string;
   avatarUrl?: string;
+  /** Absent on the author embedded in a solution. */
   reputation?: number;
 }
 

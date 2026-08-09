@@ -28,6 +28,7 @@ import { ProblemStatusBadge } from "@/components/admin/problems/ProblemStatusBad
 import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
 import { useGetProblemByIdQuery } from "@/lib/redux/services/problemsApi";
 import { SDLC_LABELS } from "@/lib/validations/problem";
+import { authorNameOf } from "@/lib/discussions/format";
 
 /**
  * One problem under review — read through `GET /api/v1/problems/{id}`, decided
@@ -160,7 +161,7 @@ export function ProblemReviewDetail({ id }: { id: string }) {
             <p className="text-sm text-slate-500 dark:text-slate-400">
               by{" "}
               <span className="font-semibold text-slate-800 dark:text-slate-200">
-                {problem.author?.fullName ?? "Unknown author"}
+                {authorNameOf(problem.author)}
               </span>{" "}
               · submitted {formatDateTime(problem.createdAt)}
             </p>
@@ -371,7 +372,7 @@ export function ProblemReviewDetail({ id }: { id: string }) {
               Author
             </h2>
             <p className="text-base font-bold text-slate-900 dark:text-slate-100">
-              {problem.author?.fullName ?? "Unknown author"}
+              {authorNameOf(problem.author)}
             </p>
             <dl className="space-y-2">
               <FactRow

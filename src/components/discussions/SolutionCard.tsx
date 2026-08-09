@@ -37,7 +37,12 @@ import {
   type ApproachType,
   type ResourceType,
 } from "@/lib/validations/solution";
-import { formatBytes, formatDate, initialsOf } from "@/lib/discussions/format";
+import {
+  authorNameOf,
+  formatBytes,
+  formatDate,
+  initialsOf,
+} from "@/lib/discussions/format";
 
 /**
  * One answer on a problem, off `SolutionResponse`.
@@ -117,7 +122,7 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
 
   const isAccepted = accepted ?? Boolean(solution.isAccepted);
   const author = solution.author;
-  const name = author?.fullName || "Unknown author";
+  const name = authorNameOf(author);
 
   const verificationSteps = (solution.verificationSteps ?? []).filter(
     (step) => step.instruction || step.expectedResult,

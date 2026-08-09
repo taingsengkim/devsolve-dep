@@ -33,6 +33,7 @@ import { useGetProblemReviewQueueQuery } from "@/lib/redux/services/admin/proble
 import type { ProblemResponse } from "@/lib/redux/services/problemsApi";
 import { excerptOf } from "@/lib/markdown-excerpt";
 import { SDLC_LABELS, type ProblemStatus } from "@/lib/validations/problem";
+import { authorNameOf } from "@/lib/discussions/format";
 
 /**
  * The problem approval queue — `GET /api/v1/admin/problems`.
@@ -346,7 +347,7 @@ function QueueRow({
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="truncate text-xs font-semibold text-slate-600 dark:text-slate-300">
-          by {item.author?.fullName ?? "Unknown author"}
+          by {authorNameOf(item.author)}
         </span>
 
         <div className="flex flex-wrap items-center gap-2">

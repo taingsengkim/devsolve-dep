@@ -36,7 +36,7 @@ import type {
 } from "@/lib/types/admin/solutionAdminTypes";
 import { excerptOf } from "@/lib/markdown-excerpt";
 import { APPROACH_LABELS } from "@/lib/validations/solution";
-import { messageOf } from "@/lib/discussions/format";
+import { authorNameOf, messageOf } from "@/lib/discussions/format";
 
 /**
  * The solution approval queue — `GET /api/v1/admin/solutions`.
@@ -341,7 +341,7 @@ function QueueRow({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
           <span className="truncate text-xs font-semibold text-slate-600 dark:text-slate-300">
-            by {item.author?.fullName ?? "Unknown author"}
+            by {authorNameOf(item.author)}
           </span>
           {/* An answer only makes sense against its question. */}
           {item.problemId && (

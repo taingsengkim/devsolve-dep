@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { ProblemResponse, ProblemStatus } from "@/lib/types/admin/problemAdminTypes";
 import { FileText, CheckCircle2, XCircle, User, Calendar, Cpu, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { authorNameOf } from "@/lib/discussions/format";
 
 interface ProblemModerationModalProps {
   selectedProblem: ProblemResponse | null;
@@ -74,7 +75,7 @@ export const ProblemModerationModal: React.FC<ProblemModerationModalProps> = ({
               <User className="w-4 h-4 text-slate-400" />
               <span className="text-slate-500 font-medium">Author:</span>
               <span className="font-semibold text-slate-900 dark:text-slate-100">
-                {selectedProblem.author?.fullName || "Anonymous"}
+                {authorNameOf(selectedProblem.author, "Anonymous")}
               </span>
             </div>
             <div className="flex items-center gap-2">

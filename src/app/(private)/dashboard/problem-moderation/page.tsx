@@ -16,6 +16,7 @@ import { ProblemFiltersBar } from "@/components/admin/problems/ProblemFiltersBar
 import { ProblemDataTable } from "@/components/admin/problems/ProblemDataTable";
 import { getProblemColumns } from "@/components/admin/problems/problemColumns";
 import { ProblemModerationModal } from "@/components/admin/problems/ProblemModerationModal";
+import { authorNameOf } from "@/lib/discussions/format";
 
 export default function ProblemModerationPage() {
   const [statusFilter, setStatusFilter] = useState<ProblemStatus | "ALL">("ALL");
@@ -41,7 +42,7 @@ export default function ProblemModerationPage() {
     return problems.filter(
       (p) =>
         p.title?.toLowerCase().includes(q) ||
-        p.author?.fullName?.toLowerCase().includes(q) ||
+        authorNameOf(p.author, "").toLowerCase().includes(q) ||
         p.category?.name?.toLowerCase().includes(q)
     );
   }, [problems, searchQuery]);

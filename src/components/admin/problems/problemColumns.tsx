@@ -6,6 +6,7 @@ import { ProblemResponse } from "@/lib/types/admin/problemAdminTypes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { authorNameOf } from "@/lib/discussions/format";
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -78,7 +79,7 @@ export const getProblemColumns = ({
       const author = row.original.author;
       return (
         <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-          {author?.fullName || "Anonymous"}
+          {authorNameOf(author, "Anonymous")}
         </span>
       );
     },

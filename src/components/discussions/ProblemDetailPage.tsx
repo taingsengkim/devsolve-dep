@@ -64,6 +64,7 @@ import {
   SEVERITY_LABELS,
 } from "@/lib/validations/problem";
 import {
+  authorNameOf,
   formatBytes,
   formatDate,
   initialsOf,
@@ -200,7 +201,18 @@ function Loaded({
 
   const [acceptSolution, { isLoading: isSettingAccepted }] =
     useSetAcceptedSolutionMutation();
+  const [unacceptSolution, { isLoading: isRemovingAccepted }] =
+    useRemoveAcceptedSolutionMutation();
+  const isAccepting = isSettingAccepted || isRemovingAccepted;
   const isBookmarking = isAddingBookmark || isRemovingBookmark;
+
+  /* The problem owns the list of accepted answers, so it is the authority when
+     it and a solution's own `isAccepted` disagree — which they do between a
+     click and the refetch that follows it. */
+  const acceptedIds = useMemo(
+    () => new Set(problem.acceptedSolutionIds ?? []),
+    [problem.acceptedSolutionIds],
+  );
 
   const { data: commentPage } = useGetCommentsQuery({
     commentableType: "PROBLEM",
@@ -842,12 +854,12 @@ function Loaded({
                   />
                 ) : (
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-                    {initialsOf(problem.author?.fullName || "?")}
+                    {initialsOf(authorNameOf(problem.author, "?"))}
                   </span>
                 )}
                 <div className="min-w-0">
                   <p className="truncate text-base font-bold text-slate-900 dark:text-slate-100">
-                    {problem.author?.fullName ?? "Unknown author"}
+                    {authorNameOf(problem.author)}
                   </p>
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                     {(problem.author?.reputation ?? 0).toLocaleString()}{" "}

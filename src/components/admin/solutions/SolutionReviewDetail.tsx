@@ -28,7 +28,11 @@ import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
 import { useGetAdminSolutionDetailQuery } from "@/lib/redux/services/admin/solutionAdminApi";
 import { useGetProblemByIdQuery } from "@/lib/redux/services/problemsApi";
 import { APPROACH_LABELS, RESOURCE_LABELS } from "@/lib/validations/solution";
-import { formatBytes, initialsOf } from "@/lib/discussions/format";
+import {
+  authorNameOf,
+  formatBytes,
+  initialsOf,
+} from "@/lib/discussions/format";
 
 /**
  * One solution under review — read through `GET /admin/solutions/{id}`, decided
@@ -383,12 +387,12 @@ export function SolutionReviewDetail({ id }: { id: string }) {
                 />
               ) : (
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-                  {initialsOf(author?.displayName || "?")}
+                  {initialsOf(authorNameOf(author, "?"))}
                 </span>
               )}
               <div className="min-w-0">
                 <p className="truncate text-base font-bold text-slate-900 dark:text-slate-100">
-                  {author?.displayName ?? "Unknown author"}
+                  {authorNameOf(author)}
                 </p>
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                   {(author?.reputation ?? 0).toLocaleString()} reputation
