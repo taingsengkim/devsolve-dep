@@ -9,12 +9,15 @@ import {
   CheckCircle2,
   Download,
   ExternalLink,
+  ImageIcon,
   ListChecks,
   Link2,
   Paperclip,
   RotateCcw,
   Scale,
+  Video,
   XCircle,
+  type LucideIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -33,6 +36,7 @@ import {
   formatBytes,
   initialsOf,
 } from "@/lib/discussions/format";
+import { excerptOf } from "@/lib/markdown-excerpt";
 
 /**
  * One solution under review — read through `GET /admin/solutions/{id}`, decided
@@ -105,8 +109,24 @@ export function SolutionReviewDetail({ id }: { id: string }) {
     );
   }
 
-  const review = solution.moderation?.status ?? "PENDING";
+  /* The deployed admin response is intentionally compact and exposes the
+     original solution fields (`description`, `reviewStatus`, ...). Newer
+     responses expose the richer authoring model. Resolve both shapes here so
+     moderators always see the submitted answer rather than an empty shell. */
+  const solutionBody =
+    solution.bodyMarkdown?.trim() || solution.description?.trim() || "";
+  const title =
+    solution.summary?.trim() ||
+    excerptOf(solutionBody, 96) ||
+    "Solution details";
+  const review =
+    solution.moderation?.status ?? solution.reviewStatus ?? "PENDING";
   const isPending = review === "PENDING";
+  const isAccepted = solution.isAccepted || review === "ACCEPTED";
+  const reviewedAt = solution.moderation?.reviewedAt ?? solution.reviewedAt;
+  const reviewedBy = solution.moderation?.reviewedBy ?? solution.reviewedBy;
+  const rejectionReason =
+    solution.moderation?.rejectionReason ?? solution.rejectionReason;
   const verificationSteps = (solution.verificationSteps ?? []).filter(
     (step) => step.instruction || step.expectedResult,
   );
@@ -118,43 +138,51 @@ export function SolutionReviewDetail({ id }: { id: string }) {
     (file) => file.downloadUrl,
   );
   const author = solution.author;
+  const authorLabel = authorNameOf(
+    author,
+    solution.authorId ? "Author account" : "Unknown author",
+  );
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="w-full space-y-6 pb-12"
+      className="space-y-6 w-full pb-12"
     >
-      <header className="space-y-1 border-b border-slate-200/80 pb-4 dark:border-slate-800">
-        <Link
-          href={BACK_HREF}
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
-        >
-          <ArrowLeft className="size-3.5" />
-          Content Management
-        </Link>
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+        <div className="flex min-w-0 flex-col gap-1">
+          <Link
+            href={BACK_HREF}
+            className="inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+          >
+            <ArrowLeft className="size-3.5" />
+            Content Management
+          </Link>
 
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-100">
-          {solution.summary || "Untitled answer"}
-        </h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-100">
+            {title}
+          </h1>
 
-        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Review the submitted solution and its supporting evidence. Posted{" "}
+            {formatDateTime(solution.createdAt)}.
+          </p>
+        </div>
+
+        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
           <ReviewBadge status={review} />
           {solution.approachType && (
             <span className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300">
               {APPROACH_LABELS[solution.approachType]}
             </span>
           )}
-          {solution.isAccepted && (
+          {isAccepted && (
             <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
               <CheckCircle2 aria-hidden="true" className="size-3.5" />
               Accepted by asker
             </span>
           )}
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-            Posted {formatDateTime(solution.createdAt)}
-          </span>
         </div>
       </header>
 
@@ -197,12 +225,36 @@ export function SolutionReviewDetail({ id }: { id: string }) {
             <h2 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
               The answer
             </h2>
-            {solution.bodyMarkdown ? (
-              <MarkdownView source={solution.bodyMarkdown} />
+            {solutionBody ? (
+              <MarkdownView source={solutionBody} />
             ) : (
               <p className="text-sm text-slate-500 dark:text-slate-400">
                 This answer was posted without a body.
               </p>
+            )}
+
+            {(solution.videoUrl || solution.diagramUrl) && (
+              <div className="mt-6 border-t border-slate-100 pt-4 dark:border-slate-800">
+                <h3 className="mb-2.5 text-sm font-bold text-slate-900 dark:text-slate-100">
+                  Supporting material
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {solution.videoUrl && (
+                    <SupportingLink
+                      href={solution.videoUrl}
+                      label="Video walkthrough"
+                      icon={Video}
+                    />
+                  )}
+                  {solution.diagramUrl && (
+                    <SupportingLink
+                      href={solution.diagramUrl}
+                      label="Solution diagram"
+                      icon={ImageIcon}
+                    />
+                  )}
+                </div>
+              </div>
             )}
 
             {verificationSteps.length > 0 && (
@@ -361,12 +413,12 @@ export function SolutionReviewDetail({ id }: { id: string }) {
                 </div>
                 <Row
                   label="Reviewed"
-                  value={formatDateTime(solution.moderation?.reviewedAt)}
+                  value={formatDateTime(reviewedAt)}
                 />
-                {solution.moderation?.rejectionReason && (
+                {rejectionReason && (
                   <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
                     <span className="font-bold">Reason: </span>
-                    {solution.moderation.rejectionReason}
+                    {rejectionReason}
                   </p>
                 )}
               </div>
@@ -387,16 +439,22 @@ export function SolutionReviewDetail({ id }: { id: string }) {
                 />
               ) : (
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-                  {initialsOf(authorNameOf(author, "?"))}
+                  {initialsOf(authorLabel)}
                 </span>
               )}
               <div className="min-w-0">
                 <p className="truncate text-base font-bold text-slate-900 dark:text-slate-100">
-                  {authorNameOf(author)}
+                  {authorLabel}
                 </p>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {(author?.reputation ?? 0).toLocaleString()} reputation
-                </p>
+                {author?.reputation !== undefined ? (
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                    {author.reputation.toLocaleString()} reputation
+                  </p>
+                ) : solution.authorId ? (
+                  <p className="truncate font-mono text-sm text-slate-500 dark:text-slate-400">
+                    {solution.authorId}
+                  </p>
+                ) : null}
               </div>
             </div>
           </section>
@@ -418,6 +476,10 @@ export function SolutionReviewDetail({ id }: { id: string }) {
               value={String(verificationSteps.length)}
             />
             <Row label="Attachments" value={String(attachments.length)} />
+            <Row label="Submitted" value={formatDateTime(solution.createdAt)} />
+            <Row label="Updated" value={formatDateTime(solution.updatedAt)} />
+            {reviewedBy && <Row label="Reviewed by" value={reviewedBy} />}
+            <Row label="Solution ID" value={solution.id} />
             {testedWith.length > 0 && (
               <div className="space-y-1.5 border-t border-slate-100 pt-3 dark:border-slate-800">
                 <span className="text-xs text-slate-500 dark:text-slate-400">
@@ -442,7 +504,7 @@ export function SolutionReviewDetail({ id }: { id: string }) {
 
       <SolutionDecisionDialog
         solutionId={id}
-        title={solution.summary ?? ""}
+        title={title}
         decision={decision}
         isOpen={Boolean(decision)}
         onClose={() => setDecision(null)}
@@ -451,13 +513,39 @@ export function SolutionReviewDetail({ id }: { id: string }) {
   );
 }
 
+function SupportingLink({
+  href,
+  label,
+  icon: Icon,
+}: {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer noopener"
+      className="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+    >
+      <Icon aria-hidden="true" className="size-4 text-slate-400" />
+      {label}
+      <ExternalLink aria-hidden="true" className="size-3.5 text-slate-400" />
+    </a>
+  );
+}
+
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3">
+    <div className="flex items-start justify-between gap-3">
       <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
         {label}
       </span>
-      <span className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
+      <span
+        title={value}
+        className="min-w-0 break-words text-right text-sm font-semibold text-slate-800 dark:text-slate-200"
+      >
         {value}
       </span>
     </div>

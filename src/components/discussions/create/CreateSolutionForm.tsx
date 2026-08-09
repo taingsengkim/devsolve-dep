@@ -40,7 +40,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MarkdownEditor } from "@/components/reports/MarkdownEditor";
-import { useCreateSolutionMutation } from "@/lib/redux/services/solutionsApi";
+import {
+  useCreateSolutionMutation,
+  useUpdateSolutionMutation,
+  type SolutionResponse,
+} from "@/lib/redux/services/solutionsApi";
 import type { ProblemResponse } from "@/lib/redux/services/problemsApi";
 import { excerptOf } from "@/lib/markdown-excerpt";
 import { authorNameOf, messageOf } from "@/lib/discussions/format";
@@ -88,6 +92,11 @@ const MAX_RESOURCES = 10;
 interface CreateSolutionFormProps {
   problemId: string;
   problem?: ProblemResponse;
+  /**
+   * An existing answer to revise. Its presence is what puts the form in edit
+   * mode: same fields and same rules, a different verb.
+   */
+  solution?: SolutionResponse;
   /** Where a posted solution lands the author. Defaults to the problem. */
   successHref?: string;
   cancelHref?: string;
@@ -97,14 +106,18 @@ interface CreateSolutionFormProps {
 export function CreateSolutionForm({
   problemId,
   problem,
+  solution,
   successHref,
   cancelHref,
   stickyTop = "1.5rem",
 }: CreateSolutionFormProps) {
   const router = useRouter();
-  const [createSolution, { isLoading: submitting }] =
-    useCreateSolutionMutation();
+  const [createSolution, { isLoading: creating }] = useCreateSolutionMutation();
+  const [updateSolution, { isLoading: saving }] = useUpdateSolutionMutation();
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const isEdit = Boolean(solution);
+  const submitting = creating || saving;
 
   const back = cancelHref ?? `/community/${problemId}`;
   const done = successHref ?? `/community/${problemId}`;
@@ -117,14 +130,27 @@ export function CreateSolutionForm({
     formState: { errors },
   } = useForm<SolutionFormInput, unknown, SolutionFormValues>({
     resolver: zodResolver(solutionFormSchema),
+    /* In edit mode the existing answer seeds the fields. Rows are copied
+       rather than referenced so editing one does not mutate the cached
+       response behind it. */
     defaultValues: {
-      summary: "",
-      bodyMarkdown: "",
-      approachType: "FIX",
-      verificationSteps: [],
-      testedWith: [],
-      tradeoffs: "",
-      resources: [],
+      summary: solution?.summary ?? "",
+      bodyMarkdown: solution?.bodyMarkdown ?? "",
+      approachType: solution?.approachType ?? "FIX",
+      verificationSteps: (solution?.verificationSteps ?? []).map((step) => ({
+        instruction: step.instruction ?? "",
+        expectedResult: step.expectedResult ?? "",
+      })),
+      testedWith: (solution?.testedWith ?? []).map((entry) => ({
+        technology: entry.technology ?? "",
+        version: entry.version ?? "",
+      })),
+      tradeoffs: solution?.tradeoffs ?? "",
+      resources: (solution?.resources ?? []).map((item) => ({
+        type: item.type ?? "DOCUMENTATION",
+        label: item.label ?? "",
+        url: item.url ?? "",
+      })),
     },
   });
 
@@ -161,30 +187,66 @@ export function CreateSolutionForm({
         url: (item.url ?? "").trim(),
       }));
 
-    try {
-      await createSolution({
-        problemId,
-        body: {
-          summary: values.summary.trim(),
-          bodyMarkdown: values.bodyMarkdown,
-          approachType: values.approachType,
-          // Empty collections are dropped rather than sent as `[]`.
-          verificationSteps: verificationSteps.length
-            ? verificationSteps
-            : undefined,
-          testedWith: testedWith.length ? testedWith : undefined,
-          tradeoffs: values.tradeoffs?.trim() || undefined,
-          resources: links.length ? links : undefined,
-        },
-      }).unwrap();
+    const body = {
+      summary: values.summary.trim(),
+      bodyMarkdown: values.bodyMarkdown,
+      approachType: values.approachType,
+      /* Empty collections are sent as `[]` on an edit and dropped on a create.
+         The difference matters: PATCH treats an absent field as "leave it
+         alone", so omitting an emptied list would silently keep the old rows
+         the author just deleted. */
+      verificationSteps: isEdit
+        ? verificationSteps
+        : verificationSteps.length
+          ? verificationSteps
+          : undefined,
+      testedWith: isEdit
+        ? testedWith
+        : testedWith.length
+          ? testedWith
+          : undefined,
+      tradeoffs: values.tradeoffs?.trim() || undefined,
+      resources: isEdit ? links : links.length ? links : undefined,
+    };
 
-      toast.success("Solution posted", {
-        description: "It now appears under this problem.",
-      });
+    try {
+      if (solution) {
+        await updateSolution({
+          id: solution.id,
+          version: solution.version ?? 0,
+          problemId,
+          body,
+        }).unwrap();
+
+        toast.success("Solution updated", {
+          description: "Your changes go back through review before publishing.",
+        });
+      } else {
+        await createSolution({ problemId, body }).unwrap();
+
+        toast.success("Solution posted", {
+          description: "It goes live on this problem once a moderator approves it.",
+        });
+      }
+
       router.push(done);
     } catch (caught) {
+      /* A 412 is the concurrency guard, not a validation failure: someone
+         saved a newer version between this form loading and submitting. */
+      const status =
+        typeof caught === "object" && caught !== null && "status" in caught
+          ? (caught as { status?: number }).status
+          : undefined;
+
       setSubmitError(
-        messageOf(caught, "Your solution could not be posted. Try again."),
+        status === 412
+          ? "This answer changed since you opened it. Reload the page to pick up the newer version, then edit again."
+          : messageOf(
+              caught,
+              isEdit
+                ? "Your changes could not be saved. Try again."
+                : "Your solution could not be posted. Try again.",
+            ),
       );
     }
   };
@@ -867,12 +929,12 @@ export function CreateSolutionForm({
                         aria-hidden="true"
                         className="animate-spin motion-reduce:animate-none"
                       />
-                      Posting…
+                      {isEdit ? "Saving…" : "Posting…"}
                     </>
                   ) : (
                     <>
                       <Send data-icon="inline-start" aria-hidden="true" />
-                      Post solution
+                      {isEdit ? "Save changes" : "Post solution"}
                     </>
                   )}
                 </Button>

@@ -54,6 +54,8 @@ interface MyProblem {
     | "CLOSED"
     | "REJECTED";
   viewCount?: number;
+  /** The backend's own gate on whether this problem may still be revised. */
+  canEdit?: boolean;
   publishedAt?: string;
   createdAt?: string;
 }
@@ -145,6 +147,9 @@ export const myCommunityApi = baseApi.injectEndpoints({
               problem.publishedAt ||
               problem.createdAt ||
               new Date().toISOString(),
+            /* `canEdit` is the backend's own gate — a published problem with
+               answers under it is not the same as an untouched draft. */
+            editHref: problem.canEdit ? `/community/${problem.id}/edit` : undefined,
             views: problem.viewCount ?? 0,
             state: PROBLEM_STATE[problem.status],
           }),
@@ -163,6 +168,11 @@ export const myCommunityApi = baseApi.injectEndpoints({
               excerpt: body,
               href: solution.problemId
                 ? `/community/${solution.problemId}`
+                : undefined,
+              /* The edit route is nested under the problem, so an answer that
+                 does not name one cannot be edited from here. */
+              editHref: solution.problemId
+                ? `/community/${solution.problemId}/solutions/${solution.id}/edit`
                 : undefined,
               problemId: solution.problemId,
               createdAt: solution.createdAt || new Date().toISOString(),

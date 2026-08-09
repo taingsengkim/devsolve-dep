@@ -402,11 +402,14 @@ export function ReviewBadge({ status }: { status: SolutionReviewStatus }) {
       "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300",
     REJECTED:
       "bg-rose-100 text-rose-800 dark:bg-rose-500/10 dark:text-rose-300",
+    ACCEPTED:
+      "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300",
   };
   const labels: Record<SolutionReviewStatus, string> = {
     PENDING: "Pending review",
     APPROVED: "Approved",
     REJECTED: "Rejected",
+    ACCEPTED: "Accepted",
   };
 
   return (

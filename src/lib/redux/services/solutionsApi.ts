@@ -4,6 +4,7 @@ import type {
   ApproachType,
   CreateSolutionRequest,
   ResourceType,
+  UpdateSolutionRequest,
 } from "@/lib/validations/solution";
 import type { AttachmentSummary, AuthorSummary } from "./problemsApi";
 
@@ -66,6 +67,8 @@ export interface SolutionResponse {
   viewerVote?: string;
   /** Sent back as the `If-Match` header on an update. */
   version?: number;
+  /** Set client-side when this record came from the signed-in user's list. */
+  viewerOwnsSolution?: boolean;
   moderation?: ModerationDetails;
   createdAt: string;
   updatedAt?: string;
@@ -78,6 +81,26 @@ export interface PublicProfileSummary {
   avatarUrl?: string;
   biography?: string;
   reputation?: number;
+}
+
+const EDITABLE_SOLUTIONS_PAGE_SIZE = 100;
+
+function mergeEditableSolution(
+  published: SolutionResponse | undefined,
+  owned: SolutionResponse,
+): SolutionResponse {
+  if (!published) return { ...owned, viewerOwnsSolution: true };
+
+  return {
+    ...published,
+    ...owned,
+    /* The author's endpoint may omit expanded relations even though its text
+       and moderation fields are the pending revision we need. */
+    author: owned.author ?? published.author,
+    problemId: owned.problemId ?? published.problemId,
+    version: owned.version ?? published.version,
+    viewerOwnsSolution: true,
+  };
 }
 
 export const solutionsApi = baseApi.injectEndpoints({
@@ -161,6 +184,108 @@ export const solutionsApi = baseApi.injectEndpoints({
     }),
 
     /**
+     * One answer in full for the edit form.
+     *
+     * The public detail endpoint keeps returning the last approved copy while
+     * an edit is waiting for moderation. `/solutions/mine` is the author's
+     * source of truth and carries that pending copy, so it wins when present.
+     * The public detail remains the fallback and supplies expanded relations
+     * that the author list may omit.
+     */
+    getSolutionById: builder.query<SolutionResponse, string>({
+      async queryFn(id, _api, _extraOptions, fetchWithBQ) {
+        const [detailResult, firstMineResult] = await Promise.all([
+          fetchWithBQ(`/solutions/${id}`),
+          fetchWithBQ(
+            `/solutions/mine?pageNumber=0&pageSize=${EDITABLE_SOLUTIONS_PAGE_SIZE}`,
+          ),
+        ]);
+
+        const published = detailResult.error
+          ? undefined
+          : (detailResult.data as SolutionResponse | undefined);
+
+        let minePage = firstMineResult.error
+          ? undefined
+          : (firstMineResult.data as Page<SolutionResponse> | undefined);
+        let editable = minePage?.content.find(
+          (solution) =>
+            solution.id === id || solution.moderation?.revisionId === id,
+        );
+
+        /* Most authors fit on the first page. Continue only when necessary so
+           an older answer still opens its pending revision correctly. */
+        for (
+          let pageNumber = 1;
+          !editable && pageNumber < (minePage?.totalPages ?? 0);
+          pageNumber += 1
+        ) {
+          const nextMineResult = await fetchWithBQ(
+            `/solutions/mine?pageNumber=${pageNumber}&pageSize=${EDITABLE_SOLUTIONS_PAGE_SIZE}`,
+          );
+          if (nextMineResult.error) break;
+
+          minePage = nextMineResult.data as Page<SolutionResponse> | undefined;
+          editable = minePage?.content.find(
+            (solution) =>
+              solution.id === id || solution.moderation?.revisionId === id,
+          );
+        }
+
+        if (editable) {
+          return { data: mergeEditableSolution(published, editable) };
+        }
+        if (detailResult.error) return { error: detailResult.error };
+        if (published) return { data: published };
+
+        return {
+          error: {
+            status: "CUSTOM_ERROR",
+            error: "The solution response was empty.",
+          },
+        };
+      },
+      providesTags: (_result, _error, id) => [{ type: "Solution", id }],
+    }),
+
+    /**
+     * PATCH /api/solutions/{id} — the author revising their own answer.
+     *
+     * `version` becomes the `If-Match` header, quoted the way the upstream
+     * ETag is. Saving over a newer version is refused with a 412 rather than
+     * silently winning.
+     *
+     * Editing sends the answer back through review upstream, so the author's
+     * own list is invalidated alongside the problem's.
+     */
+    updateSolution: builder.mutation<
+      SolutionResponse,
+      {
+        id: string;
+        version: number;
+        problemId?: string;
+        body: UpdateSolutionRequest;
+      }
+    >({
+      query: ({ id, version, body }) => ({
+        url: `/solutions/${id}`,
+        method: "PATCH",
+        headers: { "If-Match": `"${version}"` },
+        body,
+      }),
+      invalidatesTags: (_result, _error, { id, problemId }) => [
+        { type: "Solution", id },
+        { type: "Solution", id: "MINE" },
+        ...(problemId
+          ? [
+              { type: "Solution" as const, id: problemId },
+              { type: "Problem" as const, id: problemId },
+            ]
+          : []),
+      ],
+    }),
+
+    /**
      * DELETE /api/solutions/{id} — the author withdrawing their own answer.
      *
      * The problem it answered is invalidated alongside the author's own list,
@@ -186,8 +311,10 @@ export const solutionsApi = baseApi.injectEndpoints({
 export const {
   useGetSolutionsByProblemQuery,
   useGetMySolutionsQuery,
+  useGetSolutionByIdQuery,
   useGetPublicProfileQuery,
   useGetMyProfileQuery,
   useCreateSolutionMutation,
+  useUpdateSolutionMutation,
   useDeleteSolutionMutation,
 } = solutionsApi;

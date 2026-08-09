@@ -129,6 +129,15 @@ export const solutionCreateSchema = z.object({
 export type CreateSolutionRequest = z.output<typeof solutionCreateSchema>;
 
 /**
+ * `SolutionUpdateRequest` — every field optional, matching the PATCH contract.
+ * The per-field rules are unchanged; only the requirement to send them goes.
+ */
+export const solutionUpdateSchema = solutionCreateSchema.partial();
+
+/** Validated body sent to `PATCH /api/v1/solutions/{id}`. */
+export type UpdateSolutionRequest = z.output<typeof solutionUpdateSchema>;
+
+/**
  * Form-level rules can be stricter than the wire contract. Empty rows are the
  * normal state of a repeatable field mid-edit, so the form permits them and
  * the submit handler drops them rather than the resolver rejecting the form.

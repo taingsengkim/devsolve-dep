@@ -54,7 +54,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { MarkdownEditor } from "@/components/reports/MarkdownEditor";
 import { parseApiError } from "@/lib/api/errors";
 import { useGetActiveCategoriesQuery } from "@/lib/redux/services/categoriesApi";
-import { useCreateProblemMutation } from "@/lib/redux/services/problemsApi";
+import {
+  useCreateProblemMutation,
+  useUpdateProblemMutation,
+  type ProblemResponse,
+} from "@/lib/redux/services/problemsApi";
 import {
   createProblemFormSchema,
   PROBLEM_SEVERITIES,
@@ -148,17 +152,24 @@ function serverFieldPath(field: string): FieldPath<ProblemFormInput> | null {
 }
 
 interface CreateProblemFormProps {
+  /**
+   * An existing problem to revise. Its presence is what puts the form in edit
+   * mode: same fields and same rules, a different verb.
+   */
+  problem?: ProblemResponse;
   successHref?: string;
   cancelHref?: string;
   stickyTop?: string;
 }
 
 export function CreateProblemForm({
+  problem,
   successHref = "/dashboard/my-community",
   cancelHref = "/community/create",
   stickyTop = "1.5rem",
 }: CreateProblemFormProps) {
   const router = useRouter();
+  const isEdit = Boolean(problem);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [tagDraft, setTagDraft] = useState("");
   const [tagDraftError, setTagDraftError] = useState<string | null>(null);
@@ -168,8 +179,9 @@ export function CreateProblemForm({
     isLoading: loadingCategories,
     isError: categoriesFailed,
   } = useGetActiveCategoriesQuery("PROBLEM");
-  const [createProblem, { isLoading: mutationLoading }] =
-    useCreateProblemMutation();
+  const [createProblem, { isLoading: creating }] = useCreateProblemMutation();
+  const [updateProblem, { isLoading: saving }] = useUpdateProblemMutation();
+  const mutationLoading = creating || saving;
 
   const categoryItems = useMemo(
     () =>
@@ -206,18 +218,35 @@ export function CreateProblemForm({
   } = useForm<ProblemFormInput, unknown, ProblemFormValues>({
     resolver: zodResolver(createProblemFormSchema),
     mode: "onBlur",
+    /* In edit mode the existing problem seeds the fields. Rows are copied
+       rather than referenced so editing one does not mutate the cached
+       response behind it. */
     defaultValues: {
-      title: "",
-      description: "",
-      expectedBehavior: "",
-      actualBehavior: "",
-      attemptsTried: "",
-      errorMessage: "",
-      repositoryUrl: "",
-      technologies: [],
-      environment: [],
-      reproductionSteps: [],
-      newTagNames: [],
+      title: problem?.title ?? "",
+      description: problem?.description ?? "",
+      categoryId: problem?.category?.id,
+      problemType: problem?.problemType,
+      severity: problem?.severity,
+      sdlcPhase: problem?.sdlcPhase,
+      expectedBehavior: problem?.expectedBehavior ?? "",
+      actualBehavior: problem?.actualBehavior ?? "",
+      attemptsTried: problem?.attemptsTried ?? "",
+      errorMessage: problem?.errorMessage ?? "",
+      repositoryUrl: problem?.repositoryUrl ?? "",
+      technologies: (problem?.technologies ?? []).map((tech) => ({
+        name: tech.name ?? "",
+        version: tech.version ?? "",
+      })),
+      environment: (problem?.environment ?? []).map((entry) => ({
+        technology: entry.technology ?? "",
+        version: entry.version ?? "",
+      })),
+      reproductionSteps: [...(problem?.reproductionSteps ?? [])],
+      /* Existing tags come back as objects with ids; the form edits names, and
+         resending them as `newTagNames` is how the backend re-links them. */
+      newTagNames: (problem?.tags ?? [])
+        .map((tag) => tag.name ?? "")
+        .filter(Boolean),
     },
   });
 
@@ -362,35 +391,71 @@ export function CreateProblemForm({
       .map((step) => step.trim())
       .filter(Boolean);
 
-    try {
-      const problem = await createProblem({
-        ...values,
-        technologies: values.technologies?.map((technology) => ({
+    /* On an edit, emptied collections are sent as `[]` rather than dropped:
+       PATCH reads an absent field as "leave it alone", so omitting a list the
+       author just cleared would silently restore the old rows. */
+    const listOrUndefined = <T,>(list: T[]) =>
+      isEdit ? list : list.length ? list : undefined;
+
+    const body = {
+      ...values,
+      technologies: listOrUndefined(
+        (values.technologies ?? []).map((technology) => ({
           name: technology.name.trim(),
           version: technology.version?.trim() || undefined,
         })),
-        environment: environment.length ? environment : undefined,
-        reproductionSteps: steps.length ? steps : undefined,
-        expectedBehavior: trimmedOrUndefined(values.expectedBehavior),
-        actualBehavior: trimmedOrUndefined(values.actualBehavior),
-        attemptsTried: trimmedOrUndefined(values.attemptsTried),
-        errorMessage: trimmedOrUndefined(values.errorMessage),
-        repositoryUrl: trimmedOrUndefined(values.repositoryUrl),
-        newTagNames: submittedTags.length
-          ? submittedTags.map((tag) => tag.trim())
-          : undefined,
-      }).unwrap();
+      ),
+      environment: listOrUndefined(environment),
+      reproductionSteps: listOrUndefined(steps),
+      expectedBehavior: trimmedOrUndefined(values.expectedBehavior),
+      actualBehavior: trimmedOrUndefined(values.actualBehavior),
+      attemptsTried: trimmedOrUndefined(values.attemptsTried),
+      errorMessage: trimmedOrUndefined(values.errorMessage),
+      repositoryUrl: trimmedOrUndefined(values.repositoryUrl),
+      newTagNames: listOrUndefined(submittedTags.map((tag) => tag.trim())),
+    };
+
+    try {
+      if (problem?.id) {
+        await updateProblem({
+          id: problem.id,
+          version: problem.version ?? 0,
+          body,
+        }).unwrap();
+
+        toast.success("Problem updated.");
+        router.push(successHref);
+        return;
+      }
+
+      const created = await createProblem(body).unwrap();
 
       toast.success(
-        problem.status === "PENDING_APPROVAL"
+        created.status === "PENDING_APPROVAL"
           ? "Problem submitted for review."
           : "Problem submitted successfully.",
       );
       router.push(successHref);
     } catch (error) {
+      /* A 412 is the concurrency guard, not a validation failure: someone
+         saved a newer version between this form loading and submitting. */
+      const status =
+        typeof error === "object" && error !== null && "status" in error
+          ? (error as { status?: number }).status
+          : undefined;
+
+      if (status === 412) {
+        setSubmitError(
+          "This problem changed since you opened it. Reload the page to pick up the newer version, then edit again.",
+        );
+        return;
+      }
+
       const parsed = parseApiError(
         error,
-        "The problem could not be submitted. Please try again.",
+        isEdit
+          ? "Your changes could not be saved. Please try again."
+          : "The problem could not be submitted. Please try again.",
       );
 
       for (const [field, message] of Object.entries(parsed.fieldErrors)) {
@@ -1544,7 +1609,7 @@ export function CreateProblemForm({
                       id="submit-problem-heading"
                       className="text-lg font-bold"
                     >
-                      Submit problem
+                      {isEdit ? "Save changes" : "Submit problem"}
                     </h2>
                   </CardTitle>
                   <Badge
@@ -1635,12 +1700,12 @@ export function CreateProblemForm({
                           aria-hidden="true"
                           className="animate-spin motion-reduce:animate-none"
                         />
-                        Submitting…
+                        {isEdit ? "Saving…" : "Submitting…"}
                       </>
                     ) : (
                       <>
                         <Send data-icon="inline-start" aria-hidden="true" />
-                        Submit problem
+                        {isEdit ? "Save changes" : "Submit problem"}
                       </>
                     )}
                   </Button>

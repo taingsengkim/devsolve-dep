@@ -5,6 +5,7 @@ import type {
   ProblemSeverity,
   ProblemStatus,
   ProblemType,
+  ProblemUpdateRequest,
   SdlcPhase,
 } from "@/lib/validations/problem";
 
@@ -132,6 +133,31 @@ export const problemsApi = baseApi.injectEndpoints({
     }),
 
     /**
+     * PATCH /api/problems/{id} — the author revising their own problem.
+     *
+     * `version` becomes the `If-Match` header, quoted the way the upstream
+     * ETag is (`ETag: "3"` for `version: 3`). Saving over someone else's
+     * newer version is refused with a 412 rather than silently winning.
+     */
+    updateProblem: builder.mutation<
+      ProblemResponse,
+      { id: string; version: number; body: ProblemUpdateRequest }
+    >({
+      query: ({ id, version, body }) => ({
+        url: `/problems/${id}`,
+        method: "PATCH",
+        headers: { "If-Match": `"${version}"` },
+        body,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Problem", id },
+        { type: "Problem", id: "LIST" },
+        { type: "Problem", id: "MINE" },
+        { type: "Discussion", id: "LIST" },
+      ],
+    }),
+
+    /**
      * DELETE /api/problems/{id} — the author withdrawing their own problem.
      * A soft delete upstream, so the record survives but stops being served.
      */
@@ -205,6 +231,7 @@ export const problemsApi = baseApi.injectEndpoints({
 
 export const {
   useCreateProblemMutation,
+  useUpdateProblemMutation,
   useGetProblemByIdQuery,
   useGetProblemsQuery,
   useDeleteProblemMutation,

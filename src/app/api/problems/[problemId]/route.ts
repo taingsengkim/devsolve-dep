@@ -1,13 +1,16 @@
 import { type NextRequest } from "next/server";
 import {
   asUuid,
+  badJson,
   badRequest,
   bearerTokenFor,
   relay,
   unauthorized,
   unreachable,
   upstreamFetch,
+  validationFailed,
 } from "@/lib/api/proxy";
+import { problemUpdateSchema } from "@/lib/validations/problem";
 
 /**
  * GET /api/problems/{id} — one problem in full.
@@ -35,6 +38,53 @@ export async function GET(request: NextRequest, context: Context) {
   try {
     const upstream = await upstreamFetch(`/problems/${id}`, token);
     return relay(upstream, "Unable to load that problem.");
+  } catch {
+    return unreachable("problem");
+  }
+}
+
+/**
+ * PATCH /api/problems/{id} — the author revising their own problem.
+ *
+ * Guarded by `If-Match`, which upstream compares against the record's version
+ * (a GET answers `ETag: "3"` for `version: 3`). Two people editing the same
+ * problem means the second save arrives with a stale version and is refused
+ * with a 412 rather than quietly overwriting the first. The header is
+ * therefore required and relayed verbatim — inventing one here, or defaulting
+ * to `*`, would disable exactly the check it exists for.
+ */
+export async function PATCH(request: NextRequest, context: Context) {
+  const token = await bearerTokenFor(request);
+  if (!token) return unauthorized();
+
+  const { problemId: raw } = await context.params;
+  const id = asUuid(raw);
+  if (!id) return badRequest("Problem id must be a UUID");
+
+  const ifMatch = request.headers.get("If-Match");
+  if (!ifMatch) {
+    return badRequest(
+      "An If-Match header carrying the problem's version is required",
+    );
+  }
+
+  let payload: unknown;
+  try {
+    payload = await request.json();
+  } catch {
+    return badJson();
+  }
+
+  const parsed = problemUpdateSchema.safeParse(payload);
+  if (!parsed.success) return validationFailed(parsed.error);
+
+  try {
+    const upstream = await upstreamFetch(`/problems/${id}`, token, {
+      method: "PATCH",
+      headers: { "If-Match": ifMatch },
+      body: JSON.stringify(parsed.data),
+    });
+    return relay(upstream, "The problem could not be saved.");
   } catch {
     return unreachable("problem");
   }

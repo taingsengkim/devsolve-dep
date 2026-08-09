@@ -216,6 +216,18 @@ export const problemCreateSchema = z.object({
 /** Raw values accepted by the wire schema. */
 export type CreateProblemInput = z.input<typeof problemCreateSchema>;
 
+/**
+ * `ProblemUpdateRequest` — every field optional, matching the PATCH contract.
+ *
+ * The field rules are the create rules, so a title still cannot be shortened
+ * below ten characters; what changes is that omitting a field is allowed and
+ * means "leave it alone".
+ */
+export const problemUpdateSchema = problemCreateSchema.partial();
+
+/** Validated body sent to `PATCH /api/v1/problems/{id}`. */
+export type ProblemUpdateRequest = z.output<typeof problemUpdateSchema>;
+
 /** Validated request body sent to `POST /api/v1/problems`. */
 export type CreateProblemRequest = z.output<typeof problemCreateSchema>;
 

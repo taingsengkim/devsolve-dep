@@ -11,7 +11,11 @@ import { PaginatedResponse } from "./types";
  */
 
 /** What `UpdateSolutionReviewStatusRequest.reviewStatus` accepts. */
-export type SolutionReviewStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type SolutionReviewStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "ACCEPTED";
 
 /**
  * Mirrors `AuthorSummary`. The name arrives as `displayName` on a solution and
@@ -71,9 +75,19 @@ export interface SolutionAttachment {
 export interface SolutionResponse {
   id: string;
   problemId?: string;
+  /** Present on the compact admin response when author details are not expanded. */
+  authorId?: string;
   author?: SolutionAuthor;
   summary?: string;
   bodyMarkdown?: string;
+  /**
+   * The deployed admin API currently calls the solution body `description`.
+   * Keep the richer `bodyMarkdown` field as well so the screen works with
+   * both response versions during the backend rollout.
+   */
+  description?: string;
+  videoUrl?: string;
+  diagramUrl?: string;
   approachType?: "FIX" | "WORKAROUND" | "EXPLANATION" | "ALTERNATIVE";
   verificationSteps?: SolutionVerificationStep[];
   testedWith?: SolutionTestedWith[];
@@ -86,6 +100,11 @@ export interface SolutionResponse {
   commentCount?: number;
   version?: number;
   moderation?: SolutionModerationDetails;
+  /** Compact admin responses expose moderation fields at the top level. */
+  reviewStatus?: SolutionReviewStatus;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
   createdAt: string;
   updatedAt?: string;
 }

@@ -21,6 +21,7 @@ import {
   FolderGit2,
   ListOrdered,
   MessageSquare,
+  Pencil,
   Plus,
   RotateCcw,
   Send,
@@ -608,6 +609,19 @@ function Loaded({
                   {isBookmarked ? "Bookmarked" : "Bookmark"}
                 </button>
 
+                {/* Whether this problem may be edited is the backend's call,
+                    carried on the response — a published problem with answers
+                    under it is not the same as an untouched draft. */}
+                {problem.canEdit && (
+                  <Link
+                    href={`/community/${id}/edit`}
+                    className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    <Pencil className="size-4" />
+                    Edit
+                  </Link>
+                )}
+
                 {problem.repositoryUrl?.startsWith("https://") && (
                   <a
                     href={problem.repositoryUrl}
@@ -664,7 +678,7 @@ function Loaded({
                 author sees no trace of what they just wrote and assumes it
                 failed to send. */}
             {unpublished.map((mine) => (
-              <MyAnswerNotice key={mine.solutionId} answer={mine} />
+              <MyAnswerNotice key={mine.solutionId} answer={mine} problemId={id} />
             ))}
 
             {/* Why the composer is absent, when it is. Silence would read as a
@@ -706,6 +720,7 @@ function Loaded({
                     solution={solution}
                     index={index}
                     canAccept={canAccept}
+                    isMine={Boolean(me?.id && solution.author?.id === me.id)}
                     accepted={isAcceptedSolution(
                       solution.id,
                       solution.isAccepted,
@@ -897,7 +912,13 @@ function Loaded({
  * shows a problem, and everything they can do about the answer itself (read
  * the rejection, delete it, post a replacement) lives under My Community.
  */
-function MyAnswerNotice({ answer }: { answer: MySolutionStatus }) {
+function MyAnswerNotice({
+  answer,
+  problemId,
+}: {
+  answer: MySolutionStatus;
+  problemId: string;
+}) {
   const isRejected = answer.review === "REJECTED";
 
   return (
@@ -961,17 +982,33 @@ function MyAnswerNotice({ answer }: { answer: MySolutionStatus }) {
         </div>
       </div>
 
-      <Link
-        href={MY_COMMUNITY_HREF}
-        className={`inline-flex h-9 shrink-0 items-center gap-1.5 self-start rounded-xl border px-3.5 text-sm font-bold transition sm:self-auto ${
-          isRejected
-            ? "border-rose-300 text-rose-700 hover:bg-rose-100 dark:border-rose-500/40 dark:text-rose-300 dark:hover:bg-rose-500/20"
-            : "border-amber-300 text-amber-800 hover:bg-amber-100 dark:border-amber-500/40 dark:text-amber-300 dark:hover:bg-amber-500/20"
-        }`}
-      >
-        Manage in My Community
-        <ArrowRight aria-hidden="true" className="size-4" />
-      </Link>
+      <div className="flex shrink-0 flex-wrap items-center gap-2 self-start sm:self-auto">
+        {/* Editing is the next step after a rejection, so it leads. A pending
+            answer can be edited too, which resets its place in the queue. */}
+        <Link
+          href={`/community/${problemId}/solutions/${answer.solutionId}/edit`}
+          className={`inline-flex h-9 items-center gap-1.5 rounded-xl px-3.5 text-sm font-bold text-white transition ${
+            isRejected
+              ? "bg-rose-600 hover:bg-rose-700"
+              : "bg-amber-600 hover:bg-amber-700"
+          }`}
+        >
+          <Pencil aria-hidden="true" className="size-4" />
+          Edit answer
+        </Link>
+
+        <Link
+          href={MY_COMMUNITY_HREF}
+          className={`inline-flex h-9 items-center gap-1.5 rounded-xl border px-3.5 text-sm font-bold transition ${
+            isRejected
+              ? "border-rose-300 text-rose-700 hover:bg-rose-100 dark:border-rose-500/40 dark:text-rose-300 dark:hover:bg-rose-500/20"
+              : "border-amber-300 text-amber-800 hover:bg-amber-100 dark:border-amber-500/40 dark:text-amber-300 dark:hover:bg-amber-500/20"
+          }`}
+        >
+          My Community
+          <ArrowRight aria-hidden="true" className="size-4" />
+        </Link>
+      </div>
     </div>
   );
 }
