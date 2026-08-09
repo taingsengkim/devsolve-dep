@@ -97,6 +97,28 @@ export const solutionsApi = baseApi.injectEndpoints({
       ],
     }),
 
+    /**
+     * GET /api/solutions/mine — the caller's own answers, review state and all.
+     *
+     * The public list under a problem serves approved answers only, so this is
+     * the only place an author can see that the one they just posted exists and
+     * is waiting. Signed-out callers get a 401, which is the answer.
+     */
+    getMySolutions: builder.query<
+      Page<SolutionResponse>,
+      { pageNumber?: number; pageSize?: number } | void
+    >({
+      query: (args) => {
+        const params: Record<string, string> = {};
+        if (args?.pageNumber !== undefined)
+          params.pageNumber = String(args.pageNumber);
+        if (args?.pageSize !== undefined)
+          params.pageSize = String(args.pageSize);
+        return { url: "/solutions/mine", params };
+      },
+      providesTags: [{ type: "Solution", id: "MINE" }],
+    }),
+
     /** GET /api/user-profiles/{userId} — an author's public profile. */
     getPublicProfile: builder.query<PublicProfileSummary, string>({
       query: (userId) => `/user-profiles/${userId}`,
@@ -163,6 +185,7 @@ export const solutionsApi = baseApi.injectEndpoints({
 
 export const {
   useGetSolutionsByProblemQuery,
+  useGetMySolutionsQuery,
   useGetPublicProfileQuery,
   useGetMyProfileQuery,
   useCreateSolutionMutation,

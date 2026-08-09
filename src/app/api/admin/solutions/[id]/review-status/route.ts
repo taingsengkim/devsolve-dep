@@ -8,7 +8,7 @@ const PROVIDER_ID = "keycloak";
 /**
  * Mirrors `UpdateSolutionReviewStatusRequest`. `ACCEPTED` was accepted here
  * once and is not a review status upstream — the asker accepting an answer is
- * `PUT /problems/{id}/accepted-solution`, a different call by a different
+ * `PUT /problems/{id}/accepted-solutions`, a different call by a different
  * person. Sending it here earned a 400 from the backend.
  */
 const reviewStatusSchema = z.object({

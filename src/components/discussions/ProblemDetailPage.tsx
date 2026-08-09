@@ -9,11 +9,13 @@ import {
   AlertCircle,
   AlertTriangle,
   ArrowLeft,
+  ArrowRight,
   Bookmark,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
   CircleDot,
+  Clock,
   Download,
   Eye,
   FolderGit2,
@@ -26,12 +28,14 @@ import {
   Target,
   TerminalSquare,
   Wrench,
+  XCircle,
 } from "lucide-react";
 
 import { SolutionCard } from "@/components/discussions/SolutionCard";
 import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
 import {
   useGetProblemByIdQuery,
+  useRemoveAcceptedSolutionMutation,
   useSetAcceptedSolutionMutation,
   type ProblemResponse,
   type ProblemSeverity,
@@ -62,6 +66,11 @@ import {
   initialsOf,
   messageOf,
 } from "@/lib/discussions/format";
+import {
+  MY_COMMUNITY_HREF,
+  useMySolutionStatus,
+  type MySolutionStatus,
+} from "@/hooks/useMySolutionStatus";
 
 /**
  * One problem, read from the API — `GET /api/v1/problems/{id}` for the post,
@@ -186,8 +195,19 @@ function Loaded({
     useBookmarkDiscussionMutation();
   const isBookmarked = bookmark?.bookmarked ?? problem.isBookmarkedByViewer;
 
-  const [acceptSolution, { isLoading: isAccepting }] =
+  const [acceptSolution, { isLoading: isSettingAccepted }] =
     useSetAcceptedSolutionMutation();
+  const [unacceptSolution, { isLoading: isRemovingAccepted }] =
+    useRemoveAcceptedSolutionMutation();
+  const isAccepting = isSettingAccepted || isRemovingAccepted;
+
+  /* The problem owns the list of accepted answers, so it is the authority when
+     it and a solution's own `isAccepted` disagree — which they do between a
+     click and the refetch that follows it. */
+  const acceptedIds = useMemo(
+    () => new Set(problem.acceptedSolutionIds ?? []),
+    [problem.acceptedSolutionIds],
+  );
 
   const { data: commentPage } = useGetCommentsQuery({
     commentableType: "PROBLEM",
@@ -199,6 +219,17 @@ function Loaded({
   const [draft, setDraft] = useState("");
   const [commentError, setCommentError] = useState<string | null>(null);
 
+  const isAcceptedSolution = (solutionId: string, flag?: boolean) =>
+    acceptedIds.size > 0 ? acceptedIds.has(solutionId) : Boolean(flag);
+
+  /* What the reader has already posted here. Only worth asking once they are
+     signed in — a visitor has nothing of their own to be told about. */
+  const { forProblem } = useMySolutionStatus({ skip: !isSignedIn });
+  const myAnswers = forProblem(id);
+  /* An approved answer is already in the list below under its own card, so
+     repeating it here would say the same thing twice. */
+  const unpublished = myAnswers.filter((mine) => mine.review !== "APPROVED");
+
   const solutions = useMemo(() => {
     const list = [...(solutionPage?.content ?? [])];
     const newest = (a: (typeof list)[number], b: (typeof list)[number]) =>
@@ -207,14 +238,22 @@ function Loaded({
     if (sortOrder === "newest") return list.sort(newest);
 
     /* Accepted first, then by score — the order someone scanning for the
-       answer wants, and now possible since `voteScore` rides along. */
+       answer wants. Several may be accepted, so this groups rather than
+       lifting a single winner. */
+    const accepted = (solution: (typeof list)[number]) =>
+      Number(
+        acceptedIds.size > 0
+          ? acceptedIds.has(solution.id)
+          : Boolean(solution.isAccepted),
+      );
+
     return list.sort(
       (a, b) =>
-        Number(Boolean(b.isAccepted)) - Number(Boolean(a.isAccepted)) ||
+        accepted(b) - accepted(a) ||
         (b.voteScore ?? 0) - (a.voteScore ?? 0) ||
         newest(a, b),
     );
-  }, [solutionPage, sortOrder]);
+  }, [solutionPage, sortOrder, acceptedIds]);
 
   const comments = commentPage?.content ?? [];
   const attachments = problem.attachments ?? [];
@@ -251,6 +290,15 @@ function Loaded({
       });
     } catch (caught) {
       toast.error(messageOf(caught, "That answer could not be accepted."));
+    }
+  };
+
+  const onUnaccept = async (solutionId: string) => {
+    try {
+      await unacceptSolution({ problemId: id, solutionId }).unwrap();
+      toast.success("Acceptance withdrawn");
+    } catch (caught) {
+      toast.error(messageOf(caught, "That answer could not be unaccepted."));
     }
   };
 
@@ -601,10 +649,19 @@ function Loaded({
                   className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-2xs transition-colors hover:bg-emerald-700"
                 >
                   <Plus aria-hidden="true" className="size-4" />
-                  Post your solution
+                  {myAnswers.length > 0 ? "Post another" : "Post your solution"}
                 </Link>
               )}
             </div>
+
+            {/* ── The reader's own answers on this problem ──
+                A posted answer is held for review, so it is absent from the
+                list below until a moderator approves it. Without this the
+                author sees no trace of what they just wrote and assumes it
+                failed to send. */}
+            {unpublished.map((mine) => (
+              <MyAnswerNotice key={mine.solutionId} answer={mine} />
+            ))}
 
             {/* Why the composer is absent, when it is. Silence would read as a
                 bug to whoever came here to answer. */}
@@ -645,7 +702,12 @@ function Loaded({
                     solution={solution}
                     index={index}
                     canAccept={canAccept}
+                    accepted={isAcceptedSolution(
+                      solution.id,
+                      solution.isAccepted,
+                    )}
                     onAccept={(solutionId) => void onAccept(solutionId)}
+                    onUnaccept={(solutionId) => void onUnaccept(solutionId)}
                     isAccepting={isAccepting}
                   />
                 ))}
@@ -788,12 +850,12 @@ function Loaded({
                   />
                 ) : (
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-                    {initialsOf(problem.author?.displayName || "?")}
+                    {initialsOf(problem.author?.fullName || "?")}
                   </span>
                 )}
                 <div className="min-w-0">
                   <p className="truncate text-base font-bold text-slate-900 dark:text-slate-100">
-                    {problem.author?.displayName ?? "Unknown author"}
+                    {problem.author?.fullName ?? "Unknown author"}
                   </p>
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                     {(problem.author?.reputation ?? 0).toLocaleString()}{" "}
@@ -820,6 +882,93 @@ function Loaded({
         </div>
       </main>
     </motion.div>
+  );
+}
+
+/**
+ * One of the reader's own answers that is not on the page yet — waiting on a
+ * moderator, or turned away by one.
+ *
+ * It links to their dashboard rather than offering an action here: this page
+ * shows a problem, and everything they can do about the answer itself (read
+ * the rejection, delete it, post a replacement) lives under My Community.
+ */
+function MyAnswerNotice({ answer }: { answer: MySolutionStatus }) {
+  const isRejected = answer.review === "REJECTED";
+
+  return (
+    <div
+      className={`flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between ${
+        isRejected
+          ? "border-rose-200 bg-rose-50 dark:border-rose-500/30 dark:bg-rose-500/10"
+          : "border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10"
+      }`}
+    >
+      <div className="flex min-w-0 items-start gap-3">
+        {isRejected ? (
+          <XCircle
+            aria-hidden="true"
+            className="mt-0.5 size-5 shrink-0 text-rose-600 dark:text-rose-400"
+          />
+        ) : (
+          <Clock
+            aria-hidden="true"
+            className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400"
+          />
+        )}
+
+        <div className="min-w-0 space-y-1">
+          <p
+            className={`text-sm font-bold ${
+              isRejected
+                ? "text-rose-800 dark:text-rose-200"
+                : "text-amber-800 dark:text-amber-200"
+            }`}
+          >
+            {isRejected
+              ? "Your solution was not approved"
+              : "Your solution is waiting for review"}
+          </p>
+
+          {answer.summary && (
+            <p
+              className={`truncate text-sm font-medium ${
+                isRejected
+                  ? "text-rose-700 dark:text-rose-300"
+                  : "text-amber-700 dark:text-amber-300"
+              }`}
+            >
+              “{answer.summary}”
+            </p>
+          )}
+
+          <p
+            className={`text-sm ${
+              isRejected
+                ? "text-rose-700 dark:text-rose-300"
+                : "text-amber-700 dark:text-amber-300"
+            }`}
+          >
+            {isRejected
+              ? (answer.rejectionReason ??
+                "No reason was given. You can edit it and post again.")
+              : `Posted ${formatDate(answer.createdAt, "recently")}. Nobody else can see it until a moderator approves it.`}
+          </p>
+        </div>
+      </div>
+
+      <Link
+        href={MY_COMMUNITY_HREF}
+        className={`inline-flex h-9 shrink-0 items-center gap-1.5 self-start rounded-xl border px-3.5 text-sm font-bold transition sm:self-auto ${
+          isRejected
+            ? "border-rose-300 text-rose-700 hover:bg-rose-100 dark:border-rose-500/40 dark:text-rose-300 dark:hover:bg-rose-500/20"
+            : "border-amber-300 text-amber-800 hover:bg-amber-100 dark:border-amber-500/40 dark:text-amber-300 dark:hover:bg-amber-500/20"
+        }`}
+      >
+        Manage in My Community
+        <ArrowRight aria-hidden="true" className="size-4" />
+      </Link>
+    </div>
   );
 }
 

@@ -25,7 +25,7 @@ export interface ProblemFeedParams {
 
 export interface AuthorSummary {
   id?: string;
-  displayName?: string;
+  fullName?: string;
   avatarUrl?: string;
   reputation?: number;
 }
@@ -95,7 +95,8 @@ export interface ProblemResponse {
   commentCount?: number;
   voteScore?: number;
   bookmarkCount?: number;
-  acceptedSolutionId?: string;
+  /** Plural: a problem may accept more than one answer. */
+  acceptedSolutionIds?: string[];
   isBookmarkedByViewer?: boolean;
   viewerVote?: string;
   canEdit?: boolean;
@@ -137,16 +138,19 @@ export const problemsApi = baseApi.injectEndpoints({
     }),
 
     /**
-     * PUT /api/problems/{problemId}/accepted-solution — the asker marking one
-     * answer as the one that worked. Only the problem's author may do it, and
-     * the backend is what enforces that.
+     * PUT /api/problems/{problemId}/accepted-solutions — the asker marking an
+     * answer as one that worked. Only the problem's author may do it, and the
+     * backend is what enforces that.
+     *
+     * Plural, and additive: accepting a second answer does not replace the
+     * first, so a problem solved two ways can say so.
      */
     setAcceptedSolution: builder.mutation<
       ProblemResponse,
       { problemId: string; solutionId: string }
     >({
       query: ({ problemId, solutionId }) => ({
-        url: `/problems/${problemId}/accepted-solution`,
+        url: `/problems/${problemId}/accepted-solutions`,
         method: "PUT",
         body: { solutionId },
       }),
@@ -156,13 +160,20 @@ export const problemsApi = baseApi.injectEndpoints({
       ],
     }),
 
-    /** DELETE of the same — un-accepting an answer. */
-    removeAcceptedSolution: builder.mutation<ProblemResponse, string>({
-      query: (problemId) => ({
-        url: `/problems/${problemId}/accepted-solution`,
+    /**
+     * DELETE /api/problems/{problemId}/accepted-solutions/{solutionId} —
+     * un-accepting one answer. The id is in the path because several may be
+     * accepted at once, so which one is being withdrawn has to be named.
+     */
+    removeAcceptedSolution: builder.mutation<
+      ProblemResponse,
+      { problemId: string; solutionId: string }
+    >({
+      query: ({ problemId, solutionId }) => ({
+        url: `/problems/${problemId}/accepted-solutions/${solutionId}`,
         method: "DELETE",
       }),
-      invalidatesTags: (_result, _error, problemId) => [
+      invalidatesTags: (_result, _error, { problemId }) => [
         { type: "Problem", id: problemId },
         { type: "Solution", id: problemId },
       ],

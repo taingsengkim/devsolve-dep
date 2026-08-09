@@ -346,7 +346,7 @@ function QueueRow({
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="truncate text-xs font-semibold text-slate-600 dark:text-slate-300">
-          by {item.author?.displayName ?? "Unknown author"}
+          by {item.author?.fullName ?? "Unknown author"}
         </span>
 
         <div className="flex flex-wrap items-center gap-2">

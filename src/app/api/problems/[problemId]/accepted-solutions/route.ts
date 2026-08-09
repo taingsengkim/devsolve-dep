@@ -13,7 +13,12 @@ import {
 } from "@/lib/api/proxy";
 
 /**
- * The accepted answer on a problem — `PUT` to mark one, `DELETE` to unmark.
+ * PUT /api/problems/{problemId}/accepted-solutions — the asker accepting an
+ * answer.
+ *
+ * Additive rather than exclusive: a problem may carry several accepted
+ * answers, so this adds one to the set. Withdrawing one names it in the path,
+ * which is why the DELETE lives a segment deeper.
  *
  * Only the problem's author may accept, and the backend is the authority on
  * that: whatever it refuses comes back unchanged.
@@ -46,31 +51,11 @@ export async function PUT(request: NextRequest, context: Context) {
 
   try {
     const upstream = await upstreamFetch(
-      `/problems/${problemId}/accepted-solution`,
+      `/problems/${problemId}/accepted-solutions`,
       token,
       { method: "PUT", body: JSON.stringify(parsed.data) },
     );
     return relay(upstream, "That answer could not be accepted.");
-  } catch {
-    return unreachable("problem");
-  }
-}
-
-export async function DELETE(request: NextRequest, context: Context) {
-  const token = await bearerTokenFor(request);
-  if (!token) return unauthorized();
-
-  const { problemId: raw } = await context.params;
-  const problemId = asUuid(raw);
-  if (!problemId) return badRequest("Problem id must be a UUID");
-
-  try {
-    const upstream = await upstreamFetch(
-      `/problems/${problemId}/accepted-solution`,
-      token,
-      { method: "DELETE" },
-    );
-    return relay(upstream, "That answer could not be unaccepted.");
   } catch {
     return unreachable("problem");
   }

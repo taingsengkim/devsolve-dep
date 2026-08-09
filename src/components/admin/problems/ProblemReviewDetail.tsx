@@ -160,7 +160,7 @@ export function ProblemReviewDetail({ id }: { id: string }) {
             <p className="text-sm text-slate-500 dark:text-slate-400">
               by{" "}
               <span className="font-semibold text-slate-800 dark:text-slate-200">
-                {problem.author?.displayName ?? "Unknown author"}
+                {problem.author?.fullName ?? "Unknown author"}
               </span>{" "}
               · submitted {formatDateTime(problem.createdAt)}
             </p>
@@ -371,7 +371,7 @@ export function ProblemReviewDetail({ id }: { id: string }) {
               Author
             </h2>
             <p className="text-base font-bold text-slate-900 dark:text-slate-100">
-              {problem.author?.displayName ?? "Unknown author"}
+              {problem.author?.fullName ?? "Unknown author"}
             </p>
             <dl className="space-y-2">
               <FactRow

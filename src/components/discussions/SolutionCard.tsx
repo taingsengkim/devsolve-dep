@@ -17,6 +17,7 @@ import {
   Network,
   Scale,
   Video,
+  X,
   type LucideIcon,
 } from "lucide-react";
 
@@ -55,7 +56,13 @@ interface SolutionCardProps {
   /** Shown only to whoever may accept — the problem's author. */
   canAccept?: boolean;
   onAccept?: (solutionId: string) => void;
+  /** Withdrawing an acceptance. Several answers may be accepted at once, so
+   *  each card offers to undo its own rather than clearing the problem's. */
+  onUnaccept?: (solutionId: string) => void;
   isAccepting?: boolean;
+  /** The problem's own list wins over the solution's flag when the two
+   *  disagree, which they do for a moment after accepting. */
+  accepted?: boolean;
 }
 
 /** Roughly a screenful. Past this the body is worth folding away. */
@@ -85,7 +92,9 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
   index,
   canAccept = false,
   onAccept,
+  onUnaccept,
   isAccepting = false,
+  accepted,
 }) => {
   const { data: votes } = useGetVoteSummaryQuery({
     type: "SOLUTION",
@@ -106,9 +115,9 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
      with the solution itself is the better guess than zero. */
   const score = votes?.score ?? solution.voteScore ?? 0;
 
-  const isAccepted = Boolean(solution.isAccepted);
+  const isAccepted = accepted ?? Boolean(solution.isAccepted);
   const author = solution.author;
-  const name = author?.displayName || "Unknown author";
+  const name = author?.fullName || "Unknown author";
 
   const verificationSteps = (solution.verificationSteps ?? []).filter(
     (step) => step.instruction || step.expectedResult,
@@ -226,6 +235,9 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
                 </span>
               )}
 
+              {/* Accepting is additive — more than one answer may be marked —
+                  so the button is a toggle on each card rather than a single
+                  choice across the page. */}
               {canAccept && !isAccepted && onAccept && (
                 <button
                   type="button"
@@ -235,6 +247,18 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
                 >
                   <Check aria-hidden="true" className="size-3.5" />
                   Accept
+                </button>
+              )}
+
+              {canAccept && isAccepted && onUnaccept && (
+                <button
+                  type="button"
+                  onClick={() => onUnaccept(solution.id)}
+                  disabled={isAccepting}
+                  className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  <X aria-hidden="true" className="size-3.5" />
+                  Unaccept
                 </button>
               )}
             </div>

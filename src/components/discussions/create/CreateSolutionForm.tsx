@@ -758,7 +758,7 @@ export function CreateSolutionForm({
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   by{" "}
                   <span className="font-semibold text-slate-700 dark:text-slate-300">
-                    {problem?.author?.displayName ?? "Unknown author"}
+                    {problem?.author?.fullName ?? "Unknown author"}
                   </span>
                 </p>
 
