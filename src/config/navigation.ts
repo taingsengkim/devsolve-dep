@@ -48,7 +48,7 @@ export const NAV_ITEMS: NavItem[] = [
   // USER Role items
   { name: "Reports", href: "/dashboard/my-reports", icon: FileText, roles: ["USER"], category: "Researcher" },
   { name: "Rewards", href: "/dashboard/rewards", icon: CircleDollarSign, roles: ["USER"], category: "Researcher" },
-  { name: "Bookmarks", href: "/dashboard/bookmarks", icon: Bookmark, badge: 3, roles: ["USER"], category: "Researcher" },
+  { name: "Bookmarks", href: "/dashboard/bookmarks", icon: Bookmark, roles: ["USER"], category: "Researcher" },
   { name: "Saved Drafts", href: "/dashboard/saved-draft", icon: FilePen, roles: ["USER"], category: "Researcher" },
 
   // COMPANY Role items

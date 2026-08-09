@@ -1,24 +1,40 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Bookmark, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
 import { Program } from "@/lib/types/programs/types";
 import { usePathname } from "next/navigation";
+import {
+  useGetBookmarkStatusQuery,
+  useAddBookmarkMutation,
+  useRemoveBookmarkMutation,
+} from "@/lib/redux/services/bookmarksApi";
 
 interface ProgramCardProps {
   program: Program;
 }
 
 export function ProgramCard({ program }: ProgramCardProps) {
-  // Bookmark state (can be initialized from program.isBookmarked if your API provides it)
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const { data: isBookmarked } = useGetBookmarkStatusQuery({ type: "PROGRAM", targetId: program.id });
+  const [addBookmark, { isLoading: isSaving }] = useAddBookmarkMutation();
+  const [removeBookmark, { isLoading: isRemoving }] = useRemoveBookmarkMutation();
+  const isToggling = isSaving || isRemoving;
 
-  const toggleBookmark = (e: React.MouseEvent) => {
+  const toggleBookmark = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevents triggers if nested inside clickable elements
-    setIsBookmarked((prev) => !prev);
-    // TODO: Call your backend API / RTK Query mutation here to save bookmark status
+    if (isToggling) return;
+    try {
+      if (isBookmarked) {
+        await removeBookmark({ type: "PROGRAM", targetId: program.id }).unwrap();
+      } else {
+        await addBookmark({ type: "PROGRAM", targetId: program.id }).unwrap();
+      }
+    } catch {
+      toast.error("Failed to update bookmark. Please try again.");
+    }
   };
 
   // Determine if this is a Bounty vs Response program
@@ -64,8 +80,10 @@ export function ProgramCard({ program }: ProgramCardProps) {
       <button
         onClick={toggleBookmark}
         type="button"
-        aria-label="Bookmark program"
-        className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50/80 active:scale-95 transition-all duration-200 z-10"
+        disabled={isToggling}
+        aria-pressed={!!isBookmarked}
+        aria-label={isBookmarked ? "Remove bookmark" : "Bookmark program"}
+        className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50/80 active:scale-95 transition-all duration-200 z-10 disabled:opacity-60"
       >
         <Bookmark
           className={`w-5 h-5 transition-colors ${

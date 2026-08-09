@@ -45,8 +45,11 @@ import {
   useRemoveVoteMutation,
   useSetVoteMutation,
 } from "@/lib/redux/services/votesApi";
-import { useGetBookmarkStatusQuery } from "@/lib/redux/services/bookmarksApi";
-import { useBookmarkDiscussionMutation } from "@/lib/redux/services/discussionsApi";
+import {
+  useGetBookmarkStatusQuery,
+  useAddBookmarkMutation,
+  useRemoveBookmarkMutation,
+} from "@/lib/redux/services/bookmarksApi";
 import {
   useCreateCommentMutation,
   useGetCommentsQuery,
@@ -176,18 +179,17 @@ function Loaded({
   const hasDownvoted = votes?.currentUserVote === -1;
   const score = votes?.score ?? problem.voteScore ?? 0;
 
-  /* A signed-out visitor gets a 401 from the status endpoint, which is not
-     worth surfacing — the button simply shows as un-bookmarked. */
-  const { data: bookmark } = useGetBookmarkStatusQuery({
+  const { data: bookmarkStatus } = useGetBookmarkStatusQuery({
     type: "PROBLEM",
     targetId: id,
   });
-  const [toggleBookmark, { isLoading: isBookmarking }] =
-    useBookmarkDiscussionMutation();
-  const isBookmarked = bookmark?.bookmarked ?? problem.isBookmarkedByViewer;
+  const [addBookmark, { isLoading: isAddingBookmark }] = useAddBookmarkMutation();
+  const [removeBookmark, { isLoading: isRemovingBookmark }] = useRemoveBookmarkMutation();
+  const isBookmarked = bookmarkStatus ?? problem.isBookmarkedByViewer ?? false;
 
   const [acceptSolution, { isLoading: isAccepting }] =
     useSetAcceptedSolutionMutation();
+  const isBookmarking = isAddingBookmark || isRemovingBookmark;
 
   const { data: commentPage } = useGetCommentsQuery({
     commentableType: "PROBLEM",
@@ -236,11 +238,11 @@ function Loaded({
 
   const onBookmark = async () => {
     if (isBookmarking) return;
-    await toggleBookmark({
-      id,
-      category: "Problems",
-      bookmarked: !isBookmarked,
-    });
+    if (isBookmarked) {
+      await removeBookmark({ type: "PROBLEM", targetId: id });
+    } else {
+      await addBookmark({ type: "PROBLEM", targetId: id });
+    }
   };
 
   const onAccept = async (solutionId: string) => {
@@ -542,7 +544,7 @@ function Loaded({
                   type="button"
                   onClick={() => void onBookmark()}
                   disabled={isBookmarking}
-                  aria-pressed={Boolean(isBookmarked)}
+                  aria-pressed={isBookmarked}
                   className={`flex cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 py-1.5 font-medium transition disabled:opacity-50 ${
                     isBookmarked
                       ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300"
@@ -550,7 +552,6 @@ function Loaded({
                   }`}
                 >
                   <Bookmark
-                    aria-hidden="true"
                     className={`size-4 ${isBookmarked ? "fill-current" : ""}`}
                   />
                   {isBookmarked ? "Bookmarked" : "Bookmark"}

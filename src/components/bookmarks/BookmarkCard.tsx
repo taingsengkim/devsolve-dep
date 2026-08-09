@@ -11,14 +11,14 @@ import { toast } from "sonner";
 
 interface BookmarkCardProps {
   item: BookmarkItem;
-  onRemove: (id: string) => void;
+  onRemove: (item: BookmarkItem) => void;
 }
 
 export const BookmarkCard: React.FC<BookmarkCardProps> = ({ item, onRemove }) => {
   const handleRemove = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onRemove(item.id);
+    onRemove(item);
     toast.success("Bookmark removed", {
       description: `"${item.title}" removed from your saved items.`,
     });
@@ -111,47 +111,60 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({ item, onRemove }) =>
 
       {/* CATEGORY SPECIFIC METADATA */}
       <div className="pt-1">
-        {item.category === "Program" && (
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80">
-            <span className="font-semibold text-slate-700 dark:text-slate-300">
-              {item.companyName || "Organization"}
-            </span>
-            <span className="font-bold text-emerald-600 dark:text-emerald-400">
-              Max {item.bountyMax || "Bounty"}
-            </span>
-            <span className="flex items-center gap-1">
-              <Layers className="w-3.5 h-3.5" />
-              {item.inScopeCount} assets
-            </span>
-          </div>
-        )}
+        {item.category === "Program" &&
+          (item.companyName || item.bountyMax || item.inScopeCount !== undefined) && (
+            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80">
+              <span className="font-semibold text-slate-700 dark:text-slate-300">
+                {item.companyName || "Organization"}
+              </span>
+              {item.bountyMax && (
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                  Max {item.bountyMax}
+                </span>
+              )}
+              {item.inScopeCount !== undefined && (
+                <span className="flex items-center gap-1">
+                  <Layers className="w-3.5 h-3.5" />
+                  {item.inScopeCount} assets
+                </span>
+              )}
+            </div>
+          )}
 
-        {item.category === "Problems" && (
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80">
-            <span className="flex items-center gap-1 font-semibold text-amber-600 dark:text-amber-400">
-              <Award className="w-3.5 h-3.5" />
-              {item.points} Points
-            </span>
-            <span>{item.submissionsCount} submissions</span>
-            <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
-              <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" />
-              {item.status}
-            </span>
-          </div>
-        )}
+        {item.category === "Problems" &&
+          (item.points !== undefined || item.submissionsCount !== undefined || item.status) && (
+            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80">
+              {item.points !== undefined && (
+                <span className="flex items-center gap-1 font-semibold text-amber-600 dark:text-amber-400">
+                  <Award className="w-3.5 h-3.5" />
+                  {item.points} Points
+                </span>
+              )}
+              {item.submissionsCount !== undefined && <span>{item.submissionsCount} submissions</span>}
+              {item.status && (
+                <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" />
+                  {item.status}
+                </span>
+              )}
+            </div>
+          )}
 
-        {item.category === "Solutions" && (
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80">
-            <span className="font-medium text-slate-700 dark:text-slate-300">
-              By {item.authorName || "Community Member"}
-            </span>
-            <span>{item.readTime}</span>
-            <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
-              <ThumbsUp className="w-3.5 h-3.5 text-blue-500" />
-              {item.likesCount}
-            </span>
-          </div>
-        )}
+        {item.category === "Solutions" &&
+          (item.authorName || item.readTime || item.likesCount !== undefined) && (
+            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80">
+              <span className="font-medium text-slate-700 dark:text-slate-300">
+                By {item.authorName || "Community Member"}
+              </span>
+              {item.readTime && <span>{item.readTime}</span>}
+              {item.likesCount !== undefined && (
+                <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
+                  <ThumbsUp className="w-3.5 h-3.5 text-blue-500" />
+                  {item.likesCount}
+                </span>
+              )}
+            </div>
+          )}
       </div>
 
       {/* TAGS CHIPS */}
