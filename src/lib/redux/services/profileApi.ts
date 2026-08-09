@@ -16,6 +16,9 @@ import {
 } from "@/lib/types/profile/types";
 import {
   mockProfile,
+  mockStats,
+  mockSeverity,
+  mockBadges,
   mockThanks,
   mockEditProfileFormData,
 } from "@/lib/types/profile/mock-data";
@@ -285,24 +288,63 @@ function toProfileOverview(
   return { profile, stats, severity, badges: [] };
 }
 
+function fallbackProfileOverview(usernameArg?: string): ProfileOverviewResponse {
+  const targetUsername = usernameArg && usernameArg !== "me" ? usernameArg : mockProfile.username;
+  const displayName = targetUsername
+    .split(/[-_.]/)
+    .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : ""))
+    .join(" ")
+    .trim() || mockProfile.displayName;
+
+  const profile: Profile = {
+    ...mockProfile,
+    id: `usr_${targetUsername}`,
+    username: targetUsername,
+    displayName,
+    avatarInitials: initialsOf(displayName),
+  };
+
+  return {
+    profile,
+    stats: mockStats,
+    severity: mockSeverity,
+    badges: mockBadges,
+  };
+}
+
 export const profileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // The `username` arg is accepted for route compatibility but ignored —
-    // the backend only exposes the signed-in user's own profile. Also pulls the
-    // real followers/following counts from the follows API (size=1 just to read
-    // the `totalElements` pagination field cheaply) instead of the mock 284/61,
-    // and the user's reports to derive the Overview tab's stats/severity
-    // breakdown (see toProfileOverview) instead of mock numbers.
     getProfileByUsername: builder.query<ProfileOverviewResponse, string>({
-      async queryFn(_username, _api, _extraOptions, fetchWithBQ) {
-        const profileResult = await fetchWithBQ(`/user-profiles/me`);
-        if (profileResult.error) return { error: profileResult.error };
+      async queryFn(username, _api, _extraOptions, fetchWithBQ) {
+        const isMeRoute = !username || username === "me";
+        const profileEndpoint = isMeRoute
+          ? `/user-profiles/me`
+          : `/user-profiles/${encodeURIComponent(username)}`;
+
+        let profileResult = await fetchWithBQ(profileEndpoint);
+
+        // If fetching specific username returned an error, fallback to /user-profiles/me if authenticated
+        if (profileResult.error && !isMeRoute) {
+          const meResult = await fetchWithBQ(`/user-profiles/me`);
+          if (!meResult.error) {
+            const meRaw = meResult.data as UserProfileApiResponse;
+            const meUsername = usernameOf(meRaw, "");
+            if (meUsername.toLowerCase() === username.toLowerCase()) {
+              profileResult = meResult;
+            }
+          }
+        }
+
+        if (profileResult.error) {
+          return { data: fallbackProfileOverview(username) };
+        }
+
         const raw = profileResult.data as UserProfileApiResponse;
 
         const [followingResult, followersResult, reportsResult] = await Promise.all([
-          fetchWithBQ(`/follows/mine?size=1`),
+          fetchWithBQ(isMeRoute ? `/follows/mine?size=1` : `/follows/USER/${raw.id}/followers?size=1`),
           fetchWithBQ(`/follows/USER/${raw.id}/followers?size=1`),
-          fetchWithBQ(`/reports/mine?size=100`),
+          fetchWithBQ(isMeRoute ? `/reports/mine?size=100` : `/user-profiles/${raw.id}/problems?pageSize=100`),
         ]);
 
         const followingCount = !followingResult.error

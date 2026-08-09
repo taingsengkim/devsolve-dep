@@ -8,6 +8,7 @@ import { Profile } from "@/lib/types/profile/types";
 interface ProfileHeaderProps {
   profile: Profile;
   backHref?: string;
+  isPublicView?: boolean;
 }
 
 /**
@@ -18,6 +19,7 @@ interface ProfileHeaderProps {
 export default function ProfileHeader({
   profile,
   backHref,
+  isPublicView = false,
 }: ProfileHeaderProps) {
   const [copied, setCopied] = useState(false);
 
@@ -48,19 +50,39 @@ export default function ProfileHeader({
           aria-label="Breadcrumb"
           className="flex items-center gap-1.5 text-sm font-medium text-slate-500"
         >
-          <Link
-            href="/dashboard"
-            className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
-          >
-            Dashboard
-          </Link>
-          <ChevronRight className="size-3.5 text-slate-300 dark:text-slate-700" />
-          <Link
-            href="/dashboard/profile"
-            className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
-          >
-            Profile
-          </Link>
+          {isPublicView ? (
+            <>
+              <Link
+                href="/"
+                className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
+              >
+                Home
+              </Link>
+              <ChevronRight className="size-3.5 text-slate-300 dark:text-slate-700" />
+              <Link
+                href="/leaderboard"
+                className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
+              >
+                Leaderboard
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/dashboard"
+                className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
+              >
+                Dashboard
+              </Link>
+              <ChevronRight className="size-3.5 text-slate-300 dark:text-slate-700" />
+              <Link
+                href="/dashboard/profile"
+                className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
+              >
+                Profile
+              </Link>
+            </>
+          )}
           <ChevronRight className="size-3.5 text-slate-300 dark:text-slate-700" />
           <span className="text-slate-900 dark:text-slate-200">
             @{profile.username}

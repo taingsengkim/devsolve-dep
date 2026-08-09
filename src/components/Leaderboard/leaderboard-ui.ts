@@ -109,7 +109,7 @@ export function tintFor(key: string) {
 }
 
 export function profileHref(username: string) {
-  return `/dashboard/profile/${username}`;
+  return `/profile/${username}`;
 }
 
 /** Rank movement, expressed as a sign so it never depends on colour alone. */

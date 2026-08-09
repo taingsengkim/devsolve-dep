@@ -20,6 +20,7 @@ interface ProfileSidebarProps {
   stats: ProfileStats;
   /** Switches the page into edit mode. Absent on pages that don't host one. */
   onEdit?: () => void;
+  baseProfilePath?: string;
 }
 
 function toHref(value: string): string {
@@ -40,6 +41,7 @@ export default function ProfileSidebar({
   profile,
   stats,
   onEdit,
+  baseProfilePath,
 }: ProfileSidebarProps) {
   const {
     avatarUrl,
@@ -53,6 +55,8 @@ export default function ProfileSidebar({
     following,
     isOwnProfile,
   } = profile;
+
+  const profileBasePath = baseProfilePath ?? (isOwnProfile ? "/dashboard/profile" : `/profile/${username}`);
 
   return (
     <motion.aside
@@ -127,7 +131,7 @@ export default function ProfileSidebar({
       {/* ── Followers / Following ─────────────────────── */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <Link
-          href={`/dashboard/profile/${username}/followers`}
+          href={`${profileBasePath}/followers`}
           id="profile-followers-link"
           className="flex items-center gap-1 text-sm font-semibold text-slate-700 transition-colors hover:text-blue-600 dark:text-slate-200 dark:hover:text-blue-400"
         >
@@ -141,7 +145,7 @@ export default function ProfileSidebar({
         </Link>
         <span className="text-slate-300 dark:text-slate-700">·</span>
         <Link
-          href={`/dashboard/profile/${username}/following`}
+          href={`${profileBasePath}/following`}
           id="profile-following-link"
           className="text-sm font-semibold transition-colors hover:text-blue-600 dark:text-slate-200 dark:hover:text-blue-400"
         >
