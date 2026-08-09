@@ -29,6 +29,13 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useCreateProgramMutation } from "@/lib/redux/services/program/programsApi";
 import type { Asset } from "@/lib/types/programs/types";
 
@@ -91,12 +98,21 @@ export default function CreateProgramPage() {
   const router = useRouter();
   const [createProgram, { isLoading: isCreating }] = useCreateProgramMutation();
 
-  type AssetType = "URL" | "IP" | "MOBILE" | "OTHER";
+  type AssetType =
+    | "URL"
+    | "WILDCARD"
+    | "IP_RANGE"
+    | "MOBILE_APP"
+    | "API"
+    | "SOURCE_CODE"
+    | "HARDWARE"
+    | "OTHER";
 
   const mapAssetType = (type: string): AssetType => {
-    if (type === "MOBILE") return "MOBILE";
+    if (type === "MOBILE") return "MOBILE_APP";
+    if (type === "IP") return "IP_RANGE";
+    if (type === "API") return "API";
     if (type === "OTHER") return "OTHER";
-    if (type === "IP") return "IP";
     return "URL";
   };
 
@@ -154,8 +170,38 @@ export default function CreateProgramPage() {
   };
 
   const handleCreateProgram = async () => {
-    if (!programName.trim() || !handle.trim() || !description.trim()) {
-      toast.error("Program name, handle, and description are required.");
+    const trimmedName = programName.trim();
+    const formattedHandle = formatHandle(handle);
+
+    if (trimmedName.length < 2 || trimmedName.length > 255) {
+      toast.error("Program name must be between 2 and 255 characters.");
+      setActiveTab(1);
+      return;
+    }
+
+    if (formattedHandle.length < 2 || formattedHandle.length > 100) {
+      toast.error("Program handle must be between 2 and 100 characters.");
+      setActiveTab(1);
+      return;
+    }
+
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(formattedHandle)) {
+      toast.error(
+        "Program handle must contain only lowercase letters, numbers, and single hyphens.",
+      );
+      setActiveTab(1);
+      return;
+    }
+
+    if (!description.trim()) {
+      toast.error("Program description is required.");
+      setActiveTab(1);
+      return;
+    }
+
+    if (!policy.trim()) {
+      toast.error("Responsible disclosure policy is required.");
+      setActiveTab(1);
       return;
     }
 
@@ -177,11 +223,11 @@ export default function CreateProgramPage() {
 
     try {
       const payload = {
-        handle,
-        name: programName,
+        handle: formattedHandle,
+        name: trimmedName,
         description,
         engagementType:
-          programType === "RESPONSE" ? ("VDP" as const) : ("BOUNTY" as const),
+          programType === "RESPONSE" ? ("RESPONSE" as const) : ("BOUNTY" as const),
         visibility,
         policy,
         proofOfConceptRequirements: pocRequirements,
@@ -209,90 +255,43 @@ export default function CreateProgramPage() {
         description: "Program created successfully. Redirecting now...",
       });
 
-
-
-      // navigation after create the program success
-      if (result?.id) {
-        // router.push(`/dashboard/programs/${result.id}`);
-      } else {
-        // router.push("/dashboard/programs");
-      }
+      router.push("/dashboard/program-management");
     } catch (error) {
       console.error("Create program failed", error);
 
       const apiError = error as FetchBaseQueryError & {
-        data?:
-          | string
-          | {
-              message?: string;
-              error?: string;
-              details?: string;
-              title?: string;
-              violations?: Array<{ field?: string; message?: string }>;
-              errors?: Array<string | { message?: string }>;
-            };
+        data?: unknown;
       };
 
-      const parseValidationMessage = () => {
-        if (typeof apiError.data === "string") {
-          return apiError.data;
+      const parseValidationMessage = (): string => {
+        if (typeof apiError.data === "string") return apiError.data;
+
+        const dataObj = apiError.data as Record<string, unknown> | undefined;
+        if (!dataObj) return "Unable to create program. Please try again.";
+
+        // Look for nested errorDetails or details object from proxy
+        const details = (dataObj.details ?? dataObj) as Record<string, unknown>;
+        const errorDetails =
+          (details?.errorDetails as Record<string, string> | undefined) ??
+          (dataObj.errorDetails as Record<string, string> | undefined);
+
+        if (errorDetails && typeof errorDetails === "object") {
+          const detailMessages = Object.entries(errorDetails)
+            .map(([field, msg]) => `${field}: ${msg}`)
+            .join(" | ");
+          if (detailMessages) return detailMessages;
         }
 
-        const data = apiError.data ?? {};
-        const message =
-          typeof data.message === "string" ? data.message : undefined;
-        const errorText =
-          typeof data.error === "string" ? data.error : undefined;
-        const details =
-          typeof data.details === "string" ? data.details : undefined;
-        const title = typeof data.title === "string" ? data.title : undefined;
-        const errorDetails =
-          data && typeof data === "object" && "errorDetails" in data
-            ? (data as { errorDetails?: unknown }).errorDetails
-            : undefined;
-
-        const violations = Array.isArray(data.violations)
-          ? data.violations
-              .map((item) =>
-                item && typeof item === "object"
-                  ? item.message || item.field || JSON.stringify(item)
-                  : String(item),
-              )
-              .filter(Boolean)
-          : [];
-
-        const errors = Array.isArray(data.errors)
-          ? data.errors
-              .map((item) =>
-                typeof item === "string"
-                  ? item
-                  : item && typeof item === "object"
-                    ? item.message || JSON.stringify(item)
-                    : String(item),
-              )
-              .filter(Boolean)
-          : [];
-
-        const errorDetailsMessages =
-          errorDetails && typeof errorDetails === "object"
-            ? Object.entries(errorDetails).map(
-                ([key, value]) =>
-                  `${key}: ${
-                    typeof value === "string" ? value : JSON.stringify(value)
-                  }`,
-              )
-            : [];
+        const msg =
+          typeof details?.message === "string"
+            ? details.message
+            : typeof dataObj.message === "string"
+              ? dataObj.message
+              : undefined;
 
         return (
-          message ||
-          errorText ||
-          details ||
-          title ||
-          violations.join(" \n") ||
-          errors.join(" \n") ||
-          errorDetailsMessages.join(" \n") ||
-          String(apiError.status) ||
-          "Unable to create program. Please check your details and try again."
+          msg ||
+          "Unable to create program. Please check your inputs and try again."
         );
       };
 
@@ -301,15 +300,20 @@ export default function CreateProgramPage() {
     }
   };
 
+  // Format text into valid program handle slug (max 100 chars, regex compliant)
+  const formatHandle = (text: string): string => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/[\s-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 100);
+  };
+
   // Handle Name Change & Auto Handle Generation
   const handleNameChange = (val: string) => {
     setProgramName(val);
-    setHandle(
-      val
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-"),
-    );
+    setHandle(formatHandle(val));
   };
 
   // Scope handlers
@@ -464,6 +468,7 @@ export default function CreateProgramPage() {
                       type="text"
                       placeholder="ACME Web Application Security"
                       value={programName}
+                      maxLength={255}
                       onChange={(e) => handleNameChange(e.target.value)}
                       className="h-11 rounded-xl border-slate-200 text-base focus-visible:ring-blue-500"
                     />
@@ -478,7 +483,8 @@ export default function CreateProgramPage() {
                       type="text"
                       placeholder="acme-web-security"
                       value={handle}
-                      onChange={(e) => setHandle(e.target.value)}
+                      maxLength={100}
+                      onChange={(e) => setHandle(formatHandle(e.target.value))}
                       className="h-11 rounded-xl border-slate-200 text-base font-mono focus-visible:ring-blue-500"
                     />
                   </div>
@@ -541,23 +547,23 @@ export default function CreateProgramPage() {
 
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
   {/* Program Type */}
   <div className="space-y-2">
     <label className="text-sm font-semibold text-slate-700">
       Program Type
     </label>
-    <div className="relative">
-      <select
-        value={programType}
-        onChange={(e) => setProgramType(e.target.value as ProgramType)}
-        className="w-full h-11 pl-3.5 pr-10 appearance-none rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer"
-      >
-        <option value="BOUNTY">Bounty (Offers Cash Rewards)</option>
-        <option value="RESPONSE">Response (Points / Reputation Only)</option>
-      </select>
-      <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-    </div>
+    <Select
+      value={programType}
+      onValueChange={(val) => setProgramType(val as ProgramType)}
+    >
+      <SelectTrigger className="w-full h-11 rounded-xl border-slate-200 bg-white text-slate-800 text-sm font-medium">
+        <SelectValue placeholder="Select Program Type" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="BOUNTY">Bounty (Offers Cash Rewards)</SelectItem>
+        <SelectItem value="RESPONSE">Response (Points / Reputation Only)</SelectItem>
+      </SelectContent>
+    </Select>
   </div>
 
   {/* Visibility */}
@@ -565,19 +571,19 @@ export default function CreateProgramPage() {
     <label className="text-sm font-semibold text-slate-700">
       Visibility
     </label>
-    <div className="relative">
-      <select
-        value={visibility}
-        onChange={(e) => setVisibility(e.target.value as ProgramVisibility)}
-        className="w-full h-11 pl-3.5 pr-10 appearance-none rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer"
-      >
-        <option value="PUBLIC">Public</option>
-        <option value="PRIVATE">Private</option>
-      </select>
-      <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-    </div>
+    <Select
+      value={visibility}
+      onValueChange={(val) => setVisibility(val as ProgramVisibility)}
+    >
+      <SelectTrigger className="w-full h-11 rounded-xl border-slate-200 bg-white text-slate-800 text-sm font-medium">
+        <SelectValue placeholder="Select Visibility" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="PUBLIC">Public</SelectItem>
+        <SelectItem value="PRIVATE">Private</SelectItem>
+      </SelectContent>
+    </Select>
   </div>
-
 </div>
 
 
@@ -619,20 +625,24 @@ export default function CreateProgramPage() {
 
                   {inScopeTargets.map((item, index) => (
                     <div key={item.id} className="flex items-center gap-3">
-                      <select
+                      <Select
                         value={item.type}
-                        onChange={(e) => {
+                        onValueChange={(val) => {
                           const updated = [...inScopeTargets];
-                          updated[index].type = e.target.value;
+                          updated[index].type = val ?? "WEB";
                           setInScopeTargets(updated);
                         }}
-                        className="h-11 px-3 rounded-xl border border-slate-200 bg-white text-sm font-medium focus:ring-2 focus:ring-blue-500 shrink-0"
                       >
-                        <option value="WEB">Web</option>
-                        <option value="API">API</option>
-                        <option value="MOBILE">Mobile</option>
-                        <option value="OTHER">Other</option>
-                      </select>
+                        <SelectTrigger className="h-11 w-32 rounded-xl border-slate-200 bg-white text-sm font-medium shrink-0">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="WEB">Web</SelectItem>
+                          <SelectItem value="API">API</SelectItem>
+                          <SelectItem value="MOBILE">Mobile</SelectItem>
+                          <SelectItem value="OTHER">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
 
                       <Input
                         type="text"
@@ -697,20 +707,24 @@ export default function CreateProgramPage() {
 
                   {outOfScopeTargets.map((item, index) => (
                     <div key={item.id} className="flex items-center gap-3">
-                      <select
+                      <Select
                         value={item.type}
-                        onChange={(e) => {
+                        onValueChange={(val) => {
                           const updated = [...outOfScopeTargets];
-                          updated[index].type = e.target.value;
+                          updated[index].type = val ?? "WEB";
                           setOutOfScopeTargets(updated);
                         }}
-                        className="h-11 px-3 rounded-xl border border-slate-200 bg-white text-sm font-medium focus:ring-2 focus:ring-blue-500 shrink-0"
                       >
-                        <option value="WEB">Web</option>
-                        <option value="API">API</option>
-                        <option value="MOBILE">Mobile</option>
-                        <option value="OTHER">Other</option>
-                      </select>
+                        <SelectTrigger className="h-11 w-32 rounded-xl border-slate-200 bg-white text-sm font-medium shrink-0">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="WEB">Web</SelectItem>
+                          <SelectItem value="API">API</SelectItem>
+                          <SelectItem value="MOBILE">Mobile</SelectItem>
+                          <SelectItem value="OTHER">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
 
                       <Input
                         type="text"
