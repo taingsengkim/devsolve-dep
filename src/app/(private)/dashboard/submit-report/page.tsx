@@ -77,10 +77,7 @@ function SubmitReportContent() {
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 text-xs font-bold text-blue-600 dark:text-blue-400 shrink-0 self-start sm:self-center shadow-2xs">
-            <Zap className="w-3.5 h-3.5 fill-current" />
-            <span>Express 2-Step Workflow</span>
-          </div>
+
         </div>
       </div>
 
