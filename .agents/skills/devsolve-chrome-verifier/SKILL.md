@@ -34,7 +34,7 @@ Navigate through all dashboard pages under `/dashboard/*`:
 2. **Moderation Audit Log** (`/dashboard/moderation-log`)
 3. **Content Flag Moderation** (`/dashboard/content-moderation`)
 4. **Problem Moderation** (`/dashboard/problem-moderation`)
-5. **Program / Bounty Admin** (`/dashboard/admin-program-management`)
+5. **Program / Bounty Admin** (`/dashboard/program-management`)
 6. **Showcase Review Queue** (`/dashboard/showcase-review`)
 7. **Solution Review Queue** (`/dashboard/solution-review`)
 8. **Category Management** (`/dashboard/categories`)

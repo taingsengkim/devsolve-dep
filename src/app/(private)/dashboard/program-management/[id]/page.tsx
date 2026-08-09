@@ -113,7 +113,7 @@ export default function AdminProgramDetailPage({
         <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
           Unable to load program details or the program ID is invalid.
         </p>
-        <Link href="/dashboard/admin-program-management">
+        <Link href="/dashboard/program-management">
           <Button variant="outline" className="rounded-xl mt-4">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Program Management
           </Button>
@@ -135,7 +135,7 @@ export default function AdminProgramDetailPage({
     >
       {/* BREADCRUMB & BACK BUTTON */}
       <div className="flex items-center gap-3">
-        <Link href="/dashboard/admin-program-management">
+        <Link href="/dashboard/program-management">
           <Button
             variant="ghost"
             size="sm"
