@@ -52,7 +52,7 @@ export default function ProfileTabsContainer({ stats, severity, badges, username
   });
 
   return (
-    <div className="mt-6">
+    <div>
       <ProfileTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
       <div className="mt-5">
