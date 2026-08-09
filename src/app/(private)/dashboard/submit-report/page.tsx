@@ -3,7 +3,7 @@
 import React, { Suspense } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Zap } from "lucide-react";
 
 import { useSubmitReportForm } from "@/components/reports/hooks/useSubmitReportForm";
 import { SubmitReportProgressNav } from "@/components/reports/SubmitReportProgressNav";
@@ -12,11 +12,8 @@ import { SubmitReportSeverityCard } from "@/components/reports/SubmitReportSever
 import { SubmitReportQuickTips } from "@/components/reports/SubmitReportQuickTips";
 import { SubmitReportFooterNav } from "@/components/reports/SubmitReportFooterNav";
 
-import { SubmitReportTargetSection } from "@/components/reports/SubmitReportTargetSection";
-import { SubmitReportClassificationSection } from "@/components/reports/SubmitReportClassificationSection";
-import { SubmitReportDetailsStep } from "@/components/reports/SubmitReportDetailsStep";
-import { SubmitReportPocStep } from "@/components/reports/SubmitReportPocStep";
-import { SubmitReportReviewStep } from "@/components/reports/SubmitReportReviewStep";
+import { SubmitReportStep1Basics } from "@/components/reports/SubmitReportStep1Basics";
+import { SubmitReportStep2Poc } from "@/components/reports/SubmitReportStep2Poc";
 import { ReportSuccessModal } from "@/components/reports/ReportSuccessModal";
 
 function SubmitReportContent() {
@@ -35,8 +32,6 @@ function SubmitReportContent() {
     isProgramsLoading,
     isSubmitting,
     attachedFiles,
-    externalLinks,
-    reproduceStepsList,
     submitError,
     isDraftSaved,
     successModalData,
@@ -45,12 +40,6 @@ function SubmitReportContent() {
     goToStep,
     handleAddFiles,
     handleRemoveFile,
-    handleAddExternalLink,
-    handleRemoveExternalLink,
-    handleUpdateExternalLink,
-    handleAddReproduceStep,
-    handleRemoveReproduceStep,
-    handleUpdateReproduceStep,
     handleInsertTemplate,
     handleSaveDraft,
     handleResetForm,
@@ -88,8 +77,9 @@ function SubmitReportContent() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 text-xs font-bold text-blue-600 dark:text-blue-400 shrink-0 self-start sm:self-center">
-            <span>5-Step Wizard</span>
+          <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 text-xs font-bold text-blue-600 dark:text-blue-400 shrink-0 self-start sm:self-center shadow-2xs">
+            <Zap className="w-3.5 h-3.5 fill-current" />
+            <span>Express 2-Step Workflow</span>
           </div>
         </div>
       </div>
@@ -108,82 +98,49 @@ function SubmitReportContent() {
                 transition={{ duration: 0.25, ease: "easeInOut" }}
                 className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-xs"
               >
-                {/* STEP 1: TARGET & SCOPE */}
+                {/* STEP 1: TARGET & CLASSIFICATION */}
                 {currentStep === 1 && (
-                  <SubmitReportTargetSection
-                    register={register}
-                    errors={errors}
-                    setValue={setValue}
-                    watch={watch}
-                    programs={programs}
-                    isLoading={isProgramsLoading}
-                    selectedProgram={selectedProgram}
-                  />
+                  <div className="space-y-6">
+                    <SubmitReportStep1Basics
+                      register={register}
+                      errors={errors}
+                      setValue={setValue}
+                      watch={watch}
+                      programs={programs}
+                      isLoading={isProgramsLoading}
+                      selectedProgram={selectedProgram}
+                    />
+
+                    {/* Step 1 Footer Navigation */}
+                    <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={nextStep}
+                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold text-sm hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-xs cursor-pointer"
+                      >
+                        <span>Next: PoC & Submit</span>
+                      </button>
+                    </div>
+                  </div>
                 )}
 
-                {/* STEP 2: VULNERABILITY CLASSIFICATION */}
+                {/* STEP 2: POC WRITE-UP & SUBMIT */}
                 {currentStep === 2 && (
-                  <SubmitReportClassificationSection
-                    register={register}
-                    errors={errors}
-                    setValue={setValue}
-                    watch={watch}
-                  />
-                )}
-
-                {/* STEP 3: REPORT DETAILS */}
-                {currentStep === 3 && (
-                  <SubmitReportDetailsStep
+                  <SubmitReportStep2Poc
                     register={register}
                     control={control}
                     errors={errors}
-                    reproduceStepsList={reproduceStepsList}
-                    onAddReproduceStep={handleAddReproduceStep}
-                    onRemoveReproduceStep={handleRemoveReproduceStep}
-                    onUpdateReproduceStep={handleUpdateReproduceStep}
-                    onInsertTemplate={handleInsertTemplate}
-                  />
-                )}
-
-                {/* STEP 4: PROOF OF CONCEPT */}
-                {currentStep === 4 && (
-                  <SubmitReportPocStep
-                    register={register}
-                    control={control}
-                    errors={errors}
-                    attachedFiles={attachedFiles}
-                    externalLinks={externalLinks}
-                    onAddFiles={handleAddFiles}
-                    onRemoveFile={handleRemoveFile}
-                    onAddExternalLink={handleAddExternalLink}
-                    onRemoveExternalLink={handleRemoveExternalLink}
-                    onUpdateExternalLink={handleUpdateExternalLink}
-                  />
-                )}
-
-                {/* STEP 5: REVIEW & SUBMIT */}
-                {currentStep === 5 && (
-                  <SubmitReportReviewStep
-                    register={register}
                     watch={watch}
                     attachedFiles={attachedFiles}
-                    reproduceStepsList={reproduceStepsList}
                     isSubmitting={isSubmitting}
                     submitError={submitError}
                     isDraftSaved={isDraftSaved}
-                    onGoToStep={goToStep}
+                    onAddFiles={handleAddFiles}
+                    onRemoveFile={handleRemoveFile}
+                    onInsertTemplate={handleInsertTemplate}
+                    onPrevStep={prevStep}
                     onSaveDraft={handleSaveDraft}
                     onSubmitReport={handleSubmit(onSubmit)}
-                    selectedProgram={selectedProgram}
-                  />
-                )}
-
-                {/* Step Bottom Footer Navigation Bar (For Steps 1-4) */}
-                {currentStep < 5 && (
-                  <SubmitReportFooterNav
-                    currentStep={currentStep}
-                    onPrevStep={prevStep}
-                    onNextStep={nextStep}
                   />
                 )}
               </motion.div>

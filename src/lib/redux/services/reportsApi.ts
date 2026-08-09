@@ -341,6 +341,10 @@ export const reportsApi = baseApi.injectEndpoints({
 
     submitReport: builder.mutation<SubmitReportResponse, SubmitReportPayload>({
       async queryFn(payload, _api, _extraOptions, fetchWithBQ) {
+        const isUuid = (str?: string) =>
+          typeof str === "string" &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
         const result = await fetchWithBQ({
           url: `/programs/${payload.programId}/reports`,
           method: "POST",
@@ -351,7 +355,7 @@ export const reportsApi = baseApi.injectEndpoints({
             // Backend has no "INFO" tier — the closest real equivalent is
             // NONE (see CreateReportRequest.reportedSeverity enum).
             reportedSeverity: payload.severity === "INFO" ? "NONE" : payload.severity,
-            assetId: payload.assetId || undefined,
+            assetId: isUuid(payload.assetId) ? payload.assetId : undefined,
           },
         });
         if (result.error) return { error: result.error };
