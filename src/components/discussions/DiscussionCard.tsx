@@ -89,8 +89,8 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
 
     const result = await voteDiscussion({
       id: post.id,
-      category: post.category,
-      upvote,
+      type: bookmarkableType,
+      isUpvoted: upvote,
     });
 
     // Nothing else holds the true count, so a rejected vote is rolled back here.
@@ -106,11 +106,9 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
     const bookmarked = !localBookmarked;
     setLocalBookmarked(bookmarked);
 
-    const result = await bookmarkDiscussion({
-      id: post.id,
-      category: post.category,
-      bookmarked,
-    });
+    const result = bookmarked
+      ? await addBookmark({ type: bookmarkableType, targetId: post.id })
+      : await removeBookmark({ type: bookmarkableType, targetId: post.id });
 
     if ("error" in result) setLocalBookmarked(!bookmarked);
   };

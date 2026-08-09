@@ -49,7 +49,6 @@ export function useSubmitReportForm() {
   const [submitReport, { isLoading: isSubmitting }] = useSubmitReportMutation();
 
   const programs = programsData?.content || [];
-  const programs = programsData?.content || [];
 
   const form = useForm<SubmitReportFormValues>({
     resolver: zodResolver(submitReportSchema),

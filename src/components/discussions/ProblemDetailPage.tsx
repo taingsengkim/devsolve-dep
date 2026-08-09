@@ -33,8 +33,11 @@ import {
   useRemoveVoteMutation,
   useSetVoteMutation,
 } from "@/lib/redux/services/votesApi";
-import { useGetBookmarkStatusQuery } from "@/lib/redux/services/bookmarksApi";
-import { useBookmarkDiscussionMutation } from "@/lib/redux/services/discussionsApi";
+import {
+  useGetBookmarkStatusQuery,
+  useAddBookmarkMutation,
+  useRemoveBookmarkMutation,
+} from "@/lib/redux/services/bookmarksApi";
 import {
   useCreateCommentMutation,
   useGetCommentsQuery,
@@ -154,14 +157,13 @@ function Loaded({
   const isVoting = isSettingVote || isRemovingVote;
   const hasUpvoted = votes?.currentUserVote === 1;
 
-  /* A signed-out visitor gets a 401 from the status endpoint, which is not
-     worth surfacing — the button simply shows as un-bookmarked. */
-  const { data: bookmark } = useGetBookmarkStatusQuery({
+  const { data: isBookmarked = false } = useGetBookmarkStatusQuery({
     type: "PROBLEM",
     targetId: id,
   });
-  const [toggleBookmark, { isLoading: isBookmarking }] =
-    useBookmarkDiscussionMutation();
+  const [addBookmark, { isLoading: isAddingBookmark }] = useAddBookmarkMutation();
+  const [removeBookmark, { isLoading: isRemovingBookmark }] = useRemoveBookmarkMutation();
+  const isBookmarking = isAddingBookmark || isRemovingBookmark;
 
   const { data: commentPage } = useGetCommentsQuery({
     commentableType: "PROBLEM",
@@ -205,11 +207,11 @@ function Loaded({
 
   const onBookmark = async () => {
     if (isBookmarking) return;
-    await toggleBookmark({
-      id,
-      category: "Problems",
-      bookmarked: !bookmark?.bookmarked,
-    });
+    if (isBookmarked) {
+      await removeBookmark({ type: "PROBLEM", targetId: id });
+    } else {
+      await addBookmark({ type: "PROBLEM", targetId: id });
+    }
   };
 
   const onComment = async (event: React.FormEvent) => {
@@ -380,17 +382,17 @@ function Loaded({
                   type="button"
                   onClick={() => void onBookmark()}
                   disabled={isBookmarking}
-                  aria-pressed={Boolean(bookmark?.bookmarked)}
+                  aria-pressed={isBookmarked}
                   className={`flex cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 py-1.5 font-medium transition disabled:opacity-50 ${
-                    bookmark?.bookmarked
+                    isBookmarked
                       ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300"
                       : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                   }`}
                 >
                   <Bookmark
-                    className={`size-4 ${bookmark?.bookmarked ? "fill-current" : ""}`}
+                    className={`size-4 ${isBookmarked ? "fill-current" : ""}`}
                   />
-                  {bookmark?.bookmarked ? "Bookmarked" : "Bookmark"}
+                  {isBookmarked ? "Bookmarked" : "Bookmark"}
                 </button>
               </div>
             </section>

@@ -246,8 +246,8 @@ export const discussionsApi = baseApi.injectEndpoints({
         if (params?.tag) {
           results = results.filter((post) => post.tags.includes(params.tag!));
         }
-        if (search) {
-          const q = search.toLowerCase();
+        if (params?.searchQuery) {
+          const q = params.searchQuery.toLowerCase();
           results = results.filter(
             (post) =>
               // Showcases were already matched upstream, against their full
