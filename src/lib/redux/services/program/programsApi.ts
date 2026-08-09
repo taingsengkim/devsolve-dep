@@ -1,4 +1,4 @@
-import { baseApi } from "../baseApi";
+import { proxyApi } from "../proxyApi";
 import {
   Program,
   PaginatedResponse,
@@ -10,7 +10,7 @@ import { PageProgramManagementSummaryResponseDto } from "@/lib/types/admin/progr
 
 export * from "@/lib/types/programs/types";
 
-export const programsApi = baseApi.injectEndpoints({
+export const programsApi = proxyApi.injectEndpoints({
   endpoints: (builder) => ({
     // GET /programs?page=0&size=20&search=...
     getPrograms: builder.query<

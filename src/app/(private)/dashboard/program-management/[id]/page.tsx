@@ -41,6 +41,8 @@ import {
   useApproveProgramMutation,
   useRejectProgramMutation,
 } from "@/lib/redux/services/admin/programAdminApi";
+import { useGetProgramByIdQuery } from "@/lib/redux/services/program/programsApi";
+import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { ProgramRejectDialog } from "@/components/admin/programs/ProgramRejectDialog";
 import { toast } from "sonner";
 
@@ -52,23 +54,46 @@ export default function AdminProgramDetailPage({
   const { id } = use(params);
   const router = useRouter();
 
+  const { user } = useSidebarAuth();
+  const isAdmin = user?.roles?.includes("ADMIN") ?? false;
+
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
+  // Fetch via proxy /api/programs/${id} for all roles
   const {
-    data: detailData,
-    isLoading: isDetailLoading,
-    refetch,
-  } = useGetProgramDetailQuery(id);
+    data: publicDetail,
+    isLoading: isPublicLoading,
+    refetch: refetchPublic,
+  } = useGetProgramByIdQuery(id);
 
-  const { data: listData, isLoading: isListLoading } =
-    useGetAdminProgramsQuery();
+  // Admin-only detail query
+  const {
+    data: adminDetail,
+    isLoading: isAdminDetailLoading,
+    refetch: refetchAdmin,
+  } = useGetProgramDetailQuery(id, { skip: !isAdmin });
+
+  // Admin-only list query fallback
+  const { data: listData, isLoading: isListLoading } = useGetAdminProgramsQuery(
+    undefined,
+    { skip: !isAdmin }
+  );
+
+  const refetch = () => {
+    refetchPublic();
+    if (isAdmin) refetchAdmin();
+  };
 
   const program =
-    detailData || listData?.content?.find((p: any) => p.id === id);
+    adminDetail ||
+    publicDetail ||
+    (isAdmin ? listData?.content?.find((p: any) => p.id === id) : undefined);
 
-  const isLoading = isDetailLoading && isListLoading;
+  const isLoading = isAdmin
+    ? isAdminDetailLoading && isListLoading && isPublicLoading
+    : isPublicLoading;
   const isError = !isLoading && !program;
 
   const [approveProgram] = useApproveProgramMutation();
@@ -544,37 +569,58 @@ export default function AdminProgramDetailPage({
             <span className="text-xs font-mono">@{program.handle}</span>
           </div>
 
-          {isPending ? (
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Button
-                variant="destructive"
-                disabled={isActionLoading}
-                onClick={() => setRejectDialogOpen(true)}
-                className="rounded-xl font-semibold h-10 cursor-pointer w-full sm:w-auto text-sm"
-              >
-                <XCircle className="w-4 h-4 mr-1.5" />
-                Reject Program
-              </Button>
+          {isAdmin ? (
+            isPending ? (
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <Button
+                  variant="destructive"
+                  disabled={isActionLoading}
+                  onClick={() => setRejectDialogOpen(true)}
+                  className="rounded-xl font-semibold h-10 cursor-pointer w-full sm:w-auto text-sm"
+                >
+                  <XCircle className="w-4 h-4 mr-1.5" />
+                  Reject Program
+                </Button>
 
-              <Button
-                disabled={isActionLoading}
-                onClick={() => setApproveDialogOpen(true)}
-                className="rounded-xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white h-10 cursor-pointer w-full sm:w-auto text-sm shadow-2xs"
-              >
-                <CheckCircle2 className="w-4 h-4 mr-1.5" />
-                Approve & Publish Program
-              </Button>
-            </div>
+                <Button
+                  disabled={isActionLoading}
+                  onClick={() => setApproveDialogOpen(true)}
+                  className="rounded-xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white h-10 cursor-pointer w-full sm:w-auto text-sm shadow-2xs"
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-1.5" />
+                  Approve & Publish Program
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {isApproved && (
+                  <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4" /> This program has been approved.
+                  </span>
+                )}
+                {isRejected && (
+                  <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                    <XCircle className="w-4 h-4" /> This program has been rejected.
+                  </span>
+                )}
+              </div>
+            )
           ) : (
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+              {isPending && (
+                <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1.5 font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                  Under Review by DevSolve Admins
+                </span>
+              )}
               {isApproved && (
                 <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4" /> This program has been approved.
+                  <CheckCircle2 className="w-4 h-4" /> Program Approved & Active
                 </span>
               )}
               {isRejected && (
                 <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                  <XCircle className="w-4 h-4" /> This program has been rejected.
+                  <XCircle className="w-4 h-4" /> Program Requires Revision
                 </span>
               )}
             </div>
