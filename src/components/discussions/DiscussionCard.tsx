@@ -26,10 +26,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useVoteDiscussionMutation } from "@/lib/redux/services/discussionsApi";
 import {
-  useBookmarkDiscussionMutation,
-  useVoteDiscussionMutation,
-} from "@/lib/redux/services/discussionsApi";
+  useAddBookmarkMutation,
+  useRemoveBookmarkMutation,
+} from "@/lib/redux/services/bookmarksApi";
 import type { DiscussionPost } from "@/lib/types/dicussion/types";
 import {
   MY_COMMUNITY_HREF,
@@ -59,9 +60,12 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
   index = 0,
   myAnswer,
 }) => {
+  const bookmarkableType = post.category === "Showcase" ? "SHOWCASE" : "PROBLEM";
+
   const [voteDiscussion, { isLoading: isVoting }] = useVoteDiscussionMutation();
-  const [bookmarkDiscussion, { isLoading: isBookmarking }] =
-    useBookmarkDiscussionMutation();
+  const [addBookmark, { isLoading: isAddingBookmark }] = useAddBookmarkMutation();
+  const [removeBookmark, { isLoading: isRemovingBookmark }] = useRemoveBookmarkMutation();
+  const isBookmarking = isAddingBookmark || isRemovingBookmark;
 
   const [localVotes, setLocalVotes] = useState(post.votes);
   const [localUpvoted, setLocalUpvoted] = useState(post.isUpvoted ?? false);
@@ -94,8 +98,8 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
 
     const result = await voteDiscussion({
       id: post.id,
-      category: post.category,
-      upvote,
+      type: bookmarkableType,
+      isUpvoted: upvote,
     });
 
     // Nothing else holds the true count, so a rejected vote is rolled back here.
@@ -111,11 +115,9 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
     const bookmarked = !localBookmarked;
     setLocalBookmarked(bookmarked);
 
-    const result = await bookmarkDiscussion({
-      id: post.id,
-      category: post.category,
-      bookmarked,
-    });
+    const result = bookmarked
+      ? await addBookmark({ type: bookmarkableType, targetId: post.id })
+      : await removeBookmark({ type: bookmarkableType, targetId: post.id });
 
     if ("error" in result) setLocalBookmarked(!bookmarked);
   };

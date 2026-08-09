@@ -240,9 +240,9 @@ export function useSubmitReportForm() {
     setSubmitError(null);
     const selectedProg = programs.find((p: any) => p.id === values.programId);
     const programName = selectedProg
-      ? (selectedProg.name || selectedProg.organizationName || (selectedProg as any).companyName)
+      ? selectedProg.organizationName
       : "CloudVault Security Program";
-    const assetId = selectedProg?.inScopeAssets?.[0]?.id || values.targetAsset || "";
+    const assetId = selectedProg?.inScopeAssets?.[0]?.id;
 
     try {
       const res = await submitReport({
