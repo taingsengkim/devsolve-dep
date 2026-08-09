@@ -161,36 +161,7 @@ export default function AccountSettingsPanel({
             Notification preferences aren&apos;t saved to your account yet.
           </p>
         </section>
-
-        {/* Appearance */}
-        <section className="space-y-5 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center gap-2.5 border-b border-slate-100 pb-4 text-lg font-bold text-slate-900 dark:border-slate-800/80 dark:text-slate-100">
-            <Monitor className="size-5 text-slate-500 dark:text-slate-400" />
-            <span>Appearance</span>
-          </div>
-
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                Theme
-              </p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                {mounted && isDark ? "Dark" : "Light"} mode is active on this
-                device.
-              </p>
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={toggle}
-              className="h-10 rounded-xl border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-            >
-              {mounted && isDark ? <Sun size={15} /> : <Moon size={15} />}
-              {mounted && isDark ? "Light mode" : "Dark mode"}
-            </Button>
-          </div>
-        </section>
+        
       </div>
     </motion.div>
   );
