@@ -17,7 +17,6 @@ import { DiscussionSkeleton } from "@/components/discussions/DiscussionSkeleton"
 import { useDiscussionFilters } from "@/hooks/useDiscussionFilters";
 import type {
   DiscussionCategory,
-  TopicFilter,
 } from "@/lib/types/dicussion/types";
 import { cn } from "@/lib/utils";
 
@@ -142,11 +141,9 @@ export function DiscussionsFeed({
             topics={topics}
             tags={tags}
             stats={stats}
-            selectedTopic={topic as TopicFilter | null}
+            selectedTopic={topic}
             selectedTag={tag}
-            onSelectTopic={(selectedTopic) =>
-              setTopic(selectedTopic as TopicFilter | null)
-            }
+            onSelectTopic={setTopic}
             onSelectTag={setTag}
             isLoadingTopics={isLoadingTopics}
             isLoadingTags={isLoadingTags}

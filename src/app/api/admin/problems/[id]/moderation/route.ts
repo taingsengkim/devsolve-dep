@@ -1,112 +1,61 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/lib/auth/auth";
-import { z } from "zod";
+import { type NextRequest } from "next/server";
+import {
+  asUuid,
+  badJson,
+  badRequest,
+  bearerTokenFor,
+  relay,
+  unauthorized,
+  unreachable,
+  upstreamFetch,
+  validationFailed,
+} from "@/lib/api/proxy";
+import { problemModerationSchema } from "@/lib/validations/problem";
 
-const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
-const PROVIDER_ID = "keycloak";
+/**
+ * PATCH /api/admin/problems/{id}/moderation — the moderation decision.
+ *
+ * The upstream enum covers every state a problem can hold, including ones a
+ * reviewer has no business setting by hand. Only the two decisions this screen
+ * offers are let through; the rest belong to the problem's own lifecycle.
+ */
 
-const moderationSchema = z.object({
-  status: z.enum([
-    "DRAFT",
-    "PENDING_APPROVAL",
-    "PUBLISHED",
-    "RESOLVED",
-    "CLOSED",
-    "REJECTED",
-  ]),
-});
+const DECISIONS = ["PUBLISHED", "REJECTED"] as const;
 
-async function bearerTokenFor(request: NextRequest): Promise<string | null> {
-  const session = await auth.api.getSession({ headers: request.headers });
-  if (!session) return null;
+type Context = { params: Promise<{ id: string }> };
 
-  try {
-    const { accessToken } = await auth.api.getAccessToken({
-      body: { providerId: PROVIDER_ID },
-      headers: request.headers,
-    });
-    return accessToken ?? null;
-  } catch {
-    return null;
-  }
-}
-
-const unauthorized = () =>
-  NextResponse.json({ message: "Not authenticated" }, { status: 401 });
-
-const unreachable = () =>
-  NextResponse.json(
-    { message: "Unable to reach the problem service. Please try again." },
-    { status: 502 }
-  );
-
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, context: Context) {
   const token = await bearerTokenFor(request);
   if (!token) return unauthorized();
 
-  const { id } = await params;
+  const { id: raw } = await context.params;
+  const id = asUuid(raw);
+  if (!id) return badRequest("Problem id must be a UUID");
 
-  let payload: unknown = null;
+  let payload: unknown;
   try {
-    const text = await request.text();
-    if (text) {
-      payload = JSON.parse(text);
-    }
+    payload = await request.json();
   } catch {
-    return NextResponse.json(
-      { message: "Request body must be valid JSON" },
-      { status: 400 }
-    );
+    return badJson();
   }
 
-  const parsed = moderationSchema.safeParse(payload);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { message: "Validation error", errors: parsed.error.format() },
-      { status: 400 }
+  const parsed = problemModerationSchema.safeParse(payload);
+  if (!parsed.success) return validationFailed(parsed.error);
+
+  if (!DECISIONS.includes(parsed.data.status as (typeof DECISIONS)[number])) {
+    return badRequest(
+      `A moderation decision must be one of ${DECISIONS.join(", ")}`,
     );
   }
 
   try {
-    const upstream = await fetch(
-      `${BACKEND_API_URL}/admin/problems/${id}/moderation`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(parsed.data),
-        cache: "no-store",
-      }
+    const upstream = await upstreamFetch(
+      `/admin/problems/${id}/moderation`,
+      token,
+      { method: "PATCH", body: JSON.stringify(parsed.data) },
     );
-
-    const raw = await upstream.text();
-    let body: unknown = null;
-    if (raw) {
-      try {
-        body = JSON.parse(raw);
-      } catch {
-        body = { message: raw };
-      }
-    }
-
-    if (!upstream.ok) {
-      const message =
-        (body as { message?: string } | null)?.message ??
-        "Failed to moderate problem.";
-      return NextResponse.json(
-        { message, details: body },
-        { status: upstream.status }
-      );
-    }
-
-    return NextResponse.json(body, { status: upstream.status });
+    return relay(upstream, "The moderation decision could not be saved.");
   } catch {
-    return unreachable();
+    return unreachable("problem");
   }
 }

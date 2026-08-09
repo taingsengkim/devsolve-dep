@@ -1,0 +1,31 @@
+import { type NextRequest } from "next/server";
+import {
+  bearerTokenFor,
+  forwardQuery,
+  relay,
+  unauthorized,
+  unreachable,
+  upstreamFetch,
+} from "@/lib/api/proxy";
+
+/**
+ * GET /api/solutions/mine — the caller's own solutions, including the ones
+ * still waiting on review.
+ */
+
+export async function GET(request: NextRequest) {
+  const token = await bearerTokenFor(request);
+  if (!token) return unauthorized();
+
+  const query = forwardQuery(request.nextUrl.searchParams, [
+    "pageNumber",
+    "pageSize",
+  ]);
+
+  try {
+    const upstream = await upstreamFetch(`/solutions/mine${query}`, token);
+    return relay(upstream, "Unable to load your solutions.");
+  } catch {
+    return unreachable("solution");
+  }
+}

@@ -1,75 +1,51 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/lib/auth/auth";
+import { type NextRequest } from "next/server";
+import {
+  badRequest,
+  bearerTokenFor,
+  forwardQuery,
+  relay,
+  unauthorized,
+  unreachable,
+  upstreamFetch,
+} from "@/lib/api/proxy";
+import { PROBLEM_STATUSES } from "@/lib/validations/problem";
 
-const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
-const PROVIDER_ID = "keycloak";
-
-async function bearerTokenFor(request: NextRequest): Promise<string | null> {
-  const session = await auth.api.getSession({ headers: request.headers });
-  if (!session) return null;
-
-  try {
-    const { accessToken } = await auth.api.getAccessToken({
-      body: { providerId: PROVIDER_ID },
-      headers: request.headers,
-    });
-    return accessToken ?? null;
-  } catch {
-    return null;
-  }
-}
-
-const unauthorized = () =>
-  NextResponse.json({ message: "Not authenticated" }, { status: 401 });
-
-const unreachable = () =>
-  NextResponse.json(
-    { message: "Unable to reach the problem service. Please try again." },
-    { status: 502 }
-  );
+/**
+ * GET /api/admin/problems — the problem moderation queue.
+ *
+ * A submitted problem sits at `PENDING_APPROVAL` and is not on the public
+ * index until a moderator publishes it, so this list is the gate between an
+ * author pressing Submit and anyone reading the result.
+ *
+ * Role enforcement is the backend's: the token is relayed and a non-admin gets
+ * its 403 back unchanged.
+ */
 
 export async function GET(request: NextRequest) {
   const token = await bearerTokenFor(request);
   if (!token) return unauthorized();
 
-  const { searchParams } = new URL(request.url);
-  const queryString = searchParams.toString();
-  const targetUrl = `${BACKEND_API_URL}/admin/problems${
-    queryString ? `?${queryString}` : ""
-  }`;
+  const status = request.nextUrl.searchParams.get("status");
+  if (
+    status &&
+    !PROBLEM_STATUSES.includes(status as (typeof PROBLEM_STATUSES)[number])
+  ) {
+    return badRequest(`status must be one of ${PROBLEM_STATUSES.join(", ")}`);
+  }
+
+  /* Paging here is Spring's own `page`/`size`/`sort`, not the `pageNumber`
+     pair the showcase queue takes — the two upstream controllers differ. */
+  const query = forwardQuery(request.nextUrl.searchParams, [
+    "status",
+    "page",
+    "size",
+    "sort",
+  ]);
 
   try {
-    const upstream = await fetch(targetUrl, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      cache: "no-store",
-    });
-
-    const raw = await upstream.text();
-    let body: unknown = null;
-    if (raw) {
-      try {
-        body = JSON.parse(raw);
-      } catch {
-        body = { message: raw };
-      }
-    }
-
-    if (!upstream.ok) {
-      const message =
-        (body as { message?: string } | null)?.message ??
-        "Failed to fetch problems for moderation.";
-      return NextResponse.json(
-        { message, details: body },
-        { status: upstream.status }
-      );
-    }
-
-    return NextResponse.json(body, { status: upstream.status });
+    const upstream = await upstreamFetch(`/admin/problems${query}`, token);
+    return relay(upstream, "Unable to load the problem review queue.");
   } catch {
-    return unreachable();
+    return unreachable("problem");
   }
 }

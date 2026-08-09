@@ -13,4 +13,5 @@ export * from "./moderationActionsApi";
 export * from "./showcaseReviewApi";
 export * from "./programAdminApi";
 export * from "./problemAdminApi";
-export * from "./solutionAdminApi";
+export * from "./solutionAdminApi";export * from "./problemReviewApi";
+

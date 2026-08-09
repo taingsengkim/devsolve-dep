@@ -130,6 +130,7 @@ export default function ProfilePage() {
               severity={severity}
               badges={badges}
               username={username}
+              userId={profile.id}
             />
           </Suspense>
         </div>

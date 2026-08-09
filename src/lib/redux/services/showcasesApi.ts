@@ -55,6 +55,13 @@ export interface ShowcaseStepResponse {
   updatedAt: string;
 }
 
+/** `ShowcaseTagResponse`. */
+export interface ShowcaseTagResponse {
+  id?: string;
+  name?: string;
+  slug?: string;
+}
+
 /** `ShowCasesResponse`. */
 export interface ShowcaseResponse {
   id: string;
@@ -72,6 +79,7 @@ export interface ShowcaseResponse {
   viewCount: number;
   createdAt: string;
   updatedAt: string;
+  tags?: ShowcaseTagResponse[];
   steps?: ShowcaseStepResponse[];
 }
 

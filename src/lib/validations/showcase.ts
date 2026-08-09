@@ -129,6 +129,12 @@ const pendingImage = z
 export const buildStepSchema = z.object({
   /** Client-side only — React key and collapse state, never sent. */
   key: z.string(),
+  /**
+   * The step's id upstream, set only on steps loaded for editing. Its absence
+   * is what marks a step as new, and what tells the save sequence to POST it
+   * rather than PATCH it.
+   */
+  serverId: z.string().optional(),
   title: z
     .string()
     .trim()

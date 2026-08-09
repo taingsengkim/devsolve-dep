@@ -27,6 +27,8 @@ const newKey = () =>
 
 export const createEmptyStep = () => ({
   key: newKey(),
+  /** No server id yet — this step does not exist upstream. */
+  serverId: undefined,
   title: "",
   description: "",
   codeSnippet: "",
@@ -84,6 +86,10 @@ export function BuildStepsField() {
     const copy = {
       ...source,
       key: newKey(),
+      /* A copy is a new step, not a second handle on the original — carrying
+         the source's server id over would edit that step instead of adding
+         one. */
+      serverId: undefined,
       title: `${source.title} (copy)`,
     };
     insert(index + 1, copy);

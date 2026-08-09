@@ -10,7 +10,7 @@ import {
 import type {
   DiscussionCategory,
   DiscussionSort,
-  TopicFilter,
+  TopicName,
 } from "@/lib/types/dicussion/types";
 
 const DEFAULT_LIMIT = 3;
@@ -19,7 +19,7 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 export function useDiscussionFilters(defaultCategory: DiscussionCategory = "All") {
   const [category, setCategory] = useState<DiscussionCategory>(defaultCategory);
-  const [topic, setTopic] = useState<TopicFilter | null>(null);
+  const [topic, setTopic] = useState<TopicName | null>(null);
   const [tag, setTag] = useState<string | null>(null);
   const [sort, setSort] = useState<DiscussionSort>(DEFAULT_SORT);
   const [page, setPage] = useState(1);
@@ -46,7 +46,7 @@ export function useDiscussionFilters(defaultCategory: DiscussionCategory = "All"
     setPage(1);
   }, []);
 
-  const handleSetTopic = useCallback((value: TopicFilter | null) => {
+  const handleSetTopic = useCallback((value: TopicName | null) => {
     setTopic(value);
     setPage(1);
   }, []);

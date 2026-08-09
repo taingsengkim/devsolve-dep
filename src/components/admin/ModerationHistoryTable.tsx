@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
   SelectContent,
+  SelectGroup,
   SelectItem,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -70,15 +71,13 @@ export function ModerationHistoryTable() {
   const getActionBadge = (action: ModerationActionType) => {
     switch (action) {
       case "WARN":
-        return <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30">WARN</Badge>;
+        return <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">WARN</Badge>;
       case "SUSPEND":
-        return <Badge className="bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30">SUSPEND</Badge>;
       case "REMOVE":
-        return <Badge className="bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30">REMOVE</Badge>;
       case "BAN":
-        return <Badge className="bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30">BAN</Badge>;
+        return <Badge variant="destructive">{action}</Badge>;
       case "REINSTATE":
-        return <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">REINSTATE</Badge>;
+        return <Badge variant="secondary">REINSTATE</Badge>;
       default:
         return <Badge variant="outline">{action}</Badge>;
     }
@@ -114,18 +113,20 @@ export function ModerationHistoryTable() {
                 }
               }}
             >
-              <SelectTrigger className="h-9 rounded-xl bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs font-semibold">
+              <SelectTrigger className="h-9 rounded-xl border-slate-300 bg-white text-sm font-semibold dark:border-slate-700 dark:bg-slate-950">
                 <SelectValue placeholder="Target Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">All Target Types</SelectItem>
-                <SelectItem value="PROGRAM">Program</SelectItem>
-                <SelectItem value="PROBLEM">Problem</SelectItem>
-                <SelectItem value="SOLUTION">Solution</SelectItem>
-                <SelectItem value="COMMENT">Comment</SelectItem>
-                <SelectItem value="USER">User</SelectItem>
-                <SelectItem value="REPORT">Report</SelectItem>
-                <SelectItem value="SHOWCASE">Showcase</SelectItem>
+                <SelectGroup>
+                  <SelectItem value="ALL">All Target Types</SelectItem>
+                  <SelectItem value="PROGRAM">Program</SelectItem>
+                  <SelectItem value="PROBLEM">Problem</SelectItem>
+                  <SelectItem value="SOLUTION">Solution</SelectItem>
+                  <SelectItem value="COMMENT">Comment</SelectItem>
+                  <SelectItem value="USER">User</SelectItem>
+                  <SelectItem value="REPORT">Report</SelectItem>
+                  <SelectItem value="SHOWCASE">Showcase</SelectItem>
+                </SelectGroup>
               </SelectContent>
             </Select>
           </div>
@@ -141,16 +142,18 @@ export function ModerationHistoryTable() {
                 }
               }}
             >
-              <SelectTrigger className="h-9 rounded-xl bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs font-semibold">
+              <SelectTrigger className="h-9 rounded-xl border-slate-300 bg-white text-sm font-semibold dark:border-slate-700 dark:bg-slate-950">
                 <SelectValue placeholder="Action Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">All Actions</SelectItem>
-                <SelectItem value="WARN">WARN</SelectItem>
-                <SelectItem value="SUSPEND">SUSPEND</SelectItem>
-                <SelectItem value="REMOVE">REMOVE</SelectItem>
-                <SelectItem value="BAN">BAN</SelectItem>
-                <SelectItem value="REINSTATE">REINSTATE</SelectItem>
+                <SelectGroup>
+                  <SelectItem value="ALL">All Actions</SelectItem>
+                  <SelectItem value="WARN">WARN</SelectItem>
+                  <SelectItem value="SUSPEND">SUSPEND</SelectItem>
+                  <SelectItem value="REMOVE">REMOVE</SelectItem>
+                  <SelectItem value="BAN">BAN</SelectItem>
+                  <SelectItem value="REINSTATE">REINSTATE</SelectItem>
+                </SelectGroup>
               </SelectContent>
             </Select>
           </div>
@@ -162,9 +165,9 @@ export function ModerationHistoryTable() {
               variant="ghost"
               size="sm"
               onClick={resetFilters}
-              className="h-9 px-3 rounded-xl text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+              className="h-9 cursor-pointer rounded-xl px-3 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
             >
-              <RotateCcw className="size-3.5 mr-1" /> Reset
+              <RotateCcw data-icon="inline-start" /> Reset
             </Button>
           )}
         </div>
@@ -255,9 +258,9 @@ export function ModerationHistoryTable() {
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedActionId(item.id)}
-                          className="h-8 px-2.5 rounded-xl text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 cursor-pointer"
+                          className="h-8 cursor-pointer rounded-xl px-2.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                         >
-                          <Eye className="size-3.5 mr-1" /> View
+                          <Eye data-icon="inline-start" /> View
                         </Button>
                       </td>
                     </motion.tr>
@@ -285,9 +288,11 @@ export function ModerationHistoryTable() {
                     <SelectValue placeholder={String(pageSize)} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="20">20</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
+                    <SelectGroup>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                    </SelectGroup>
                   </SelectContent>
                 </Select>
               </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export type UserStatus = "ACTIVE" | "SUSPENDED" | "PENDING" | "REMOVED";
 
@@ -39,10 +41,13 @@ interface UserStatusBadgeProps {
 export function UserStatusBadge({ status }: UserStatusBadgeProps) {
   const config = getUserStatusConfig(status);
   return (
-    <div className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
-      <span className={`w-2 h-2 rounded-full ${config.dotColor}`} />
+    <Badge
+      variant="outline"
+      className="gap-2 rounded-lg border-slate-200 bg-white font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+    >
+      <span className={cn("size-2 rounded-full", config.dotColor)} />
       {config.label}
-    </div>
+    </Badge>
   );
 }
 

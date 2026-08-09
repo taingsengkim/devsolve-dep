@@ -7,13 +7,13 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type {
   DiscussionCategory,
-  TopicFilter,
+  TopicName,
 } from "@/lib/types/dicussion/types";
 
 interface DiscussionActiveFiltersProps {
   category: DiscussionCategory;
   defaultCategory: DiscussionCategory;
-  topic: TopicFilter | null;
+  topic: TopicName | null;
   tag: string | null;
   searchQuery: string;
   onClearCategory: () => void;
