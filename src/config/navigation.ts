@@ -17,6 +17,8 @@ import {
   FilePen,
   Tags,
   CircleUser,
+  Sparkles,
+  History,
   LucideIcon,
 } from "lucide-react";
 
@@ -54,10 +56,15 @@ export const NAV_ITEMS: NavItem[] = [
   { name: "Saved Drafts", href: "/dashboard/saved-draft", icon: FilePen, roles: ["COMPANY"], category: "Organization" },
   { name: "Report Management", href: "/dashboard/report-management", icon: ClipboardList, roles: ["COMPANY"], category: "Organization" },
   { name: "Team Management", href: "/dashboard/team-management", icon: Users, roles: ["COMPANY"], category: "Organization" },
- 
+
   // ADMIN Role items
   { name: "Organization Verification", href: "/dashboard/company-verification", icon: ShieldCheck, roles: ["ADMIN"], category: "Administration" },
+  { name: "Program Review", href: "/dashboard/admin-program-management", icon: Building2, roles: ["ADMIN"], category: "Administration" },
+  { name: "Problem Moderation", href: "/dashboard/problem-moderation", icon: FileText, roles: ["ADMIN"], category: "Administration" },
+  { name: "Solution Review", href: "/dashboard/solution-review", icon: ClipboardList, roles: ["ADMIN"], category: "Administration" },
+  { name: "Showcase Review", href: "/dashboard/showcase-review", icon: Sparkles, roles: ["ADMIN"], category: "Administration" },
   { name: "Users", href: "/dashboard/users", icon: UserCheck, roles: ["ADMIN"], category: "Administration" },
   { name: "Content Reports", href: "/dashboard/content-moderation", icon: ShieldAlert, roles: ["ADMIN"], category: "Administration" },
+  { name: "Moderation Log", href: "/dashboard/moderation-log", icon: History, roles: ["ADMIN"], category: "Administration" },
   { name: "Categories", href: "/dashboard/categories", icon: Tags, roles: ["ADMIN"], category: "Administration" },
 ];

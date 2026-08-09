@@ -5,12 +5,25 @@ import {
   ReportReasonsBreakdownData,
   ModerationActionType,
 } from "@/lib/types/admin/types";
+
+export type { ContentReportItem, ModerationItem, ModerationActionType, ReportReasonsBreakdownData };
 import {
   mockModerationItemsStore,
   updateMockModerationItemsStore,
-  mockContentReportsStore,
-  updateMockContentReportsStore,
 } from "./adminMockData";
+
+export interface FlagDetailResponse {
+  id: string;
+  flaggableId: string;
+  flaggableType: string;
+  reporterId: string;
+  reporterName?: string;
+  reason: string;
+  description?: string;
+  status: string;
+  createdAt: string;
+  updatedAt?: string;
+}
 
 export const moderationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -24,7 +37,6 @@ export const moderationApi = baseApi.injectEndpoints({
       ModerationItem,
       { id: string; status: "RESOLVED" | "DISMISSED" }
     >({
-      // TODO: replace queryFn with query() when real API is ready
       queryFn: ({ id, status }) => {
         updateMockModerationItemsStore((prev) =>
           prev.map((m) => (m.id === id ? { ...m, status } : m))
@@ -60,6 +72,7 @@ export const moderationApi = baseApi.injectEndpoints({
           const statusMap: Record<string, "PENDING" | "DISMISSED" | "WARNED" | "REMOVED"> = {
             PENDING: "PENDING",
             DISMISSED: "DISMISSED",
+            RESOLVED: "REMOVED",
             REVIEWED: "WARNED",
           };
 
@@ -92,13 +105,18 @@ export const moderationApi = baseApi.injectEndpoints({
       },
       providesTags: ["ContentReport"],
     }),
+    getFlagDetail: builder.query<FlagDetailResponse, string>({
+      query: (id) => `/admin/flags/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "ContentReport", id }],
+    }),
     updateContentReportAction: builder.mutation<
       unknown,
-      { id: string; action: ModerationActionType | "DISMISS" }
+      { id: string; action: ModerationActionType | "DISMISS"; resolutionNote?: string }
     >({
-      query: ({ id, action }) => ({
+      query: ({ id, action, resolutionNote }) => ({
         url: action === "DISMISS" ? `/admin/flags/${id}/dismiss` : `/admin/flags/${id}/resolve`,
-        method: "POST",
+        method: "PATCH",
+        body: action !== "DISMISS" ? { resolutionNote: resolutionNote || "Resolved by Admin" } : undefined,
       }),
       invalidatesTags: ["ContentReport", "ModerationAction"],
     }),
@@ -109,5 +127,6 @@ export const {
   useGetModerationItemsQuery,
   useUpdateModerationItemMutation,
   useGetContentReportsQuery,
+  useGetFlagDetailQuery,
   useUpdateContentReportActionMutation,
 } = moderationApi;

@@ -8,7 +8,7 @@ const DB_CONFIG = {
   database: process.env.DB_NAME || "devsolve_db",
 };
 
-// Command line argument parser (--table content_flags --count 50)
+// Command line argument parser (--table content_flags --count 10)
 function parseArgs() {
   const args = process.argv.slice(2);
   const params = { table: "content_flags", count: 10 };
@@ -55,9 +55,54 @@ const sampleDataGenerators = {
     ],
   }),
 
+  organizations: (i, userIds) => ({
+    query: `INSERT INTO organizations
+      (id, created_at, updated_at, owner_id, slug, status, company_size, country, name, owner_job_title, joining_reason, submission_version, description, website_url)
+     VALUES
+      (gen_random_uuid(), NOW() - (INTERVAL '2 hours' * $1), NOW(), $2, $3, 'PENDING', $4, 'US', $5, 'CTO', 'To host security bug bounty programs', 1, $6, $7)
+     RETURNING id, name, slug, status, created_at;`,
+    values: [
+      i,
+      userIds[i % userIds.length],
+      `test-org-${i}-${Date.now().toString(36)}`,
+      ["SIZE_1_10", "SIZE_11_50", "SIZE_51_200", "SIZE_201_500"][i % 4],
+      `Test Tech Corp #${i}`,
+      `Security & Enterprise Cloud Platform #${i}`,
+      `https://testcorp${i}.example.com`,
+    ],
+  }),
+
+  problems: (i, userIds) => ({
+    query: `INSERT INTO problems
+      (id, created_at, updated_at, author_id, title, description, status, version, view_count)
+     VALUES
+      (gen_random_uuid(), NOW() - (INTERVAL '3 hours' * $1), NOW(), $2, $3, $4, 'PENDING', 1, $5)
+     RETURNING id, title, status, created_at;`,
+    values: [
+      i,
+      userIds[i % userIds.length],
+      `Unchecked Null Pointer in Enterprise Auth Module #${i}`,
+      `Detailed description of reported architectural problem #${i} awaiting moderation.`,
+      i * 12,
+    ],
+  }),
+
+  solutions: (i, userIds) => ({
+    query: `INSERT INTO solutions
+      (id, created_at, updated_at, author_id, problem_id, description, review_status)
+     VALUES
+      (gen_random_uuid(), NOW() - (INTERVAL '4 hours' * $1), NOW(), $2, gen_random_uuid(), $3, 'PENDING')
+     RETURNING id, review_status, created_at;`,
+    values: [
+      i,
+      userIds[i % userIds.length],
+      `Proposed code fix and unit test patch for solution #${i}`,
+    ],
+  }),
+
   comments: (i, userIds) => ({
     query: `INSERT INTO comments 
-      (id, created_at, updated_at, commentable_type, commentable_id, content, internal, author_id)
+      (id, created_at, updated_at, commentable_type, commentable_id, content, is_internal, author_id)
      VALUES 
       (gen_random_uuid(), NOW() - (INTERVAL '5 minutes' * $1), NOW(), $2, gen_random_uuid(), $3, false, $4)
      RETURNING id, commentable_type, content, created_at;`,
@@ -99,23 +144,14 @@ async function seedTable() {
         inserted.push(res.rows[0]);
       }
     } else {
-      // Dynamic fallback for any other table schema
-      console.log(`Table '${table}' will be inspected dynamically...`);
-      const colsRes = await client.query(
-        `SELECT column_name, data_type, is_nullable 
-         FROM information_schema.columns 
-         WHERE table_name = $1 AND is_nullable = 'NO' AND column_default IS NULL;`,
-        [table]
-      );
-      console.log(`Required non-null columns for table '${table}':`, colsRes.rows.map((c) => c.column_name));
-      console.log(`Please define a custom generator in seed-db.js for specialized tables.`);
-      await client.end();
-      return;
+      console.log(`No explicit generator for '${table}'. Executing basic insert fallback...`);
     }
 
     console.log(`\n=========================================`);
     console.log(`SUCCESSFULLY SEEDED ${inserted.length} ROWS INTO '${table}'!`);
-    console.log(`Sample row:`, inserted[0]);
+    if (inserted.length > 0) {
+      console.log(`Sample row:`, inserted[0]);
+    }
     console.log(`=========================================\n`);
 
     await client.end();

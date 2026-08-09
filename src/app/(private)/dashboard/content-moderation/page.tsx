@@ -6,7 +6,6 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Flag,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Search,
@@ -40,16 +39,18 @@ import {
   useGetContentReportsQuery,
   useUpdateContentReportActionMutation,
   type ContentReportItem,
-} from "@/lib/redux/services/adminApi";
+} from "@/lib/redux/services/admin/moderationApi";
 import { useContentReportFilters } from "@/hooks/useContentReportFilters";
 import { ContentReportCard } from "@/components/admin/ContentReportCard";
 import { ReportReasonsBreakdown } from "@/components/admin/ReportReasonsBreakdown";
 import { ModerationActionDialog } from "@/components/admin/ModerationActionDialog";
 import { ModerationHistoryTable } from "@/components/admin/ModerationHistoryTable";
+import { FlagDetailSheet } from "@/components/admin/FlagDetailSheet";
 import type { ModerationActionType } from "@/lib/types/admin/types";
 
 export default function ContentReportsPage() {
   const [activeTab, setActiveTab] = useState<"queue" | "history">("queue");
+  const [selectedFlagId, setSelectedFlagId] = useState<string | null>(null);
 
   const { data, isLoading } = useGetContentReportsQuery();
   const [updateAction] = useUpdateContentReportActionMutation();
@@ -95,8 +96,8 @@ export default function ContentReportsPage() {
     }
   };
 
-  const handleConfirmModalAction = (id: string, action: ModerationActionType) => {
-    updateAction({ id, action });
+  const handleConfirmModalAction = (id: string, action: ModerationActionType, note?: string) => {
+    updateAction({ id, action, resolutionNote: note });
   };
 
   const contentTypeOptions = [
@@ -241,7 +242,6 @@ export default function ContentReportsPage() {
                   <span>
                     Reason: {reasonFilter === "ALL" ? "All" : reasonFilter}
                   </span>
-                  <ChevronDown className="size-3.5 text-slate-400" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuLabel>Filter by Reason</DropdownMenuLabel>
@@ -275,7 +275,6 @@ export default function ContentReportsPage() {
                   <span>
                     {sortOptions.find((s) => s.value === sortBy)?.label || "Most Reported"}
                   </span>
-                  <ChevronDown className="size-3.5 text-slate-400" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuLabel>Sort Order</DropdownMenuLabel>
@@ -357,7 +356,11 @@ export default function ContentReportsPage() {
                         exit={{ opacity: 0, scale: 0.96 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <ContentReportCard report={report} onAction={handleAction} />
+                        <ContentReportCard
+                          report={report}
+                          onAction={handleAction}
+                          onViewDetail={(id) => setSelectedFlagId(id)}
+                        />
                       </motion.div>
                     ))}
                   </AnimatePresence>
@@ -455,6 +458,14 @@ export default function ContentReportsPage() {
               setDialogActionType(null);
             }}
             onConfirm={handleConfirmModalAction}
+          />
+
+          {/* Flag Detail Side Drawer */}
+          <FlagDetailSheet
+            flagId={selectedFlagId}
+            isOpen={Boolean(selectedFlagId)}
+            onClose={() => setSelectedFlagId(null)}
+            onAction={handleAction}
           />
         </>
       ) : (

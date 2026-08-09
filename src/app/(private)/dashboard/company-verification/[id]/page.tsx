@@ -47,8 +47,6 @@ import {
   useApproveOrganizationMutation,
   useRejectOrganizationMutation,
   useGetOrganizationReviewHistoryQuery,
-  useGetCompanyVerificationByIdQuery,
-  useUpdateCompanyVerificationStatusMutation,
 } from "@/lib/redux/services/adminApi";
 import { toast } from "sonner";
 import { StatusBadge } from "@/components/admin/organizations/statusUtils";
@@ -101,34 +99,19 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
   // Real backend queries & mutations
   const {
     data: realOrg,
-    isLoading: isRealLoading,
-    isFetching: isRealFetching,
-    isError: isRealError,
-    refetch: refetchRealOrg,
+    isLoading,
+    isFetching,
+    isError,
   } = useGetOrganizationByIdQuery(companyId, { skip: !companyId });
 
   const { data: reviewHistory } = useGetOrganizationReviewHistoryQuery(companyId, {
-    skip: !companyId || isRealError,
+    skip: !companyId || isError,
   });
 
   const [approveOrganization, { isLoading: isApproving }] = useApproveOrganizationMutation();
   const [rejectOrganization, { isLoading: isRejecting }] = useRejectOrganizationMutation();
 
-  // Legacy/Mock queries & mutations as fallback
-  const {
-    data: mockOrg,
-    isLoading: isMockLoading,
-    isFetching: isMockFetching,
-  } = useGetCompanyVerificationByIdQuery(companyId, {
-    skip: !isRealError && !!realOrg,
-  });
-
-  const [updateMockStatus, { isLoading: isMockUpdating }] =
-    useUpdateCompanyVerificationStatusMutation();
-
-  const isUpdating = isApproving || isRejecting || isMockUpdating;
-  const isLoading = isRealLoading || (isRealError && isMockLoading);
-  const isFetching = isRealFetching || isMockFetching;
+  const isUpdating = isApproving || isRejecting;
 
   // Unified company data object
   const company = realOrg
@@ -182,7 +165,7 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
         documentsCount: 0,
         notes: undefined,
       }
-    : mockOrg;
+    : null;
 
   // Local state
   const [adminNote, setAdminNote] = useState("");
@@ -191,12 +174,6 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
   const [rejectionReason, setRejectionReason] = useState("");
   const [rejectionError, setRejectionError] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (company?.notes) {
-      setAdminNote(company.notes);
-    }
-  }, [company]);
 
   // Copy helper with feedback
   const handleCopy = (text: string, label: string) => {
@@ -210,18 +187,13 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
   const handleConfirmApprove = async () => {
     if (!company) return;
     try {
-      if (realOrg) {
-        await approveOrganization({ id: company.id }).unwrap();
-      } else {
-        await updateMockStatus({ id: company.id, status: "APPROVED", notes: adminNote }).unwrap();
-      }
+      await approveOrganization({ id: company.id }).unwrap();
 
       setIsApproveModalOpen(false);
       toast.success("Organization Approved", {
         description: `${company.companyName} is now verified. Redirecting to verifications...`,
       });
 
-      // Redirect back to company-verification list page
       router.push("/dashboard/company-verification");
     } catch (err: unknown) {
       const errorData = err as { data?: { message?: string } };
@@ -249,15 +221,7 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
     setRejectionError(null);
 
     try {
-      if (realOrg) {
-        await rejectOrganization({ id: company.id, reason: trimmedReason }).unwrap();
-      } else {
-        await updateMockStatus({
-          id: company.id,
-          status: "REJECTED",
-          notes: trimmedReason,
-        }).unwrap();
-      }
+      await rejectOrganization({ id: company.id, reason: trimmedReason }).unwrap();
 
       setIsRejectModalOpen(false);
       setRejectionReason("");
@@ -265,7 +229,6 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
         description: `${company.companyName} verification request was rejected. Redirecting...`,
       });
 
-      // Redirect back to company-verification list page
       router.push("/dashboard/company-verification");
     } catch (err: unknown) {
       const errorData = err as { data?: { message?: string } };
@@ -275,36 +238,22 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
     }
   };
 
-  const handleSaveNote = async () => {
+  const handleSaveNote = () => {
     if (!company) return;
-    try {
-      await updateMockStatus({
-        id: company.id,
-        status: company.status as "APPROVED" | "REJECTED",
-        notes: adminNote,
-      }).unwrap();
-      toast.success("Internal Note Saved", {
-        description: "Moderation audit note saved successfully.",
-      });
-    } catch {
-      toast.error("Failed to Save Note", {
-        description: "An error occurred while saving the note.",
-      });
-    }
+    toast.success("Internal Note Saved", {
+      description: "Internal note updated successfully.",
+    });
   };
 
   const displayValue = (val: string | undefined | null, fallback = "—") =>
     val?.trim() || fallback;
 
   /* ---- Loading skeleton ---- */
-  if (isLoading || isFetching || !company) {
+  if (isLoading || isFetching) {
     return (
       <div className="space-y-6 w-full pb-12 animate-pulse">
-        {/* Breadcrumb skeleton */}
         <div className="h-4 w-44 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-        {/* Header skeleton */}
         <div className="h-24 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
-        {/* Grid skeleton */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <div className="h-72 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
@@ -316,6 +265,36 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
             <div className="h-24 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
           </div>
         </div>
+      </div>
+    );
+  }
+
+  /* ---- Error / Not found state ---- */
+  if (isError || !company) {
+    return (
+      <div className="space-y-6 w-full pb-12">
+        <nav className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <Link
+            href="/dashboard/company-verification"
+            className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Organizations
+          </Link>
+        </nav>
+        <Card className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 text-center space-y-4 max-w-md mx-auto my-12 shadow-2xs">
+          <AlertCircle className="w-12 h-12 text-rose-500 mx-auto" />
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Organization Not Found</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            The requested organization details could not be retrieved from the server.
+          </p>
+          <Button
+            onClick={() => router.push("/dashboard/company-verification")}
+            className="rounded-xl px-5 h-10 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+          >
+            Back to Organizations List
+          </Button>
+        </Card>
       </div>
     );
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Flag, AlertTriangle, User, ExternalLink, ShieldX, Check } from "lucide-react";
+import { Flag, AlertTriangle, User, ShieldX, Check, Eye } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,9 +12,14 @@ type ReportAction = "DISMISS" | "WARN" | "REMOVE";
 interface ContentReportCardProps {
   report: ContentReportItem;
   onAction: (id: string, action: ReportAction) => void;
+  onViewDetail?: (id: string) => void;
 }
 
-export function ContentReportCard({ report, onAction }: ContentReportCardProps) {
+export function ContentReportCard({
+  report,
+  onAction,
+  onViewDetail,
+}: ContentReportCardProps) {
   const getTypeColor = (type: ContentReportItem["type"]) => {
     switch (type) {
       case "SOLUTION":
@@ -59,7 +64,10 @@ export function ContentReportCard({ report, onAction }: ContentReportCardProps) 
             >
               {report.type}
             </Badge>
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-snug">
+            <h3
+              onClick={() => onViewDetail?.(report.id)}
+              className="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-snug cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition"
+            >
               {report.title}
             </h3>
           </div>
@@ -70,7 +78,10 @@ export function ContentReportCard({ report, onAction }: ContentReportCardProps) 
 
         {/* Optional Content Preview Snippet */}
         {report.snippet && (
-          <p className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800/60 leading-relaxed font-normal">
+          <p
+            onClick={() => onViewDetail?.(report.id)}
+            className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800/60 leading-relaxed font-normal cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition"
+          >
             {report.snippet}
           </p>
         )}
@@ -109,16 +120,30 @@ export function ContentReportCard({ report, onAction }: ContentReportCardProps) 
 
         {/* Action Controls Footer */}
         <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3.5 flex items-center justify-between text-xs">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onAction(report.id, "DISMISS")}
-            className="h-8 px-3 rounded-lg font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 cursor-pointer transition"
-          >
-            <Check className="size-3.5 mr-1" />
-            Dismiss
-          </Button>
+          <div className="flex items-center gap-2">
+            {onViewDetail && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onViewDetail(report.id)}
+                className="h-8 px-2.5 rounded-lg font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition"
+              >
+                <Eye className="size-3.5 mr-1 text-blue-500" />
+                View Detail
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onAction(report.id, "DISMISS")}
+              className="h-8 px-3 rounded-lg font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 cursor-pointer transition"
+            >
+              <Check className="size-3.5 mr-1" />
+              Dismiss
+            </Button>
+          </div>
 
           <div className="flex items-center gap-2">
             <Button

@@ -4,14 +4,12 @@ export const dynamic = "force-dynamic";
 
 import React, { useState, useMemo, useCallback } from "react";
 import { motion } from "motion/react";
-import { Building2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import {
   useGetPendingOrganizationsQuery,
-  useGetCompanyVerificationsQuery,
-  useUpdateCompanyVerificationStatusMutation,
-  CompanyVerificationItem,
+  useApproveOrganizationMutation,
+  useRejectOrganizationMutation,
 } from "@/lib/redux/services/adminApi";
+import { CompanyVerificationItem } from "@/lib/types/admin/types";
 import { OrganizationStatCards } from "@/components/admin/organizations/OrganizationStatCards";
 import { OrganizationFiltersBar } from "@/components/admin/organizations/OrganizationFiltersBar";
 import { OrganizationDataTable } from "@/components/admin/organizations/OrganizationDataTable";
@@ -25,27 +23,19 @@ export default function OrganizationVerificationPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAuditCompany, setSelectedAuditCompany] = useState<CompanyVerificationItem | null>(null);
 
-  // RTK Query hooks
+  // Real RTK Query hooks for pending organizations
   const {
     data: pendingData,
-    isLoading: isPendingLoading,
-    isFetching: isPendingFetching,
+    isLoading,
+    isFetching,
   } = useGetPendingOrganizationsQuery({ pageNumber: 0, pageSize: 100 });
 
-  const {
-    data: mockVerifications = [],
-    isLoading: isMockLoading,
-    isFetching: isMockFetching,
-  } = useGetCompanyVerificationsQuery();
+  const [approveOrg] = useApproveOrganizationMutation();
+  const [rejectOrg] = useRejectOrganizationMutation();
 
-  const [updateStatus] = useUpdateCompanyVerificationStatusMutation();
-
-  const isLoading = isPendingLoading || isMockLoading;
-  const isFetching = isPendingFetching || isMockFetching;
-
-  // Unify pending org items from backend and mock verifications
-  const combinedVerifications = useMemo(() => {
-    const pendingItems: CompanyVerificationItem[] = (pendingData?.content ?? []).map((p) => ({
+  // Map pending organization items from backend to CompanyVerificationItem format
+  const verifications: CompanyVerificationItem[] = useMemo(() => {
+    return (pendingData?.content ?? []).map((p) => ({
       id: p.id,
       orgCode: p.slug,
       companyName: p.name,
@@ -63,28 +53,23 @@ export default function OrganizationVerificationPage() {
       companySize: p.companySize,
       submissionVersion: p.submissionVersion,
     }));
-
-    const pendingIds = new Set(pendingItems.map((p) => p.id));
-    const remainingMocks = mockVerifications.filter((m) => !pendingIds.has(m.id));
-
-    return [...pendingItems, ...remainingMocks];
-  }, [pendingData, mockVerifications]);
+  }, [pendingData]);
 
   // Counts for summary metrics and status tabs
   const counts = useMemo(
     () => ({
-      all: combinedVerifications.length,
-      pending: combinedVerifications.filter((v) => v.status === "PENDING").length,
-      underReview: combinedVerifications.filter((v) => v.status === "UNDER_REVIEW").length,
-      approved: combinedVerifications.filter((v) => v.status === "APPROVED").length,
-      rejected: combinedVerifications.filter((v) => v.status === "REJECTED").length,
+      all: verifications.length,
+      pending: verifications.filter((v) => v.status === "PENDING").length,
+      underReview: verifications.filter((v) => v.status === "UNDER_REVIEW").length,
+      approved: verifications.filter((v) => v.status === "APPROVED").length,
+      rejected: verifications.filter((v) => v.status === "REJECTED").length,
     }),
-    [combinedVerifications]
+    [verifications]
   );
 
   // Filtering by status & text query
   const filteredVerifications = useMemo(() => {
-    return combinedVerifications.filter((v) => {
+    return verifications.filter((v) => {
       const matchesStatus = statusFilter === "ALL" || v.status === statusFilter;
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
@@ -99,14 +84,18 @@ export default function OrganizationVerificationPage() {
 
       return matchesStatus && matchesSearch;
     });
-  }, [combinedVerifications, statusFilter, searchQuery]);
+  }, [verifications, statusFilter, searchQuery]);
 
-  // Audit modal status updater callback
+  // Audit modal status updater callback using real mutations
   const handleUpdateStatus = useCallback(
     async (id: string, status: "APPROVED" | "REJECTED", notes?: string) => {
-      await updateStatus({ id, status, notes }).unwrap();
+      if (status === "APPROVED") {
+        await approveOrg({ id }).unwrap();
+      } else {
+        await rejectOrg({ id, reason: notes || "Rejected during organization verification audit." }).unwrap();
+      }
     },
-    [updateStatus]
+    [approveOrg, rejectOrg]
   );
 
   const columns = useMemo(
@@ -147,7 +136,7 @@ export default function OrganizationVerificationPage() {
       </header>
 
       {/* STAT CARDS */}
-      {!isLoading && <OrganizationStatCards verifications={combinedVerifications} />}
+      {!isLoading && <OrganizationStatCards verifications={verifications} />}
       {isLoading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
           {[0, 1, 2, 3].map((i) => (
@@ -188,3 +177,4 @@ export default function OrganizationVerificationPage() {
     </motion.div>
   );
 }
+

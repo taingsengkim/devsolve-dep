@@ -1,6 +1,6 @@
 ---
 name: devsolve-db-seeder
-description: Utility skill for seeding test data into PostgreSQL database (devsolve_db on 51.79.146.203:8888) across various feature tables (content_flags, moderation_actions, comments, reports, users) without modifying or dropping database schemas.
+description: Utility skill for seeding test data into PostgreSQL database (devsolve_db on 51.79.146.203:8888) across various feature tables (content_flags, moderation_actions, organizations, problems, solutions, comments, reports) without modifying or dropping database schemas.
 ---
 
 # Devsolve DB Test Data Seeder
@@ -16,48 +16,40 @@ This skill provides workflow instructions, database connection parameters, and a
 - **Password**: `qwer`
 - **SSL**: No (plain connection)
 
-## Core Database Tables
+## Core Database Tables Supported
 
 1. `content_flags`: Community reports for `PROBLEM`, `SOLUTION`, `COMMENT`, and `SHOWCASE` items (`SPAM`, `OFFENSIVE`, `DUPLICATE`, `OFF_TOPIC`, `OTHER`).
 2. `moderation_actions`: Audit logs of admin actions (`WARN`, `SUSPEND`, `REMOVE`, `BAN`, `REINSTATE`).
-3. `comments`: Discussions on problems, solutions, and showcases.
-4. `reports`: Vulnerability disclosure and triage reports.
-5. `user_profiles`: User accounts and profiles.
-6. `problems` / `solutions` / `showcases`: Platform content submissions.
+3. `organizations`: Corporate KYB verification requests (`PENDING`, `APPROVED`, `REJECTED`).
+4. `problems`: Problem submissions pending moderation review.
+5. `solutions`: Solution code submissions pending admin review.
+6. `comments`: Discussions on problems, solutions, and showcases.
 
-## Rules & Safety Guidelines
-
-1. **NEVER** execute `DROP TABLE`, `TRUNCATE`, or `ALTER TABLE`.
-2. **ONLY** execute safe `INSERT INTO` statements.
-3. Preserve foreign keys by selecting valid `reporter_id` / `user_id` values from existing records in `user_profiles`.
-
-## Usage Instructions
-
-### Seeding via Helper Script
+## Usage Commands
 
 Run the helper script from the workspace directory:
 
+### Seed Content Flags:
 ```powershell
-$env:NODE_PATH="c:\Users\tolsa\Documents\My project\devsolve-frontend\node_modules"; node ".agents/skills/devsolve-db-seeder/scripts/seed-db.js" --table content_flags --count 50
+$env:NODE_PATH="c:\Users\tolsa\Documents\My project\devsolve-frontend\node_modules"; node ".agents/skills/devsolve-db-seeder/scripts/seed-db.js" --table content_flags --count 20
 ```
 
-To seed moderation history logs:
-
+### Seed Moderation History Logs:
 ```powershell
-$env:NODE_PATH="c:\Users\tolsa\Documents\My project\devsolve-frontend\node_modules"; node ".agents/skills/devsolve-db-seeder/scripts/seed-db.js" --table moderation_actions --count 20
+$env:NODE_PATH="c:\Users\tolsa\Documents\My project\devsolve-frontend\node_modules"; node ".agents/skills/devsolve-db-seeder/scripts/seed-db.js" --table moderation_actions --count 15
 ```
 
-To seed comments:
-
+### Seed Pending Organizations:
 ```powershell
-$env:NODE_PATH="c:\Users\tolsa\Documents\My project\devsolve-frontend\node_modules"; node ".agents/skills/devsolve-db-seeder/scripts/seed-db.js" --table comments --count 15
+$env:NODE_PATH="c:\Users\tolsa\Documents\My project\devsolve-frontend\node_modules"; node ".agents/skills/devsolve-db-seeder/scripts/seed-db.js" --table organizations --count 10
 ```
 
-### SQL Direct Insertion Reference
+### Seed Problems Pending Moderation:
+```powershell
+$env:NODE_PATH="c:\Users\tolsa\Documents\My project\devsolve-frontend\node_modules"; node ".agents/skills/devsolve-db-seeder/scripts/seed-db.js" --table problems --count 10
+```
 
-```sql
-INSERT INTO content_flags 
-  (id, created_at, updated_at, description, flaggable_id, flaggable_type, reason, status, reporter_id)
-VALUES 
-  (gen_random_uuid(), NOW(), NOW(), 'Test flagged content item', gen_random_uuid(), 'PROBLEM', 'SPAM', 'PENDING', (SELECT id FROM user_profiles LIMIT 1));
+### Seed Solutions Pending Review:
+```powershell
+$env:NODE_PATH="c:\Users\tolsa\Documents\My project\devsolve-frontend\node_modules"; node ".agents/skills/devsolve-db-seeder/scripts/seed-db.js" --table solutions --count 10
 ```
