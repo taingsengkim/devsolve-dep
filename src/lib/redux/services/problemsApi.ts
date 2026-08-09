@@ -92,6 +92,20 @@ export const problemsApi = baseApi.injectEndpoints({
       providesTags: (_result, _error, id) => [{ type: "Problem", id }],
     }),
 
+    /**
+     * DELETE /api/problems/{id} — the author withdrawing their own problem.
+     * A soft delete upstream, so the record survives but stops being served.
+     */
+    deleteProblem: builder.mutation<void, string>({
+      query: (id) => ({ url: `/problems/${id}`, method: "DELETE" }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: "Problem", id },
+        { type: "Problem", id: "LIST" },
+        { type: "Problem", id: "MINE" },
+        { type: "Discussion", id: "LIST" },
+      ],
+    }),
+
     /** GET /api/problems -> the published feed. Approved problems only. */
     getProblems: builder.query<Page<ProblemResponse>, ProblemFeedParams | void>({
       query: (args) => {
@@ -112,4 +126,5 @@ export const {
   useCreateProblemMutation,
   useGetProblemByIdQuery,
   useGetProblemsQuery,
+  useDeleteProblemMutation,
 } = problemsApi;

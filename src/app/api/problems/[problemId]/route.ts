@@ -4,6 +4,7 @@ import {
   badRequest,
   bearerTokenFor,
   relay,
+  unauthorized,
   unreachable,
   upstreamFetch,
 } from "@/lib/api/proxy";
@@ -34,6 +35,32 @@ export async function GET(request: NextRequest, context: Context) {
   try {
     const upstream = await upstreamFetch(`/problems/${id}`, token);
     return relay(upstream, "Unable to load that problem.");
+  } catch {
+    return unreachable("problem");
+  }
+}
+
+/**
+ * DELETE /api/problems/{id} — the author withdrawing their own problem.
+ *
+ * A soft delete upstream: the record survives so anything already pointing at
+ * it does not break, and it stops being served. Who may delete which problem
+ * is the backend's call — the token is relayed and its 403 comes back
+ * unchanged.
+ */
+export async function DELETE(request: NextRequest, context: Context) {
+  const token = await bearerTokenFor(request);
+  if (!token) return unauthorized();
+
+  const { problemId: raw } = await context.params;
+  const id = asUuid(raw);
+  if (!id) return badRequest("Problem id must be a UUID");
+
+  try {
+    const upstream = await upstreamFetch(`/problems/${id}`, token, {
+      method: "DELETE",
+    });
+    return relay(upstream, "The problem could not be deleted.");
   } catch {
     return unreachable("problem");
   }

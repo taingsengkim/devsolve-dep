@@ -33,6 +33,8 @@ export interface MyPost {
   note?: string;
   /** A showcase with an edit queued behind the live version. */
   hasPendingEdit?: boolean;
+  /** For a solution, the problem it answers — needed to delete it cleanly. */
+  problemId?: string;
 }
 
 interface Paged<T> {
@@ -150,6 +152,7 @@ export const myCommunityApi = baseApi.injectEndpoints({
               href: solution.problemId
                 ? `/community/${solution.problemId}`
                 : undefined,
+              problemId: solution.problemId,
               createdAt: solution.createdAt || new Date().toISOString(),
               state:
                 solution.reviewStatus === "ACCEPTED"
@@ -196,8 +199,12 @@ export const myCommunityApi = baseApi.injectEndpoints({
           ),
         };
       },
+      /* One tag per source list, so deleting a post of any kind refreshes this
+         page without the other two being refetched for nothing. */
       providesTags: [
         { type: "Showcase", id: "MINE" },
+        { type: "Problem", id: "MINE" },
+        { type: "Solution", id: "MINE" },
         { type: "Discussion", id: "LIST" },
       ],
     }),

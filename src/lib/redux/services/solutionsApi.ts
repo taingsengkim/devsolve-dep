@@ -87,7 +87,28 @@ export const solutionsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, { problemId }) => [
         { type: "Solution", id: problemId },
+        { type: "Solution", id: "MINE" },
         { type: "Problem", id: problemId },
+      ],
+    }),
+
+    /**
+     * DELETE /api/solutions/{id} — the author withdrawing their own answer.
+     *
+     * The problem it answered is invalidated alongside the author's own list,
+     * so the count under that problem drops without a reload. `problemId` is
+     * optional because the caller does not always know it.
+     */
+    deleteSolution: builder.mutation<void, { id: string; problemId?: string }>({
+      query: ({ id }) => ({ url: `/solutions/${id}`, method: "DELETE" }),
+      invalidatesTags: (_result, _error, { problemId }) => [
+        { type: "Solution", id: "MINE" },
+        ...(problemId
+          ? [
+              { type: "Solution" as const, id: problemId },
+              { type: "Problem" as const, id: problemId },
+            ]
+          : []),
       ],
     }),
   }),
@@ -99,4 +120,5 @@ export const {
   useGetPublicProfileQuery,
   useGetMyProfileQuery,
   useCreateSolutionMutation,
+  useDeleteSolutionMutation,
 } = solutionsApi;
