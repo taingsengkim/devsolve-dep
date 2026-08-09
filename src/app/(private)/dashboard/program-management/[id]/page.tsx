@@ -41,6 +41,11 @@ import {
   useApproveProgramMutation,
   useRejectProgramMutation,
 } from "@/lib/redux/services/admin/programAdminApi";
+import {
+  useGetProgramByIdQuery,
+  useGetMyCompanyProgramsQuery,
+} from "@/lib/redux/services/program/programsApi";
+import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { ProgramRejectDialog } from "@/components/admin/programs/ProgramRejectDialog";
 import { toast } from "sonner";
 
@@ -52,23 +57,56 @@ export default function AdminProgramDetailPage({
   const { id } = use(params);
   const router = useRouter();
 
+  const { user } = useSidebarAuth();
+  const isAdmin = user?.roles?.includes("ADMIN") ?? false;
+
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
+  // Admin uses /api/admin/programs/${id} which bypasses public visibility
+  // filters so PENDING_REVIEW / PRIVATE programs are always accessible.
   const {
-    data: detailData,
-    isLoading: isDetailLoading,
-    refetch,
-  } = useGetProgramDetailQuery(id);
+    data: adminDetail,
+    isLoading: isAdminDetailLoading,
+    refetch: refetchAdmin,
+  } = useGetProgramDetailQuery(id, { skip: !isAdmin });
 
-  const { data: listData, isLoading: isListLoading } =
-    useGetAdminProgramsQuery();
+  // Company / public users fall back to the public programs endpoint.
+  const {
+    data: publicDetail,
+    isLoading: isPublicLoading,
+    refetch: refetchPublic,
+  } = useGetProgramByIdQuery(id, { skip: isAdmin });
 
-  const program =
-    detailData || listData?.content?.find((p: any) => p.id === id);
+  // Admin-only list query fallback (used for stat counts on list page, skip here)
+  const { data: adminListData, isLoading: isAdminListLoading } =
+    useGetAdminProgramsQuery({ size: 100 }, { skip: !isAdmin });
 
-  const isLoading = isDetailLoading && isListLoading;
+  // Company-only list query fallback
+  const {
+    data: companyListData,
+    isLoading: isCompanyListLoading,
+    refetch: refetchCompany,
+  } = useGetMyCompanyProgramsQuery({ size: 100 }, { skip: isAdmin });
+
+  const refetch = () => {
+    if (isAdmin) refetchAdmin();
+    else refetchPublic();
+    if (!isAdmin) refetchCompany();
+  };
+
+  const program = isAdmin
+    ? adminDetail ||
+      adminListData?.content?.find((p: any) => p.id === id || p.handle === id)
+    : publicDetail ||
+      companyListData?.content?.find(
+        (p: any) => p.id === id || p.handle === id
+      );
+
+  const isLoading = isAdmin
+    ? isAdminDetailLoading
+    : isPublicLoading && isCompanyListLoading;
   const isError = !isLoading && !program;
 
   const [approveProgram] = useApproveProgramMutation();
@@ -134,8 +172,8 @@ export default function AdminProgramDetailPage({
       className="space-y-6 w-full pb-24"
     >
       {/* BREADCRUMB & BACK BUTTON */}
-      <div className="flex items-center gap-3">
-        <Link href="/dashboard/program-management">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 max-w-full overflow-hidden">
+        <Link href="/dashboard/program-management" className="shrink-0">
           <Button
             variant="ghost"
             size="sm"
@@ -145,29 +183,29 @@ export default function AdminProgramDetailPage({
             Back to Programs
           </Button>
         </Link>
-        <span className="text-slate-300 dark:text-slate-700">/</span>
-        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">
+        <span className="text-slate-300 dark:text-slate-700 shrink-0">/</span>
+        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate max-w-[180px] sm:max-w-xs md:max-w-md">
           {program.name}
         </span>
       </div>
 
       {/* HEADER CARD */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900 flex items-center justify-center shrink-0">
-              <Building2 className="w-7 h-7 text-blue-600 dark:text-blue-400" />
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-2xs space-y-4">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+          <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900 flex items-center justify-center shrink-0">
+              <Building2 className="w-6 h-6 sm:w-7 sm:h-7 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="space-y-1">
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <div className="space-y-1.5 min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 line-clamp-2 break-words leading-tight">
                 {program.name}
               </h1>
-              <div className="text-sm font-mono text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                <span>@{program.handle}</span>
+              <div className="text-xs sm:text-sm font-mono text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="truncate max-w-[220px] sm:max-w-xs md:max-w-md">@{program.handle}</span>
                 {program.organizationId && (
                   <>
-                    <span>•</span>
-                    <span className="text-xs text-slate-400">
+                    <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
+                    <span className="text-xs text-slate-400 truncate max-w-[180px] sm:max-w-xs">
                       Org ID: {program.organizationId}
                     </span>
                   </>
@@ -177,7 +215,7 @@ export default function AdminProgramDetailPage({
           </div>
 
           {/* STATUS BADGES */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             {isPending && (
               <Badge className="bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-1.5 text-xs font-semibold gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
@@ -534,51 +572,75 @@ export default function AdminProgramDetailPage({
       </Tabs>
 
       {/* STICKY BOTTOM ACTION BAR */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 p-4 shadow-lg">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-            <span className="font-semibold text-slate-900 dark:text-slate-100">
+      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-3 shadow-lg">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-4 min-w-0">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 min-w-0 flex-1">
+            <span className="font-semibold text-slate-900 dark:text-slate-100 truncate max-w-[160px] sm:max-w-xs md:max-w-md">
               {program.name}
             </span>
-            <span>•</span>
-            <span className="text-xs font-mono">@{program.handle}</span>
+            <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
+            <span className="text-xs font-mono truncate max-w-[120px] sm:max-w-[180px] hidden sm:inline text-slate-500">
+              @{program.handle}
+            </span>
           </div>
 
-          {isPending ? (
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Button
-                variant="destructive"
-                disabled={isActionLoading}
-                onClick={() => setRejectDialogOpen(true)}
-                className="rounded-xl font-semibold h-10 cursor-pointer w-full sm:w-auto text-sm"
-              >
-                <XCircle className="w-4 h-4 mr-1.5" />
-                Reject Program
-              </Button>
+          <div className="shrink-0 flex items-center gap-2">
+              {isAdmin ? (
+                <div className="flex items-center gap-2 sm:gap-3">
+                  {/* Status label when already resolved */}
+                  {isApproved && (
+                    <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4" /> Approved
+                    </span>
+                  )}
+                  {isRejected && (
+                    <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                      <XCircle className="w-4 h-4" /> Rejected
+                    </span>
+                  )}
 
-              <Button
-                disabled={isActionLoading}
-                onClick={() => setApproveDialogOpen(true)}
-                className="rounded-xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white h-10 cursor-pointer w-full sm:w-auto text-sm shadow-2xs"
-              >
-                <CheckCircle2 className="w-4 h-4 mr-1.5" />
-                Approve & Publish Program
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              {isApproved && (
-                <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4" /> This program has been approved.
-                </span>
-              )}
-              {isRejected && (
-                <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                  <XCircle className="w-4 h-4" /> This program has been rejected.
-                </span>
-              )}
-            </div>
-          )}
+                  <Button
+                    variant="destructive"
+                    disabled={!isPending || isActionLoading}
+                    onClick={() => setRejectDialogOpen(true)}
+                    className="rounded-xl font-semibold h-9 px-3 sm:px-4 text-xs sm:text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <XCircle className="w-4 h-4 mr-1 sm:mr-1.5" />
+                    <span className="hidden sm:inline">Reject Program</span>
+                    <span className="sm:hidden">Reject</span>
+                  </Button>
+
+                  <Button
+                    disabled={!isPending || isActionLoading}
+                    onClick={() => setApproveDialogOpen(true)}
+                    className="rounded-xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white h-9 px-3 sm:px-4 text-xs sm:text-sm shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-1 sm:mr-1.5" />
+                    <span className="hidden sm:inline">Approve &amp; Publish</span>
+                    <span className="sm:hidden">Approve</span>
+                  </Button>
+                </div>
+            ) : (
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {isPending && (
+                  <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1.5 font-semibold">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                    <span className="truncate max-w-[180px] sm:max-w-none">Under Review by DevSolve Admins</span>
+                  </span>
+                )}
+                {isApproved && (
+                  <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" /> Program Approved & Active
+                  </span>
+                )}
+                {isRejected && (
+                  <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                    <XCircle className="w-4 h-4 shrink-0" /> Requires Revision
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

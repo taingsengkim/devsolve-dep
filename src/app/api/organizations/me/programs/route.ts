@@ -28,6 +28,52 @@ const unreachable = () =>
     { status: 502 }
   );
 
+export async function GET(request: NextRequest) {
+  const token = await bearerTokenFor(request);
+  if (!token) return unauthorized();
+
+  const searchParams = request.nextUrl.searchParams;
+  const queryString = searchParams.toString();
+  const upstreamUrl = queryString
+    ? `${BACKEND_API_URL}/organizations/me/programs?${queryString}`
+    : `${BACKEND_API_URL}/organizations/me/programs`;
+
+  try {
+    const upstream = await fetch(upstreamUrl, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+
+    const raw = await upstream.text();
+    let body: unknown = null;
+    if (raw) {
+      try {
+        body = JSON.parse(raw);
+      } catch {
+        body = { message: raw };
+      }
+    }
+
+    if (!upstream.ok) {
+      const message =
+        (body as { message?: string } | null)?.message ??
+        "Failed to fetch organization programs.";
+      return NextResponse.json(
+        { message, details: body },
+        { status: upstream.status }
+      );
+    }
+
+    return NextResponse.json(body, { status: upstream.status });
+  } catch {
+    return unreachable();
+  }
+}
+
 export async function POST(request: NextRequest) {
   const token = await bearerTokenFor(request);
   if (!token) return unauthorized();

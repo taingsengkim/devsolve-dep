@@ -1,4 +1,4 @@
-import { baseApi } from "../baseApi";
+import { proxyApi } from "../proxyApi";
 import {
   PageProgramManagementSummaryResponseDto,
   GetAdminProgramsParams,
@@ -15,7 +15,7 @@ export type {
   ProgramState,
 };
 
-export const programAdminApi = baseApi.injectEndpoints({
+export const programAdminApi = proxyApi.injectEndpoints({
   endpoints: (builder) => ({
     getAdminPrograms: builder.query<
       PageProgramManagementSummaryResponseDto,
@@ -36,7 +36,7 @@ export const programAdminApi = baseApi.injectEndpoints({
 
     getProgramDetail: builder.query<any, string>({
       query: (id) => ({
-        url: `/programs/${id}`,
+        url: `/admin/programs/${id}`,
       }),
       providesTags: (_result, _error, id) => [{ type: "AdminProgram", id }],
     }),
