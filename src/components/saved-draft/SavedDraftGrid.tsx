@@ -66,7 +66,7 @@ export function SavedDraftGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 ">
       {items.map((item, index) => (
         <motion.div
           key={item.id}

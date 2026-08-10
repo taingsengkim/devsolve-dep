@@ -46,7 +46,7 @@ export const programsApi = proxyApi.injectEndpoints({
     // GET /organizations/me/programs (COMPANY role)
     getMyCompanyPrograms: builder.query<
       PageProgramManagementSummaryResponseDto,
-      { page?: number; size?: number; sort?: string } | void
+      { page?: number; size?: number; sort?: string; state?: string; search?: string } | void
     >({
       query: (params) => {
         const queryParams = new URLSearchParams();
@@ -58,6 +58,12 @@ export const programsApi = proxyApi.injectEndpoints({
         }
         if (params?.sort) {
           queryParams.append("sort", params.sort);
+        }
+        if (params?.state && params.state !== "All") {
+          queryParams.append("state", params.state);
+        }
+        if (params?.search && params.search.trim() !== "") {
+          queryParams.append("search", params.search.trim());
         }
 
         const queryString = queryParams.toString();
@@ -74,13 +80,39 @@ export const programsApi = proxyApi.injectEndpoints({
       providesTags: (_result, _error, id) => [{ type: "Program", id }],
     }),
 
-    createProgram: builder.mutation<Program, CreateProgramRequest>({
+    createProgram: builder.mutation<Program, CreateProgramRequest & { state?: string }>({
       query: (body) => ({
         url: "/organizations/me/programs",
         method: "POST",
         body,
       }),
       invalidatesTags: ["Program"],
+    }),
+
+    updateProgram: builder.mutation<
+      Program,
+      { id: string; body: Partial<CreateProgramRequest> & { state?: string } }
+    >({
+      query: ({ id, body }) => ({
+        url: `/organizations/me/programs/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        "Program",
+        { type: "Program", id },
+      ],
+    }),
+
+    deleteProgram: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/organizations/me/programs/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        "Program",
+        { type: "Program", id },
+      ],
     }),
   }),
 
@@ -92,4 +124,6 @@ export const {
   useGetMyCompanyProgramsQuery,
   useGetProgramByIdQuery,
   useCreateProgramMutation,
+  useUpdateProgramMutation,
+  useDeleteProgramMutation,
 } = programsApi;
