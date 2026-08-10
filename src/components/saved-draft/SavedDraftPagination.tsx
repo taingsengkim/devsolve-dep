@@ -38,7 +38,7 @@ export function SavedDraftPagination({
 
   return (
     <footer className="flex flex-col items-center justify-between gap-4 pt-1 sm:flex-row">
-      <span className="text-sm text-[#64748B]">
+      <span className="text-sm text-muted-foreground">
         Page {currentPage} of {totalPages}
       </span>
 
@@ -49,7 +49,7 @@ export function SavedDraftPagination({
           size="sm"
           disabled={currentPage === 1}
           onClick={() => onPageChange(currentPage - 1)}
-          className="rounded-xl px-3 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+          className="rounded-xl px-3 text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <ChevronLeft data-icon="inline-start" className="size-4" />
           Previous
@@ -62,7 +62,7 @@ export function SavedDraftPagination({
               currentPage={currentPage}
               onPageChange={onPageChange}
             />
-            {pages[0] > 2 && <MoreHorizontal className="mx-1 size-4 text-slate-300" />}
+            {pages[0] > 2 && <MoreHorizontal className="mx-1 size-4 text-muted-foreground" />}
           </>
         )}
 
@@ -78,7 +78,7 @@ export function SavedDraftPagination({
         {pages[pages.length - 1] < totalPages && (
           <>
             {pages[pages.length - 1] < totalPages - 1 && (
-              <MoreHorizontal className="mx-1 size-4 text-slate-300" />
+              <MoreHorizontal className="mx-1 size-4 text-muted-foreground" />
             )}
             <PaginationPageButton
               page={totalPages}
@@ -94,7 +94,7 @@ export function SavedDraftPagination({
           size="sm"
           disabled={currentPage === totalPages}
           onClick={() => onPageChange(currentPage + 1)}
-          className="rounded-xl px-3 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+          className="rounded-xl px-3 text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           Next
           <ChevronRight data-icon="inline-end" className="size-4" />
@@ -122,7 +122,7 @@ function PaginationPageButton({
       size="icon-sm"
       onClick={() => onPageChange(page)}
       className={cn(
-        "rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+        "border-transparent bg-card text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground",
         currentPage === page &&
           "border-blue-600 bg-[#2563EB] text-white hover:bg-[#1D4ED8] hover:text-white"
       )}

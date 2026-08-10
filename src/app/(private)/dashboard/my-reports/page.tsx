@@ -55,18 +55,18 @@ function SeverityFilterSelect({
 }) {
   return (
     <Select value={value} onValueChange={(val) => val && onChange(val)}>
-      <SelectTrigger className="h-10.5 px-3.5 w-full sm:w-auto min-w-[165px] text-sm font-semibold bg-white border border-slate-300 hover:border-slate-400 rounded-xl text-slate-800 flex items-center justify-between gap-2.5 cursor-pointer shadow-2xs focus:ring-2 focus:ring-blue-600/20">
+      <SelectTrigger className="h-10.5 px-3.5 w-full sm:w-auto min-w-[165px] text-sm font-semibold bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 hover:ring-foreground/10 dark:hover:ring-foreground/20 rounded-xl text-foreground flex items-center justify-between gap-2.5 cursor-pointer shadow-2xs focus:ring-2 focus:ring-blue-600/20">
         <div className="flex items-center gap-2 min-w-0">
-          <Filter className="w-4 h-4 text-slate-500 shrink-0" />
+          <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
           <SelectValue placeholder="Severity: All" />
         </div>
       </SelectTrigger>
-      <SelectContent className="rounded-xl border border-slate-200 bg-white p-1 shadow-xl">
+      <SelectContent className="rounded-xl bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 p-1 shadow-xl">
         {SEVERITY_OPTIONS.map((opt) => (
           <SelectItem
             key={opt.value}
             value={opt.value}
-            className="text-sm font-medium text-slate-700 focus:bg-blue-50 focus:text-blue-700 rounded-lg cursor-pointer py-2 px-3"
+            className="text-sm font-medium text-foreground focus:bg-blue-50 dark:focus:bg-blue-500/10 focus:text-blue-700 dark:focus:text-blue-300 rounded-lg cursor-pointer py-2 px-3"
           >
             {opt.label}
           </SelectItem>
@@ -146,36 +146,36 @@ export default function MyReportsPage() {
     switch (status) {
       case "TRIAGING":
         return (
-          <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <Clock className="w-3.5 h-3.5 text-amber-600" />
+          <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-200 dark:text-amber-300 dark:border-amber-500/20 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             TRIAGING
           </Badge>
         );
       case "RESOLVED":
         return (
-          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 dark:text-emerald-300 dark:border-emerald-500/20 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             RESOLVED
           </Badge>
         );
       case "ACCEPTED":
         return (
-          <Badge variant="outline" className="bg-blue-500/10 text-blue-700 border-blue-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <Award className="w-3.5 h-3.5 text-blue-600" />
+          <Badge variant="outline" className="bg-blue-500/10 text-blue-700 border-blue-200 dark:text-blue-300 dark:border-blue-500/20 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <Award className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
             ACCEPTED
           </Badge>
         );
       case "SUBMITTED":
         return (
-          <Badge variant="outline" className="bg-indigo-500/10 text-indigo-700 border-indigo-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <AlertCircle className="w-3.5 h-3.5 text-indigo-600" />
+          <Badge variant="outline" className="bg-indigo-500/10 text-indigo-700 border-indigo-200 dark:text-indigo-300 dark:border-indigo-500/20 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <AlertCircle className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             SUBMITTED
           </Badge>
         );
       case "REJECTED":
         return (
-          <Badge variant="outline" className="bg-rose-500/10 text-rose-700 border-rose-200 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
-            <XCircle className="w-3.5 h-3.5 text-rose-600" />
+          <Badge variant="outline" className="bg-rose-500/10 text-rose-700 border-rose-200 dark:text-rose-300 dark:border-rose-500/20 font-semibold text-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 w-fit">
+            <XCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
             REJECTED
           </Badge>
         );
@@ -185,24 +185,24 @@ export default function MyReportsPage() {
   const getBountyDisplay = (item: ReportItem) => {
     if (item.isBountyHighlight) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-sm font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-xs">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-sm font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20 shadow-xs">
           <DollarSign className="w-3.5 h-3.5" />
           {item.bountyOrRep}
         </span>
       );
     }
     if (item.isBountyDim) {
-      return <span className="text-sm font-medium text-slate-400 line-through">{item.bountyOrRep}</span>;
+      return <span className="text-sm font-medium text-muted-foreground line-through">{item.bountyOrRep}</span>;
     }
     if (item.bountyOrRep === "Reputation") {
       return (
-        <span className="inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded border border-indigo-100">
+        <span className="inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded border border-indigo-100 dark:text-indigo-300 dark:bg-indigo-500/10 dark:border-indigo-500/20">
           <Award className="w-3.5 h-3.5" />
           Reputation
         </span>
       );
     }
-    return <span className="text-sm font-semibold text-slate-700">{item.bountyOrRep}</span>;
+    return <span className="text-sm font-semibold text-foreground">{item.bountyOrRep}</span>;
   };
 
   return (
@@ -213,17 +213,17 @@ export default function MyReportsPage() {
       className="space-y-6 w-full pb-12"
     >
       {/* Header Section */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
         <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">My Reports</h1>
-          <p className="text-base text-slate-500 font-medium">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">My Reports</h1>
+          <p className="text-base text-muted-foreground font-medium">
             {totalSubmissions} submission{totalSubmissions === 1 ? "" : "s"} across {totalPrograms} program{totalPrograms === 1 ? "" : "s"}
           </p>
         </div>
         <Button
           variant="outline"
           onClick={handleBack}
-          className="self-start sm:self-auto cursor-pointer rounded-xl border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-all gap-2 px-4 shadow-xs"
+          className="self-start sm:self-auto cursor-pointer rounded-xl bg-card text-foreground hover:bg-muted transition-all gap-2 px-4 shadow-xs"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back</span>
@@ -231,31 +231,31 @@ export default function MyReportsPage() {
       </header>
 
       {/* Filter & Search Toolbar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 bg-card p-3.5 sm:p-4 rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs">
         {/* Search Input */}
         <div className="relative flex-1 min-w-0 w-full">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           <Input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by ID, program, or title..."
-            className="pl-10 h-10.5 w-full rounded-xl border-slate-200 bg-slate-50/50 text-base focus-visible:ring-2 focus-visible:ring-blue-600/30"
+            className="pl-10 h-10.5 w-full rounded-xl border border-transparent bg-muted/50 text-base focus-visible:ring-2 focus-visible:ring-blue-600/30"
           />
         </div>
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
           {/* Status Tabs */}
-          <div className="flex items-center p-1 bg-slate-100/80 rounded-xl gap-1 border border-slate-200/50 w-full sm:w-auto">
+          <div className="flex items-center p-1 bg-muted/60 rounded-xl gap-1 w-full sm:w-auto">
             {(["All", "Open", "Resolved"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 sm:flex-initial relative px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer text-center ${
                   activeTab === tab
-                    ? "bg-white text-blue-600 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
+                    ? "bg-card text-blue-600 dark:text-blue-400 shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {tab}
@@ -272,11 +272,11 @@ export default function MyReportsPage() {
       </div>
 
       {/* Data Table Container */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div className="bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-xs font-bold text-slate-600 uppercase tracking-wider">
+              <tr className="bg-muted/60 border-b border-border text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 <th className="py-3.5 px-4 sm:px-6">REPORT ID</th>
                 <th className="py-3.5 px-4 sm:px-6">VULNERABILITY & PROGRAM</th>
                 <th className="py-3.5 px-4 sm:px-6">TYPE</th>
@@ -287,16 +287,16 @@ export default function MyReportsPage() {
                 <th className="py-3.5 px-4 sm:px-6 text-center">ACTION</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-border">
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400 text-sm">
+                  <td colSpan={8} className="py-12 text-center text-muted-foreground text-sm">
                     Loading reports...
                   </td>
                 </tr>
               ) : reports.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400 text-sm">
+                  <td colSpan={8} className="py-12 text-center text-muted-foreground text-sm">
                     No reports match your filters.
                   </td>
                 </tr>
@@ -307,13 +307,13 @@ export default function MyReportsPage() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: idx * 0.04 }}
-                    className="hover:bg-slate-50/70 transition-colors group"
+                    className="hover:bg-muted/50 transition-colors group"
                   >
                     {/* Report ID */}
                     <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
                       <Link
                         href={`/dashboard/my-reports/${report.id}`}
-                        className="text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline decoration-2 underline-offset-2"
+                        className="text-sm font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline decoration-2 underline-offset-2"
                       >
                         {report.reportId}
                       </Link>
@@ -322,25 +322,25 @@ export default function MyReportsPage() {
                     {/* Vulnerability & Program */}
                     <td className="py-4 px-4 sm:px-6">
                       <div className="flex items-center gap-3">
-                        <Avatar className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold text-xs shrink-0 border border-blue-200">
-                          <AvatarFallback className="bg-blue-100 text-blue-700 rounded-lg">
+                        <Avatar className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold text-xs shrink-0 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20">
+                          <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 rounded-lg">
                             {report.avatarLetter}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col min-w-0">
                           <Link href={`/dashboard/my-reports/${report.id}`}>
-                            <strong className="text-sm sm:text-base font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors block">
+                            <strong className="text-sm sm:text-base font-semibold text-foreground truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors block">
                               {report.title}
                             </strong>
                           </Link>
-                          <span className="text-xs sm:text-sm text-slate-500 truncate">{report.program}</span>
+                          <span className="text-xs sm:text-sm text-muted-foreground truncate">{report.program}</span>
                         </div>
                       </div>
                     </td>
 
                     {/* Type */}
                     <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
-                      <span className="text-sm font-medium text-slate-600">{report.type}</span>
+                      <span className="text-sm font-medium text-muted-foreground">{report.type}</span>
                     </td>
 
                     {/* Severity */}
@@ -361,8 +361,8 @@ export default function MyReportsPage() {
                     {/* Last Activity */}
                     <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-sm text-slate-600 font-medium">{report.lastActivityDate}</span>
-                        <span className="text-xs font-bold tracking-wide text-blue-600 uppercase">
+                        <span className="text-sm text-muted-foreground font-medium">{report.lastActivityDate}</span>
+                        <span className="text-xs font-bold tracking-wide text-blue-600 dark:text-blue-400 uppercase">
                           {report.lastActivityBadge}
                         </span>
                       </div>
@@ -375,7 +375,7 @@ export default function MyReportsPage() {
                         variant="ghost"
                         onClick={() => setSelectedReport(report)}
                         aria-label="View Report"
-                        className="w-8 h-8 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                        className="w-8 h-8 rounded-lg text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors cursor-pointer"
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
@@ -388,8 +388,8 @@ export default function MyReportsPage() {
         </div>
 
         {/* Pagination Footer */}
-        <footer className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-slate-200/80 bg-slate-50/50">
-          <span className="text-sm font-medium text-slate-500">
+        <footer className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-border bg-muted/30">
+          <span className="text-sm font-medium text-muted-foreground">
             Showing {displayedCount} of {totalSubmissions} submissions
           </span>
           <div className="flex items-center gap-1.5">
@@ -398,7 +398,7 @@ export default function MyReportsPage() {
               variant="outline"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="w-8 h-8 rounded-lg border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer disabled:opacity-50"
+              className="w-8 h-8 rounded-lg cursor-pointer disabled:opacity-50"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -408,7 +408,7 @@ export default function MyReportsPage() {
               className={`w-8 h-8 p-0 rounded-lg text-xs font-semibold cursor-pointer ${
                 currentPage === 1
                   ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
+                  : "bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 text-foreground hover:bg-muted"
               }`}
             >
               1
@@ -419,7 +419,7 @@ export default function MyReportsPage() {
               className={`w-8 h-8 p-0 rounded-lg text-xs font-semibold cursor-pointer ${
                 currentPage === 2
                   ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
+                  : "bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 text-foreground hover:bg-muted"
               }`}
             >
               2
@@ -428,7 +428,7 @@ export default function MyReportsPage() {
               size="icon"
               variant="outline"
               onClick={() => setCurrentPage((p) => p + 1)}
-              className="w-8 h-8 rounded-lg border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer"
+              className="w-8 h-8 rounded-lg cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -445,19 +445,19 @@ export default function MyReportsPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 space-y-4"
+              className="bg-card rounded-2xl p-6 max-w-lg w-full shadow-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 space-y-4"
             >
-              <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
+              <div className="flex items-start justify-between gap-3 pb-3 border-b border-border">
                 <div>
-                  <span className="text-xs font-bold text-blue-600">{selectedReport.reportId}</span>
-                  <h3 className="text-lg font-bold text-slate-900">{selectedReport.title}</h3>
-                  <p className="text-xs text-slate-500">{selectedReport.program}</p>
+                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{selectedReport.reportId}</span>
+                  <h3 className="text-lg font-bold text-foreground">{selectedReport.title}</h3>
+                  <p className="text-xs text-muted-foreground">{selectedReport.program}</p>
                 </div>
                 <Button
                   size="icon"
                   variant="ghost"
                   onClick={() => setSelectedReport(null)}
-                  className="rounded-full w-8 h-8 text-slate-400 hover:text-slate-600"
+                  className="rounded-full w-8 h-8 text-muted-foreground hover:text-foreground"
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -465,30 +465,30 @@ export default function MyReportsPage() {
 
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div className="space-y-1">
-                  <span className="text-slate-400">Severity</span>
+                  <span className="text-muted-foreground">Severity</span>
                   <div>{getSeverityBadge(selectedReport.severity)}</div>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-slate-400">Status</span>
+                  <span className="text-muted-foreground">Status</span>
                   <div>{getStatusBadge(selectedReport.status)}</div>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-slate-400">Type</span>
-                  <p className="font-semibold text-slate-800">{selectedReport.type}</p>
+                  <span className="text-muted-foreground">Type</span>
+                  <p className="font-semibold text-foreground">{selectedReport.type}</p>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-slate-400">Bounty / Rep</span>
+                  <span className="text-muted-foreground">Bounty / Rep</span>
                   <div>{getBountyDisplay(selectedReport)}</div>
                 </div>
                 <div className="col-span-2 space-y-1">
-                  <span className="text-slate-400">Last Activity</span>
-                  <p className="font-semibold text-slate-800">
-                    {selectedReport.lastActivityDate} — <span className="text-blue-600">{selectedReport.lastActivityBadge}</span>
+                  <span className="text-muted-foreground">Last Activity</span>
+                  <p className="font-semibold text-foreground">
+                    {selectedReport.lastActivityDate} — <span className="text-blue-600 dark:text-blue-400">{selectedReport.lastActivityBadge}</span>
                   </p>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex justify-end gap-2">
+              <div className="pt-4 border-t border-border flex justify-end gap-2">
                 <Button
                   variant="outline"
                   onClick={() => setSelectedReport(null)}

@@ -640,6 +640,7 @@ const Navbar = () => {
               {/* Staged so each width carries only what fits: hamburger alone,
                   then Get Started, then Log in, and the theme toggle last —
                   it is the one control the mobile panel also offers. */}
+                  
               <div className="flex shrink-0 items-center justify-end gap-1.5 xl:gap-2.5">
                 <ThemeToggle
                   variant="rectangle"

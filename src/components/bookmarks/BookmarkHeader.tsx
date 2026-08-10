@@ -29,32 +29,32 @@ export const BookmarkHeader: React.FC<BookmarkHeaderProps> = ({
     <div className="space-y-6">
       {/* TITLE & DESCRIPTION */}
       <div className="space-y-1">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-blue-600 dark:text-blue-500">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
           Bookmarks
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-muted-foreground">
           Your saved problems, solutions, and community content.
         </p>
-        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium pt-1">
+        <p className="text-xs text-muted-foreground font-medium pt-1">
           {totalSavedCount} items saved
         </p>
       </div>
 
       {/* SEARCH BAR INPUT */}
       <div className="relative max-w-sm">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           type="text"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search your bookmarks..."
-          className="pl-9 pr-9 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl h-10 text-sm focus-visible:ring-blue-500 shadow-2xs"
+          className="pl-9 pr-9 bg-muted/50 border border-transparent rounded-2xl h-10 text-sm focus-visible:ring-blue-500 shadow-2xs"
         />
         {searchTerm && (
           <button
             type="button"
             onClick={() => onSearchChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           >
             <X className="w-4 h-4" />
           </button>
@@ -70,7 +70,7 @@ export const BookmarkHeader: React.FC<BookmarkHeaderProps> = ({
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all shadow-2xs cursor-pointer ${
               selectedCategory === "Program"
                 ? "bg-blue-600 text-white border border-blue-600"
-                : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                : "bg-card border border-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
             Program
@@ -82,7 +82,7 @@ export const BookmarkHeader: React.FC<BookmarkHeaderProps> = ({
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all shadow-2xs cursor-pointer ${
               selectedCategory === "Problems"
                 ? "bg-blue-600 text-white border border-blue-600"
-                : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                : "bg-card border border-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
             Problems
@@ -94,7 +94,7 @@ export const BookmarkHeader: React.FC<BookmarkHeaderProps> = ({
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all shadow-2xs cursor-pointer ${
               selectedCategory === "Solutions"
                 ? "bg-blue-600 text-white border border-blue-600"
-                : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                : "bg-card border border-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
             Solutions
@@ -115,11 +115,11 @@ export const BookmarkHeader: React.FC<BookmarkHeaderProps> = ({
         <Button
           variant="outline"
           onClick={onToggleMoreFilters}
-          className={`rounded-full px-3.5 py-1.5 text-xs font-medium h-9 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 gap-1.5 ${
-            showMoreFilters ? "border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50/50" : ""
+          className={`rounded-full px-3.5 py-1.5 text-xs font-medium h-9 border-transparent bg-card text-foreground shadow-2xs hover:bg-muted gap-1.5 ${
+            showMoreFilters ? "border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-500/10" : ""
           }`}
         >
-          <Filter className="w-3.5 h-3.5 text-slate-500" />
+          <Filter className="w-3.5 h-3.5 text-muted-foreground" />
           More Filters
         </Button>
       </div>

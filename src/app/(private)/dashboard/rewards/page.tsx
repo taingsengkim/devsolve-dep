@@ -112,20 +112,20 @@ export default function RewardsPage() {
   const getSeverityBadge = (severity: string) => {
     switch (severity) {
       case "CRITICAL":
-        return "bg-rose-50 text-rose-600 border-rose-200";
+        return "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20";
       case "HIGH":
-        return "bg-amber-50 text-amber-600 border-amber-200";
+        return "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20";
       case "MEDIUM":
-        return "bg-sky-50 text-sky-600 border-sky-200";
+        return "bg-sky-50 text-sky-600 border-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-500/20";
       case "LOW":
-        return "bg-slate-100 text-slate-700 border-slate-200";
+        return "bg-muted text-muted-foreground border-border";
       default:
-        return "bg-slate-50 text-slate-600 border-slate-200";
+        return "bg-muted text-muted-foreground border-border";
     }
   };
 
   return (
-    <div className="min-h-screen  w-full text-slate-800 font-sans py-6 antialiased">
+    <div className="min-h-screen  w-full text-foreground font-sans py-6 antialiased">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -135,75 +135,75 @@ export default function RewardsPage() {
         {/* HEADER SECTION */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
               Rewards & Earnings History
             </h1>
-            <p className="text-base text-slate-500 mt-1 font-normal">
+            <p className="text-base text-muted-foreground mt-1 font-normal">
               Track your earnings, bounties awarded, and reputation points earned from accepted security reports.
             </p>
           </div>
           <Button
             variant="outline"
-            className="rounded-xl border-slate-200 text-slate-700 font-semibold text-sm gap-2 self-start sm:self-auto hover:bg-slate-50 h-11 px-5"
+            className="rounded-xl bg-card text-foreground font-semibold text-sm gap-2 self-start sm:self-auto hover:bg-muted h-11 px-5"
           >
-            <Download className="w-4 h-4 text-slate-500" />
+            <Download className="w-4 h-4 text-muted-foreground" />
             Export Statement
           </Button>
         </div>
 
         {/* STATS OVERVIEW CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+          <div className="p-5 bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 flex items-center justify-center shrink-0">
               <DollarSign className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+              <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
                 Total Earned
               </p>
-              <h3 className="text-3xl font-extrabold text-slate-900 mt-0.5 tracking-tight">
+              <h3 className="text-3xl font-extrabold text-foreground mt-0.5 tracking-tight">
                 ${stats.totalCash.toLocaleString()}
               </h3>
             </div>
           </div>
 
-          <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+          <div className="p-5 bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 flex items-center justify-center shrink-0">
               <Clock className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+              <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
                 Pending Payouts
               </p>
-              <h3 className="text-3xl font-extrabold text-slate-900 mt-0.5 tracking-tight">
+              <h3 className="text-3xl font-extrabold text-foreground mt-0.5 tracking-tight">
                 ${stats.pendingCash.toLocaleString()}
               </h3>
             </div>
           </div>
 
-          <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <div className="p-5 bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 flex items-center justify-center shrink-0">
               <Award className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+              <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
                 Total Reputation
               </p>
-              <h3 className="text-3xl font-extrabold text-slate-900 mt-0.5 tracking-tight">
-                {stats.totalPoints} <span className="text-sm font-semibold text-slate-500">pts</span>
+              <h3 className="text-3xl font-extrabold text-foreground mt-0.5 tracking-tight">
+                {stats.totalPoints} <span className="text-sm font-semibold text-muted-foreground">pts</span>
               </h3>
             </div>
           </div>
 
-          <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+          <div className="p-5 bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+              <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
                 totals Reports
               </p>
-              <h3 className="text-3xl font-extrabold text-slate-900 mt-0.5 tracking-tight">
+              <h3 className="text-3xl font-extrabold text-foreground mt-0.5 tracking-tight">
                 {stats.paidCount}
               </h3>
             </div>
@@ -211,10 +211,10 @@ export default function RewardsPage() {
         </div>
 
         {/* FILTERS & SEARCH BAR */}
-        <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs">
+        <div className="p-4 bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search by program, report title, or ID..."
@@ -223,12 +223,12 @@ export default function RewardsPage() {
                   setSearchTerm(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="pl-10 h-11 rounded-xl border-slate-200 text-base focus-visible:ring-blue-500 placeholder:text-slate-400"
+                className="pl-10 h-11 rounded-xl border border-transparent bg-muted/50 text-base focus-visible:ring-blue-500 placeholder:text-muted-foreground"
               />
             </div>
 
             <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
-              <div className="bg-slate-100 p-1 rounded-xl flex items-center shrink-0">
+              <div className="bg-muted/60 p-1 rounded-xl flex items-center shrink-0">
                 {(["ALL", "BOUNTY", "POINTS"] as const).map((t) => (
                   <button
                     key={t}
@@ -238,8 +238,8 @@ export default function RewardsPage() {
                     }}
                     className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                       typeFilter === t
-                        ? "bg-white text-blue-600 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                        ? "bg-card text-blue-600 dark:text-blue-400 shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {t === "ALL" ? "All Rewards" : t === "BOUNTY" ? "Bounties ($)" : "Points"}
@@ -247,7 +247,7 @@ export default function RewardsPage() {
                 ))}
               </div>
 
-              <div className="bg-slate-100 p-1 rounded-xl flex items-center shrink-0">
+              <div className="bg-muted/60 p-1 rounded-xl flex items-center shrink-0">
                 {(["ALL", "PAID", "PENDING"] as const).map((s) => (
                   <button
                     key={s}
@@ -257,8 +257,8 @@ export default function RewardsPage() {
                     }}
                     className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                       statusFilter === s
-                        ? "bg-white text-blue-600 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                        ? "bg-card text-blue-600 dark:text-blue-400 shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {s}
@@ -270,12 +270,12 @@ export default function RewardsPage() {
         </div>
 
         {/* REWARDS HISTORY TABLE */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs overflow-hidden">
           {paginatedRewards.length === 0 ? (
             <div className="p-12 text-center space-y-3">
-              <ShieldCheck className="w-12 h-12 text-slate-300 mx-auto" />
-              <h3 className="text-lg font-semibold text-slate-800">No reward history found</h3>
-              <p className="text-sm text-slate-500 max-w-sm mx-auto">
+              <ShieldCheck className="w-12 h-12 text-muted-foreground mx-auto" />
+              <h3 className="text-lg font-semibold text-foreground">No reward history found</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
                 No rewards match your selected search or filter criteria.
               </p>
             </div>
@@ -283,7 +283,7 @@ export default function RewardsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50/50 text-xs font-bold uppercase text-slate-400 tracking-wider">
+                  <tr className="border-b border-border bg-muted/40 text-xs font-bold uppercase text-muted-foreground tracking-wider">
                     <th className="py-4 px-6">Program & Report</th>
                     <th className="py-4 px-4">Severity</th>
                     <th className="py-4 px-4">Reward</th>
@@ -292,22 +292,22 @@ export default function RewardsPage() {
                     <th className="py-4 px-6 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-border">
                   {paginatedRewards.map((item) => (
                     <tr
                       key={item.id}
-                      className="hover:bg-slate-50/70 transition-colors group"
+                      className="hover:bg-muted/50 transition-colors group"
                     >
                       {/* Program & Report Title */}
                       <td className="py-5 px-6">
                         <div className="space-y-1">
-                          <span className="text-xs font-bold text-blue-600 uppercase tracking-wide">
+                          <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
                             {item.programName}
                           </span>
-                          <h4 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+                          <h4 className="text-lg font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
                             {item.reportTitle}
                           </h4>
-                          <span className="text-sm text-slate-400 font-mono">
+                          <span className="text-sm text-muted-foreground font-mono">
                             ID: {item.reportId}
                           </span>
                         </div>
@@ -327,11 +327,11 @@ export default function RewardsPage() {
                       {/* Reward Amount */}
                       <td className="py-5 px-4 align-top sm:align-middle">
                         {item.rewardType === "BOUNTY" ? (
-                          <div className="font-extrabold text-slate-900 text-xl">
+                          <div className="font-extrabold text-foreground text-xl">
                             ${item.amount.toLocaleString()}
                           </div>
                         ) : (
-                          <div className="font-extrabold text-emerald-600 text-xl">
+                          <div className="font-extrabold text-emerald-600 dark:text-emerald-400 text-xl">
                             +{item.amount} pts
                           </div>
                         )}
@@ -340,12 +340,12 @@ export default function RewardsPage() {
                       {/* Status */}
                       <td className="py-5 px-4 align-top sm:align-middle">
                         {item.status === "PAID" ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             Paid
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
                             <Clock className="w-3.5 h-3.5" />
                             Pending
                           </span>
@@ -353,7 +353,7 @@ export default function RewardsPage() {
                       </td>
 
                       {/* Date */}
-                      <td className="py-5 px-4 text-sm font-medium text-slate-500 align-top sm:align-middle">
+                      <td className="py-5 px-4 text-sm font-medium text-muted-foreground align-top sm:align-middle">
                         {item.awardedAt}
                       </td>
 
@@ -362,10 +362,10 @@ export default function RewardsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="rounded-xl text-slate-600 hover:text-blue-600 hover:bg-blue-50 font-semibold text-sm"
+                          className="rounded-xl text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 font-semibold text-sm"
                         >
                           View Report
-                          <ExternalLink className="w-4 h-4 ml-1.5 text-slate-400 group-hover:text-blue-600" />
+                          <ExternalLink className="w-4 h-4 ml-1.5 text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                         </Button>
                       </td>
                     </tr>

@@ -24,17 +24,17 @@ export function SavedDraftSearch({
     <div className="space-y-3">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
+          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={value}
             onChange={(event) => onChange(event.target.value)}
             placeholder={placeholder}
-            className="h-11 rounded-xl border border-[#E2E8F0] bg-white pr-3 pl-9 text-sm text-slate-700 shadow-[0_1px_3px_rgba(15,23,42,0.04)] focus-visible:border-blue-500 focus-visible:ring-blue-500/20"
+            className="h-11 rounded-xl border border-transparent bg-muted/50 pr-3 pl-9 text-sm text-foreground shadow-[0_1px_3px_rgba(15,23,42,0.04)] focus-visible:border-blue-500 focus-visible:ring-blue-500/20"
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <label className="inline-flex h-11 items-center gap-2 rounded-xl border border-[#E2E8F0] bg-white px-3 text-sm text-slate-500 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
+          <label className="inline-flex h-11 items-center gap-2 rounded-xl bg-muted/50 px-3 text-sm text-muted-foreground shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
             <ArrowDownUp className="size-4" />
             <span>Sort by</span>
             <select
@@ -42,7 +42,7 @@ export function SavedDraftSearch({
               onChange={(event) =>
                 onSortChange(event.target.value as "recent" | "oldest" | "title")
               }
-              className="bg-transparent text-sm font-medium text-slate-700 outline-none"
+              className="bg-transparent text-sm font-medium text-foreground outline-none"
             >
               <option value="recent">Recently updated</option>
               <option value="oldest">Oldest updated</option>
@@ -53,7 +53,7 @@ export function SavedDraftSearch({
           <Button
             type="button"
             variant="outline"
-            className="h-11 rounded-xl border-[#E2E8F0] bg-white px-3 text-slate-600 shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:border-blue-200 hover:bg-blue-50 hover:text-[#2563EB]"
+            className="h-11 rounded-xl bg-card px-3 text-muted-foreground shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400"
           >
             <Filter data-icon="inline-start" />
             Filter
@@ -61,9 +61,9 @@ export function SavedDraftSearch({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
-        <p className="text-sm font-medium text-[#64748B]">{resultCount} drafts in view</p>
-        <p className="text-xs font-medium uppercase tracking-[0.12em] text-slate-400">
+      <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
+        <p className="text-sm font-medium text-muted-foreground">{resultCount} drafts in view</p>
+        <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
           Resume work faster
         </p>
       </div>

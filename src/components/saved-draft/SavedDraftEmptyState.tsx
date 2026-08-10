@@ -31,14 +31,14 @@ export function SavedDraftEmptyState({
   const createHref = getCreateHref(activeTab);
 
   return (
-    <div className="flex min-h-[300px] flex-col items-center justify-center rounded-[14px] border border-dashed border-slate-200 bg-white px-6 text-center shadow-[0_1px_4px_rgba(15,23,42,0.04)]">
-      <div className="flex size-14 items-center justify-center rounded-2xl bg-blue-50 text-[#2563EB]">
+    <div className="flex min-h-[300px] flex-col items-center justify-center rounded-[14px] border border-dashed border-border bg-card px-6 text-center shadow-[0_1px_4px_rgba(15,23,42,0.04)]">
+      <div className="flex size-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
         <FileSearch className="size-6" />
       </div>
-      <h2 className="mt-4 text-lg font-semibold text-[#0F172A]">
+      <h2 className="mt-4 text-lg font-semibold text-foreground">
         No saved drafts found
       </h2>
-      <p className="mt-2 max-w-md text-sm leading-6 text-[#64748B]">
+      <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
         {searchTerm
           ? "Try a different keyword or clear your search to see the rest of your saved drafts."
           : "There are no drafts in this section yet. Start a new item and it will appear here once it is saved."}
@@ -49,7 +49,7 @@ export function SavedDraftEmptyState({
             type="button"
             variant="outline"
             onClick={onClear}
-            className="rounded-xl border-slate-200 bg-white px-4 text-slate-700 hover:bg-slate-50"
+            className="rounded-xl bg-card px-4 text-foreground hover:bg-muted"
           >
             Clear search
           </Button>

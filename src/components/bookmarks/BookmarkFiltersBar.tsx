@@ -31,9 +31,9 @@ export const BookmarkFiltersBar: React.FC<BookmarkFiltersBarProps> = ({
       transition={{ duration: 0.2 }}
       className="overflow-hidden"
     >
-      <div className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-4">
+      <div className="bg-card p-4 rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
             <SlidersHorizontal className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
             Refine Bookmarks
           </div>
@@ -43,7 +43,7 @@ export const BookmarkFiltersBar: React.FC<BookmarkFiltersBarProps> = ({
               variant="ghost"
               size="sm"
               onClick={onResetFilters}
-              className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 h-7 px-2 gap-1 rounded-lg"
+              className="text-xs text-muted-foreground hover:text-foreground h-7 px-2 gap-1 rounded-lg"
             >
               <RotateCcw className="w-3 h-3" />
               Reset Filters
@@ -54,11 +54,11 @@ export const BookmarkFiltersBar: React.FC<BookmarkFiltersBarProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* SORT BY */}
           <div className="space-y-1">
-            <label className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <label className="text-xs text-muted-foreground font-medium">
               Sort By
             </label>
             <Select value={sortBy} onValueChange={(val) => { if (val) onSortByChange(val as "newest" | "oldest" | "title"); }}>
-              <SelectTrigger className="w-full bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl h-9 text-xs">
+              <SelectTrigger className="w-full bg-muted/50 border border-transparent rounded-xl h-9 text-xs">
                 <SelectValue placeholder="Sort order" />
               </SelectTrigger>
               <SelectContent>
@@ -71,11 +71,11 @@ export const BookmarkFiltersBar: React.FC<BookmarkFiltersBarProps> = ({
 
           {/* SEVERITY FILTER */}
           <div className="space-y-1">
-            <label className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <label className="text-xs text-muted-foreground font-medium">
               Problem Severity
             </label>
             <Select value={selectedSeverity} onValueChange={(val) => onSeverityChange(val ?? "All")}>
-              <SelectTrigger className="w-full bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl h-9 text-xs">
+              <SelectTrigger className="w-full bg-muted/50 border border-transparent rounded-xl h-9 text-xs">
                 <SelectValue placeholder="All Severities" />
               </SelectTrigger>
               <SelectContent>
