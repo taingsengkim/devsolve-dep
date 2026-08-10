@@ -44,6 +44,7 @@ import {
 } from "@/lib/redux/services/program/programsApi";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { ProgramRejectDialog } from "@/components/admin/programs/ProgramRejectDialog";
+import { MarkdownView } from "@/components/ui/markdown-view";
 import { toast } from "sonner";
 
 function ProgramDetailPageContent({
@@ -249,30 +250,38 @@ function ProgramDetailPageContent({
         </div>
 
         {/* METADATA SUMMARY BAR */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800/80">
           <div>
-            <span className="text-slate-400 block font-medium">Lifecycle State</span>
-            <span className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-0.5">
+              Lifecycle State
+            </span>
+            <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 block">
               {program.state || "DRAFT"}
             </span>
           </div>
           <div>
-            <span className="text-slate-400 block font-medium">Bounties Offered</span>
-            <span className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-0.5">
+              Bounties Offered
+            </span>
+            <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 block">
               {program.offersBounties ? "Yes" : "No"}
             </span>
           </div>
           <div>
-            <span className="text-slate-400 block font-medium">Bounty Range</span>
-            <span className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-0.5">
+              Bounty Range
+            </span>
+            <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 block">
               {program.offersBounties && program.minimumBounty !== undefined
                 ? `$${program.minimumBounty} – $${program.maximumBounty || "N/A"}`
                 : "N/A"}
             </span>
           </div>
           <div>
-            <span className="text-slate-400 block font-medium">Created Date</span>
-            <span className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-0.5">
+              Created Date
+            </span>
+            <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 block">
               {program.createdAt
                 ? new Date(program.createdAt).toLocaleDateString()
                 : "—"}
@@ -301,27 +310,27 @@ function ProgramDetailPageContent({
         <TabsList className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-2xl h-auto flex flex-wrap gap-1 shadow-2xs">
           <TabsTrigger
             value="overview"
-            className="rounded-xl px-4 py-2 text-xs font-semibold cursor-pointer data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            className="rounded-xl px-4 py-2 text-sm font-semibold cursor-pointer data-[state=active]:bg-blue-600 data-[state=active]:text-white"
           >
-            <FileText className="w-3.5 h-3.5 mr-1.5" /> Overview & Policy
+            <FileText className="w-4 h-4 mr-1.5" /> Overview & Policy
           </TabsTrigger>
           <TabsTrigger
             value="assets"
-            className="rounded-xl px-4 py-2 text-xs font-semibold cursor-pointer data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            className="rounded-xl px-4 py-2 text-sm font-semibold cursor-pointer data-[state=active]:bg-blue-600 data-[state=active]:text-white"
           >
-            <Layers className="w-3.5 h-3.5 mr-1.5" /> Scope Assets ({program.assets?.length || 0})
+            <Layers className="w-4 h-4 mr-1.5" /> Scope Assets ({program.assets?.length || 0})
           </TabsTrigger>
           <TabsTrigger
             value="rewards"
-            className="rounded-xl px-4 py-2 text-xs font-semibold cursor-pointer data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            className="rounded-xl px-4 py-2 text-sm font-semibold cursor-pointer data-[state=active]:bg-blue-600 data-[state=active]:text-white"
           >
-            <Coins className="w-3.5 h-3.5 mr-1.5" /> Reward Tiers ({program.rewards?.length || 0})
+            <Coins className="w-4 h-4 mr-1.5" /> Reward Tiers ({program.rewards?.length || 0})
           </TabsTrigger>
           <TabsTrigger
             value="guidelines"
-            className="rounded-xl px-4 py-2 text-xs font-semibold cursor-pointer data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            className="rounded-xl px-4 py-2 text-sm font-semibold cursor-pointer data-[state=active]:bg-blue-600 data-[state=active]:text-white"
           >
-            <ShieldCheck className="w-3.5 h-3.5 mr-1.5" /> Rules & Exclusions
+            <ShieldCheck className="w-4 h-4 mr-1.5" /> Rules & Exclusions
           </TabsTrigger>
         </TabsList>
 
@@ -329,33 +338,35 @@ function ProgramDetailPageContent({
         <TabsContent value="overview" className="space-y-4">
           <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-2xs">
             <CardHeader>
-              <CardTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">
+              <CardTitle className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
                 Program Overview
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-sm text-slate-700 dark:text-slate-300">
-              <p className="whitespace-pre-wrap leading-relaxed">
-                {program.description || "No description provided."}
-              </p>
+            <CardContent className="space-y-6 text-sm sm:text-base text-slate-700 dark:text-slate-300">
+              {program.description ? (
+                <MarkdownView source={program.description} />
+              ) : (
+                <p className="text-slate-500 italic">No description provided.</p>
+              )}
 
               {program.policy && (
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                  <h4 className="font-semibold text-slate-900 dark:text-slate-100">
+                <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                  <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
                     Policy & Requirements
-                  </h4>
-                  <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl font-mono text-xs leading-relaxed whitespace-pre-wrap">
-                    {program.policy}
+                  </h3>
+                  <div className="bg-slate-50/80 dark:bg-slate-800/40 p-4 sm:p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+                    <MarkdownView source={program.policy} />
                   </div>
                 </div>
               )}
 
               {program.proofOfConceptRequirements && (
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                  <h4 className="font-semibold text-slate-900 dark:text-slate-100">
+                <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                  <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
                     Proof of Concept (PoC) Requirements
-                  </h4>
-                  <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl text-xs leading-relaxed whitespace-pre-wrap">
-                    {program.proofOfConceptRequirements}
+                  </h3>
+                  <div className="bg-slate-50/80 dark:bg-slate-800/40 p-4 sm:p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+                    <MarkdownView source={program.proofOfConceptRequirements} />
                   </div>
                 </div>
               )}
@@ -367,7 +378,7 @@ function ProgramDetailPageContent({
         <TabsContent value="assets" className="space-y-4">
           <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-2xs">
             <CardHeader>
-              <CardTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">
+              <CardTitle className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
                 Scope & Target Assets
               </CardTitle>
             </CardHeader>
@@ -383,16 +394,16 @@ function ProgramDetailPageContent({
                         <div className="flex items-center gap-2">
                           <Badge
                             variant="secondary"
-                            className="rounded-lg text-[10px] font-bold uppercase tracking-wider bg-slate-200 dark:bg-slate-700"
+                            className="rounded-lg text-xs font-bold uppercase tracking-wider bg-slate-200 dark:bg-slate-700"
                           >
                             {asset.assetType}
                           </Badge>
-                          <span className="font-mono font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">
+                          <span className="font-mono font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base truncate">
                             {asset.identifier}
                           </span>
                         </div>
                         {asset.description && (
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
                             {asset.description}
                           </p>
                         )}
@@ -442,7 +453,7 @@ function ProgramDetailPageContent({
         <TabsContent value="rewards" className="space-y-4">
           <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-2xs">
             <CardHeader>
-              <CardTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">
+              <CardTitle className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
                 Severity Reward Matrix
               </CardTitle>
             </CardHeader>
@@ -473,7 +484,7 @@ function ProgramDetailPageContent({
                         </Badge>
                       </div>
 
-                      <div className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
+                      <div className="text-xl font-extrabold text-slate-900 dark:text-slate-100">
                         {rew.minAmount !== undefined && rew.maxAmount !== undefined
                           ? `$${rew.minAmount} – $${rew.maxAmount}`
                           : rew.minAmount !== undefined
@@ -482,7 +493,7 @@ function ProgramDetailPageContent({
                       </div>
 
                       {rew.points !== undefined && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                           {rew.points} reputation points
                         </p>
                       )}
@@ -504,23 +515,21 @@ function ProgramDetailPageContent({
             {/* RULES OF ENGAGEMENT */}
             <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-2xs">
               <CardHeader>
-                <CardTitle className="text-md font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <CardTitle className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-emerald-600" />
                   Rules of Engagement
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
                 {program.rulesOfEngagement?.description && (
-                  <p className="text-xs text-slate-500 dark:text-slate-400 italic">
-                    {program.rulesOfEngagement.description}
-                  </p>
+                  <MarkdownView source={program.rulesOfEngagement.description} />
                 )}
                 {program.rulesOfEngagement?.rules &&
                 program.rulesOfEngagement.rules.length > 0 ? (
-                  <ul className="space-y-2 text-xs">
+                  <ul className="space-y-2.5 text-sm">
                     {program.rulesOfEngagement.rules.map(
                       (r: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2">
+                        <li key={i} className="flex items-start gap-2.5">
                           <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                           <span>{r}</span>
                         </li>
@@ -528,7 +537,7 @@ function ProgramDetailPageContent({
                     )}
                   </ul>
                 ) : (
-                  <p className="text-xs text-slate-400">No explicit rules set.</p>
+                  <p className="text-sm text-slate-400">No explicit rules set.</p>
                 )}
               </CardContent>
             </Card>
@@ -536,29 +545,27 @@ function ProgramDetailPageContent({
             {/* EXCLUSIONS */}
             <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-2xs">
               <CardHeader>
-                <CardTitle className="text-md font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <CardTitle className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <XCircle className="w-5 h-5 text-rose-600" />
                   Out of Scope & Exclusions
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
                 {program.exclusions?.description && (
-                  <p className="text-xs text-slate-500 dark:text-slate-400 italic">
-                    {program.exclusions.description}
-                  </p>
+                  <MarkdownView source={program.exclusions.description} />
                 )}
                 {program.exclusions?.rules &&
                 program.exclusions.rules.length > 0 ? (
-                  <ul className="space-y-2 text-xs">
+                  <ul className="space-y-2.5 text-sm">
                     {program.exclusions.rules.map((e: string, i: number) => (
-                      <li key={i} className="flex items-start gap-2">
+                      <li key={i} className="flex items-start gap-2.5">
                         <X className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                         <span>{e}</span>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-xs text-slate-400">
+                  <p className="text-sm text-slate-400">
                     No explicit exclusions set.
                   </p>
                 )}
