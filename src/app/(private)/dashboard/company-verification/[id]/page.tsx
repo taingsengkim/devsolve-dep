@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, use, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
@@ -48,6 +48,8 @@ import {
   useRejectOrganizationMutation,
   useGetOrganizationReviewHistoryQuery,
 } from "@/lib/redux/services/adminApi";
+import { MOCK_COMPANY_VERIFICATIONS } from "@/lib/redux/services/admin/adminMockData";
+import { OrganizationReviewHistoryItem } from "@/lib/types/admin/types";
 import { toast } from "sonner";
 import { StatusBadge } from "@/components/admin/organizations/statusUtils";
 
@@ -96,16 +98,22 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
   const resolvedParams = use(params);
   const companyId = resolvedParams.id;
 
-  // Real backend queries & mutations
+  // Only query backend API if companyId is a valid UUID format
+  const isUuid = useMemo(
+    () => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(companyId || ""),
+    [companyId]
+  );
+
+  // Real backend queries & mutations (skipped if non-UUID)
   const {
     data: realOrg,
-    isLoading,
-    isFetching,
-    isError,
-  } = useGetOrganizationByIdQuery(companyId, { skip: !companyId });
+    isLoading: isOrgLoading,
+    isFetching: isOrgFetching,
+    isError: isOrgError,
+  } = useGetOrganizationByIdQuery(companyId, { skip: !companyId || !isUuid });
 
-  const { data: reviewHistory } = useGetOrganizationReviewHistoryQuery(companyId, {
-    skip: !companyId || isError,
+  const { data: rawReviewHistory } = useGetOrganizationReviewHistoryQuery(companyId, {
+    skip: !companyId || !isUuid || isOrgError,
   });
 
   const [approveOrganization, { isLoading: isApproving }] = useApproveOrganizationMutation();
@@ -113,9 +121,19 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
 
   const isUpdating = isApproving || isRejecting;
 
+  // Fallback mock company if non-UUID or not present in database
+  const mockOrg = useMemo(
+    () => MOCK_COMPANY_VERIFICATIONS.find((c) => c.id === companyId),
+    [companyId]
+  );
+
+  const isLoading = isUuid && (isOrgLoading || isOrgFetching);
+  const isError = (isUuid && isOrgError && !mockOrg) || (!isUuid && !mockOrg);
+
   // Unified company data object
-  const company = realOrg
-    ? {
+  const company = useMemo(() => {
+    if (realOrg) {
+      return {
         id: realOrg.id,
         companyName: realOrg.name,
         contactName:
@@ -164,8 +182,62 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
         orgCode: realOrg.slug,
         documentsCount: 0,
         notes: undefined,
-      }
-    : null;
+      };
+    }
+    if (mockOrg) {
+      return {
+        id: mockOrg.id,
+        companyName: mockOrg.companyName,
+        contactName: mockOrg.contactName || "—",
+        jobTitle: mockOrg.jobTitle || "Organization Owner",
+        email: mockOrg.email || "—",
+        phone: mockOrg.phone || "—",
+        website: mockOrg.website,
+        domain: mockOrg.domain,
+        country: mockOrg.country || "—",
+        industry: mockOrg.industry || mockOrg.businessType || "Technology",
+        businessType: mockOrg.businessType || "Technology",
+        companySize: mockOrg.companySize,
+        description: mockOrg.description,
+        joiningReason: undefined,
+        emailVerified: true,
+        submissionVersion: mockOrg.submissionVersion || 1,
+        rejectionReason: undefined,
+        reviewedAt: undefined,
+        verifiedAt: undefined,
+        status: mockOrg.status,
+        submittedAt: mockOrg.submittedAt || mockOrg.registrationDate,
+        registrationDate: mockOrg.registrationDate || "—",
+        taxId: mockOrg.taxId || "—",
+        orgCode: mockOrg.orgCode,
+        documentsCount: mockOrg.documentsCount || 0,
+        notes: mockOrg.notes,
+      };
+    }
+    return null;
+  }, [realOrg, mockOrg]);
+
+  const reviewHistory = useMemo((): OrganizationReviewHistoryItem[] | undefined => {
+    if (rawReviewHistory && rawReviewHistory.length > 0) return rawReviewHistory;
+    if (company?.reviewedAt || company?.rejectionReason || company?.verifiedAt) {
+      return [
+        {
+          id: `rev-${company.id}`,
+          organizationId: company.id,
+          decision: company.status,
+          action: company.status,
+          reason: company.rejectionReason ?? undefined,
+          reviewerId: undefined,
+          reviewerName: undefined,
+          notes: undefined,
+          reviewedAt: company.reviewedAt || company.verifiedAt || undefined,
+          createdAt: company.reviewedAt || company.verifiedAt || undefined,
+        },
+      ];
+    }
+    return undefined;
+  }, [rawReviewHistory, company]);
+
 
   // Local state
   const [adminNote, setAdminNote] = useState("");
@@ -249,7 +321,7 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
     val?.trim() || fallback;
 
   /* ---- Loading skeleton ---- */
-  if (isLoading || isFetching) {
+  if (isLoading) {
     return (
       <div className="space-y-6 w-full pb-12 animate-pulse">
         <div className="h-4 w-44 bg-slate-200 dark:bg-slate-800 rounded-lg" />

@@ -86,76 +86,26 @@ function ProgramManagementPageContent() {
 
   // Calculate stat cards & tab counts directly from backend responses
   const counts = useMemo(() => {
-    if (isAdmin) {
-      const pendingCount = adminPendingCountQuery.data?.totalElements ?? 0;
-      const approvedCount = adminApprovedCountQuery.data?.totalElements ?? 0;
-      const rejectedCount = adminRejectedCountQuery.data?.totalElements ?? 0;
-      return {
-        all: pendingCount + approvedCount + rejectedCount,
-        pendingReview: pendingCount,
-        approved: approvedCount,
-        rejected: rejectedCount,
-      };
-    } else {
-      const items = companyOverallResponse?.content ?? companyResponse?.content ?? [];
-      const total = companyOverallResponse?.totalElements ?? items.length;
-      return {
-        all: total,
-        pendingReview: items.filter((p) => p.submissionState === "PENDING_REVIEW").length,
-        approved: items.filter((p) => p.submissionState === "APPROVED").length,
-        rejected: items.filter((p) => p.submissionState === "REJECTED").length,
-      };
-    }
-  }, [
-    isAdmin,
-    adminPendingCountQuery.data,
-    adminApprovedCountQuery.data,
-    adminRejectedCountQuery.data,
-    companyOverallResponse,
-    companyResponse,
-  ]);
+    const items = overallResponse?.content ?? activeResponse?.content ?? [];
+    const total = overallResponse?.totalElements ?? activeResponse?.totalElements ?? items.length;
+    return {
+      all: total,
+      pendingReview: items.filter((p) => p.submissionState === "PENDING_REVIEW").length,
+      approved: items.filter((p) => p.submissionState === "APPROVED").length,
+      rejected: items.filter((p) => p.submissionState === "REJECTED").length,
+    };
+  }, [overallResponse, activeResponse]);
 
   // Data from backend — search/filter is fully server-side via query params
   const displayedPrograms: ProgramManagementSummaryItem[] = useMemo(
     () => activeResponse?.content ?? [],
     [activeResponse]
   );
-  const totalElements = activeResponse?.totalElements ?? programs.length;
+  const totalElements = activeResponse?.totalElements ?? displayedPrograms.length;
   const totalPages = activeResponse?.totalPages ?? 1;
 
-  const filteredPrograms = useMemo(() => {
-    let result = programs;
+  const filteredPrograms = displayedPrograms;
 
-    // Apply client-side filters for Company view if needed
-    if (!isAdminScope) {
-      if (submissionStateFilter !== "ALL") {
-        result = result.filter((p) => p.submissionState === submissionStateFilter);
-      }
-      if (stateFilter !== "ALL") {
-        result = result.filter((p) => p.state === stateFilter);
-      }
-    }
-
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return result;
-    return result.filter(
-      (p) =>
-        p.name?.toLowerCase().includes(q) ||
-        p.handle?.toLowerCase().includes(q) ||
-        p.organizationName?.toLowerCase().includes(q)
-    );
-  }, [programs, searchQuery, isAdminScope, submissionStateFilter, stateFilter]);
-
-  const counts = useMemo(() => {
-    const items = overallResponse?.content ?? programs;
-    return {
-      all: overallResponse?.totalElements ?? totalElements,
-      pendingReview: items.filter((p) => p.submissionState === "PENDING_REVIEW")
-        .length,
-      approved: items.filter((p) => p.submissionState === "APPROVED").length,
-      rejected: items.filter((p) => p.submissionState === "REJECTED").length,
-    };
-  }, [overallResponse, programs, totalElements]);
 
   const handleSubmissionStateChange = useCallback(
     (state: ProgramSubmissionState | "ALL") => {
