@@ -33,6 +33,7 @@ function ProgramManagementPageContent() {
   >("ALL");
   const [stateFilter, setStateFilter] = useState<ProgramState | "ALL">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(20);
 
@@ -41,6 +42,8 @@ function ProgramManagementPageContent() {
     { size: 100 },
     { skip: !isAdminScope }
   );
+
+  // PRIMARY ADMIN DATA QUERY — Sends query parameters (submissionState, page, size, state) directly to backend API
   const {
     data: adminResponse,
     isLoading: isAdminLoading,
@@ -50,13 +53,14 @@ function ProgramManagementPageContent() {
       submissionState:
         submissionStateFilter === "ALL" ? undefined : submissionStateFilter,
       state: stateFilter === "ALL" ? undefined : stateFilter,
+      search: debouncedSearch || undefined,
       page: pageIndex,
       size: pageSize,
     },
     { skip: !isAdminScope }
   );
 
-  // COMPANY queries (GET /organizations/me/programs)
+  // COMPANY DATA QUERY (for non-admin users)
   const { data: companyOverallResponse } = useGetMyCompanyProgramsQuery(
     { size: 100 },
     { skip: isAdminScope }
@@ -80,46 +84,28 @@ function ProgramManagementPageContent() {
   const isLoading = isAdminScope ? isAdminLoading : isCompanyLoading;
   const isFetching = isAdminScope ? isAdminFetching : isCompanyFetching;
 
-  const programs: ProgramManagementSummaryItem[] = useMemo(
-    () => activeResponse?.content ?? [],
-    [activeResponse]
-  );
-  const totalElements = activeResponse?.totalElements ?? programs.length;
-  const totalPages = activeResponse?.totalPages ?? 1;
-
-  const filteredPrograms = useMemo(() => {
-    let result = programs;
-
-    // Apply client-side filters for Company view if needed
-    if (!isAdminScope) {
-      if (submissionStateFilter !== "ALL") {
-        result = result.filter((p) => p.submissionState === submissionStateFilter);
-      }
-      if (stateFilter !== "ALL") {
-        result = result.filter((p) => p.state === stateFilter);
-      }
-    }
-
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return result;
-    return result.filter(
-      (p) =>
-        p.name?.toLowerCase().includes(q) ||
-        p.handle?.toLowerCase().includes(q) ||
-        p.organizationName?.toLowerCase().includes(q)
-    );
-  }, [programs, searchQuery, isAdminScope, submissionStateFilter, stateFilter]);
-
+  // Calculate stat cards & tab counts directly from backend responses
   const counts = useMemo(() => {
-    const items = overallResponse?.content ?? programs;
+    const items = overallResponse?.content ?? activeResponse?.content ?? [];
+    const total = overallResponse?.totalElements ?? activeResponse?.totalElements ?? items.length;
     return {
-      all: overallResponse?.totalElements ?? totalElements,
-      pendingReview: items.filter((p) => p.submissionState === "PENDING_REVIEW")
-        .length,
+      all: total,
+      pendingReview: items.filter((p) => p.submissionState === "PENDING_REVIEW").length,
       approved: items.filter((p) => p.submissionState === "APPROVED").length,
       rejected: items.filter((p) => p.submissionState === "REJECTED").length,
     };
-  }, [overallResponse, programs, totalElements]);
+  }, [overallResponse, activeResponse]);
+
+  // Data from backend — search/filter is fully server-side via query params
+  const displayedPrograms: ProgramManagementSummaryItem[] = useMemo(
+    () => activeResponse?.content ?? [],
+    [activeResponse]
+  );
+  const totalElements = activeResponse?.totalElements ?? displayedPrograms.length;
+  const totalPages = activeResponse?.totalPages ?? 1;
+
+  const filteredPrograms = displayedPrograms;
+
 
   const handleSubmissionStateChange = useCallback(
     (state: ProgramSubmissionState | "ALL") => {
@@ -244,7 +230,7 @@ function ProgramManagementPageContent() {
         ) : (
           <ProgramDataTable
             columns={columns}
-            data={filteredPrograms}
+            data={displayedPrograms}
             pageIndex={pageIndex}
             pageSize={pageSize}
             pageCount={totalPages}

@@ -33,6 +33,7 @@ export interface ProgramRejectionRequest {
 export interface GetAdminProgramsParams {
   submissionState?: ProgramSubmissionState;
   state?: ProgramState;
+  search?: string;
   page?: number;
   size?: number;
   sort?: string[];

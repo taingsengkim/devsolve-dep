@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, use } from "react";
+import React, { useState, use, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
@@ -40,11 +40,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  useGetOrganizationByIdQuery,
+  useGetAdminOrganizationByIdQuery,
   useApproveOrganizationMutation,
   useRejectOrganizationMutation,
   useGetOrganizationReviewHistoryQuery,
 } from "@/lib/redux/services/adminApi";
+import { MOCK_COMPANY_VERIFICATIONS } from "@/lib/redux/services/admin/adminMockData";
+import { OrganizationReviewHistoryItem } from "@/lib/types/admin/types";
 import { toast } from "sonner";
 import { StatusBadge } from "@/components/admin/organizations/statusUtils";
 
@@ -95,18 +97,29 @@ export default function OrganizationVerificationDetailPage({
   const resolvedParams = use(params);
   const companyId = resolvedParams.id;
 
-  // Real backend queries & mutations
+  // Only query backend API if companyId is a valid UUID format
+  const isUuid = useMemo(
+    () =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        companyId || "",
+      ),
+    [companyId],
+  );
+
+  // Real backend queries & mutations (skipped if non-UUID)
   const {
     data: realOrg,
-    isLoading,
-    isFetching,
-    isError,
-  } = useGetOrganizationByIdQuery(companyId, { skip: !companyId });
+    isLoading: isOrgLoading,
+    isFetching: isOrgFetching,
+    isError: isOrgError,
+  } = useGetAdminOrganizationByIdQuery(companyId, {
+    skip: !companyId || !isUuid,
+  });
 
-  const { data: reviewHistory } = useGetOrganizationReviewHistoryQuery(
+  const { data: rawReviewHistory } = useGetOrganizationReviewHistoryQuery(
     companyId,
     {
-      skip: !companyId || isError,
+      skip: !companyId || !isUuid || isOrgError,
     },
   );
 
@@ -117,9 +130,19 @@ export default function OrganizationVerificationDetailPage({
 
   const isUpdating = isApproving || isRejecting;
 
+  // Fallback mock company if non-UUID or not present in database
+  const mockOrg = useMemo(
+    () => MOCK_COMPANY_VERIFICATIONS.find((c) => c.id === companyId),
+    [companyId],
+  );
+
+  const isLoading = isUuid && (isOrgLoading || isOrgFetching);
+  const isError = (isUuid && isOrgError && !mockOrg) || (!isUuid && !mockOrg);
+
   // Unified company data object
-  const company = realOrg
-    ? {
+  const company = useMemo(() => {
+    if (realOrg) {
+      return {
         id: realOrg.id,
         companyName: realOrg.name,
         contactName:
@@ -163,8 +186,12 @@ export default function OrganizationVerificationDetailPage({
             })
           : "—",
         orgCode: realOrg.slug,
-      }
-    : null;
+      };
+    }
+    return mockOrg ?? null;
+  }, [realOrg, mockOrg]);
+
+  const reviewHistory = rawReviewHistory;
 
   // Local state
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
@@ -247,7 +274,7 @@ export default function OrganizationVerificationDetailPage({
     val?.trim() || fallback;
 
   /* ---- Loading skeleton ---- */
-  if (isLoading || isFetching) {
+  if (isLoading) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 12 }}

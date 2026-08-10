@@ -59,6 +59,24 @@ export const companyVerificationApi = proxyApi.injectEndpoints({
       ],
     }),
 
+    getAdminOrganizations: builder.query<
+      PendingOrganizationsResponse | PaginatedResponse<OrganizationResponse>,
+      { status?: string; pageNumber?: number; pageSize?: number } | void
+    >({
+      query: (params) => {
+        const queryParams: Record<string, any> = {
+          pageNumber: params?.pageNumber ?? 0,
+          pageSize: params?.pageSize ?? 100,
+        };
+        if (params?.status) queryParams.status = params.status;
+        return {
+          url: "/admin/organizations",
+          params: queryParams,
+        };
+      },
+      providesTags: ["CompanyVerification"],
+    }),
+
     getAdminOrganizationById: builder.query<OrganizationResponse, string>({
       query: (id) => ({
         url: `/admin/organizations/${id}`,
@@ -109,7 +127,9 @@ export const companyVerificationApi = proxyApi.injectEndpoints({
 export const {
   useGetOrganizationsQuery,
   useGetPendingOrganizationsQuery,
+  useGetAdminOrganizationsQuery,
   useGetAdminOrganizationByIdQuery,
+  useGetAdminOrganizationByIdQuery: useGetOrganizationByIdQuery,
   useApproveOrganizationMutation,
   useRejectOrganizationMutation,
   useGetOrganizationReviewHistoryQuery,

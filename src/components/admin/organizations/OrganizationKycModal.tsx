@@ -24,7 +24,7 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  useGetOrganizationByIdQuery,
+  useGetAdminOrganizationByIdQuery,
   type CompanyVerificationItem,
 } from "@/lib/redux/services/adminApi";
 
@@ -75,7 +75,7 @@ export const OrganizationKycModal: React.FC<OrganizationKycModalProps> = ({
     data: organization,
     isLoading: isOrganizationLoading,
     isError: isOrganizationError,
-  } = useGetOrganizationByIdQuery(selectedCompanyId, {
+  } = useGetAdminOrganizationByIdQuery(selectedCompanyId, {
     skip: !selectedCompanyId,
   });
 
