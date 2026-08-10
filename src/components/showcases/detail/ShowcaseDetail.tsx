@@ -55,10 +55,10 @@ interface ShowcaseDetailProps {
 }
 
 const CARD =
-  "rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs";
+  "rounded-2xl border border-slate-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs";
 
 const SIDEBAR_HEADING =
-  "font-bold uppercase tracking-wider text-xs text-slate-400 dark:text-slate-500";
+  "font-bold uppercase tracking-wider text-xs text-slate-400 dark:text-neutral-500";
 
 function formatDate(iso?: string) {
   if (!iso) return "—";
@@ -181,9 +181,9 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
 
   if (!showcase) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 flex flex-col items-center justify-center text-slate-800 dark:text-slate-100">
+      <div className="min-h-screen bg-[#F8FAFC] dark:bg-neutral-950 flex flex-col items-center justify-center text-slate-800 dark:text-neutral-100">
         <h1 className="text-2xl font-bold mb-2">Showcase Not Found</h1>
-        <p className="text-slate-500 dark:text-slate-400 mb-4">
+        <p className="text-slate-500 dark:text-neutral-400 mb-4">
           It may have been removed, or it is still waiting on review.
         </p>
         <Link
@@ -202,12 +202,12 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans pb-16"
+      className="min-h-screen bg-[#F8FAFC] dark:bg-neutral-950 text-slate-800 dark:text-neutral-100 font-sans pb-16"
     >
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <Link
           href="/showcases"
-          className="inline-flex items-center space-x-2 text-base font-semibold text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 mb-6 transition-colors"
+          className="inline-flex items-center space-x-2 text-base font-semibold text-slate-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400 mb-6 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Showcases</span>
@@ -224,20 +224,20 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
                 </span>
 
                 {showcase.categoryName && (
-                  <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                  <span className="rounded-md bg-slate-100 dark:bg-neutral-800 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-neutral-300">
                     {showcase.categoryName}
                   </span>
                 )}
               </div>
 
               <div className="flex items-start justify-between gap-4">
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-snug">
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-neutral-100 tracking-tight leading-snug">
                   {showcase.title}
                 </h1>
 
                 {/* Real votes: `PUT`/`DELETE /votes/SHOWCASE/{id}`, with the
                     caller's own vote lighting the arrow it belongs to. */}
-                <div className="flex items-center space-x-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-1 shrink-0">
+                <div className="flex items-center space-x-1 rounded-xl border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800/60 p-1 shrink-0">
                   <button
                     type="button"
                     onClick={() => void vote(1)}
@@ -246,12 +246,12 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
                     className={`rounded-lg p-1.5 transition-colors cursor-pointer ${
                       myVote === 1
                         ? "bg-blue-600 text-white"
-                        : "text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700"
+                        : "text-slate-500 hover:bg-slate-200 dark:text-neutral-400 dark:hover:bg-neutral-700"
                     }`}
                   >
                     <ChevronUp className="h-4 w-4" />
                   </button>
-                  <span className="text-sm font-bold text-slate-800 dark:text-slate-100 px-1.5 tabular-nums">
+                  <span className="text-sm font-bold text-slate-800 dark:text-neutral-100 px-1.5 tabular-nums">
                     {score}
                   </span>
                   <button
@@ -261,8 +261,8 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
                     aria-pressed={myVote === -1}
                     className={`rounded-lg p-1.5 transition-colors cursor-pointer ${
                       myVote === -1
-                        ? "bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900"
-                        : "text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700"
+                        ? "bg-slate-800 text-white dark:bg-neutral-200 dark:text-neutral-900"
+                        : "text-slate-500 hover:bg-slate-200 dark:text-neutral-400 dark:hover:bg-neutral-700"
                     }`}
                   >
                     <ChevronDown className="h-4 w-4" />
@@ -285,32 +285,32 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
                 </div>
               )}
 
-              <div className="mt-6 border-t border-slate-100 dark:border-slate-800 pt-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
+              <div className="mt-6 border-t border-slate-100 dark:border-neutral-800 pt-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500 mb-2">
                   Project Overview
                 </h3>
                 <MarkdownView source={showcase.overview} />
               </div>
 
-              <div className="mt-6 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-4 text-sm">
+              <div className="mt-6 flex items-center justify-between border-t border-slate-100 dark:border-neutral-800 pt-4 text-sm">
                 <div className="flex items-center space-x-3">
                   <button
                     type="button"
-                    className="flex items-center space-x-1.5 rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium"
+                    className="flex items-center space-x-1.5 rounded-xl border border-slate-200 dark:border-neutral-700 px-3.5 py-1.5 text-slate-600 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-800 font-medium"
                   >
                     <Bookmark className="h-4 w-4" />
                     <span>Bookmark</span>
                   </button>
                   <button
                     type="button"
-                    className="flex items-center space-x-1.5 rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium"
+                    className="flex items-center space-x-1.5 rounded-xl border border-slate-200 dark:border-neutral-700 px-3.5 py-1.5 text-slate-600 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-800 font-medium"
                   >
                     <Share2 className="h-4 w-4" />
                     <span>Share</span>
                   </button>
                   <button
                     type="button"
-                    className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg"
+                    className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300 rounded-lg"
                   >
                     <Flag className="h-4 w-4" />
                   </button>
@@ -325,12 +325,12 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
                 one step was actually saying. */}
             <div className={`${CARD} p-6 space-y-4`}>
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
+                <h3 className="text-base font-bold text-slate-900 dark:text-neutral-100 flex items-center space-x-2">
                   <Terminal className="h-4 w-4 text-blue-600" />
                   <span>Build guide</span>
                 </h3>
                 {steps.length > 0 && (
-                  <span className="text-sm font-semibold tabular-nums text-slate-500 dark:text-slate-400">
+                  <span className="text-sm font-semibold tabular-nums text-slate-500 dark:text-neutral-400">
                     {steps.length} {steps.length === 1 ? "step" : "steps"}
                   </span>
                 )}
@@ -343,14 +343,14 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
                   {steps.map((step, index) => (
                     <li
                       key={step.id}
-                      className="flex gap-3 items-start bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-100 dark:border-slate-800 text-sm"
+                      className="flex gap-3 items-start bg-slate-50 dark:bg-neutral-800/60 p-4 rounded-xl border border-slate-100 dark:border-neutral-800 text-sm"
                     >
                       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-xs">
                         {index + 1}
                       </span>
 
                       <div className="min-w-0 flex-1 space-y-3">
-                        <p className="text-base font-bold text-slate-900 dark:text-slate-100">
+                        <p className="text-base font-bold text-slate-900 dark:text-neutral-100">
                           {step.title}
                         </p>
 
@@ -358,7 +358,7 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
 
                         {step.codeSnippet && (
                           <figure className="space-y-1.5">
-                            <figcaption className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                            <figcaption className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
                               <Code2 aria-hidden="true" className="size-3.5" />
                               Code
                             </figcaption>
@@ -370,7 +370,7 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
 
                         {step.imageUrl && (
                           <figure className="space-y-1.5">
-                            <figcaption className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                            <figcaption className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
                               <ImageIcon aria-hidden="true" className="size-3.5" />
                               Screenshot
                             </figcaption>
@@ -385,7 +385,7 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
 
                         {step.diagramUrl && (
                           <figure className="space-y-1.5">
-                            <figcaption className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                            <figcaption className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
                               <Network aria-hidden="true" className="size-3.5" />
                               Diagram
                             </figcaption>
@@ -410,21 +410,21 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
 
             {/* Comments Thread */}
             <div className={`${CARD} p-6`}>
-              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center space-x-2">
+              <h3 className="text-base font-bold text-slate-900 dark:text-neutral-100 mb-4 flex items-center space-x-2">
                 <MessageSquare className="h-4 w-4 text-slate-500" />
                 <span>Comments ({commentPage?.totalElements ?? 0})</span>
               </h3>
 
               <div className="space-y-3 mb-4">
                 {comments.length === 0 ? (
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                  <p className="text-sm text-slate-500 dark:text-neutral-400">
                     No comments yet — be the first to give the author feedback.
                   </p>
                 ) : (
                   comments.map((comment) => (
                     <div
                       key={comment.id}
-                      className="text-sm text-slate-600 dark:text-slate-300 flex items-start space-x-3 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-100 dark:border-slate-800"
+                      className="text-sm text-slate-600 dark:text-neutral-300 flex items-start space-x-3 bg-slate-50 dark:bg-neutral-800/60 p-4 rounded-xl border border-slate-100 dark:border-neutral-800"
                     >
                       <CommentAvatar
                         name={comment.authorName}
@@ -432,14 +432,14 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-3 mb-1">
-                          <span className="font-bold text-slate-800 dark:text-slate-100 truncate">
+                          <span className="font-bold text-slate-800 dark:text-neutral-100 truncate">
                             {comment.authorName}
                           </span>
                           <span className="text-xs text-slate-400 shrink-0">
                             {relativeTime(comment.createdAt)}
                           </span>
                         </div>
-                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                        <p className="text-slate-700 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
                           {comment.content}
                         </p>
                       </div>
@@ -461,7 +461,7 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
                     if (commentError) setCommentError(null);
                   }}
                   placeholder="Share feedback on this showcase..."
-                  className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                  className="flex-1 rounded-xl border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                 />
                 <button
                   type="submit"
@@ -484,7 +484,7 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
           <div className="space-y-6">
             <div className={`${CARD} p-5 space-y-3.5 text-sm`}>
               <h3
-                className={`${SIDEBAR_HEADING} border-b border-slate-100 dark:border-slate-800 pb-2`}
+                className={`${SIDEBAR_HEADING} border-b border-slate-100 dark:border-neutral-800 pb-2`}
               >
                 Showcase Metadata
               </h3>
@@ -521,14 +521,14 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
             <div className={`${CARD} p-5 text-sm`}>
               <h3 className={`${SIDEBAR_HEADING} mb-3`}>Posted By</h3>
               <div className="flex items-center space-x-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-sm font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-sm font-bold text-slate-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
                   {initialsOf(showcase.authorName)}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-base font-bold text-slate-900 dark:text-slate-100 truncate">
+                  <p className="text-base font-bold text-slate-900 dark:text-neutral-100 truncate">
                     {showcase.authorName}
                   </p>
-                  <p className="flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                  <p className="flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-neutral-400">
                     <Eye className="h-3 w-3" />
                     {showcase.viewCount.toLocaleString()} views on this project
                   </p>
@@ -544,7 +544,7 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
 
 function EmptyTab({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-400">
+    <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-6 text-center text-sm text-slate-500 dark:border-neutral-700 dark:bg-neutral-800/40 dark:text-neutral-400">
       {children}
     </p>
   );
@@ -553,10 +553,10 @@ function EmptyTab({ children }: { children: React.ReactNode }) {
 function SidebarRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-xs text-slate-500 dark:text-slate-400">
+      <span className="text-xs text-slate-500 dark:text-neutral-400">
         {label}
       </span>
-      <span className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
+      <span className="truncate text-sm font-semibold text-slate-800 dark:text-neutral-100">
         {value}
       </span>
     </div>
@@ -569,9 +569,9 @@ function ProjectLink({ href, label }: { href: string; label: string }) {
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800/60 dark:hover:bg-slate-800"
+      className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3 transition-colors hover:bg-slate-100 dark:border-neutral-700 dark:bg-neutral-800/60 dark:hover:bg-neutral-800"
     >
-      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+      <span className="text-sm font-semibold text-slate-700 dark:text-neutral-200">
         {label}
       </span>
       <ExternalLink className="h-4 w-4 text-slate-400" />
@@ -618,7 +618,7 @@ function ShowcaseImage({
     "relative w-full overflow-hidden",
     heightClassName,
     framed &&
-      "rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900",
+      "rounded-xl border border-slate-200 bg-white dark:border-neutral-700 dark:bg-neutral-900",
   );
 
   return (
@@ -667,13 +667,13 @@ function CommentAvatar({ name, url }: { name: string; url?: string }) {
         width={32}
         height={32}
         onError={() => setFailed(true)}
-        className="h-8 w-8 shrink-0 rounded-full bg-slate-200 object-cover dark:bg-slate-700"
+        className="h-8 w-8 shrink-0 rounded-full bg-slate-200 object-cover dark:bg-neutral-700"
       />
     );
   }
 
   return (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-200">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600 dark:bg-neutral-700 dark:text-neutral-200">
       {initialsOf(name)}
     </span>
   );
@@ -681,7 +681,7 @@ function CommentAvatar({ name, url }: { name: string; url?: string }) {
 
 function DetailSkeleton() {
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-16 dark:bg-slate-950">
+    <div className="min-h-screen bg-[#F8FAFC] pb-16 dark:bg-neutral-950">
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div
           role="status"
@@ -691,31 +691,31 @@ function DetailSkeleton() {
           <span className="sr-only">Loading showcase…</span>
           <div className="space-y-6 lg:col-span-3">
             <div className={`${CARD} space-y-4 p-6`}>
-              <div className="h-6 w-28 rounded-full bg-slate-200 dark:bg-slate-800" />
-              <div className="h-8 w-3/4 rounded-lg bg-slate-200 dark:bg-slate-800" />
-              <div className="aspect-[16/7] w-full rounded-xl bg-slate-200 dark:bg-slate-800" />
-              <div className="h-4 w-full rounded-lg bg-slate-200 dark:bg-slate-800" />
-              <div className="h-4 w-4/5 rounded-lg bg-slate-200 dark:bg-slate-800" />
+              <div className="h-6 w-28 rounded-full bg-slate-200 dark:bg-neutral-800" />
+              <div className="h-8 w-3/4 rounded-lg bg-slate-200 dark:bg-neutral-800" />
+              <div className="aspect-[16/7] w-full rounded-xl bg-slate-200 dark:bg-neutral-800" />
+              <div className="h-4 w-full rounded-lg bg-slate-200 dark:bg-neutral-800" />
+              <div className="h-4 w-4/5 rounded-lg bg-slate-200 dark:bg-neutral-800" />
             </div>
             <div className="flex gap-2">
               {[0, 1, 2].map((index) => (
                 <div
                   key={index}
-                  className="h-10 w-44 rounded-xl bg-slate-200 dark:bg-slate-800"
+                  className="h-10 w-44 rounded-xl bg-slate-200 dark:bg-neutral-800"
                 />
               ))}
             </div>
             <div className={`${CARD} space-y-3 p-6`}>
-              <div className="h-16 rounded-xl bg-slate-200 dark:bg-slate-800" />
-              <div className="h-16 rounded-xl bg-slate-200 dark:bg-slate-800" />
+              <div className="h-16 rounded-xl bg-slate-200 dark:bg-neutral-800" />
+              <div className="h-16 rounded-xl bg-slate-200 dark:bg-neutral-800" />
             </div>
           </div>
           <div className="space-y-6">
             {[0, 1].map((index) => (
               <div key={index} className={`${CARD} space-y-3 p-5`}>
-                <div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-800" />
-                <div className="h-4 w-full rounded bg-slate-200 dark:bg-slate-800" />
-                <div className="h-4 w-2/3 rounded bg-slate-200 dark:bg-slate-800" />
+                <div className="h-4 w-32 rounded bg-slate-200 dark:bg-neutral-800" />
+                <div className="h-4 w-full rounded bg-slate-200 dark:bg-neutral-800" />
+                <div className="h-4 w-2/3 rounded bg-slate-200 dark:bg-neutral-800" />
               </div>
             ))}
           </div>
