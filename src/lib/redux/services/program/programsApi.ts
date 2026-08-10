@@ -68,6 +68,12 @@ export const programsApi = proxyApi.injectEndpoints({
       providesTags: ["Program"],
     }),
 
+    // GET /organizations/me/programs/{id} (COMPANY role)
+    getMyCompanyProgramById: builder.query<ProgramDetail, string>({
+      query: (id) => `organizations/me/programs/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Program", id }],
+    }),
+
     // GET /programs/{id}
     getProgramById: builder.query<ProgramDetail, string>({
       query: (id) => `programs/${id}`,
@@ -102,6 +108,7 @@ export const programsApi = proxyApi.injectEndpoints({
 export const {
   useGetProgramsQuery,
   useGetMyCompanyProgramsQuery,
+  useGetMyCompanyProgramByIdQuery,
   useGetProgramByIdQuery,
   useCreateProgramMutation,
   useDeleteProgramMutation,

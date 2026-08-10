@@ -324,6 +324,87 @@
         }
       }
     },
+    "/api/v1/problems/{problemId}/accepted-solutions": {
+      "put": {
+        "tags": ["solution-controller"],
+        "operationId": "setAcceptedSolution",
+        "parameters": [
+          {
+            "name": "problemId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptedSolutionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/organizations/me/logo": {
+      "put": {
+        "tags": ["organization-controller"],
+        "operationId": "uploadLogo",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string", "format": "binary" }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["organization-controller"],
+        "operationId": "removeLogo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/follows/{type}/{targetId}": {
       "put": {
         "tags": ["follow-controller"],
@@ -491,6 +572,49 @@
           }
         ],
         "responses": { "204": { "description": "No Content" } }
+      }
+    },
+    "/api/v1/solutions/{id}/attachments": {
+      "post": {
+        "tags": ["solution-controller"],
+        "operationId": "uploadAttachment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string", "format": "binary" }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/SolutionResponse" }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/showcases": {
@@ -708,7 +832,7 @@
     "/api/v1/reports/{id}/attachments": {
       "post": {
         "tags": ["report-controller"],
-        "operationId": "uploadAttachment",
+        "operationId": "uploadAttachment_1",
         "parameters": [
           {
             "name": "id",
@@ -1006,8 +1130,8 @@
           "required": true
         },
         "responses": {
-          "201": {
-            "description": "Created",
+          "200": {
+            "description": "OK",
             "content": {
               "*/*": {
                 "schema": { "$ref": "#/components/schemas/SolutionResponse" }
@@ -1059,7 +1183,7 @@
     "/api/v1/problems/{id}/attachments": {
       "post": {
         "tags": ["problem-controller"],
-        "operationId": "uploadAttachment_1",
+        "operationId": "uploadAttachment_2",
         "parameters": [
           {
             "name": "id",
@@ -1585,6 +1709,12 @@
             "in": "path",
             "required": true,
             "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
@@ -1595,30 +1725,6 @@
           },
           "required": true
         },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": { "$ref": "#/components/schemas/SolutionResponse" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/solutions/{id}/accept": {
-      "patch": {
-        "tags": ["solution-controller"],
-        "operationId": "acceptSolution",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "format": "uuid" }
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -1912,6 +2018,19 @@
           }
         }
       },
+      "delete": {
+        "tags": ["program-controller"],
+        "operationId": "deleteProgram",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": { "204": { "description": "No Content" } }
+      },
       "patch": {
         "tags": ["program-controller"],
         "operationId": "updateProgram",
@@ -2110,6 +2229,12 @@
             "in": "path",
             "required": true,
             "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
@@ -2997,6 +3122,27 @@
         }
       }
     },
+    "/api/v1/solutions/{id}/attachments/{attachmentId}/download": {
+      "get": {
+        "tags": ["solution-controller"],
+        "operationId": "downloadAttachment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "attachmentId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
     "/api/v1/solutions/mine": {
       "get": {
         "tags": ["solution-controller"],
@@ -3215,7 +3361,7 @@
     "/api/v1/reports/{id}/attachments/{attachmentId}/download": {
       "get": {
         "tags": ["report-controller"],
-        "operationId": "downloadAttachment",
+        "operationId": "downloadAttachment_1",
         "parameters": [
           {
             "name": "id",
@@ -3419,7 +3565,7 @@
     "/api/v1/problems/{id}/attachments/{attachmentId}/download": {
       "get": {
         "tags": ["problem-controller"],
-        "operationId": "downloadAttachment_1",
+        "operationId": "downloadAttachment_2",
         "parameters": [
           {
             "name": "id",
@@ -3544,6 +3690,30 @@
                 "schema": {
                   "$ref": "#/components/schemas/OrganizationVerificationResponse"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/organizations/me/programs/{id}": {
+      "get": {
+        "tags": ["program-controller"],
+        "operationId": "getMyProgram",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProgramResponseDto" }
               }
             }
           }
@@ -4149,7 +4319,7 @@
             "schema": {
               "type": "string",
               "default": "PENDING",
-              "enum": ["PENDING", "APPROVED", "REJECTED", "ACCEPTED"]
+              "enum": ["PENDING", "APPROVED", "REJECTED"]
             }
           },
           {
@@ -4397,6 +4567,30 @@
         }
       }
     },
+    "/api/v1/admin/programs/{id}": {
+      "get": {
+        "tags": ["program-admin-controller"],
+        "operationId": "getProgram",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProgramResponseDto" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/problems": {
       "get": {
         "tags": ["problem-admin-controller"],
@@ -4450,6 +4644,82 @@
             "content": {
               "*/*": {
                 "schema": { "$ref": "#/components/schemas/PageProblemResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/overview": {
+      "get": {
+        "tags": ["admin-overview-controller"],
+        "operationId": "getOverview",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOverviewResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/organizations": {
+      "get": {
+        "tags": ["organization-admin-controller"],
+        "operationId": "getOrganizations",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["PENDING", "ACTIVE", "REJECTED"]
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageOrganizationReviewSummaryResponse"
+                }
               }
             }
           }
@@ -4768,10 +5038,37 @@
         }
       }
     },
+    "/api/v1/solutions/{id}/attachments/{attachmentId}": {
+      "delete": {
+        "tags": ["solution-controller"],
+        "operationId": "removeAttachment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "attachmentId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "204": { "description": "No Content" } }
+      }
+    },
     "/api/v1/reports/{id}/attachments/{attachmentId}": {
       "delete": {
         "tags": ["report-controller"],
-        "operationId": "removeAttachment",
+        "operationId": "removeAttachment_1",
         "parameters": [
           {
             "name": "id",
@@ -4789,10 +5086,40 @@
         "responses": { "204": { "description": "No Content" } }
       }
     },
+    "/api/v1/problems/{problemId}/accepted-solutions/{solutionId}": {
+      "delete": {
+        "tags": ["solution-controller"],
+        "operationId": "removeAcceptedSolution",
+        "parameters": [
+          {
+            "name": "problemId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "solutionId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/problems/{id}/attachments/{attachmentId}": {
       "delete": {
         "tags": ["problem-controller"],
-        "operationId": "removeAttachment_1",
+        "operationId": "removeAttachment_2",
         "parameters": [
           {
             "name": "id",
@@ -4952,6 +5279,195 @@
           "slug": { "type": "string" }
         }
       },
+      "AcceptedSolutionRequest": {
+        "type": "object",
+        "properties": { "solutionId": { "type": "string", "format": "uuid" } },
+        "required": ["solutionId"]
+      },
+      "AttachmentSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "originalFileName": { "type": "string" },
+          "mimeType": { "type": "string" },
+          "sizeBytes": { "type": "integer", "format": "int64" },
+          "uploadedBy": { "type": "string", "format": "uuid" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "downloadUrl": { "type": "string" }
+        }
+      },
+      "AuthorSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "fullName": { "type": "string" },
+          "avatarUrl": { "type": "string" },
+          "reputation": { "type": "integer", "format": "int32" }
+        }
+      },
+      "CategorySummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "scope": { "type": "string", "enum": ["PROBLEM", "SHOWCASE"] }
+        }
+      },
+      "EnvironmentSummary": {
+        "type": "object",
+        "properties": {
+          "technology": { "type": "string" },
+          "version": { "type": "string" }
+        }
+      },
+      "ProblemResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "author": { "$ref": "#/components/schemas/AuthorSummary" },
+          "category": { "$ref": "#/components/schemas/CategorySummary" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "problemType": {
+            "type": "string",
+            "enum": [
+              "BUG",
+              "HOW_TO",
+              "ARCHITECTURE",
+              "PERFORMANCE",
+              "SECURITY",
+              "DEPLOYMENT",
+              "GENERAL"
+            ]
+          },
+          "sdlcPhase": {
+            "type": "string",
+            "enum": [
+              "PLANNING",
+              "REQUIREMENTS_ANALYSIS",
+              "DESIGN",
+              "DEVELOPMENT",
+              "TESTING",
+              "DEPLOYMENT",
+              "MAINTENANCE"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+          },
+          "expectedBehavior": { "type": "string" },
+          "actualBehavior": { "type": "string" },
+          "reproductionSteps": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "environment": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EnvironmentSummary" }
+          },
+          "attemptsTried": { "type": "string" },
+          "errorMessage": { "type": "string" },
+          "repositoryUrl": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PENDING_APPROVAL",
+              "PUBLISHED",
+              "RESOLVED",
+              "CLOSED",
+              "REJECTED"
+            ]
+          },
+          "viewCount": { "type": "integer", "format": "int64" },
+          "technologies": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TechnologySummary" }
+          },
+          "tags": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TagSummary" }
+          },
+          "attachments": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AttachmentSummary" }
+          },
+          "contentWarnings": { "type": "array", "items": { "type": "string" } },
+          "solutionCount": { "type": "integer", "format": "int64" },
+          "commentCount": { "type": "integer", "format": "int64" },
+          "voteScore": { "type": "integer", "format": "int64" },
+          "bookmarkCount": { "type": "integer", "format": "int64" },
+          "acceptedSolutionIds": {
+            "type": "array",
+            "items": { "type": "string", "format": "uuid" }
+          },
+          "isBookmarkedByViewer": { "type": "boolean" },
+          "viewerVote": { "type": "string" },
+          "canEdit": { "type": "boolean" },
+          "canDelete": { "type": "boolean" },
+          "canAcceptSolution": { "type": "boolean" },
+          "publishedAt": { "type": "string", "format": "date-time" },
+          "deletedAt": { "type": "string", "format": "date-time" },
+          "version": { "type": "integer", "format": "int64" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "TagSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" }
+        }
+      },
+      "TechnologySummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "version": { "type": "string" }
+        }
+      },
+      "OrganizationResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "ownerId": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "domain": { "type": "string" },
+          "websiteUrl": { "type": "string" },
+          "logoUrl": { "type": "string" },
+          "description": { "type": "string" },
+          "industry": {
+            "type": "string",
+            "enum": [
+              "TECHNOLOGY",
+              "FINANCE",
+              "HEALTHCARE",
+              "ECOMMERCE",
+              "GOVERNMENT",
+              "EDUCATION",
+              "OTHER"
+            ]
+          },
+          "companySize": { "type": "string" },
+          "country": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "ACTIVE", "REJECTED"]
+          },
+          "submissionVersion": { "type": "integer", "format": "int32" },
+          "rejectionReason": { "type": "string" },
+          "reviewedAt": { "type": "string", "format": "date-time" },
+          "verifiedAt": { "type": "string", "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
       "FollowResponse": {
         "type": "object",
         "properties": {
@@ -4993,6 +5509,93 @@
           "targetPreview": { "type": "string" },
           "targetImageUrl": { "type": "string" },
           "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ModerationDetails": {
+        "type": "object",
+        "properties": {
+          "revisionId": { "type": "string", "format": "uuid" },
+          "revisionNumber": { "type": "integer", "format": "int32" },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "APPROVED", "REJECTED"]
+          },
+          "rejectionReason": { "type": "string" },
+          "reviewedBy": { "type": "string", "format": "uuid" },
+          "reviewedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ResourceSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "type": {
+            "type": "string",
+            "enum": [
+              "DOCUMENTATION",
+              "REPOSITORY",
+              "VIDEO",
+              "DIAGRAM",
+              "DEMO",
+              "ARTICLE"
+            ]
+          },
+          "label": { "type": "string" },
+          "url": { "type": "string" },
+          "displayOrder": { "type": "integer", "format": "int32" }
+        }
+      },
+      "SolutionResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "problemId": { "type": "string", "format": "uuid" },
+          "author": { "$ref": "#/components/schemas/AuthorSummary" },
+          "summary": { "type": "string" },
+          "bodyMarkdown": { "type": "string" },
+          "approachType": {
+            "type": "string",
+            "enum": ["FIX", "WORKAROUND", "EXPLANATION", "ALTERNATIVE"]
+          },
+          "verificationSteps": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/VerificationStep" }
+          },
+          "testedWith": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TestedWith" }
+          },
+          "tradeoffs": { "type": "string" },
+          "resources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ResourceSummary" }
+          },
+          "attachments": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AttachmentSummary" }
+          },
+          "isAccepted": { "type": "boolean" },
+          "voteScore": { "type": "integer", "format": "int64" },
+          "commentCount": { "type": "integer", "format": "int64" },
+          "viewerVote": { "type": "string" },
+          "version": { "type": "integer", "format": "int64" },
+          "moderation": { "$ref": "#/components/schemas/ModerationDetails" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "TestedWith": {
+        "type": "object",
+        "properties": {
+          "technology": { "type": "string" },
+          "version": { "type": "string" }
+        }
+      },
+      "VerificationStep": {
+        "type": "object",
+        "properties": {
+          "instruction": { "type": "string" },
+          "expectedResult": { "type": "string" }
         }
       },
       "CreateShowCasesRequest": {
@@ -5068,18 +5671,6 @@
             "type": "string",
             "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
           }
-        }
-      },
-      "AttachmentSummary": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "fileName": { "type": "string" },
-          "downloadUrl": { "type": "string" },
-          "mimeType": { "type": "string" },
-          "sizeBytes": { "type": "integer", "format": "int64" },
-          "uploadedBy": { "type": "string", "format": "uuid" },
-          "createdAt": { "type": "string", "format": "date-time" }
         }
       },
       "DisputeSummary": {
@@ -5211,7 +5802,7 @@
           "description": {
             "type": "string",
             "maxLength": 20000,
-            "minLength": 0
+            "minLength": 30
           },
           "technologies": {
             "type": "array",
@@ -5228,15 +5819,79 @@
             "minItems": 0,
             "uniqueItems": true
           },
-          "tags": {
+          "newTagNames": {
             "type": "array",
             "items": { "type": "string", "maxLength": 50, "minLength": 0 },
             "maxItems": 10,
             "minItems": 0,
             "uniqueItems": true
+          },
+          "problemType": {
+            "type": "string",
+            "enum": [
+              "BUG",
+              "HOW_TO",
+              "ARCHITECTURE",
+              "PERFORMANCE",
+              "SECURITY",
+              "DEPLOYMENT",
+              "GENERAL"
+            ]
+          },
+          "expectedBehavior": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 0
+          },
+          "actualBehavior": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 0
+          },
+          "reproductionSteps": {
+            "type": "array",
+            "items": { "type": "string", "maxLength": 1000, "minLength": 0 },
+            "maxItems": 20,
+            "minItems": 0
+          },
+          "environment": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProblemEnvironmentRequest"
+            },
+            "maxItems": 20,
+            "minItems": 0
+          },
+          "attemptsTried": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 0
+          },
+          "errorMessage": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 0
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+          },
+          "repositoryUrl": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0,
+            "pattern": "(?i)^https://[^\\s]+$"
           }
         },
-        "required": ["title"]
+        "required": ["categoryId", "description", "problemType", "title"]
+      },
+      "ProblemEnvironmentRequest": {
+        "type": "object",
+        "properties": {
+          "technology": { "type": "string", "maxLength": 100, "minLength": 0 },
+          "version": { "type": "string", "maxLength": 50, "minLength": 0 }
+        },
+        "required": ["technology"]
       },
       "ProblemTechnologyRequest": {
         "type": "object",
@@ -5246,124 +5901,88 @@
         },
         "required": ["name"]
       },
-      "AuthorSummary": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "fullName": { "type": "string" },
-          "avatarUrl": { "type": "string" },
-          "reputation": { "type": "integer", "format": "int32" }
-        }
-      },
-      "CategorySummary": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "name": { "type": "string" },
-          "slug": { "type": "string" },
-          "scope": { "type": "string", "enum": ["PROBLEM", "SHOWCASE"] }
-        }
-      },
-      "ProblemResponse": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "author": { "$ref": "#/components/schemas/AuthorSummary" },
-          "category": { "$ref": "#/components/schemas/CategorySummary" },
-          "title": { "type": "string" },
-          "description": { "type": "string" },
-          "sdlcPhase": {
-            "type": "string",
-            "enum": [
-              "PLANNING",
-              "REQUIREMENTS_ANALYSIS",
-              "DESIGN",
-              "DEVELOPMENT",
-              "TESTING",
-              "DEPLOYMENT",
-              "MAINTENANCE"
-            ]
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "DRAFT",
-              "PENDING_APPROVAL",
-              "PUBLISHED",
-              "RESOLVED",
-              "CLOSED",
-              "REJECTED"
-            ]
-          },
-          "viewCount": { "type": "integer", "format": "int64" },
-          "technologies": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/TechnologySummary" }
-          },
-          "tags": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/TagSummary" }
-          },
-          "attachments": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/AttachmentSummary" }
-          },
-          "contentWarnings": { "type": "array", "items": { "type": "string" } },
-          "publishedAt": { "type": "string", "format": "date-time" },
-          "deletedAt": { "type": "string", "format": "date-time" },
-          "version": { "type": "integer", "format": "int64" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
-        }
-      },
-      "TagSummary": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "name": { "type": "string" },
-          "slug": { "type": "string" }
-        }
-      },
-      "TechnologySummary": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "name": { "type": "string" },
-          "version": { "type": "string" }
-        }
-      },
       "SolutionRequest": {
         "type": "object",
         "properties": {
-          "description": {
+          "summary": { "type": "string", "maxLength": 250, "minLength": 10 },
+          "bodyMarkdown": {
             "type": "string",
-            "maxLength": 20000,
-            "minLength": 0
+            "maxLength": 30000,
+            "minLength": 30
           },
-          "videoUrl": { "type": "string", "maxLength": 500, "minLength": 0 },
-          "diagramUrl": { "type": "string", "maxLength": 500, "minLength": 0 }
+          "approachType": {
+            "type": "string",
+            "enum": ["FIX", "WORKAROUND", "EXPLANATION", "ALTERNATIVE"]
+          },
+          "verificationSteps": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/VerificationStepRequest" },
+            "maxItems": 20,
+            "minItems": 0
+          },
+          "testedWith": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TestedWithRequest" },
+            "maxItems": 20,
+            "minItems": 0
+          },
+          "tradeoffs": { "type": "string", "maxLength": 5000, "minLength": 0 },
+          "resources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SolutionResourceRequest" },
+            "maxItems": 10,
+            "minItems": 0
+          }
         },
-        "required": ["description"]
+        "required": ["approachType", "bodyMarkdown", "summary"]
       },
-      "SolutionResponse": {
+      "SolutionResourceRequest": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "problemId": { "type": "string", "format": "uuid" },
-          "authorId": { "type": "string", "format": "uuid" },
-          "description": { "type": "string" },
-          "videoUrl": { "type": "string" },
-          "diagramUrl": { "type": "string" },
-          "reviewStatus": {
+          "type": {
             "type": "string",
-            "enum": ["PENDING", "APPROVED", "REJECTED", "ACCEPTED"]
+            "enum": [
+              "DOCUMENTATION",
+              "REPOSITORY",
+              "VIDEO",
+              "DIAGRAM",
+              "DEMO",
+              "ARTICLE"
+            ]
           },
-          "reviewedBy": { "type": "string", "format": "uuid" },
-          "reviewedAt": { "type": "string", "format": "date-time" },
-          "rejectionReason": { "type": "string" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
-        }
+          "label": { "type": "string", "maxLength": 150, "minLength": 0 },
+          "url": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0,
+            "pattern": "(?i)^https://[^\\s]+$"
+          }
+        },
+        "required": ["label", "type", "url"]
+      },
+      "TestedWithRequest": {
+        "type": "object",
+        "properties": {
+          "technology": { "type": "string", "maxLength": 100, "minLength": 0 },
+          "version": { "type": "string", "maxLength": 50, "minLength": 0 }
+        },
+        "required": ["technology"]
+      },
+      "VerificationStepRequest": {
+        "type": "object",
+        "properties": {
+          "instruction": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0
+          },
+          "expectedResult": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0
+          }
+        },
+        "required": ["expectedResult", "instruction"]
       },
       "OrganizationRequest": {
         "type": "object",
@@ -5425,43 +6044,6 @@
           "joiningReason",
           "password"
         ]
-      },
-      "OrganizationResponse": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "ownerId": { "type": "string", "format": "uuid" },
-          "name": { "type": "string" },
-          "slug": { "type": "string" },
-          "domain": { "type": "string" },
-          "websiteUrl": { "type": "string" },
-          "logoUrl": { "type": "string" },
-          "description": { "type": "string" },
-          "industry": {
-            "type": "string",
-            "enum": [
-              "TECHNOLOGY",
-              "FINANCE",
-              "HEALTHCARE",
-              "ECOMMERCE",
-              "GOVERNMENT",
-              "EDUCATION",
-              "OTHER"
-            ]
-          },
-          "companySize": { "type": "string" },
-          "country": { "type": "string" },
-          "status": {
-            "type": "string",
-            "enum": ["PENDING", "ACTIVE", "REJECTED"]
-          },
-          "submissionVersion": { "type": "integer", "format": "int32" },
-          "rejectionReason": { "type": "string" },
-          "reviewedAt": { "type": "string", "format": "date-time" },
-          "verifiedAt": { "type": "string", "format": "date-time" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
-        }
       },
       "ProgramAssetRequestDto": {
         "type": "object",
@@ -5671,13 +6253,14 @@
                 "CREATE_PROGRAM",
                 "EDIT_PROGRAM",
                 "MANAGE_PROGRAM_STATE",
+                "DELETE_PROGRAM",
                 "VIEW_REPORTS",
                 "TRIAGE_REPORTS",
                 "MANAGE_DISCLOSURE",
                 "AWARD_REWARDS"
               ]
             },
-            "maxItems": 8,
+            "maxItems": 9,
             "minItems": 0,
             "uniqueItems": true
           }
@@ -5708,6 +6291,7 @@
                 "CREATE_PROGRAM",
                 "EDIT_PROGRAM",
                 "MANAGE_PROGRAM_STATE",
+                "DELETE_PROGRAM",
                 "VIEW_REPORTS",
                 "TRIAGE_REPORTS",
                 "MANAGE_DISCLOSURE",
@@ -5967,13 +6551,35 @@
       "SolutionUpdateRequest": {
         "type": "object",
         "properties": {
-          "description": {
+          "summary": { "type": "string", "maxLength": 250, "minLength": 10 },
+          "bodyMarkdown": {
             "type": "string",
-            "maxLength": 20000,
-            "minLength": 0
+            "maxLength": 30000,
+            "minLength": 30
           },
-          "videoUrl": { "type": "string", "maxLength": 500, "minLength": 0 },
-          "diagramUrl": { "type": "string", "maxLength": 500, "minLength": 0 }
+          "approachType": {
+            "type": "string",
+            "enum": ["FIX", "WORKAROUND", "EXPLANATION", "ALTERNATIVE"]
+          },
+          "verificationSteps": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/VerificationStepRequest" },
+            "maxItems": 20,
+            "minItems": 0
+          },
+          "testedWith": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TestedWithRequest" },
+            "maxItems": 20,
+            "minItems": 0
+          },
+          "tradeoffs": { "type": "string", "maxLength": 5000, "minLength": 0 },
+          "resources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SolutionResourceRequest" },
+            "maxItems": 10,
+            "minItems": 0
+          }
         }
       },
       "UpdateShowCasesRequest": {
@@ -6110,7 +6716,7 @@
           "description": {
             "type": "string",
             "maxLength": 20000,
-            "minLength": 0
+            "minLength": 30
           },
           "technologies": {
             "type": "array",
@@ -6127,12 +6733,68 @@
             "minItems": 0,
             "uniqueItems": true
           },
-          "tags": {
+          "newTagNames": {
             "type": "array",
             "items": { "type": "string", "maxLength": 50, "minLength": 0 },
             "maxItems": 10,
             "minItems": 0,
             "uniqueItems": true
+          },
+          "problemType": {
+            "type": "string",
+            "enum": [
+              "BUG",
+              "HOW_TO",
+              "ARCHITECTURE",
+              "PERFORMANCE",
+              "SECURITY",
+              "DEPLOYMENT",
+              "GENERAL"
+            ]
+          },
+          "expectedBehavior": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 0
+          },
+          "actualBehavior": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 0
+          },
+          "reproductionSteps": {
+            "type": "array",
+            "items": { "type": "string", "maxLength": 1000, "minLength": 0 },
+            "maxItems": 20,
+            "minItems": 0
+          },
+          "environment": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProblemEnvironmentRequest"
+            },
+            "maxItems": 20,
+            "minItems": 0
+          },
+          "attemptsTried": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 0
+          },
+          "errorMessage": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 0
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+          },
+          "repositoryUrl": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0,
+            "pattern": "(?i)^https://[^\\s]+$"
           }
         }
       },
@@ -6181,13 +6843,14 @@
                 "CREATE_PROGRAM",
                 "EDIT_PROGRAM",
                 "MANAGE_PROGRAM_STATE",
+                "DELETE_PROGRAM",
                 "VIEW_REPORTS",
                 "TRIAGE_REPORTS",
                 "MANAGE_DISCLOSURE",
                 "AWARD_REWARDS"
               ]
             },
-            "maxItems": 8,
+            "maxItems": 9,
             "minItems": 0,
             "uniqueItems": true
           }
@@ -6246,7 +6909,7 @@
         "properties": {
           "reviewStatus": {
             "type": "string",
-            "enum": ["PENDING", "APPROVED", "REJECTED", "ACCEPTED"]
+            "enum": ["PENDING", "APPROVED", "REJECTED"]
           },
           "rejectionReason": {
             "type": "string",
@@ -6339,8 +7002,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6350,11 +7013,11 @@
         "type": "object",
         "properties": {
           "offset": { "type": "integer", "format": "int64" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
-          "unpaged": { "type": "boolean" },
           "pageNumber": { "type": "integer", "format": "int32" },
           "pageSize": { "type": "integer", "format": "int32" },
-          "paged": { "type": "boolean" }
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "paged": { "type": "boolean" },
+          "unpaged": { "type": "boolean" }
         }
       },
       "SortObject": {
@@ -6379,8 +7042,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6418,8 +7081,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6437,8 +7100,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6485,8 +7148,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6504,8 +7167,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6560,8 +7223,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6581,8 +7244,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6673,8 +7336,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6727,8 +7390,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6739,6 +7402,14 @@
         "properties": {
           "id": { "type": "string", "format": "uuid" },
           "organizationId": { "type": "string", "format": "uuid" },
+          "organizationName": { "type": "string" },
+          "organizationSlug": { "type": "string" },
+          "organizationLogoUrl": { "type": "string" },
+          "organizationWebsiteUrl": { "type": "string" },
+          "organizationStatus": {
+            "type": "string",
+            "enum": ["PENDING", "ACTIVE", "REJECTED"]
+          },
           "handle": { "type": "string" },
           "name": { "type": "string" },
           "engagementType": {
@@ -6775,8 +7446,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6821,8 +7492,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6840,8 +7511,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6859,8 +7530,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6878,8 +7549,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6908,8 +7579,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6948,8 +7619,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -6969,8 +7640,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -7020,8 +7691,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -7053,6 +7724,127 @@
           "reviewedBy": { "type": "string", "format": "uuid" },
           "reviewedAt": { "type": "string", "format": "date-time" },
           "rejectionReason": { "type": "string" }
+        }
+      },
+      "AdminOverviewResponse": {
+        "type": "object",
+        "properties": {
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "users": { "$ref": "#/components/schemas/UserOverview" },
+          "organizations": {
+            "$ref": "#/components/schemas/OrganizationOverview"
+          },
+          "programs": { "$ref": "#/components/schemas/ProgramOverview" },
+          "reports": { "$ref": "#/components/schemas/ReportOverview" },
+          "moderation": { "$ref": "#/components/schemas/ModerationOverview" }
+        }
+      },
+      "ModerationOverview": {
+        "type": "object",
+        "properties": {
+          "totalPending": { "type": "integer", "format": "int64" },
+          "organizations": { "type": "integer", "format": "int64" },
+          "programs": { "type": "integer", "format": "int64" },
+          "problems": { "type": "integer", "format": "int64" },
+          "showcases": { "type": "integer", "format": "int64" },
+          "solutions": { "type": "integer", "format": "int64" },
+          "contentFlags": { "type": "integer", "format": "int64" }
+        }
+      },
+      "OrganizationOverview": {
+        "type": "object",
+        "properties": {
+          "total": { "type": "integer", "format": "int64" },
+          "active": { "type": "integer", "format": "int64" },
+          "pendingReview": { "type": "integer", "format": "int64" },
+          "rejected": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ProgramOverview": {
+        "type": "object",
+        "properties": {
+          "total": { "type": "integer", "format": "int64" },
+          "draft": { "type": "integer", "format": "int64" },
+          "active": { "type": "integer", "format": "int64" },
+          "paused": { "type": "integer", "format": "int64" },
+          "closed": { "type": "integer", "format": "int64" },
+          "pendingReview": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ReportOverview": {
+        "type": "object",
+        "properties": {
+          "total": { "type": "integer", "format": "int64" },
+          "open": { "type": "integer", "format": "int64" },
+          "newReports": { "type": "integer", "format": "int64" },
+          "triaging": { "type": "integer", "format": "int64" },
+          "needsMoreInfo": { "type": "integer", "format": "int64" },
+          "validConfirmed": { "type": "integer", "format": "int64" },
+          "resolved": { "type": "integer", "format": "int64" },
+          "rejected": { "type": "integer", "format": "int64" },
+          "duplicate": { "type": "integer", "format": "int64" }
+        }
+      },
+      "UserOverview": {
+        "type": "object",
+        "properties": {
+          "total": { "type": "integer", "format": "int64" },
+          "active": { "type": "integer", "format": "int64" },
+          "suspended": { "type": "integer", "format": "int64" },
+          "removed": { "type": "integer", "format": "int64" }
+        }
+      },
+      "OrganizationReviewSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "websiteUrl": { "type": "string" },
+          "industry": {
+            "type": "string",
+            "enum": [
+              "TECHNOLOGY",
+              "FINANCE",
+              "HEALTHCARE",
+              "ECOMMERCE",
+              "GOVERNMENT",
+              "EDUCATION",
+              "OTHER"
+            ]
+          },
+          "companySize": { "type": "string" },
+          "country": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "ACTIVE", "REJECTED"]
+          },
+          "ownerId": { "type": "string", "format": "uuid" },
+          "ownerFullName": { "type": "string" },
+          "ownerEmail": { "type": "string" },
+          "submissionVersion": { "type": "integer", "format": "int32" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "PageOrganizationReviewSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "totalElements": { "type": "integer", "format": "int64" },
+          "totalPages": { "type": "integer", "format": "int32" },
+          "size": { "type": "integer", "format": "int32" },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrganizationReviewSummaryResponse"
+            }
+          },
+          "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
+          "empty": { "type": "boolean" }
         }
       },
       "OrganizationReviewResponse": {
@@ -7123,61 +7915,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
-          "empty": { "type": "boolean" }
-        }
-      },
-      "OrganizationReviewSummaryResponse": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "name": { "type": "string" },
-          "slug": { "type": "string" },
-          "websiteUrl": { "type": "string" },
-          "industry": {
-            "type": "string",
-            "enum": [
-              "TECHNOLOGY",
-              "FINANCE",
-              "HEALTHCARE",
-              "ECOMMERCE",
-              "GOVERNMENT",
-              "EDUCATION",
-              "OTHER"
-            ]
-          },
-          "companySize": { "type": "string" },
-          "country": { "type": "string" },
-          "status": {
-            "type": "string",
-            "enum": ["PENDING", "ACTIVE", "REJECTED"]
-          },
-          "ownerId": { "type": "string", "format": "uuid" },
-          "ownerFullName": { "type": "string" },
-          "ownerEmail": { "type": "string" },
-          "submissionVersion": { "type": "integer", "format": "int32" },
-          "createdAt": { "type": "string", "format": "date-time" }
-        }
-      },
-      "PageOrganizationReviewSummaryResponse": {
-        "type": "object",
-        "properties": {
-          "totalElements": { "type": "integer", "format": "int64" },
-          "totalPages": { "type": "integer", "format": "int32" },
-          "size": { "type": "integer", "format": "int32" },
-          "content": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/OrganizationReviewSummaryResponse"
-            }
-          },
-          "number": { "type": "integer", "format": "int32" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
@@ -7195,8 +7934,8 @@
           },
           "number": { "type": "integer", "format": "int32" },
           "numberOfElements": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
           "empty": { "type": "boolean" }

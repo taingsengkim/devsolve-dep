@@ -72,6 +72,19 @@ export async function GET(
       });
       if (fallbackUpstream.ok) {
         upstream = fallbackUpstream;
+      } else if (token && idIsUuid) {
+        // Fall back to company organization programs endpoint if public program lookup returns 404
+        const orgMeUpstream = await fetch(
+          `${BACKEND_API_URL}/organizations/me/programs/${id}`,
+          {
+            method: "GET",
+            headers,
+            cache: "no-store",
+          }
+        );
+        if (orgMeUpstream.ok) {
+          upstream = orgMeUpstream;
+        }
       }
     }
 

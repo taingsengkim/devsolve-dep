@@ -39,6 +39,7 @@ import {
   useRejectProgramMutation,
 } from "@/lib/redux/services/admin/programAdminApi";
 import {
+  useGetMyCompanyProgramByIdQuery,
   useGetProgramByIdQuery,
 } from "@/lib/redux/services/program/programsApi";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
@@ -55,7 +56,9 @@ function ProgramDetailPageContent({
 
   const { user } = useSidebarAuth();
   const isAdmin = user?.roles?.includes("ADMIN") ?? false;
+  const isCompanyUser = user?.roles?.includes("COMPANY") ?? false;
   const isAdminScope = searchParams.get("scope") === "admin" && isAdmin;
+  const isCompanyScope = !isAdminScope && isCompanyUser;
 
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -69,21 +72,37 @@ function ProgramDetailPageContent({
     refetch: refetchAdmin,
   } = useGetProgramDetailQuery(id, { skip: !isAdminScope });
 
-  // Company / public users fall back to the public programs endpoint.
+  // Company users use /api/organizations/me/programs/${id} to view their own programs in all states
+  const {
+    data: companyDetail,
+    isLoading: isCompanyLoading,
+    refetch: refetchCompany,
+  } = useGetMyCompanyProgramByIdQuery(id, { skip: !isCompanyScope });
+
+  // Public / general users fall back to the public programs endpoint.
   const {
     data: publicDetail,
     isLoading: isPublicLoading,
     refetch: refetchPublic,
-  } = useGetProgramByIdQuery(id, { skip: isAdminScope });
+  } = useGetProgramByIdQuery(id, { skip: isAdminScope || isCompanyScope });
 
   const refetch = () => {
     if (isAdminScope) refetchAdmin();
+    else if (isCompanyScope) refetchCompany();
     else refetchPublic();
   };
 
-  const program = isAdminScope ? adminDetail : publicDetail;
+  const program = isAdminScope
+    ? adminDetail
+    : isCompanyScope
+      ? companyDetail
+      : publicDetail;
 
-  const isLoading = isAdminScope ? isAdminDetailLoading : isPublicLoading;
+  const isLoading = isAdminScope
+    ? isAdminDetailLoading
+    : isCompanyScope
+      ? isCompanyLoading
+      : isPublicLoading;
   const isError = !isLoading && !program;
 
   const [approveProgram] = useApproveProgramMutation();
