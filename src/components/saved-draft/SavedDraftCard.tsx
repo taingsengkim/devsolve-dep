@@ -34,30 +34,24 @@ type SavedDraftCardProps = {
 };
 
 function getDraftMeta(item: SavedDraftItem) {
+  const badgeClassName =
+    "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300";
+
   if (item.category === "problem") {
-    return {
-      label: "Problem draft",
-      badgeClassName: "border-blue-200 bg-blue-50 text-blue-700",
-    };
+    return { label: "Problem draft", badgeClassName };
   }
 
   if (item.category === "solution") {
-    return {
-      label: "Solution draft",
-      badgeClassName: "border-blue-200 bg-blue-50 text-blue-700",
-    };
+    return { label: "Solution draft", badgeClassName };
   }
 
   if (item.category === "report") {
-    return {
-      label: "Report draft",
-      badgeClassName: "border-blue-200 bg-blue-50 text-blue-700",
-    };
+    return { label: "Report draft", badgeClassName };
   }
 
   return {
     label: item.programDraftKind === "response" ? "Response draft" : "Program draft",
-    badgeClassName: "border-blue-200 bg-blue-50 text-blue-700",
+    badgeClassName,
   };
 }
 
@@ -87,7 +81,7 @@ export function SavedDraftCard({
       <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.18, ease: "easeOut" }}>
         <Card
           className={cn(
-            "group relative h-full overflow-hidden rounded-[18px] border border-[#E2E8F0] bg-white py-0 shadow-[0_2px_10px_rgba(15,23,42,0.04)] transition-all duration-200 hover:border-blue-200 hover:shadow-[0_14px_30px_rgba(37,99,235,0.08)] has-[:focus-visible]:border-blue-300"
+            "group relative h-full overflow-hidden rounded-[18px] bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 py-0 shadow-[0_2px_10px_rgba(15,23,42,0.04)] transition-all duration-200 hover:ring-blue-200 dark:hover:ring-blue-500/30 hover:shadow-[0_14px_30px_rgba(37,99,235,0.08)] has-[:focus-visible]:ring-blue-300 dark:has-[:focus-visible]:ring-blue-500/40"
           )}
         >
           <Link
@@ -115,7 +109,7 @@ export function SavedDraftCard({
               <div className="flex shrink-0 items-center gap-2">
                 <Badge
                   variant="outline"
-                  className="rounded-full border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-600 shadow-none"
+                  className="rounded-full border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-600 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 shadow-none"
                 >
                   Draft
                 </Badge>
@@ -124,39 +118,39 @@ export function SavedDraftCard({
                     aria-label={`Draft actions for ${item.title}`}
                     onClick={(event) => event.stopPropagation()}
                     onMouseDown={(event) => event.stopPropagation()}
-                    className="inline-flex size-8 items-center justify-center rounded-full border border-transparent text-slate-400 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-[#2563EB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20"
+                    className="inline-flex size-8 items-center justify-center rounded-full border border-transparent text-muted-foreground transition-colors hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20"
                   >
                     <MoreVertical className="size-4.5" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
                     sideOffset={8}
-                    className="w-52 rounded-xl border border-[#E2E8F0] bg-white p-1 shadow-[0_16px_40px_rgba(15,23,42,0.12)]"
+                    className="w-52 rounded-xl bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 p-1 shadow-[0_16px_40px_rgba(15,23,42,0.12)]"
                   >
                     <DropdownMenuItem
                       onClick={() => router.push(href)}
-                      className="rounded-[10px] px-3 py-2.5 text-slate-700 focus:bg-blue-50 focus:text-[#2563EB]"
+                      className="rounded-[10px] px-3 py-2.5 text-foreground focus:bg-blue-50 dark:focus:bg-blue-500/10 focus:text-blue-600 dark:focus:text-blue-400"
                     >
                       <ChevronRight className="size-4" />
                       Continue editing
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="rounded-[10px] px-3 py-2.5 text-slate-700 focus:bg-blue-50 focus:text-[#2563EB]">
+                    <DropdownMenuItem className="rounded-[10px] px-3 py-2.5 text-foreground focus:bg-blue-50 dark:focus:bg-blue-500/10 focus:text-blue-600 dark:focus:text-blue-400">
                       <PencilLine className="size-4" />
                       Rename
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="rounded-[10px] px-3 py-2.5 text-slate-700 focus:bg-blue-50 focus:text-[#2563EB]">
+                    <DropdownMenuItem className="rounded-[10px] px-3 py-2.5 text-foreground focus:bg-blue-50 dark:focus:bg-blue-500/10 focus:text-blue-600 dark:focus:text-blue-400">
                       <Copy className="size-4" />
                       Duplicate
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="rounded-[10px] px-3 py-2.5 text-slate-700 focus:bg-blue-50 focus:text-[#2563EB]">
+                    <DropdownMenuItem className="rounded-[10px] px-3 py-2.5 text-foreground focus:bg-blue-50 dark:focus:bg-blue-500/10 focus:text-blue-600 dark:focus:text-blue-400">
                       <FolderInput className="size-4" />
                       Move to another category
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="my-1 bg-slate-200" />
+                    <DropdownMenuSeparator className="my-1 bg-border" />
                     <DropdownMenuItem
                       variant="destructive"
                       onClick={() => setShowDeleteDialog(true)}
-                      className="rounded-[10px] px-3 py-2.5 text-red-600 focus:bg-red-50 focus:text-red-600"
+                      className="rounded-[10px] px-3 py-2.5 text-red-600 dark:text-red-400 focus:bg-red-50 dark:focus:bg-red-500/10 focus:text-red-600 dark:focus:text-red-400"
                     >
                       <Trash2 className="size-4" />
                       Delete draft
@@ -167,7 +161,7 @@ export function SavedDraftCard({
             </div>
 
             <div className="pointer-events-none flex min-w-0 items-start gap-3.5">
-              <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
+              <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-muted ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
                 <Image
                   src={item.logoSrc}
                   alt={item.logoAlt}
@@ -178,10 +172,10 @@ export function SavedDraftCard({
               </div>
 
               <div className="min-w-0 space-y-1.5">
-                <h3 className="truncate text-[18px] font-semibold tracking-[-0.025em] text-[#0F172A]">
+                <h3 className="truncate text-[18px] font-semibold tracking-[-0.025em] text-foreground">
                   {item.title}
                 </h3>
-                <p className="flex items-center gap-1.5 text-sm text-[#64748B]">
+                <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Clock3 className="size-3.5" />
                   Updated {item.updatedAt}
                 </p>
@@ -189,7 +183,7 @@ export function SavedDraftCard({
             </div>
 
             <div className="pointer-events-none min-h-[62px]">
-              <p className="line-clamp-3 text-sm leading-6 text-[#64748B]">
+              <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">
                 {item.description}
               </p>
             </div>
@@ -199,18 +193,18 @@ export function SavedDraftCard({
                 {item.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex max-w-[132px] truncate rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600"
+                    className="inline-flex max-w-[132px] truncate rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground ring-1 ring-foreground/5 dark:ring-foreground/10"
                   >
                     {tag}
                   </span>
                 ))}
               </div>
-            
-              <div className="h-px w-full bg-slate-100" />
+
+              <div className="h-px w-full bg-border" />
 
               <div className="flex items-center justify-between gap-3">
                 <div className="pointer-events-none">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
                     <span className="size-1.5 rounded-full bg-emerald-500" />
                     Ready to continue
                   </div>
@@ -223,7 +217,7 @@ export function SavedDraftCard({
                     event.stopPropagation();
                     router.push(href);
                   }}
-                  className="h-9 rounded-xl border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-700 shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:border-blue-200 hover:bg-white hover:text-[#2563EB]"
+                  className="h-9 rounded-xl bg-card px-3.5 text-sm font-semibold text-foreground shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-card hover:text-blue-600 dark:hover:text-blue-400"
                 >
                   Continue
                   <ChevronRight
@@ -251,7 +245,7 @@ export function SavedDraftCard({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.98 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
-              className="w-full max-w-md rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.18)]"
+              className="w-full max-w-md rounded-2xl bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.18)]"
               role="dialog"
               aria-modal="true"
               aria-labelledby={`delete-draft-${item.id}`}
@@ -259,12 +253,12 @@ export function SavedDraftCard({
             >
               <h3
                 id={`delete-draft-${item.id}`}
-                className="text-lg font-semibold text-[#0F172A]"
+                className="text-lg font-semibold text-foreground"
               >
                 Delete draft?
               </h3>
-              <p className="mt-2 text-sm leading-6 text-[#64748B]">
-                Remove <span className="font-medium text-slate-700">{item.title}</span> from your saved drafts. This action cannot be undone.
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Remove <span className="font-medium text-foreground">{item.title}</span> from your saved drafts. This action cannot be undone.
               </p>
 
               <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -272,7 +266,7 @@ export function SavedDraftCard({
                   type="button"
                   variant="outline"
                   onClick={() => setShowDeleteDialog(false)}
-                  className="h-10 rounded-xl border-slate-200 bg-white px-4 text-slate-700 hover:bg-slate-50"
+                  className="h-10 rounded-xl bg-card px-4 text-foreground hover:bg-muted"
                 >
                   Cancel
                 </Button>
