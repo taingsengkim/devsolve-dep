@@ -12,6 +12,14 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const proxyApi = createApi({
   reducerPath: "proxyApi",
   baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
-  tagTypes: ["Category", "Program", "AdminProgram"],
+  tagTypes: [
+    "Category",
+    "Program",
+    "AdminProgram",
+    "Organization",
+    "OrganizationVerification",
+    "OrganizationMembers",
+    "OrganizationInvitations",
+  ],
   endpoints: () => ({}),
 });

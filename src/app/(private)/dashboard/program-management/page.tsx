@@ -2,8 +2,9 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { Suspense, useCallback, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { ArrowLeft, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -21,9 +22,11 @@ import { ProgramFiltersBar } from "@/components/admin/programs/ProgramFiltersBar
 import { ProgramDataTable } from "@/components/admin/programs/ProgramDataTable";
 import { getProgramColumns } from "@/components/admin/programs/programColumns";
 
-export default function ProgramManagementPage() {
+function ProgramManagementPageContent() {
+  const searchParams = useSearchParams();
   const { user } = useSidebarAuth();
   const isAdmin = user?.roles?.includes("ADMIN") ?? false;
+  const isAdminScope = searchParams.get("scope") === "admin" && isAdmin;
 
   const [submissionStateFilter, setSubmissionStateFilter] = useState<
     ProgramSubmissionState | "ALL"
@@ -36,7 +39,7 @@ export default function ProgramManagementPage() {
   // ADMIN queries
   const { data: adminOverallResponse } = useGetAdminProgramsQuery(
     { size: 100 },
-    { skip: !isAdmin }
+    { skip: !isAdminScope }
   );
   const {
     data: adminResponse,
@@ -50,13 +53,13 @@ export default function ProgramManagementPage() {
       page: pageIndex,
       size: pageSize,
     },
-    { skip: !isAdmin }
+    { skip: !isAdminScope }
   );
 
   // COMPANY queries (GET /organizations/me/programs)
   const { data: companyOverallResponse } = useGetMyCompanyProgramsQuery(
     { size: 100 },
-    { skip: isAdmin }
+    { skip: isAdminScope }
   );
   const {
     data: companyResponse,
@@ -67,13 +70,15 @@ export default function ProgramManagementPage() {
       page: pageIndex,
       size: pageSize,
     },
-    { skip: isAdmin }
+    { skip: isAdminScope }
   );
 
-  const activeResponse = isAdmin ? adminResponse : companyResponse;
-  const overallResponse = isAdmin ? adminOverallResponse : companyOverallResponse;
-  const isLoading = isAdmin ? isAdminLoading : isCompanyLoading;
-  const isFetching = isAdmin ? isAdminFetching : isCompanyFetching;
+  const activeResponse = isAdminScope ? adminResponse : companyResponse;
+  const overallResponse = isAdminScope
+    ? adminOverallResponse
+    : companyOverallResponse;
+  const isLoading = isAdminScope ? isAdminLoading : isCompanyLoading;
+  const isFetching = isAdminScope ? isAdminFetching : isCompanyFetching;
 
   const programs: ProgramManagementSummaryItem[] = useMemo(
     () => activeResponse?.content ?? [],
@@ -86,7 +91,7 @@ export default function ProgramManagementPage() {
     let result = programs;
 
     // Apply client-side filters for Company view if needed
-    if (!isAdmin) {
+    if (!isAdminScope) {
       if (submissionStateFilter !== "ALL") {
         result = result.filter((p) => p.submissionState === submissionStateFilter);
       }
@@ -103,7 +108,7 @@ export default function ProgramManagementPage() {
         p.handle?.toLowerCase().includes(q) ||
         p.organizationName?.toLowerCase().includes(q)
     );
-  }, [programs, searchQuery, isAdmin, submissionStateFilter, stateFilter]);
+  }, [programs, searchQuery, isAdminScope, submissionStateFilter, stateFilter]);
 
   const counts = useMemo(() => {
     const items = overallResponse?.content ?? programs;
@@ -134,7 +139,10 @@ export default function ProgramManagementPage() {
     setPageIndex(0);
   }, []);
 
-  const columns = useMemo(() => getProgramColumns(), []);
+  const columns = useMemo(
+    () => getProgramColumns({ scope: isAdminScope ? "admin" : "owner" }),
+    [isAdminScope]
+  );
 
   return (
     <motion.div
@@ -163,7 +171,7 @@ export default function ProgramManagementPage() {
             Program Management
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            {isAdmin
+            {isAdminScope
               ? "Review, audit, approve, and oversee corporate security bug bounty programs."
               : "Manage and monitor security programs for your organization."}
           </p>
@@ -171,7 +179,7 @@ export default function ProgramManagementPage() {
 
         <div className="flex items-center gap-3">
           {/* Pending review alert badge for admin */}
-          {isAdmin && counts.pendingReview > 0 && (
+          {isAdminScope && counts.pendingReview > 0 && (
             <Badge
               variant="outline"
               className="h-9 shrink-0 gap-2 rounded-xl border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
@@ -185,7 +193,7 @@ export default function ProgramManagementPage() {
           )}
 
           {/* Create Program button for Company role */}
-          {!isAdmin && (
+          {!isAdminScope && (
             <Link href="/dashboard/create-program">
               <Button className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm h-10 px-4 gap-2 shadow-xs cursor-pointer">
                 <Plus className="w-4 h-4" />
@@ -250,5 +258,30 @@ export default function ProgramManagementPage() {
         )}
       </main>
     </motion.div>
+  );
+}
+
+function ProgramManagementPageFallback() {
+  return (
+    <div className="space-y-6 w-full pb-12 animate-pulse">
+      <div className="h-24 rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/60" />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[0, 1, 2, 3].map((item) => (
+          <div
+            key={item}
+            className="h-24 rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/60"
+          />
+        ))}
+      </div>
+      <div className="h-72 rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/60" />
+    </div>
+  );
+}
+
+export default function ProgramManagementPage() {
+  return (
+    <Suspense fallback={<ProgramManagementPageFallback />}>
+      <ProgramManagementPageContent />
+    </Suspense>
   );
 }

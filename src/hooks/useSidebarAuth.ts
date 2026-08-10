@@ -35,24 +35,40 @@ export function useSidebarAuth() {
   const { data: profile } = useGetEditProfileFormQuery(undefined, { skip: !session });
   const displayName = profile?.fullName || user?.name || user?.email || "User";
   const [tokenRoles, setTokenRoles] = useState<string[]>([]);
+  const [tokenRolesResolved, setTokenRolesResolved] = useState(false);
 
   useEffect(() => {
     if (!session) return;
 
-    authClient.getAccessToken({ providerId: "keycloak" }).then((res: AccessTokenResponse) => {
-      const rawToken =
-        typeof res?.data === "string"
-          ? res.data
-          : res?.data?.accessToken || res?.data?.token || res?.token;
+    let cancelled = false;
 
-      if (rawToken) {
-        const realmRoles = extractRealmRolesFromToken(rawToken);
-        const appRoles = realmRoles.filter((r) =>
-          ["USER", "COMPANY", "ADMIN", "MODERATOR"].includes(r)
-        );
-        setTokenRoles(appRoles.length > 0 ? Array.from(new Set(appRoles)) : ["USER"]);
-      }
-    });
+    authClient
+      .getAccessToken({ providerId: "keycloak" })
+      .then((res: AccessTokenResponse) => {
+        if (cancelled) return;
+
+        const rawToken =
+          typeof res?.data === "string"
+            ? res.data
+            : res?.data?.accessToken || res?.data?.token || res?.token;
+
+        if (rawToken) {
+          const realmRoles = extractRealmRolesFromToken(rawToken);
+          const appRoles = realmRoles.filter((r) =>
+            ["USER", "COMPANY", "ADMIN", "MODERATOR"].includes(r)
+          );
+          setTokenRoles(
+            appRoles.length > 0 ? Array.from(new Set(appRoles)) : ["USER"]
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setTokenRolesResolved(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [session]);
 
   const sessionRoles = (user as SessionUserWithRole)?.role
@@ -67,6 +83,9 @@ export function useSidebarAuth() {
       : tokenRoles.length > 0
       ? tokenRoles
       : ["USER"];
+  const areRolesResolved =
+    !isPending && Boolean(user) &&
+    (sessionRoles.length > 0 || tokenRolesResolved);
 
   const effectiveUser: SidebarUser | undefined = user
     ? {
@@ -116,6 +135,7 @@ export function useSidebarAuth() {
   return {
     user: effectiveUser,
     isPending,
+    areRolesResolved,
     displayName,
     handleSignOut,
   };

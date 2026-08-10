@@ -2,24 +2,22 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useState, use } from "react";
+import React, { Suspense, useState, use } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   Building2,
   CheckCircle2,
   XCircle,
   ShieldCheck,
-  Globe,
   Coins,
   FileText,
   Layers,
   AlertOctagon,
   Check,
   X,
-  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,29 +34,28 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  useGetAdminProgramsQuery,
   useGetProgramDetailQuery,
   useApproveProgramMutation,
   useRejectProgramMutation,
 } from "@/lib/redux/services/admin/programAdminApi";
 import {
   useGetProgramByIdQuery,
-  useGetMyCompanyProgramsQuery,
 } from "@/lib/redux/services/program/programsApi";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { ProgramRejectDialog } from "@/components/admin/programs/ProgramRejectDialog";
 import { toast } from "sonner";
 
-export default function AdminProgramDetailPage({
+function ProgramDetailPageContent({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const { user } = useSidebarAuth();
   const isAdmin = user?.roles?.includes("ADMIN") ?? false;
+  const isAdminScope = searchParams.get("scope") === "admin" && isAdmin;
 
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -70,43 +67,23 @@ export default function AdminProgramDetailPage({
     data: adminDetail,
     isLoading: isAdminDetailLoading,
     refetch: refetchAdmin,
-  } = useGetProgramDetailQuery(id, { skip: !isAdmin });
+  } = useGetProgramDetailQuery(id, { skip: !isAdminScope });
 
   // Company / public users fall back to the public programs endpoint.
   const {
     data: publicDetail,
     isLoading: isPublicLoading,
     refetch: refetchPublic,
-  } = useGetProgramByIdQuery(id, { skip: isAdmin });
-
-  // Admin-only list query fallback (used for stat counts on list page, skip here)
-  const { data: adminListData, isLoading: isAdminListLoading } =
-    useGetAdminProgramsQuery({ size: 100 }, { skip: !isAdmin });
-
-  // Company-only list query fallback
-  const {
-    data: companyListData,
-    isLoading: isCompanyListLoading,
-    refetch: refetchCompany,
-  } = useGetMyCompanyProgramsQuery({ size: 100 }, { skip: isAdmin });
+  } = useGetProgramByIdQuery(id, { skip: isAdminScope });
 
   const refetch = () => {
-    if (isAdmin) refetchAdmin();
+    if (isAdminScope) refetchAdmin();
     else refetchPublic();
-    if (!isAdmin) refetchCompany();
   };
 
-  const program = isAdmin
-    ? adminDetail ||
-      adminListData?.content?.find((p: any) => p.id === id || p.handle === id)
-    : publicDetail ||
-      companyListData?.content?.find(
-        (p: any) => p.id === id || p.handle === id
-      );
+  const program = isAdminScope ? adminDetail : publicDetail;
 
-  const isLoading = isAdmin
-    ? isAdminDetailLoading
-    : isPublicLoading && isCompanyListLoading;
+  const isLoading = isAdminScope ? isAdminDetailLoading : isPublicLoading;
   const isError = !isLoading && !program;
 
   const [approveProgram] = useApproveProgramMutation();
@@ -119,8 +96,9 @@ export default function AdminProgramDetailPage({
       toast.success(`Program "${program?.name || ""}" approved successfully!`);
       setApproveDialogOpen(false);
       refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to approve program.");
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message;
+      toast.error(message || "Failed to approve program.");
     } finally {
       setIsActionLoading(false);
     }
@@ -377,7 +355,7 @@ export default function AdminProgramDetailPage({
             <CardContent>
               {program.assets && program.assets.length > 0 ? (
                 <div className="space-y-3">
-                  {program.assets.map((asset: any, idx: number) => (
+                  {program.assets.map((asset, idx) => (
                     <div
                       key={asset.id || idx}
                       className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 gap-3"
@@ -452,7 +430,7 @@ export default function AdminProgramDetailPage({
             <CardContent>
               {program.rewards && program.rewards.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {program.rewards.map((rew: any, idx: number) => (
+                  {program.rewards.map((rew, idx) => (
                     <div
                       key={rew.id || idx}
                       className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-2 shadow-2xs"
@@ -585,7 +563,7 @@ export default function AdminProgramDetailPage({
           </div>
 
           <div className="shrink-0 flex items-center gap-2">
-              {isAdmin ? (
+      {isAdminScope ? (
                 <div className="flex items-center gap-2 sm:gap-3">
                   {/* Status label when already resolved */}
                   {isApproved && (
@@ -657,7 +635,7 @@ export default function AdminProgramDetailPage({
             <AlertDialogDescription className="text-sm text-slate-500 dark:text-slate-400 font-normal">
               Are you sure you want to approve{" "}
               <span className="font-semibold text-slate-900 dark:text-slate-100">
-                "{program.name}"
+                &ldquo;{program.name}&rdquo;
               </span>
               ? Once approved, the organization can manage and activate their bug bounty scope.
             </AlertDialogDescription>
@@ -684,5 +662,27 @@ export default function AdminProgramDetailPage({
         onConfirmReject={handleRejectConfirm}
       />
     </motion.div>
+  );
+}
+
+function ProgramDetailPageFallback() {
+  return (
+    <div className="space-y-6 w-full pb-12 animate-pulse">
+      <div className="h-10 w-48 rounded-xl bg-slate-200 dark:bg-slate-800" />
+      <div className="h-32 w-full rounded-2xl bg-slate-100 dark:bg-slate-800" />
+      <div className="h-96 w-full rounded-2xl bg-slate-100 dark:bg-slate-800" />
+    </div>
+  );
+}
+
+export default function ProgramDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <Suspense fallback={<ProgramDetailPageFallback />}>
+      <ProgramDetailPageContent params={params} />
+    </Suspense>
   );
 }
