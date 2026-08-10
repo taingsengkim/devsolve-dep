@@ -1,5 +1,5 @@
 import ProgramDetailPage from '@/components/programs/details/ProgramDynamicDetailPage'
-import React from 'react'
+import React, { Suspense } from 'react'
 
 export default function page({
   params,
@@ -7,8 +7,8 @@ export default function page({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <div>
+    <Suspense fallback={<div className="min-h-screen animate-pulse bg-card rounded-2xl p-8" />}>
       <ProgramDetailPage params={params}/>
-    </div>
+    </Suspense>
   )
 }

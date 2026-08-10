@@ -96,7 +96,13 @@ export const programsApi = proxyApi.injectEndpoints({
       providesTags: (_result, _error, id) => [{ type: "Program", id }],
     }),
 
-    createProgram: builder.mutation<Program, CreateProgramRequest>({
+    // GET /organizations/me/programs/{id}
+    getMyCompanyProgramById: builder.query<ProgramDetail, string>({
+      query: (id) => `organizations/me/programs/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Program", id }],
+    }),
+
+    createProgram: builder.mutation<Program, CreateProgramRequest & { state?: string }>({
       query: (body) => ({
         url: "/organizations/me/programs",
         method: "POST",
@@ -105,10 +111,24 @@ export const programsApi = proxyApi.injectEndpoints({
       invalidatesTags: ["Program"],
     }),
 
-    // DELETE /programs/{id} (organization owner)
+    updateProgram: builder.mutation<
+      Program,
+      { id: string; body: Partial<CreateProgramRequest> & { state?: string } }
+    >({
+      query: ({ id, body }) => ({
+        url: `/organizations/me/programs/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        "Program",
+        { type: "Program", id },
+      ],
+    }),
+
     deleteProgram: builder.mutation<void, string>({
       query: (id) => ({
-        url: `/programs/${id}`,
+        url: `/organizations/me/programs/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: (_result, _error, id) => [
@@ -142,7 +162,9 @@ export const {
   useGetMyCompanyProgramsQuery,
   useGetMyCompanyProgramByIdQuery,
   useGetProgramByIdQuery,
+  useGetMyCompanyProgramByIdQuery,
   useCreateProgramMutation,
+  useUpdateProgramMutation,
   useDeleteProgramMutation,
   useUpdateProgramStateMutation,
 } = programsApi;

@@ -2,6 +2,13 @@ import { ArrowDownUp, Filter, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type SavedDraftSearchProps = {
   value: string;
@@ -34,21 +41,25 @@ export function SavedDraftSearch({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <label className="inline-flex h-11 items-center gap-2 rounded-xl bg-muted/50 px-3 text-sm text-muted-foreground shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
+          <div className="inline-flex h-11 items-center gap-2 rounded-xl bg-muted/50 px-3 text-sm text-muted-foreground shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
             <ArrowDownUp className="size-4" />
-            <span>Sort by</span>
-            <select
+            <span className="shrink-0 font-medium">Sort by</span>
+            <Select
               value={sortBy}
-              onChange={(event) =>
-                onSortChange(event.target.value as "recent" | "oldest" | "title")
+              onValueChange={(val) =>
+                onSortChange(val as "recent" | "oldest" | "title")
               }
-              className="bg-transparent text-sm font-medium text-foreground outline-none"
             >
-              <option value="recent">Recently updated</option>
-              <option value="oldest">Oldest updated</option>
-              <option value="title">Title A-Z</option>
-            </select>
-          </label>
+              <SelectTrigger className="h-8 border-none bg-transparent shadow-none font-medium text-foreground focus:ring-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">Recently updated</SelectItem>
+                <SelectItem value="oldest">Oldest updated</SelectItem>
+                <SelectItem value="title">Title A-Z</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <Button
             type="button"

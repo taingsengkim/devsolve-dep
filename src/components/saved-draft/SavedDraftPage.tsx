@@ -6,10 +6,6 @@ import { motion } from "motion/react";
 import { SavedDraftEmptyState } from "@/components/saved-draft/SavedDraftEmptyState";
 import { SavedDraftGrid } from "@/components/saved-draft/SavedDraftGrid";
 import { SavedDraftHeader } from "@/components/saved-draft/SavedDraftHeader";
-import {
-  SAVED_DRAFT_ITEMS,
-  SAVED_DRAFT_TAB_ORDER,
-} from "@/components/saved-draft/mock-data";
 import { SavedDraftPagination } from "@/components/saved-draft/SavedDraftPagination";
 import { SavedDraftSearch } from "@/components/saved-draft/SavedDraftSearch";
 import { SavedDraftTabs } from "@/components/saved-draft/SavedDraftTabs";
@@ -19,18 +15,20 @@ import {
 } from "@/components/ui/page-enter-motion";
 import type { DraftCategory, SavedDraftItem } from "@/components/saved-draft/types";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
+import { useGetMyCompanyProgramsQuery, useDeleteProgramMutation } from "@/lib/redux/services/program/programsApi";
+import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 6;
 
 const SEARCH_PLACEHOLDERS: Record<DraftCategory, string> = {
-  problem: "Search saved drafts...",
-  solution: "Search saved drafts...",
-  program: "Search saved drafts...",
-  report: "Search saved drafts...",
+  all: "Search all saved drafts...",
+  program: "Search program drafts...",
+  response: "Search response drafts...",
+  report: "Search report drafts...",
 };
 
 function getUpdatedRank(updatedAt: string) {
-  if (updatedAt === "Today") return 0;
+  if (updatedAt === "Today" || updatedAt === "Recently") return 0;
   if (updatedAt === "Yesterday") return 1;
 
   const hourMatch = updatedAt.match(/(\d+)\s+hour/);
@@ -56,51 +54,85 @@ export function SavedDraftPage() {
   const isCompany = userRoles.includes("COMPANY");
   const isUser = userRoles.includes("USER");
 
-  const ALL_TABS: DraftCategory[] = ["problem", "solution", "program", "report"];
+  const ALL_TABS: DraftCategory[] = ["all", "program", "response", "report"];
   const visibleTabs: DraftCategory[] = ALL_TABS.filter((tab) => {
-    if (tab === "program" && isUser && !isCompany) return false;
+    if ((tab === "program" || tab === "response") && isUser && !isCompany) return false;
     if (tab === "report" && isCompany && !isUser) return false;
     return true;
   });
 
-  const [draftItems, setDraftItems] = useState<SavedDraftItem[]>(SAVED_DRAFT_ITEMS);
-  const [activeTab, setActiveTab] = useState<DraftCategory>(visibleTabs[0] ?? "problem");
+  const [activeTab, setActiveTab] = useState<DraftCategory>(visibleTabs[0] ?? "all");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "title">("recent");
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Reset activeTab if it is no longer visible (e.g. role change)
+  // Fetch real company programs (filter by state: DRAFT)
+  const { data: companyProgramsData, isLoading } =
+    useGetMyCompanyProgramsQuery({ size: 100 }, { skip: !isCompany });
+
+  const [deleteProgram] = useDeleteProgramMutation();
+
+  // Convert real backend DRAFT items to SavedDraftItem format
+  const draftItems = useMemo<SavedDraftItem[]>(() => {
+    const items: SavedDraftItem[] = [];
+
+    if (companyProgramsData?.content) {
+      companyProgramsData.content
+        .filter((p) => p.state === "DRAFT")
+        .forEach((p) => {
+          const isResponse = p.engagementType === "RESPONSE";
+          const inScopeTags = p.assets
+            ? p.assets
+                .filter((a) => a.isInScope === true)
+                .map((a) => a.identifier || "")
+                .filter(Boolean)
+            : p.inScopeAssets
+                ?.map((a: { identifier?: string; target?: string }) => a.identifier || a.target || "")
+                .filter(Boolean) ?? [];
+
+          items.push({
+            id: p.id,
+            title: p.name || "Untitled Program Draft",
+            description: p.description || "No description provided for this draft.",
+            category: isResponse ? "response" : "program",
+            programDraftKind: isResponse ? "response" : "bounty",
+            updatedAt: p.updatedAt
+              ? new Date(p.updatedAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : "Recently",
+            tags: inScopeTags,
+            initials: (p.name || "PR").slice(0, 2).toUpperCase(),
+            logoSrc: "https://media.wired.com/photos/5926ffe47034dc5f91bed4e8/3:2/w_2560%2Cc_limit/google-logo.jpg",
+            logoAlt: p.name || "Program Logo",
+          });
+        });
+    }
+
+    return items;
+  }, [companyProgramsData]);
+
+  // Reset activeTab if it is no longer visible
   useEffect(() => {
     if (!visibleTabs.includes(activeTab)) {
-      setActiveTab(visibleTabs[0] ?? "problem");
+      setActiveTab(visibleTabs[0] ?? "all");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCompany, isUser]);
 
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      setIsLoading(false);
-    }, 320);
-
-    return () => window.clearTimeout(timeoutId);
-  }, []);
-
   const counts = useMemo(() => {
-    return SAVED_DRAFT_TAB_ORDER.reduce(
-      (accumulator, category) => {
-        accumulator[category] = draftItems.filter(
-          (item) => item.category === category
-        ).length;
-        return accumulator;
-      },
-      {
-        problem: 0,
-        solution: 0,
-        program: 0,
-        report: 0,
-      } as Record<DraftCategory, number>
-    );
+    return {
+      all: draftItems.length,
+      program: draftItems.filter(
+        (item) => item.category === "program" || item.programDraftKind === "bounty"
+      ).length,
+      response: draftItems.filter(
+        (item) => item.category === "response" || item.programDraftKind === "response"
+      ).length,
+      report: draftItems.filter((item) => item.category === "report").length,
+    };
   }, [draftItems]);
 
   const filteredItems = useMemo(() => {
@@ -108,10 +140,15 @@ export function SavedDraftPage() {
 
     return draftItems
       .filter((item) => {
-        if (item.category !== activeTab) {
-          return false;
-        }
-
+        if (activeTab === "all") return true;
+        if (activeTab === "program")
+          return item.category === "program" || item.programDraftKind === "bounty";
+        if (activeTab === "response")
+          return item.category === "response" || item.programDraftKind === "response";
+        if (activeTab === "report") return item.category === "report";
+        return true;
+      })
+      .filter((item) => {
         if (!normalizedSearch) {
           return true;
         }
@@ -139,12 +176,21 @@ export function SavedDraftPage() {
     safeCurrentPage * ITEMS_PER_PAGE
   );
 
+  const handleDeleteItem = async (itemId: string) => {
+    try {
+      await deleteProgram(itemId).unwrap();
+      toast.success("Draft deleted successfully");
+    } catch {
+      toast.error("Failed to delete draft");
+    }
+  };
+
   return (
     <motion.section
       initial="hidden"
       animate="visible"
       variants={pageEnterContainer}
-      className="mx-auto w-full  space-y-5 pb-12"
+      className="mx-auto w-full space-y-5 pb-12"
     >
       <motion.div variants={pageEnterItem}>
         <SavedDraftHeader totalDrafts={draftItems.length} />
@@ -183,10 +229,7 @@ export function SavedDraftPage() {
         <motion.div variants={pageEnterItem} className="space-y-5">
           <SavedDraftGrid
             items={paginatedItems}
-            onDelete={(itemId) => {
-              setDraftItems((current) => current.filter((item) => item.id !== itemId));
-              setCurrentPage(1);
-            }}
+            onDelete={handleDeleteItem}
           />
 
           <SavedDraftPagination

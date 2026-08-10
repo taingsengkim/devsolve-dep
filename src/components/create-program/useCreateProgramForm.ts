@@ -1,14 +1,22 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { useCreateProgramMutation } from "@/lib/redux/services/program/programsApi";
+import {
+  useCreateProgramMutation,
+  useGetProgramByIdQuery,
+  useUpdateProgramMutation,
+} from "@/lib/redux/services/program/programsApi";
 import type { Asset } from "@/lib/types/programs/types";
 import type { ScopeTarget, ProgramType, ProgramVisibility } from "./types";
 
 export function useCreateProgramForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const programId = searchParams.get("id") || searchParams.get("draftId");
+
   const [activeTab, setActiveTab] = useState<number>(1);
 
   // Form State
@@ -54,8 +62,82 @@ export function useCreateProgramForm() {
     low: { min: "5", max: "20" },
   });
 
-  const router = useRouter();
+  // RTK Query hooks
+  const { data: existingProgram, isLoading: isFetchingDraft } = useGetProgramByIdQuery(
+    programId || "",
+    { skip: !programId }
+  );
+
   const [createProgram, { isLoading: isCreating }] = useCreateProgramMutation();
+  const [updateProgram, { isLoading: isUpdating }] = useUpdateProgramMutation();
+
+  // Populate form fields with existing draft data when opened via SavedDraftCard
+  useEffect(() => {
+    if (!existingProgram) return;
+
+    if (existingProgram.name) setProgramName(existingProgram.name);
+    if (existingProgram.handle) setHandle(existingProgram.handle);
+    if (existingProgram.description) setDescription(existingProgram.description);
+    if (existingProgram.engagementType) {
+      setProgramType(existingProgram.engagementType === "RESPONSE" ? "RESPONSE" : "BOUNTY");
+    }
+    if (existingProgram.visibility) {
+      setVisibility(existingProgram.visibility === "PRIVATE" ? "PRIVATE" : "PUBLIC");
+    }
+    if (existingProgram.policy) setPolicy(existingProgram.policy);
+    if (existingProgram.proofOfConceptRequirements) {
+      setPocRequirements(existingProgram.proofOfConceptRequirements);
+    }
+
+    if (existingProgram.rulesOfEngagement?.rules?.length) {
+      setRulesOfEngagement(
+        existingProgram.rulesOfEngagement.rules
+          .map((r) => (r.startsWith("•") ? r : `• ${r}`))
+          .join("\n")
+      );
+    }
+
+    if (existingProgram.exclusions?.rules?.length) {
+      setExcludedTypes(existingProgram.exclusions.rules);
+    }
+
+    if (typeof existingProgram.offersBounties === "boolean") {
+      setOfferBounties(existingProgram.offersBounties);
+    }
+
+    if (existingProgram.minimumBounty !== undefined || existingProgram.maximumBounty !== undefined) {
+      const minStr = (existingProgram.minimumBounty ?? 50).toString();
+      const maxStr = (existingProgram.maximumBounty ?? 75000).toString();
+      setBountyMatrix({
+        critical: { min: "5000", max: maxStr },
+        high: { min: "1000", max: "5000" },
+        medium: { min: "250", max: "1000" },
+        low: { min: minStr, max: "250" },
+      });
+    }
+
+    if (existingProgram.assets && existingProgram.assets.length > 0) {
+      const inScope: ScopeTarget[] = existingProgram.assets
+        .filter((a) => a.isInScope)
+        .map((a, i) => ({
+          id: a.id || `in-${i}`,
+          type: a.assetType === "API" ? "API" : a.assetType === "MOBILE_APP" ? "MOBILE" : "WEB",
+          target: a.identifier || "",
+          description: a.description || "",
+        }));
+      const outScope: ScopeTarget[] = existingProgram.assets
+        .filter((a) => !a.isInScope)
+        .map((a, i) => ({
+          id: a.id || `out-${i}`,
+          type: a.assetType === "API" ? "API" : a.assetType === "MOBILE_APP" ? "MOBILE" : "WEB",
+          target: a.identifier || "",
+          description: a.description || "",
+        }));
+
+      if (inScope.length > 0) setInScopeTargets(inScope);
+      if (outScope.length > 0) setOutOfScopeTargets(outScope);
+    }
+  }, [existingProgram]);
 
   type AssetType =
     | "URL"
@@ -204,67 +286,73 @@ export function useCreateProgramForm() {
     return false;
   }, [activeTab, isStep1Valid, isStep2Valid, isStep3Valid]);
 
-  const handleCreateProgram = async () => {
+  const submitProgram = async (isDraft = false) => {
     const trimmedName = programName.trim();
     const formattedHandle = formatHandle(handle);
 
-    if (trimmedName.length < 2 || trimmedName.length > 255) {
-      toast.error("Program name must be between 2 and 255 characters.");
-      setActiveTab(1);
-      return;
-    }
+    if (!isDraft) {
+      if (trimmedName.length < 2 || trimmedName.length > 255) {
+        toast.error("Program name must be between 2 and 255 characters.");
+        setActiveTab(1);
+        return;
+      }
 
-    if (formattedHandle.length < 2 || formattedHandle.length > 100) {
-      toast.error("Program handle must be between 2 and 100 characters.");
-      setActiveTab(1);
-      return;
-    }
+      if (formattedHandle.length < 2 || formattedHandle.length > 100) {
+        toast.error("Program handle must be between 2 and 100 characters.");
+        setActiveTab(1);
+        return;
+      }
 
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(formattedHandle)) {
-      toast.error(
-        "Program handle must contain only lowercase letters, numbers, and single hyphens.",
-      );
-      setActiveTab(1);
-      return;
-    }
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(formattedHandle)) {
+        toast.error(
+          "Program handle must contain only lowercase letters, numbers, and single hyphens.",
+        );
+        setActiveTab(1);
+        return;
+      }
 
-    if (!description.trim()) {
-      toast.error("Program description is required.");
-      setActiveTab(1);
-      return;
-    }
+      if (!description.trim()) {
+        toast.error("Program description is required.");
+        setActiveTab(1);
+        return;
+      }
 
-    if (!policy.trim()) {
-      toast.error("Responsible disclosure policy is required.");
-      setActiveTab(1);
-      return;
+      if (!policy.trim()) {
+        toast.error("Responsible disclosure policy is required.");
+        setActiveTab(1);
+        return;
+      }
+
+      const effectiveExcludedTypes = newExcludedInput.trim()
+        ? [...excludedTypes, newExcludedInput.trim()]
+        : excludedTypes;
+
+      if (effectiveExcludedTypes.length === 0) {
+        toast.error("Please add at least one exclusion rule.");
+        setActiveTab(3);
+        return;
+      }
+
+      if (buildAssets().length === 0) {
+        toast.error("Please add at least one in-scope or out-of-scope asset.");
+        setActiveTab(2);
+        return;
+      }
     }
 
     const effectiveExcludedTypes = newExcludedInput.trim()
       ? [...excludedTypes, newExcludedInput.trim()]
       : excludedTypes;
 
-    if (effectiveExcludedTypes.length === 0) {
-      toast.error("Please add at least one exclusion rule.");
-      setActiveTab(3);
-      return;
-    }
-
-    if (buildAssets().length === 0) {
-      toast.error("Please add at least one in-scope or out-of-scope asset.");
-      setActiveTab(2);
-      return;
-    }
-
     try {
       const payload = {
-        handle: formattedHandle,
-        name: trimmedName,
-        description,
+        handle: formattedHandle || "draft-program",
+        name: trimmedName || "Untitled Draft Program",
+        description: description || "Draft program description",
         engagementType:
           programType === "RESPONSE" ? ("RESPONSE" as const) : ("BOUNTY" as const),
         visibility,
-        policy,
+        policy: policy || "Responsible disclosure policy draft",
         proofOfConceptRequirements: pocRequirements,
         rulesOfEngagement: buildRuleSection(
           rulesOfEngagement,
@@ -272,7 +360,7 @@ export function useCreateProgramForm() {
         ),
         exclusions: {
           description: "Excluded vulnerability types",
-          rules: effectiveExcludedTypes,
+          rules: effectiveExcludedTypes.length > 0 ? effectiveExcludedTypes : ["DoS"],
         },
         offersBounties: offerBounties,
         minimumBounty: offerBounties
@@ -283,16 +371,24 @@ export function useCreateProgramForm() {
           : 0,
         assets: buildAssets(),
         rewards: buildRewards(),
+        state: isDraft ? "DRAFT" : "PUBLISHED",
       };
 
-      await createProgram(payload).unwrap();
-      toast.success("Success!", {
-        description: "Program created successfully. Redirecting now...",
-      });
+      if (programId) {
+        await updateProgram({ id: programId, body: payload }).unwrap();
+        toast.success(isDraft ? "Draft saved successfully!" : "Program updated successfully!");
+      } else {
+        await createProgram(payload).unwrap();
+        toast.success(isDraft ? "Draft saved successfully!" : "Program created successfully!");
+      }
 
-      router.push("/dashboard/program-management");
+      if (isDraft) {
+        router.push("/dashboard/saved-draft");
+      } else {
+        router.push("/dashboard/program-management");
+      }
     } catch (error) {
-      console.error("Create program failed", error);
+      console.error("Save program failed", error);
 
       const apiError = error as FetchBaseQueryError & { data?: unknown };
 
@@ -300,7 +396,7 @@ export function useCreateProgramForm() {
         if (typeof apiError.data === "string") return apiError.data;
 
         const dataObj = apiError.data as Record<string, unknown> | undefined;
-        if (!dataObj) return "Unable to create program. Please try again.";
+        if (!dataObj) return "Unable to save program. Please try again.";
 
         const details = (dataObj.details ?? dataObj) as Record<string, unknown>;
         const errorDetails =
@@ -323,7 +419,7 @@ export function useCreateProgramForm() {
 
         return (
           msg ||
-          "Unable to create program. Please check your inputs and try again."
+          "Unable to save program. Please check your inputs and try again."
         );
       };
 
@@ -331,6 +427,9 @@ export function useCreateProgramForm() {
       toast.error(rawMessage);
     }
   };
+
+  const handleCreateProgram = () => submitProgram(false);
+  const handleSaveDraft = () => submitProgram(true);
 
   const getStepTip = () => {
     switch (activeTab) {
@@ -414,7 +513,9 @@ export function useCreateProgramForm() {
     setBountyMatrix,
     pointsMatrix,
     setPointsMatrix,
-    isCreating,
+    isCreating: isCreating || isUpdating,
+    isFetchingDraft,
+    isEditingDraft: Boolean(programId),
     isFormValid,
     isNextDisabled,
     formatHandle,
@@ -425,6 +526,7 @@ export function useCreateProgramForm() {
     removeOutOfScope,
     handleAddExcludedType,
     handleCreateProgram,
+    handleSaveDraft,
     getStepTip,
     getRewardRange,
     activeInScope,

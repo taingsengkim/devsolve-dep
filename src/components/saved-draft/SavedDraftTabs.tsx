@@ -1,10 +1,10 @@
 "use client";
 
 import {
-  CircleDot,
   FileText,
   FolderKanban,
-  Lightbulb,
+  LayoutGrid,
+  Shield,
   type LucideIcon,
 } from "lucide-react";
 
@@ -27,9 +27,9 @@ type DraftTabConfig = {
 };
 
 const TAB_CONFIG: DraftTabConfig[] = [
-  { key: "problem", label: "Problem", icon: CircleDot },
-  { key: "solution", label: "Solution", icon: Lightbulb },
+  { key: "all", label: "All", icon: LayoutGrid },
   { key: "program", label: "Program", icon: FolderKanban },
+  { key: "response", label: "Response", icon: Shield },
   { key: "report", label: "Report", icon: FileText },
 ];
 

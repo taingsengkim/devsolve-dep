@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import { motion } from "motion/react";
 import {
   FileText,
@@ -23,7 +23,7 @@ import { CreateProgramChecklist } from "@/components/create-program/CreateProgra
 import { CreateProgramTipCard } from "@/components/create-program/CreateProgramTipCard";
 import { useCreateProgramForm } from "@/components/create-program/useCreateProgramForm";
 
-export default function CreateProgramPage() {
+function CreateProgramContent() {
   const {
     activeTab,
     setActiveTab,
@@ -58,6 +58,7 @@ export default function CreateProgramPage() {
     pointsMatrix,
     setPointsMatrix,
     isCreating,
+    isEditingDraft,
     isFormValid,
     isNextDisabled,
     formatHandle,
@@ -68,6 +69,7 @@ export default function CreateProgramPage() {
     removeOutOfScope,
     handleAddExcludedType,
     handleCreateProgram,
+    handleSaveDraft,
     getStepTip,
     getRewardRange,
     activeInScope,
@@ -175,6 +177,8 @@ export default function CreateProgramPage() {
               <Button
                 type="button"
                 variant="outline"
+                onClick={handleSaveDraft}
+                disabled={isCreating}
                 className="rounded-xl border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm h-11 px-5 gap-2 cursor-pointer"
               >
                 <Save className="w-4 h-4 text-slate-500" />
@@ -198,7 +202,13 @@ export default function CreateProgramPage() {
                   disabled={!isFormValid || isCreating}
                   className="rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm h-11 px-6 gap-2 cursor-pointer"
                 >
-                  {isCreating ? "Creating..." : "Create Program"}
+                  {isCreating
+                    ? isEditingDraft
+                      ? "Updating..."
+                      : "Creating..."
+                    : isEditingDraft
+                      ? "Update Program"
+                      : "Create Program"}
                 </Button>
               )}
             </div>
@@ -225,5 +235,20 @@ export default function CreateProgramPage() {
         </div>
       </div>
     </motion.div>
+  );
+}
+
+export default function CreateProgramPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full space-y-6 pb-12 animate-pulse">
+          <div className="h-20 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
+          <div className="h-64 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
+        </div>
+      }
+    >
+      <CreateProgramContent />
+    </Suspense>
   );
 }
