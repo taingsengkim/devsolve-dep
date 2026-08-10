@@ -7,6 +7,8 @@ import { motion } from "motion/react";
 import { UserX } from "lucide-react";
 import { useGetEditProfileFormQuery } from "@/lib/redux/services/profileApi";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
+import CompanyProfileView from "@/components/profile/company/CompanyProfileView";
+import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 
 /**
  * /dashboard/profile — "my profile".
@@ -23,14 +25,26 @@ import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
  */
 export default function MyProfilePage() {
   const router = useRouter();
-  const { data, isError } = useGetEditProfileFormQuery();
+  const { user, areRolesResolved } = useSidebarAuth();
+  const isCompany = user?.roles?.includes("COMPANY") ?? false;
+  const { data, isError } = useGetEditProfileFormQuery(undefined, {
+    skip: !areRolesResolved || isCompany,
+  });
   const username = data?.username;
 
   useEffect(() => {
-    if (username) {
+    if (areRolesResolved && !isCompany && username) {
       router.replace(`/dashboard/profile/${username}`);
     }
-  }, [username, router]);
+  }, [areRolesResolved, isCompany, username, router]);
+
+  if (!areRolesResolved) {
+    return <ProfileSkeleton />;
+  }
+
+  if (isCompany) {
+    return <CompanyProfileView />;
+  }
 
   if (isError) {
     return (

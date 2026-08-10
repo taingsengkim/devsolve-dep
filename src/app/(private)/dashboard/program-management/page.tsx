@@ -2,8 +2,9 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { Suspense, useCallback, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { ArrowLeft, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -21,9 +22,11 @@ import { ProgramFiltersBar } from "@/components/admin/programs/ProgramFiltersBar
 import { ProgramDataTable } from "@/components/admin/programs/ProgramDataTable";
 import { getProgramColumns } from "@/components/admin/programs/programColumns";
 
-export default function ProgramManagementPage() {
+function ProgramManagementPageContent() {
+  const searchParams = useSearchParams();
   const { user } = useSidebarAuth();
   const isAdmin = user?.roles?.includes("ADMIN") ?? false;
+  const isAdminScope = searchParams.get("scope") === "admin" && isAdmin;
 
   const [submissionStateFilter, setSubmissionStateFilter] = useState<
     ProgramSubmissionState | "ALL"
@@ -34,27 +37,10 @@ export default function ProgramManagementPage() {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(20);
 
-  // Debounce search input — waits 400 ms before sending to backend
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery.trim());
-      setPageIndex(0);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  // Lightweight queries to fetch total counts for stat cards & tab badges
-  const adminPendingCountQuery = useGetAdminProgramsQuery(
-    { submissionState: "PENDING_REVIEW", size: 1 },
-    { skip: !isAdmin }
-  );
-  const adminApprovedCountQuery = useGetAdminProgramsQuery(
-    { submissionState: "APPROVED", size: 1 },
-    { skip: !isAdmin }
-  );
-  const adminRejectedCountQuery = useGetAdminProgramsQuery(
-    { submissionState: "REJECTED", size: 1 },
-    { skip: !isAdmin }
+  // ADMIN queries
+  const { data: adminOverallResponse } = useGetAdminProgramsQuery(
+    { size: 100 },
+    { skip: !isAdminScope }
   );
 
   // PRIMARY ADMIN DATA QUERY — Sends query parameters (submissionState, page, size, state) directly to backend API
@@ -71,13 +57,13 @@ export default function ProgramManagementPage() {
       page: pageIndex,
       size: pageSize,
     },
-    { skip: !isAdmin }
+    { skip: !isAdminScope }
   );
 
   // COMPANY DATA QUERY (for non-admin users)
   const { data: companyOverallResponse } = useGetMyCompanyProgramsQuery(
     { size: 100 },
-    { skip: isAdmin }
+    { skip: isAdminScope }
   );
   const {
     data: companyResponse,
@@ -88,12 +74,15 @@ export default function ProgramManagementPage() {
       page: pageIndex,
       size: pageSize,
     },
-    { skip: isAdmin }
+    { skip: isAdminScope }
   );
 
-  const activeResponse = isAdmin ? adminResponse : companyResponse;
-  const isLoading = isAdmin ? isAdminLoading : isCompanyLoading;
-  const isFetching = isAdmin ? isAdminFetching : isCompanyFetching;
+  const activeResponse = isAdminScope ? adminResponse : companyResponse;
+  const overallResponse = isAdminScope
+    ? adminOverallResponse
+    : companyOverallResponse;
+  const isLoading = isAdminScope ? isAdminLoading : isCompanyLoading;
+  const isFetching = isAdminScope ? isAdminFetching : isCompanyFetching;
 
   // Calculate stat cards & tab counts directly from backend responses
   const counts = useMemo(() => {
@@ -131,9 +120,42 @@ export default function ProgramManagementPage() {
     () => activeResponse?.content ?? [],
     [activeResponse]
   );
+  const totalElements = activeResponse?.totalElements ?? programs.length;
+  const totalPages = activeResponse?.totalPages ?? 1;
 
-  const totalElements = activeResponse?.totalElements ?? displayedPrograms.length;
-  const totalPages = activeResponse?.totalPages ?? Math.max(1, Math.ceil(totalElements / pageSize));
+  const filteredPrograms = useMemo(() => {
+    let result = programs;
+
+    // Apply client-side filters for Company view if needed
+    if (!isAdminScope) {
+      if (submissionStateFilter !== "ALL") {
+        result = result.filter((p) => p.submissionState === submissionStateFilter);
+      }
+      if (stateFilter !== "ALL") {
+        result = result.filter((p) => p.state === stateFilter);
+      }
+    }
+
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return result;
+    return result.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(q) ||
+        p.handle?.toLowerCase().includes(q) ||
+        p.organizationName?.toLowerCase().includes(q)
+    );
+  }, [programs, searchQuery, isAdminScope, submissionStateFilter, stateFilter]);
+
+  const counts = useMemo(() => {
+    const items = overallResponse?.content ?? programs;
+    return {
+      all: overallResponse?.totalElements ?? totalElements,
+      pendingReview: items.filter((p) => p.submissionState === "PENDING_REVIEW")
+        .length,
+      approved: items.filter((p) => p.submissionState === "APPROVED").length,
+      rejected: items.filter((p) => p.submissionState === "REJECTED").length,
+    };
+  }, [overallResponse, programs, totalElements]);
 
   const handleSubmissionStateChange = useCallback(
     (state: ProgramSubmissionState | "ALL") => {
@@ -153,7 +175,10 @@ export default function ProgramManagementPage() {
     setPageIndex(0);
   }, []);
 
-  const columns = useMemo(() => getProgramColumns(), []);
+  const columns = useMemo(
+    () => getProgramColumns({ scope: isAdminScope ? "admin" : "owner" }),
+    [isAdminScope]
+  );
 
   return (
     <motion.div
@@ -182,7 +207,7 @@ export default function ProgramManagementPage() {
             Program Management
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            {isAdmin
+            {isAdminScope
               ? "Review, audit, approve, and oversee corporate security bug bounty programs."
               : "Manage and monitor security programs for your organization."}
           </p>
@@ -190,7 +215,7 @@ export default function ProgramManagementPage() {
 
         <div className="flex items-center gap-3">
           {/* Pending review alert badge for admin */}
-          {isAdmin && counts.pendingReview > 0 && (
+          {isAdminScope && counts.pendingReview > 0 && (
             <Badge
               variant="outline"
               className="h-9 shrink-0 gap-2 rounded-xl border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
@@ -204,7 +229,7 @@ export default function ProgramManagementPage() {
           )}
 
           {/* Create Program button for Company role */}
-          {!isAdmin && (
+          {!isAdminScope && (
             <Link href="/dashboard/create-program">
               <Button className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm h-10 px-4 gap-2 shadow-xs cursor-pointer">
                 <Plus className="w-4 h-4" />
@@ -269,5 +294,30 @@ export default function ProgramManagementPage() {
         )}
       </main>
     </motion.div>
+  );
+}
+
+function ProgramManagementPageFallback() {
+  return (
+    <div className="space-y-6 w-full pb-12 animate-pulse">
+      <div className="h-24 rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/60" />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[0, 1, 2, 3].map((item) => (
+          <div
+            key={item}
+            className="h-24 rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/60"
+          />
+        ))}
+      </div>
+      <div className="h-72 rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/60" />
+    </div>
+  );
+}
+
+export default function ProgramManagementPage() {
+  return (
+    <Suspense fallback={<ProgramManagementPageFallback />}>
+      <ProgramManagementPageContent />
+    </Suspense>
   );
 }

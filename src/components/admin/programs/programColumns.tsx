@@ -49,7 +49,7 @@ function initialsOf(name?: string) {
 }
 
 export const getProgramColumns =
-  (): ColumnDef<ProgramManagementSummaryItem>[] => [
+  ({ scope = "owner" }: { scope?: "owner" | "admin" } = {}): ColumnDef<ProgramManagementSummaryItem>[] => [
     {
       accessorKey: "name",
       header: ({ column }) => (
@@ -66,7 +66,9 @@ export const getProgramColumns =
             </Avatar>
             <div className="min-w-0">
               <Link
-                href={`/dashboard/program-management/${item.id}`}
+                href={`/dashboard/program-management/${item.id}${
+                  scope === "admin" ? "?scope=admin" : ""
+                }`}
                 className="block truncate text-sm font-semibold text-slate-900 transition-colors hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-400"
               >
                 {item.name}
@@ -161,14 +163,16 @@ export const getProgramColumns =
           <Button
             render={
               <Link
-                href={`/dashboard/program-management/${row.original.id}`}
+                href={`/dashboard/program-management/${row.original.id}${
+                  scope === "admin" ? "?scope=admin" : ""
+                }`}
               />
             }
             variant="outline"
             size="sm"
             className="h-8 cursor-pointer rounded-xl border-slate-200 px-3 text-sm font-semibold shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800"
           >
-            Review
+            {scope === "admin" ? "Review" : "View"}
             <ArrowRight data-icon="inline-end" />
           </Button>
         </div>

@@ -107,6 +107,7 @@ export interface ProgramDetail {
   proofOfConceptRequirements?: string | null;
   minimumBounty: number;
   maximumBounty: number;
+  rejectionReason?: string | null;
 
   // Added Rules & Exclusions fields
   rulesOfEngagement?: RuleSection;

@@ -1,4 +1,4 @@
-import { baseApi } from "./baseApi";
+import { proxyApi } from "./proxyApi";
 
 export type OrganizationStatus =
   | "PENDING"
@@ -163,7 +163,7 @@ function extractOrganizationMembers(
   return [];
 }
 
-export const organizationsApi = baseApi.injectEndpoints({
+export const organizationsApi = proxyApi.injectEndpoints({
   endpoints: (builder) => ({
     registerOrganization: builder.mutation<
       Organization,

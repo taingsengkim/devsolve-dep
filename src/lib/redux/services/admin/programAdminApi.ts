@@ -6,6 +6,11 @@ import {
   ProgramSubmissionState,
   ProgramState,
 } from "@/lib/types/admin/programAdminTypes";
+import type { ProgramDetail } from "@/lib/types/programs/types";
+
+type AdminProgramDetail = ProgramDetail & {
+  rejectionReason?: string | null;
+};
 
 export type {
   PageProgramManagementSummaryResponseDto,
@@ -35,7 +40,7 @@ export const programAdminApi = proxyApi.injectEndpoints({
       providesTags: ["AdminProgram"],
     }),
 
-    getProgramDetail: builder.query<any, string>({
+    getProgramDetail: builder.query<AdminProgramDetail, string>({
       query: (id) => ({
         url: `/admin/programs/${id}`,
       }),
