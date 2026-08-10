@@ -75,11 +75,11 @@ export default function FeaturedDisclosures() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           {/* <Sparkles size={18} className="text-amber-500" /> */}
-          <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-xl font-extrabold text-foreground tracking-tight">
             Featured Vulnerability Disclosures
           </h2>
         </div>
-        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Top Disclosed Bugs
         </span>
       </div>
@@ -91,7 +91,7 @@ export default function FeaturedDisclosures() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: idx * 0.05 }}
-            className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs transition-all hover:border-slate-300 hover:shadow-md"
+            className="group relative flex flex-col justify-between overflow-hidden rounded-2xl bg-card p-5 ring-1 ring-foreground/5 dark:ring-foreground/10 transition-all hover:ring-foreground/10 dark:hover:ring-foreground/20 hover:shadow-md"
           >
             <div>
               {/* Badges row */}
@@ -99,41 +99,41 @@ export default function FeaturedDisclosures() {
                 <span
                   className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold ${
                     item.severity === "Critical"
-                      ? "bg-red-50 text-red-700 border border-red-200"
-                      : "bg-amber-50 text-amber-700 border border-amber-200"
+                      ? "bg-red-50 text-red-700 border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20"
+                      : "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20"
                   }`}
                 >
                   <ShieldAlert size={12} />
                   {item.severity}
                 </span>
 
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200/60">
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20">
                   <Award size={12} />
                   {item.bounty}
                 </span>
               </div>
 
               {/* Title */}
-              <h3 className="text-sm font-bold text-slate-900 leading-snug group-hover:text-blue-600 transition-colors">
+              <h3 className="text-sm font-bold text-foreground leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {item.title}
               </h3>
 
-              <div className="mt-2 text-xs font-medium text-slate-500">
-                Target: <span className="font-semibold text-slate-800">{item.program}</span>
+              <div className="mt-2 text-xs font-medium text-muted-foreground">
+                Target: <span className="font-semibold text-foreground">{item.program}</span>
               </div>
             </div>
 
             {/* Reporter & Upvote Footer */}
-            <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <div className="mt-5 pt-3 border-t border-border flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Image
                   src={item.avatarUrl}
                   alt={`${item.handle} avatar`}
                   width={28}
                   height={28}
-                  className="h-7 w-7 rounded-full object-cover ring-1 ring-slate-200"
+                  className="h-7 w-7 rounded-full object-cover ring-1 ring-border"
                 />
-                <span className="text-xs font-bold text-slate-900">@{item.handle}</span>
+                <span className="text-xs font-bold text-foreground">@{item.handle}</span>
               </div>
 
               <button
@@ -141,8 +141,8 @@ export default function FeaturedDisclosures() {
                 onClick={() => handleUpvote(item.id)}
                 className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
                   userLiked[item.id]
-                    ? "bg-rose-50 text-rose-600 border border-rose-200"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? "bg-rose-50 text-rose-600 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20"
+                    : "bg-muted text-muted-foreground hover:bg-muted/70"
                 }`}
               >
                 <Heart

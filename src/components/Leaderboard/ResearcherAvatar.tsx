@@ -32,7 +32,7 @@ export default function ResearcherAvatar({
         width={size}
         height={size}
         style={{ width: `${size}px`, height: `${size}px` }}
-        className={`shrink-0 rounded-full object-cover aspect-square overflow-hidden ring-1 ring-slate-200 ${className}`}
+        className={`shrink-0 rounded-full object-cover aspect-square overflow-hidden ring-1 ring-foreground/10 ${className}`}
       />
     );
   }

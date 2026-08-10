@@ -31,9 +31,9 @@ export const ProgramPagination: React.FC<ProgramPaginationProps> = ({
   onPageChange,
 }) => {
   return (
-    <footer className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200/80">
-      <div className="flex items-center gap-3 text-sm text-slate-600">
-        <label htmlFor="rows-per-page" className="font-medium text-slate-700">
+    <footer className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-border">
+      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+        <label htmlFor="rows-per-page" className="font-medium text-foreground">
           Rows per page
         </label>
         <Select
@@ -42,16 +42,16 @@ export const ProgramPagination: React.FC<ProgramPaginationProps> = ({
         >
           <SelectTrigger
             id="rows-per-page"
-            className="h-9 px-3 rounded-xl bg-white border-slate-300 text-sm font-semibold text-slate-800 shadow-2xs focus:ring-2 focus:ring-blue-600 cursor-pointer"
+            className="h-9 px-3 rounded-xl bg-muted/60 text-sm font-semibold text-foreground shadow-2xs focus:ring-2 focus:ring-blue-600 cursor-pointer"
           >
             <SelectValue placeholder={String(rowsPerPage)} />
           </SelectTrigger>
-          <SelectContent className="bg-white border border-slate-200 rounded-xl shadow-lg min-w-[72px] p-1">
+          <SelectContent className="rounded-xl shadow-lg min-w-[72px] p-1">
             {[6, 10, 20, 50].map((num) => (
               <SelectItem
                 key={num}
                 value={String(num)}
-                className="rounded-lg cursor-pointer py-1.5 px-2.5 text-sm font-medium hover:bg-slate-100 focus:bg-slate-100 data-[highlighted]:bg-slate-100"
+                className="rounded-lg cursor-pointer py-1.5 px-2.5 text-sm font-medium hover:bg-muted"
               >
                 {num}
               </SelectItem>
@@ -59,7 +59,7 @@ export const ProgramPagination: React.FC<ProgramPaginationProps> = ({
           </SelectContent>
         </Select>
 
-        <span className="text-xs text-slate-500 font-medium ml-2">
+        <span className="text-xs text-muted-foreground font-medium ml-2">
           Showing {displayedCount} of {totalCount} programs
         </span>
       </div>
@@ -70,7 +70,7 @@ export const ProgramPagination: React.FC<ProgramPaginationProps> = ({
           size="sm"
           disabled={currentPage <= 1}
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-          className="h-9 px-3 rounded-xl border-slate-300 text-sm font-medium gap-1 cursor-pointer disabled:opacity-50"
+          className="h-9 px-3 rounded-xl text-sm font-medium gap-1 cursor-pointer disabled:opacity-50"
         >
           <ChevronLeft className="w-4 h-4" />
           Previous
@@ -83,9 +83,7 @@ export const ProgramPagination: React.FC<ProgramPaginationProps> = ({
             size="sm"
             onClick={() => onPageChange(pageNum)}
             className={`h-9 w-9 rounded-xl text-sm font-semibold cursor-pointer ${
-              currentPage === pageNum
-                ? "bg-blue-600 text-white shadow-2xs"
-                : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"
+              currentPage === pageNum ? "bg-blue-600 text-white shadow-2xs" : ""
             }`}
           >
             {pageNum}
@@ -93,7 +91,7 @@ export const ProgramPagination: React.FC<ProgramPaginationProps> = ({
         ))}
 
         {totalPages > 3 && currentPage < totalPages - 1 && (
-          <span className="px-1 text-slate-400 text-sm">...</span>
+          <span className="px-1 text-muted-foreground text-sm">...</span>
         )}
 
         <Button
@@ -101,7 +99,7 @@ export const ProgramPagination: React.FC<ProgramPaginationProps> = ({
           size="sm"
           disabled={currentPage >= totalPages}
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-          className="h-9 px-3 rounded-xl border-slate-300 text-sm font-medium gap-1 cursor-pointer disabled:opacity-50"
+          className="h-9 px-3 rounded-xl text-sm font-medium gap-1 cursor-pointer disabled:opacity-50"
         >
           Next
           <ChevronRight className="w-4 h-4" />

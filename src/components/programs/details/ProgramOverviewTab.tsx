@@ -22,29 +22,29 @@ export const ProgramOverviewTab: React.FC<ProgramOverviewTabProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.2 }}
-      className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-8"
+      className="bg-card rounded-2xl p-6 sm:p-8 ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs space-y-8"
     >
       {/* About the Program */}
       <div className="space-y-3">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
           About the Program
         </h2>
-        <p className="text-base font-bold text-slate-900 leading-relaxed">
+        <p className="text-base font-bold text-foreground leading-relaxed">
           Test our cloud infrastructure, API gateways, and core web services for vulnerabilities.
         </p>
-        <p className="text-base text-slate-600 leading-relaxed font-normal">
+        <p className="text-base text-muted-foreground leading-relaxed font-normal">
           { program.description}
         </p>
       </div>
 
-      <hr className="border-slate-100" />
+      <hr className="border-border" />
 
       {/* Proof of Concept Requirements */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
           Proof of Concept Requirements
         </h2>
-        <p className="text-base text-slate-600 font-medium">
+        <p className="text-base text-muted-foreground font-medium">
           Each report must include the following to be considered valid:
         </p>
         <ul className="space-y-3">
@@ -54,8 +54,8 @@ export const ProgramOverviewTab: React.FC<ProgramOverviewTabProps> = ({
             "Screenshot or screen recording demonstrating impact",
             "Affected endpoint and parameter names",
           ]).map((req, idx) => (
-            <li key={idx} className="flex items-start gap-3 text-base text-slate-800 font-medium leading-relaxed">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+            <li key={idx} className="flex items-start gap-3 text-base text-foreground font-medium leading-relaxed">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400 shrink-0 mt-0.5" />
               <span>{req}</span>
             </li>
           ))}

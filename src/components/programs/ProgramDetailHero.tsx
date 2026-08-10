@@ -65,12 +65,12 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
   );
 
   return (
-    <div className="relative bg-white rounded-xl border border-slate-200/90 shadow-sm overflow-hidden">
+    <div className="relative bg-card rounded-xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-sm overflow-hidden">
       <div className="p-4 sm:p-6 space-y-4">
         {/* TOP HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-700 text-base border border-slate-200/60 shrink-0 overflow-hidden">
+            <div className="w-11 h-11 bg-muted rounded-xl flex items-center justify-center font-bold text-foreground text-base ring-1 ring-foreground/5 dark:ring-foreground/10 shrink-0 overflow-hidden">
               <Image
                 src="https://media.wired.com/photos/5926ffe47034dc5f91bed4e8/3:2/w_2560%2Cc_limit/google-logo.jpg"
                 alt={program.handle || "Organization"}
@@ -82,24 +82,24 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
 
             <div className="space-y-0.5">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
                   {program.handle}
                 </h1>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20">
                   • {program.state || "Active"}
                 </span>
                 <span
                   className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
                     isBounty
-                      ? "bg-blue-50 text-blue-600 border-blue-100"
-                      : "bg-purple-50 text-purple-600 border-purple-100"
+                      ? "bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20"
+                      : "bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/20"
                   }`}
                 >
                   {isBounty ? "Bounty" : "Response"}
                 </span>
               </div>
               {program.handle && (
-                <p className="text-xs font-medium text-slate-400">@{program.handle}</p>
+                <p className="text-xs font-medium text-muted-foreground">@{program.handle}</p>
               )}
             </div>
           </div>
@@ -111,14 +111,14 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
               disabled={isToggling}
               variant="outline"
               size="sm"
-              className={`rounded-lg h-9 border-slate-200 text-xs font-semibold gap-1.5 transition-all ${
+              className={`rounded-lg h-9 border-transparent text-xs font-semibold gap-1.5 transition-all ${
                 isSaved
-                  ? "bg-blue-50 text-blue-600 border-blue-200"
-                  : "bg-white text-slate-700 hover:bg-slate-50"
+                  ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30"
+                  : "bg-card text-foreground hover:bg-muted"
               }`}
             >
               <Bookmark
-                className={`w-3.5 h-3.5 ${isSaved ? "fill-blue-600 text-blue-600" : "text-slate-500"}`}
+                className={`w-3.5 h-3.5 ${isSaved ? "fill-blue-600 text-blue-600 dark:fill-blue-400 dark:text-blue-400" : "text-muted-foreground"}`}
               />
               {isSaved ? "Saved" : "Save"}
             </Button>
@@ -127,14 +127,14 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
 
         {/* PROGRAM NAME – responsive size */}
         {program.description && (
-          <p className="text-xl sm:text-2xl md:text-3xl font-bold text-black leading-snug w-full line-clamp-2">
+          <p className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground leading-snug w-full line-clamp-2">
             {program.name}
           </p>
         )}
 
         {/* PROGRAM DESCRIPTION – responsive */}
         {program.description && (
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed w-full line-clamp-2">
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed w-full line-clamp-2">
             {program.description}
           </p>
         )}
@@ -145,7 +145,7 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
             {assetTypes.map((type, i) => (
               <span
                 key={i}
-                className="bg-slate-50 text-slate-500 text-[10px] font-semibold px-2.5 py-0.5 rounded-md border border-slate-200/60 uppercase tracking-wider"
+                className="bg-muted text-muted-foreground text-[10px] font-semibold px-2.5 py-0.5 rounded-md ring-1 ring-foreground/5 dark:ring-foreground/10 uppercase tracking-wider"
               >
                 {type}
               </span>
@@ -154,55 +154,55 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
         )}
 
         {/* STATS ROW – responsive grid with proper gaps */}
-        <div className="pt-3 border-t border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        <div className="pt-3 border-t border-border grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           {/* MIN REWARD */}
           <div className="space-y-0.5">
-            <div className="flex items-center gap-1 text-slate-400">
+            <div className="flex items-center gap-1 text-muted-foreground">
               <Award className="w-3.5 h-3.5" />
               <span className="text-[10px] font-bold uppercase tracking-wider">
                 {isBounty ? "Min Reward" : "Min Points"}
               </span>
             </div>
-            <p className="text-sm sm:text-base font-bold text-slate-800">
+            <p className="text-sm sm:text-base font-bold text-foreground">
               {isBounty ? `$${minBounty.toLocaleString()}` : `${minBounty} pts`}
             </p>
           </div>
 
           {/* MAX REWARD */}
           <div className="space-y-0.5">
-            <div className="flex items-center gap-1 text-slate-400">
-              <Trophy className="w-3.5 h-3.5 text-blue-500" />
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Trophy className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
               <span className="text-[10px] font-bold uppercase tracking-wider">
                 {isBounty ? "Max Reward" : "Max Points"}
               </span>
             </div>
-            <p className="text-sm sm:text-base font-bold text-blue-600">
+            <p className="text-sm sm:text-base font-bold text-blue-600 dark:text-blue-400">
               {isBounty ? `$${maxBounty.toLocaleString()}` : `${maxBounty} pts`}
             </p>
           </div>
 
           {/* TOTAL ASSETS */}
           <div className="space-y-0.5">
-            <div className="flex items-center gap-1 text-slate-400">
+            <div className="flex items-center gap-1 text-muted-foreground">
               <Layers className="w-3.5 h-3.5" />
               <span className="text-[10px] font-bold uppercase tracking-wider">
                 Total Assets
               </span>
             </div>
-            <p className="text-sm sm:text-base font-bold text-slate-800">
+            <p className="text-sm sm:text-base font-bold text-foreground">
               {totalAssetsCount}
             </p>
           </div>
 
           {/* CREATED DATE */}
           <div className="space-y-0.5">
-            <div className="flex items-center gap-1 text-slate-400">
+            <div className="flex items-center gap-1 text-muted-foreground">
               <Calendar className="w-3.5 h-3.5" />
               <span className="text-[10px] font-bold uppercase tracking-wider">
                 Created Date
               </span>
             </div>
-            <p className="text-sm sm:text-base font-bold text-slate-800">
+            <p className="text-sm sm:text-base font-bold text-foreground">
               <span>{program.createdAt?.split('T')[0]}</span>
             </p>
           </div>

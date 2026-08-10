@@ -24,23 +24,23 @@ export function ProgramBountyMatrixTab({ program }: { program: ProgramDetail }) 
   const rewards = program?.rewards || [];
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 space-y-6 shadow-xs">
+    <div className="bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 p-6 sm:p-8 space-y-6 shadow-xs">
       {/* Header */}
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <DollarSign className="w-6 h-6 text-emerald-600" />
-          <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+          <DollarSign className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+          <h3 className="text-xl font-bold text-foreground tracking-tight">
             Bounty Reward Matrix
           </h3>
         </div>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-muted-foreground">
           Bounties are awarded based on CVSS severity rating and business impact.
         </p>
       </div>
 
       {/* Rewards List Stack */}
       {rewards.length === 0 ? (
-        <p className="text-sm text-slate-400 italic">
+        <p className="text-sm text-muted-foreground italic">
           No specific reward tiers configured.
         </p>
       ) : (
@@ -54,7 +54,7 @@ export function ProgramBountyMatrixTab({ program }: { program: ProgramDetail }) 
             return (
               <div
                 key={reward.id}
-                className="border border-slate-100 rounded-2xl p-4 sm:p-5 bg-slate-50/40 hover:bg-slate-50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="ring-1 ring-foreground/5 dark:ring-foreground/10 rounded-2xl p-4 sm:p-5 bg-muted/30 hover:bg-muted/60 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 {/* Left Side: Badge + Examples */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -63,7 +63,7 @@ export function ProgramBountyMatrixTab({ program }: { program: ProgramDetail }) 
                   >
                     {reward.severity}
                   </span>
-                  <span className="text-sm font-semibold text-slate-800 leading-snug">
+                  <span className="text-sm font-semibold text-foreground leading-snug">
                     {description}
                   </span>
                 </div>
@@ -71,12 +71,12 @@ export function ProgramBountyMatrixTab({ program }: { program: ProgramDetail }) 
                 {/* Right Side: Points + Amount Range */}
                 <div className="flex items-center justify-between md:justify-end gap-4 shrink-0">
                   {reward.points > 0 && (
-                    <span className="flex items-center gap-1 text-xs text-amber-600 font-bold bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-lg">
+                    <span className="flex items-center gap-1 text-xs text-amber-600 font-bold bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-lg dark:text-amber-300 dark:bg-amber-500/10 dark:border-amber-500/20">
                       <Zap className="w-3.5 h-3.5 fill-amber-500" />
                       {reward.points} pts
                     </span>
                   )}
-                  <p className="text-lg sm:text-xl font-extrabold text-emerald-600">
+                  <p className="text-lg sm:text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
                     ${reward.minAmount.toLocaleString()} – ${reward.maxAmount.toLocaleString()}
                   </p>
                 </div>

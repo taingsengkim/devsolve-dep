@@ -34,25 +34,25 @@ export const ProgramDetailSidebar: React.FC<ProgramDetailSidebarProps> = ({
   return (
     <aside className="space-y-6">
       {/* Widget 1: Program Timeline */}
-      <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-        <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-blue-600" />
+      <section className="bg-card p-6 rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs space-y-4">
+        <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           Program Timeline
         </h3>
         <dl className="space-y-3 text-sm">
           <div className="flex justify-between items-center">
-            <dt className="text-slate-500 font-medium">Start Date</dt>
+            <dt className="text-muted-foreground font-medium">Start Date</dt>
             {/* <dd className="font-semibold text-slate-800">{program.createdAt || "June 1, 2025"}</dd> */}
-            <span>{program.createdAt?.split('T')[0]}</span>
+            <span className="text-foreground">{program.createdAt?.split('T')[0]}</span>
           </div>
           {/* <div className="flex justify-between items-center">
             <dt className="text-slate-500 font-medium">End Date</dt>
             <dd className="font-semibold text-slate-800">{ "Aug 31, 2025"}</dd>
           </div> */}
           <div className="flex justify-between items-center">
-            <dt className="text-slate-500 font-medium">Status</dt>
-            <dd className="font-medium text-slate-600 flex items-center gap-1 text-xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+            <dt className="text-muted-foreground font-medium">Status</dt>
+            <dd className="font-medium text-muted-foreground flex items-center gap-1 text-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
               {program.state}
             </dd>
           </div>
@@ -60,27 +60,27 @@ export const ProgramDetailSidebar: React.FC<ProgramDetailSidebarProps> = ({
       </section>
 
       {/* Widget 2: Quick Stats */}
-      <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-        <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-          <FileText className="w-4 h-4 text-blue-600" />
+      <section className="bg-card p-6 rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs space-y-4">
+        <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+          <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           Quick Stats
         </h3>
         <dl className="space-y-3 text-sm">
           <div className="flex justify-between items-center">
-            <dt className="text-slate-500 font-medium">Total Reports</dt>
-            <dd className="font-bold text-slate-900">
+            <dt className="text-muted-foreground font-medium">Total Reports</dt>
+            <dd className="font-bold text-foreground">
               { 142}
             </dd>
           </div>
           <div className="flex justify-between items-center">
-            <dt className="text-slate-500 font-medium">Active Researchers</dt>
-            <dd className="font-bold text-slate-900">
+            <dt className="text-muted-foreground font-medium">Active Researchers</dt>
+            <dd className="font-bold text-foreground">
               { 89}
             </dd>
           </div>
           <div className="flex justify-between items-center">
-            <dt className="text-slate-500 font-medium">Program Type</dt>
-            <dd className="font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-100 text-xs">
+            <dt className="text-muted-foreground font-medium">Program Type</dt>
+            <dd className="font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-100 text-xs dark:text-blue-300 dark:bg-blue-500/10 dark:border-blue-500/20">
               {program.engagementType}
             </dd>
           </div>

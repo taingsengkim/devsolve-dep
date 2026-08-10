@@ -45,7 +45,7 @@ export default function PointsLegend({ className = "" }: { className?: string })
 
   return (
     <div className={`flex flex-wrap items-center gap-2 ${className}`}>
-      <span className="text-sm font-medium text-slate-500">Points per finding</span>
+      <span className="text-sm font-medium text-muted-foreground">Points per finding</span>
 
       {ITEMS.map((item, i) => (
         <motion.span
@@ -62,14 +62,14 @@ export default function PointsLegend({ className = "" }: { className?: string })
                   boxShadow: `0 0 0 1px ${item.glow}, 0 6px 16px -8px ${item.glow}`,
                 }
           }
-          className="group inline-flex cursor-default items-center gap-1.5 rounded-lg bg-white px-2.5 py-1 text-sm font-medium text-slate-600 shadow-[0_0_0_1px_rgba(30,41,59,0.08)]"
+          className="group inline-flex cursor-default items-center gap-1.5 rounded-lg bg-card px-2.5 py-1 text-sm font-medium text-muted-foreground ring-1 ring-foreground/5 dark:ring-foreground/10"
         >
           <span
             aria-hidden
             className={`h-1.5 w-1.5 rounded-full transition-transform duration-200 group-hover:scale-150 ${item.dot}`}
           />
           {item.label}
-          <span className="font-bold tabular-nums text-[#1E293B]">
+          <span className="font-bold tabular-nums text-foreground">
             +{item.points}
           </span>
         </motion.span>

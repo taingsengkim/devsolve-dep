@@ -41,10 +41,10 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
 
   return (
     <>
-      <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 bg-slate-50/80 rounded-2xl border border-slate-200/80">
+      <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 rounded-2xl">
         <div className="flex flex-wrap items-center gap-4">
           {/* Program Type Filter (All, Bounty, Response) */}
-          <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+          <div className="flex items-center bg-muted/60 p-1 rounded-xl">
             {(["All", "Bounty", "Response"] as const).map((t) => (
               <button
                 key={t}
@@ -52,7 +52,7 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
                 className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                   selectedType === t
                     ? "bg-blue-600 text-white shadow-2xs font-semibold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {t}
@@ -83,10 +83,10 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
           <Button
             variant="outline"
             onClick={onToggleMoreFilters}
-            className={`h-10 px-4 rounded-xl border-slate-300 text-sm font-semibold cursor-pointer gap-2 ${
+            className={`h-10 px-4 rounded-xl border-transparent text-sm font-semibold cursor-pointer gap-2 ${
               showMoreFilters || minReward !== "" || maxReward !== ""
-                ? "border-blue-600 bg-blue-50 text-blue-600"
-                : "bg-white text-slate-700 hover:bg-slate-100"
+                ? "border-blue-600 bg-blue-50 text-blue-600 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-300"
+                : "bg-muted/60 text-foreground hover:bg-muted"
             }`}
           >
             <SlidersHorizontal className="w-4 h-4" />
@@ -99,7 +99,7 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
               size="icon"
               onClick={onResetFilters}
               title="Reset all filters"
-              className="h-10 w-10 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-200/60"
+              className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60"
             >
               <RotateCcw className="w-4 h-4" />
             </Button>
@@ -114,17 +114,17 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3"
+            className="overflow-hidden bg-card p-5 rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-sm space-y-3"
           >
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-slate-400 tracking-wider uppercase flex items-center gap-1.5">
+              <h4 className="text-xs font-bold text-muted-foreground tracking-wider uppercase flex items-center gap-1.5">
                 {isPointsMode ? (
                   <>
-                    <Award className="w-3.5 h-3.5 text-blue-600" /> Points Range (pts)
+                    <Award className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" /> Points Range (pts)
                   </>
                 ) : (
                   <>
-                    <DollarSign className="w-3.5 h-3.5 text-emerald-600" /> Reward Range ($ USD)
+                    <DollarSign className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Reward Range ($ USD)
                   </>
                 )}
               </h4>
@@ -133,11 +133,11 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md">
               {/* Min Input */}
               <div className="space-y-1">
-                <label className="text-[11px] font-medium text-slate-500">
+                <label className="text-[11px] font-medium text-muted-foreground">
                   Min {isPointsMode ? "Points" : "Amount"}
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-xs font-bold text-slate-400">
+                  <span className="absolute left-3 top-2.5 text-xs font-bold text-muted-foreground">
                     {isPointsMode ? "pts" : "$"}
                   </span>
                   <input
@@ -145,18 +145,18 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
                     placeholder={isPointsMode ? "e.g. 20" : "e.g. 500"}
                     value={minReward}
                     onChange={(e) => onMinRewardChange(e.target.value)}
-                    className="w-full pl-9 pr-3 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    className="w-full pl-9 pr-3 py-1.5 text-sm bg-muted/40 border border-transparent text-foreground rounded-xl focus:bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   />
                 </div>
               </div>
 
               {/* Max Input */}
               <div className="space-y-1">
-                <label className="text-[11px] font-medium text-slate-500">
+                <label className="text-[11px] font-medium text-muted-foreground">
                   Max {isPointsMode ? "Points" : "Amount"}
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-xs font-bold text-slate-400">
+                  <span className="absolute left-3 top-2.5 text-xs font-bold text-muted-foreground">
                     {isPointsMode ? "pts" : "$"}
                   </span>
                   <input
@@ -164,7 +164,7 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
                     placeholder={isPointsMode ? "e.g. 100" : "e.g. 50000"}
                     value={maxReward}
                     onChange={(e) => onMaxRewardChange(e.target.value)}
-                    className="w-full pl-9 pr-3 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    className="w-full pl-9 pr-3 py-1.5 text-sm bg-muted/40 border border-transparent text-foreground rounded-xl focus:bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   />
                 </div>
               </div>

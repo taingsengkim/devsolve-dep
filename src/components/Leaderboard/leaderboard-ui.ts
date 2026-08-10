@@ -60,10 +60,22 @@ export const SEVERITY_STYLES: Record<
   SeverityLabel,
   { text: string; chip: string }
 > = {
-  Critical: { text: "text-rose-700", chip: "bg-rose-50 text-rose-700 ring-rose-200" },
-  High: { text: "text-orange-700", chip: "bg-orange-50 text-orange-700 ring-orange-200" },
-  Medium: { text: "text-amber-700", chip: "bg-amber-50 text-amber-700 ring-amber-200" },
-  Low: { text: "text-slate-600", chip: "bg-slate-100 text-slate-600 ring-slate-200" },
+  Critical: {
+    text: "text-rose-700 dark:text-rose-400",
+    chip: "bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20",
+  },
+  High: {
+    text: "text-orange-700 dark:text-orange-400",
+    chip: "bg-orange-50 text-orange-700 ring-orange-200 dark:bg-orange-500/10 dark:text-orange-300 dark:ring-orange-500/20",
+  },
+  Medium: {
+    text: "text-amber-700 dark:text-amber-400",
+    chip: "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20",
+  },
+  Low: {
+    text: "text-muted-foreground",
+    chip: "bg-muted text-muted-foreground ring-border",
+  },
 };
 
 export const PERIOD_OPTIONS: { value: LeaderboardPeriod; label: string }[] = [
@@ -93,13 +105,13 @@ export function formatNumber(n: number) {
 
 /** Stable tint per researcher so an avatar looks the same everywhere. */
 const AVATAR_TINTS = [
-  "bg-blue-50 text-blue-700 ring-blue-100",
-  "bg-emerald-50 text-emerald-700 ring-emerald-100",
-  "bg-indigo-50 text-indigo-700 ring-indigo-100",
-  "bg-teal-50 text-teal-700 ring-teal-100",
-  "bg-violet-50 text-violet-700 ring-violet-100",
-  "bg-sky-50 text-sky-700 ring-sky-100",
-  "bg-slate-100 text-slate-700 ring-slate-200",
+  "bg-blue-50 text-blue-700 ring-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20",
+  "bg-emerald-50 text-emerald-700 ring-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20",
+  "bg-indigo-50 text-indigo-700 ring-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20",
+  "bg-teal-50 text-teal-700 ring-teal-100 dark:bg-teal-500/10 dark:text-teal-300 dark:ring-teal-500/20",
+  "bg-violet-50 text-violet-700 ring-violet-100 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/20",
+  "bg-sky-50 text-sky-700 ring-sky-100 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20",
+  "bg-muted text-muted-foreground ring-border",
 ];
 
 export function tintFor(key: string) {

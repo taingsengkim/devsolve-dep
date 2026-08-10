@@ -21,10 +21,10 @@ export const ProgramHeader: React.FC<ProgramHeaderProps> = ({
   return (
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
           Program Marketplace
         </h1>
-        <p className="text-slate-600 mt-1.5 text-base font-normal">
+        <p className="text-muted-foreground mt-1.5 text-base font-normal">
           Discover bug bounty programs and responsible disclosure opportunities worldwide.
         </p>
       </div>
@@ -40,13 +40,13 @@ export const ProgramHeader: React.FC<ProgramHeaderProps> = ({
             value={searchTerm}
             onChange={(e) => onSearchTermChange(e.target.value)}
             placeholder="Search program , companies , keywords...."
-            className="h-11 pl-4 pr-10 rounded-xl bg-white border-slate-300 text-sm shadow-2xs focus-visible:ring-blue-600 focus-visible:border-blue-600"
+            className="h-11 pl-4 pr-10 rounded-xl bg-muted/50 border border-transparent text-sm shadow-2xs text-foreground placeholder:text-muted-foreground focus-visible:ring-blue-600 focus-visible:border-blue-600"
           />
           {searchTerm && (
             <button
               type="button"
               onClick={onClearSearch}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-semibold"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs font-semibold"
             >
               Clear
             </button>

@@ -45,14 +45,14 @@ export default function LeaderboardFilters({
   return (
     <section
       aria-label="Leaderboard filters"
-      className="rounded-2xl bg-white p-5 shadow-[0_0_0_1px_rgba(30,41,59,0.08)]"
+      className="rounded-2xl bg-card p-5 ring-1 ring-foreground/5 dark:ring-foreground/10"
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         {/* Period — the one control that changes what "reputation" means */}
         <div
           role="group"
           aria-label="Ranking period"
-          className="flex h-11 shrink-0 rounded-xl border border-slate-300 bg-slate-100/80 p-1"
+          className="flex h-11 shrink-0 rounded-xl bg-muted/60 p-1"
         >
           {PERIOD_OPTIONS.map((option) => {
             const active = value.period === option.value;
@@ -65,7 +65,7 @@ export default function LeaderboardFilters({
                 className={`relative rounded-lg px-4 text-sm font-semibold transition-colors ${
                   active
                     ? "text-white"
-                    : "text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {active && (
@@ -84,7 +84,7 @@ export default function LeaderboardFilters({
         <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
           <div className="relative w-full sm:max-w-xs">
             <Search
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
               size={18}
             />
             <input
@@ -93,7 +93,7 @@ export default function LeaderboardFilters({
               placeholder="Search researcher or handle…"
               value={value.search}
               onChange={(e) => onChange({ search: e.target.value })}
-              className="h-11 w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 text-base font-medium text-slate-900 shadow-xs transition-colors placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+              className="h-11 w-full rounded-xl border border-transparent bg-muted/50 pl-10 pr-4 text-base font-medium text-foreground shadow-xs transition-colors placeholder:text-muted-foreground focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
             />
           </div>
 
@@ -103,9 +103,9 @@ export default function LeaderboardFilters({
           >
             <SelectTrigger
               aria-label="Filter by country"
-              className="h-11 w-full rounded-xl border-slate-300 bg-white text-base font-medium text-slate-700 shadow-xs sm:w-48"
+              className="h-11 w-full rounded-xl bg-muted/50 text-base font-medium text-foreground shadow-xs sm:w-48"
             >
-              <Globe2 className="mr-1 h-4 w-4 text-slate-400" aria-hidden />
+              <Globe2 className="mr-1 h-4 w-4 text-muted-foreground" aria-hidden />
               {/* Rendered from the option list so the label is right on first
                   paint, before the popup has ever mounted its items. */}
               <SelectValue placeholder="All countries">
@@ -135,7 +135,7 @@ export default function LeaderboardFilters({
           >
             <SelectTrigger
               aria-label="Filter by top severity"
-              className="h-11 w-full rounded-xl border-slate-300 bg-white text-base font-medium text-slate-700 shadow-xs sm:w-44"
+              className="h-11 w-full rounded-xl bg-muted/50 text-base font-medium text-foreground shadow-xs sm:w-44"
             >
               <SelectValue placeholder="Any top severity">
                 {(selected: string) =>
@@ -166,7 +166,7 @@ export default function LeaderboardFilters({
                 exit={{ opacity: 0, width: 0 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
                 whileHover={{ y: -1 }}
-                className="inline-flex h-11 shrink-0 items-center gap-1 overflow-hidden rounded-xl px-2.5 text-sm font-semibold whitespace-nowrap text-blue-700 transition-colors hover:bg-blue-50"
+                className="inline-flex h-11 shrink-0 items-center gap-1 overflow-hidden rounded-xl px-2.5 text-sm font-semibold whitespace-nowrap text-blue-700 dark:text-blue-300 transition-colors hover:bg-blue-50 dark:hover:bg-blue-500/10"
               >
                 <X className="h-3.5 w-3.5" aria-hidden />
                 Clear

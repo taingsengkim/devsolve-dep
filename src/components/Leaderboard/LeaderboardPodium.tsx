@@ -107,10 +107,10 @@ function PodiumColumn({
             }}
             className="flex w-full min-w-0 flex-col items-center px-1 text-center"
           >
-            <p className="w-full truncate text-sm font-bold tracking-tight text-[#1E293B] transition-colors group-hover:text-blue-700 sm:text-base">
+            <p className="w-full truncate text-sm font-bold tracking-tight text-foreground transition-colors group-hover:text-blue-700 dark:group-hover:text-blue-400 sm:text-base">
               {entry.displayName}
             </p>
-            <p className="hidden w-full truncate text-xs font-medium text-slate-400 sm:block">
+            <p className="hidden w-full truncate text-xs font-medium text-muted-foreground sm:block">
               @{entry.username}
             </p>
           </motion.div>
@@ -311,34 +311,34 @@ export default function LeaderboardPodium({
         <div>
           <div className="mb-2 flex items-center gap-2.5">
             <span className="h-px w-8 bg-blue-600" />
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-blue-600">
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-blue-600 dark:text-blue-400">
               {PERIOD_LABEL_SHORT[period]} leaders
             </span>
           </div>
           <h2
             id="podium-heading"
-            className="text-2xl font-bold tracking-[-0.03em] text-[#1E293B] sm:text-3xl"
+            className="text-2xl font-bold tracking-[-0.03em] text-foreground sm:text-3xl"
           >
-            Champions<span className="text-blue-600">.</span>
+            Champions<span className="text-blue-600 dark:text-blue-400">.</span>
           </h2>
         </div>
-        <p className="max-w-sm text-sm leading-relaxed text-slate-500">
+        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
           Ranked on reputation points, so a Critical counts the same whichever
           program it was found in.
         </p>
       </div>
 
-      <div className="relative overflow-hidden rounded-2xl bg-white px-3 pb-1.5 pt-10 shadow-[0_0_0_1px_rgba(30,41,59,0.08)] sm:px-8 sm:pb-2 sm:pt-12">
+      <div className="relative overflow-hidden rounded-2xl bg-card px-3 pb-1.5 pt-10 ring-1 ring-foreground/5 dark:ring-foreground/10 sm:px-8 sm:pb-2 sm:pt-12">
         {/* Watermark, echoing the reference board's oversized title */}
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-3 hidden select-none text-center text-[5.5rem] font-bold leading-none tracking-[-0.06em] text-slate-50 sm:block"
+          className="pointer-events-none absolute inset-x-0 top-3 hidden select-none text-center text-[5.5rem] font-bold leading-none tracking-[-0.06em] text-foreground/4 sm:block"
         >
           DevSolve
         </span>
 
         {/* Floor the pedestals stand on */}
-        <div className="relative grid grid-cols-3 items-end gap-2 border-b-2 border-slate-200 sm:gap-4">
+        <div className="relative grid grid-cols-3 items-end gap-2 border-b-2 border-border sm:gap-4">
           {COLUMNS.map((place) => (
             <PodiumColumn
               key={podium[place].id}

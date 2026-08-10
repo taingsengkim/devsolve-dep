@@ -40,14 +40,14 @@ export default function ProgramDetailPage({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-sans">
+      <div className="min-h-screen text-foreground font-sans">
         <div className="mx-auto max-w-7xl px-6 py-8">
           <div className="space-y-6 w-full pb-12 animate-pulse">
-            <div className="h-4 w-32 bg-slate-200 rounded" />
-            <div className="h-64 bg-slate-200 rounded-2xl" />
+            <div className="h-4 w-32 bg-muted rounded" />
+            <div className="h-64 bg-muted rounded-2xl" />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 h-96 bg-slate-200 rounded-2xl" />
-              <div className="h-96 bg-slate-200 rounded-2xl" />
+              <div className="lg:col-span-2 h-96 bg-muted rounded-2xl" />
+              <div className="h-96 bg-muted rounded-2xl" />
             </div>
           </div>
         </div>
@@ -57,16 +57,16 @@ export default function ProgramDetailPage({
 
   if (isError || !program) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-sans flex items-center justify-center">
-        <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-slate-200 text-center space-y-4 my-8 max-w-md mx-auto">
-          <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400">
+      <div className="min-h-screen text-foreground font-sans flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center p-12 bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 text-center space-y-4 my-8 max-w-md mx-auto">
+          <div className="w-14 h-14 bg-muted rounded-2xl flex items-center justify-center text-muted-foreground">
             <AlertCircle className="w-7 h-7" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-800">
+            <h2 className="text-xl font-bold text-foreground">
               Program Not Found
             </h2>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               The program you are looking for does not exist or has been
               removed.
             </p>
@@ -86,7 +86,7 @@ export default function ProgramDetailPage({
   }
 
   return (
-    <div className="min-h-screen   text-slate-800 font-sans">
+    <div className="min-h-screen   text-foreground font-sans">
       <main className="w-full  py-8 ">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -98,7 +98,7 @@ export default function ProgramDetailPage({
           <div className="flex items-center justify-between">
             <Link
               href={backHref}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors group"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
             >
               <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
               Back to Marketplace

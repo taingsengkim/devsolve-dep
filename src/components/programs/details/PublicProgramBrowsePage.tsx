@@ -139,7 +139,7 @@ export default function MarketplacePage() {
     responseData?.totalElements || filteredPrograms.length;
 
   return (
-    <div className="min-h-screen w-full   text-slate-800 font-sans ">
+    <div className="min-h-screen w-full   text-foreground font-sans ">
       <div className=" w-full py-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -187,33 +187,33 @@ export default function MarketplacePage() {
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div
                     key={i}
-                    className="h-[300px] bg-slate-100 rounded-2xl border border-slate-200 animate-pulse p-6 flex flex-col justify-between"
+                    className="h-[300px] bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 animate-pulse p-6 flex flex-col justify-between"
                   >
                     <div className="space-y-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 bg-slate-200 rounded-xl" />
+                        <div className="w-11 h-11 bg-muted rounded-xl" />
                         <div className="space-y-2 flex-1">
-                          <div className="h-4 bg-slate-200 rounded w-24" />
-                          <div className="h-3 bg-slate-200 rounded w-16" />
+                          <div className="h-4 bg-muted rounded w-24" />
+                          <div className="h-3 bg-muted rounded w-16" />
                         </div>
                       </div>
-                      <div className="h-5 bg-slate-200 rounded w-3/4" />
-                      <div className="h-4 bg-slate-200 rounded w-full" />
+                      <div className="h-5 bg-muted rounded w-3/4" />
+                      <div className="h-4 bg-muted rounded w-full" />
                     </div>
-                    <div className="h-10 bg-slate-200 rounded-xl" />
+                    <div className="h-10 bg-muted rounded-xl" />
                   </div>
                 ))}
               </div>
             ) : filteredPrograms.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-slate-200 text-center space-y-4">
-                <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400">
+              <div className="flex flex-col items-center justify-center p-12 bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 text-center space-y-4">
+                <div className="w-14 h-14 bg-muted rounded-2xl flex items-center justify-center text-muted-foreground">
                   <Globe className="w-7 h-7" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800">
+                  <h3 className="text-lg font-bold text-foreground">
                     No programs found
                   </h3>
-                  <p className="text-sm text-slate-500 mt-1 max-w-md">
+                  <p className="text-sm text-muted-foreground mt-1 max-w-md">
                     We couldn&apos;t find any bug bounty or disclosure programs
                     matching your current filter criteria.
                   </p>
@@ -221,7 +221,7 @@ export default function MarketplacePage() {
                 <Button
                   onClick={handleResetFilters}
                   variant="outline"
-                  className="rounded-xl border-slate-300 font-semibold"
+                  className="rounded-xl font-semibold"
                 >
                   Reset Filters
                 </Button>

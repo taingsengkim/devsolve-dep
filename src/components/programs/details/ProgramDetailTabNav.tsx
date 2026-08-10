@@ -25,7 +25,7 @@ export const ProgramDetailTabNav: React.FC<ProgramDetailTabNavProps> = ({
 // this si the filter tab ( Overview , Scope , Bounty Matrix , Rule & Exclusions )
 
   return (
-    <nav className="border-b border-slate-200 bg-white rounded-xl px-2 pt-2 shadow-2xs">
+    <nav className="border-b border-border bg-card rounded-xl px-2 pt-2 shadow-2xs">
       <ul className="flex items-center gap-1 overflow-x-auto">
         {PROGRAM_DETAILS_TABS.map((tab) => {
           const isActive = activeTab === tab.id;
@@ -35,8 +35,8 @@ export const ProgramDetailTabNav: React.FC<ProgramDetailTabNavProps> = ({
                 onClick={() => onTabChange(tab.id)}
                 className={`relative px-6 py-3.5 text-base font-bold transition-colors cursor-pointer whitespace-nowrap ${
                   isActive
-                    ? "text-blue-600"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {tab.label}

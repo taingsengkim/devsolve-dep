@@ -85,11 +85,11 @@ export default function LeaderboardClient() {
       />
       <div ref={tableRef} className="scroll-mt-24">
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
-          <h2 className="text-xl font-bold tracking-tight text-[#1E293B]">
+          <h2 className="text-xl font-bold tracking-tight text-foreground">
             Full ranking
           </h2>
-          <p className="text-sm font-medium text-slate-500">
-            <span className="font-semibold text-slate-900 tabular-nums">
+          <p className="text-sm font-medium text-muted-foreground">
+            <span className="font-semibold text-foreground tabular-nums">
               {entries.length}
             </span>{" "}
             of {data.totalRanked} researchers · {PERIOD_CAPTION[filters.period]}
