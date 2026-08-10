@@ -2,8 +2,6 @@ import { type NextRequest } from "next/server";
 import * as z from "zod";
 
 import {
-  asUuid,
-  badRequest,
   bearerTokenFor,
   relay,
   unauthorized,
@@ -12,22 +10,18 @@ import {
   validationFailed,
 } from "@/lib/api/proxy";
 
-const historyQuerySchema = z.object({
+const organizationQuerySchema = z.object({
+  query: z.string().trim().max(200).optional(),
+  status: z.enum(["PENDING", "ACTIVE", "REJECTED"]).optional(),
   pageNumber: z.coerce.number().int().min(0).default(0),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest) {
   const token = await bearerTokenFor(request);
   if (!token) return unauthorized();
 
-  const id = asUuid((await params).id);
-  if (!id) return badRequest("Organization id must be a valid UUID");
-
-  const parsed = historyQuerySchema.safeParse(
+  const parsed = organizationQuerySchema.safeParse(
     Object.fromEntries(request.nextUrl.searchParams.entries()),
   );
   if (!parsed.success) return validationFailed(parsed.error);
@@ -36,13 +30,15 @@ export async function GET(
     pageNumber: String(parsed.data.pageNumber),
     pageSize: String(parsed.data.pageSize),
   });
+  if (parsed.data.query) query.set("query", parsed.data.query);
+  if (parsed.data.status) query.set("status", parsed.data.status);
 
   try {
     const upstream = await upstreamFetch(
-      `/admin/organizations/${id}/review-history?${query.toString()}`,
+      `/admin/organizations?${query.toString()}`,
       token,
     );
-    return relay(upstream, "Failed to fetch organization review history.");
+    return relay(upstream, "Failed to fetch organizations.");
   } catch {
     return unreachable("organization");
   }

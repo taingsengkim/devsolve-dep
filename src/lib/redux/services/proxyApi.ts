@@ -19,6 +19,7 @@ export const proxyApi = createApi({
     "AdminProgram",
     "Organization",
     "OrganizationVerification",
+    "CompanyVerification",
     "OrganizationMembers",
     "OrganizationInvitations",
   ],

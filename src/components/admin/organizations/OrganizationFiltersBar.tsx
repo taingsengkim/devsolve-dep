@@ -6,12 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-
-type StatusFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED" | "UNDER_REVIEW";
+import type { OrganizationVerificationFilter } from "@/lib/types/admin/types";
 
 interface OrganizationFiltersBarProps {
-  statusFilter: StatusFilter;
-  onStatusFilterChange: (status: StatusFilter) => void;
+  statusFilter: OrganizationVerificationFilter;
+  onStatusFilterChange: (status: OrganizationVerificationFilter) => void;
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
   counts: {
@@ -19,14 +18,16 @@ interface OrganizationFiltersBarProps {
     pending: number;
     approved: number;
     rejected: number;
-    underReview: number;
   };
 }
 
-const TABS: { key: StatusFilter; label: string; countKey: keyof OrganizationFiltersBarProps["counts"] }[] = [
+const TABS: {
+  key: OrganizationVerificationFilter;
+  label: string;
+  countKey: keyof OrganizationFiltersBarProps["counts"];
+}[] = [
   { key: "ALL", label: "All", countKey: "all" },
   { key: "PENDING", label: "Pending KYC", countKey: "pending" },
-  { key: "UNDER_REVIEW", label: "Under Review", countKey: "underReview" },
   { key: "APPROVED", label: "Approved", countKey: "approved" },
   { key: "REJECTED", label: "Rejected", countKey: "rejected" },
 ];
@@ -45,7 +46,9 @@ export const OrganizationFiltersBar: React.FC<OrganizationFiltersBarProps> = ({
         multiple={false}
         value={[statusFilter]}
         onValueChange={(values) => {
-          const nextStatus = values[values.length - 1] as StatusFilter | undefined;
+          const nextStatus = values[values.length - 1] as
+            | OrganizationVerificationFilter
+            | undefined;
           if (nextStatus) onStatusFilterChange(nextStatus);
         }}
         spacing={1}
@@ -74,7 +77,7 @@ export const OrganizationFiltersBar: React.FC<OrganizationFiltersBarProps> = ({
         <Input
           value={searchQuery}
           onChange={(e) => onSearchQueryChange(e.target.value)}
-          placeholder="Search company, domain, Tax ID..."
+          placeholder="Search name, owner, or website..."
           className="h-10 rounded-xl border-slate-300 bg-white pl-9 pr-10 text-sm shadow-2xs dark:border-slate-700 dark:bg-slate-950"
         />
         {searchQuery && (

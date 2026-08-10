@@ -128,7 +128,7 @@ export function getOrganizationColumns({
       ),
       cell: ({ row }) => {
         const item = row.original;
-        const industry = item.industry || item.businessType || "Technology";
+        const industry = item.industry || item.businessType || "—";
 
         return (
           <div className="flex flex-col gap-1">
@@ -193,8 +193,7 @@ export function getOrganizationColumns({
 
         return (
           <div className="flex items-center justify-end gap-2">
-            {onQuickAudit &&
-              (item.status === "PENDING" || item.status === "UNDER_REVIEW") && (
+            {onQuickAudit && item.status === "PENDING" && (
                 <Button
                   variant="outline"
                   size="sm"

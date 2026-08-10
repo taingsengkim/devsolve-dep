@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-export type VerificationStatus = "PENDING" | "APPROVED" | "REJECTED" | "UNDER_REVIEW";
+export type VerificationStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 interface StatusConfig {
   label: string;
@@ -16,10 +16,6 @@ const STATUS_CONFIG: Record<VerificationStatus, StatusConfig> = {
   REJECTED: {
     label: "Rejected",
     dotClass: "bg-rose-500",
-  },
-  UNDER_REVIEW: {
-    label: "Under Review",
-    dotClass: "bg-sky-500",
   },
   PENDING: {
     label: "Pending KYC",

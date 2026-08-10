@@ -5,9 +5,7 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
-  FileCheck,
   Globe,
-  Hash,
   Mail,
   ShieldCheck,
   XCircle,
@@ -25,7 +23,10 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
-import { CompanyVerificationItem } from "@/lib/redux/services/adminApi";
+import {
+  useGetOrganizationByIdQuery,
+  type CompanyVerificationItem,
+} from "@/lib/redux/services/adminApi";
 
 interface OrganizationKycModalProps {
   selectedCompany: CompanyVerificationItem | null;
@@ -69,6 +70,14 @@ export const OrganizationKycModal: React.FC<OrganizationKycModalProps> = ({
 }) => {
   const [notesDraft, setNotesDraft] = useState({ companyId: "", value: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const selectedCompanyId = selectedCompany?.id ?? "";
+  const {
+    data: organization,
+    isLoading: isOrganizationLoading,
+    isError: isOrganizationError,
+  } = useGetOrganizationByIdQuery(selectedCompanyId, {
+    skip: !selectedCompanyId,
+  });
 
   if (!selectedCompany) return null;
 
@@ -83,9 +92,15 @@ export const OrganizationKycModal: React.FC<OrganizationKycModalProps> = ({
   };
 
   const handleAction = async (status: "APPROVED" | "REJECTED") => {
+    const trimmedNotes = notes.trim();
+    if (status === "REJECTED" && !trimmedNotes) {
+      toast.error("Add a rejection reason before rejecting this organization.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
-      await onUpdateStatus(selectedCompany.id, status, notes);
+      await onUpdateStatus(selectedCompany.id, status, trimmedNotes);
       toast.success(
         status === "APPROVED"
           ? `Organization "${selectedCompany.companyName}" verified!`
@@ -117,45 +132,61 @@ export const OrganizationKycModal: React.FC<OrganizationKycModalProps> = ({
             {selectedCompany.companyName}
           </DialogTitle>
           <DialogDescription className="text-sm text-slate-500 dark:text-slate-400">
-            Review corporate tax identifiers and legal business documents before
-            approving VDP rights.
+            Review the organization profile and owner verification signals before
+            making a decision.
           </DialogDescription>
         </DialogHeader>
 
         <div className="my-2 flex flex-col gap-4">
-          <div className="flex flex-col gap-1 rounded-xl border border-slate-200/80 bg-slate-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-800/60">
-            <MetadataRow
-              icon={<Globe className="size-4" />}
-              label="Domain"
-              value={selectedCompany.domain || "—"}
-            />
-            <MetadataRow
-              icon={<Hash className="size-4" />}
-              label="Tax Identifier"
-              value={<span className="font-mono">{selectedCompany.taxId || "—"}</span>}
-            />
-            <MetadataRow
-              icon={<Mail className="size-4" />}
-              label="Contact Email"
-              value={selectedCompany.email || "—"}
-            />
-            <MetadataRow
-              icon={<Building2 className="size-4" />}
-              label="Category"
-              value={selectedCompany.businessType || "—"}
-            />
-            <MetadataRow
-              icon={<FileCheck className="size-4" />}
-              label="Verification Docs"
-              value={`${selectedCompany.documentsCount} documents attached`}
-            />
-            <MetadataRow
-              icon={<Calendar className="size-4" />}
-              label="Registration Date"
-              value={selectedCompany.registrationDate || "—"}
-              isLast
-            />
-          </div>
+          {isOrganizationLoading ? (
+            <div className="flex flex-col gap-3 rounded-xl border border-slate-200/80 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
+              {[0, 1, 2, 3, 4].map((item) => (
+                <div
+                  key={item}
+                  className="h-6 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700"
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1 rounded-xl border border-slate-200/80 bg-slate-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-800/60">
+              {isOrganizationError && (
+                <p className="pb-2 text-sm text-slate-500 dark:text-slate-400">
+                  Full profile details are unavailable. Summary information is shown.
+                </p>
+              )}
+              <MetadataRow
+                icon={<Globe className="size-4" />}
+                label="Website"
+                value={organization?.websiteUrl || selectedCompany.domain || "—"}
+              />
+              <MetadataRow
+                icon={<Globe className="size-4" />}
+                label="Verified Domain"
+                value={organization?.domain || "—"}
+              />
+              <MetadataRow
+                icon={<Mail className="size-4" />}
+                label="Owner Email"
+                value={organization?.ownerEmail || selectedCompany.email || "—"}
+              />
+              <MetadataRow
+                icon={<ShieldCheck className="size-4" />}
+                label="Email Verification"
+                value={organization?.emailVerified ? "Verified" : "Not verified"}
+              />
+              <MetadataRow
+                icon={<Building2 className="size-4" />}
+                label="Industry"
+                value={organization?.industry || selectedCompany.businessType || "—"}
+              />
+              <MetadataRow
+                icon={<Calendar className="size-4" />}
+                label="Submitted"
+                value={selectedCompany.registrationDate || "—"}
+                isLast
+              />
+            </div>
+          )}
 
           <Field className="gap-2">
             <FieldLabel
@@ -174,6 +205,7 @@ export const OrganizationKycModal: React.FC<OrganizationKycModalProps> = ({
                 })
               }
               placeholder="e.g. Certificate of incorporation verified against official registry..."
+              maxLength={1000}
               className="min-h-24 rounded-xl border-slate-300 bg-white text-sm dark:border-slate-700 dark:bg-slate-900"
             />
           </Field>
@@ -182,7 +214,7 @@ export const OrganizationKycModal: React.FC<OrganizationKycModalProps> = ({
         <DialogFooter className="flex flex-col gap-2 pt-2 sm:flex-row">
           <Button
             variant="destructive"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isOrganizationLoading}
             onClick={() => handleAction("REJECTED")}
             className="h-10 w-full rounded-xl text-sm font-semibold sm:w-auto"
           >
@@ -190,7 +222,7 @@ export const OrganizationKycModal: React.FC<OrganizationKycModalProps> = ({
             Reject Request
           </Button>
           <Button
-            disabled={isSubmitting}
+            disabled={isSubmitting || isOrganizationLoading}
             onClick={() => handleAction("APPROVED")}
             className="h-10 w-full rounded-xl text-sm font-semibold sm:w-auto"
           >
