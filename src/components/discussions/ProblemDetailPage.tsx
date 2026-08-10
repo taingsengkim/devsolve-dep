@@ -188,7 +188,6 @@ function Loaded({
   const isVoting = isSettingVote || isRemovingVote;
   const hasUpvoted = votes?.currentUserVote === 1;
   const hasDownvoted = votes?.currentUserVote === -1;
-  const score = votes?.score ?? problem.voteScore ?? 0;
 
   const { data: bookmarkStatus } = useGetBookmarkStatusQuery({
     type: "PROBLEM",
@@ -391,8 +390,8 @@ function Loaded({
                   {problem.title ?? "Untitled problem"}
                 </h1>
 
-                {/* Vote rail — vertical, so it reads the same as the one on
-                    every answer below it. */}
+                {/* Keep the vote actions available without surfacing an
+                    aggregate problem score on the detail page. */}
                 <div className="flex shrink-0 flex-col items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800">
                   <button
                     type="button"
@@ -408,9 +407,6 @@ function Loaded({
                   >
                     <ChevronUp aria-hidden="true" className="size-4" />
                   </button>
-                  <span className="px-1.5 text-sm font-bold tabular-nums text-slate-800 dark:text-slate-100">
-                    {score}
-                  </span>
                   <button
                     type="button"
                     onClick={() => void onVote(-1)}
@@ -817,8 +813,7 @@ function Loaded({
           <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
             {/* The figures, as tiles — quicker to read than a list of rows. */}
             <section className={`${CARD} p-4 sm:p-5`}>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <Stat label="Score" value={score.toLocaleString()} />
+              <div className="grid grid-cols-2 gap-2 text-center">
                 <Stat label="Answers" value={answerCount.toLocaleString()} />
                 <Stat
                   label="Views"
