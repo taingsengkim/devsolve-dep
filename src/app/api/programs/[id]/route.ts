@@ -218,32 +218,46 @@ export async function PATCH(
     );
   }
 
-  try {
-    let upstream = await fetch(`${BACKEND_API_URL}/organizations/me/programs/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-      cache: "no-store",
-    });
+  const jsonHeaders = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    Authorization: `Bearer ${token}`,
+  };
 
-    if (!upstream.ok) {
-      const fallbackUpstream = await fetch(`${BACKEND_API_URL}/programs/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
+  const bodyStr = JSON.stringify(payload);
+
+  const candidates: Array<{ url: string; method: string }> = [
+    { url: `${BACKEND_API_URL}/organizations/me/programs/${id}`, method: "PUT" },
+    { url: `${BACKEND_API_URL}/programs/${id}`, method: "PUT" },
+    { url: `${BACKEND_API_URL}/programs/${id}`, method: "PATCH" },
+    { url: `${BACKEND_API_URL}/programs/${id}/state`, method: "PATCH" },
+    { url: `${BACKEND_API_URL}/programs/${id}/activate`, method: "POST" },
+    { url: `${BACKEND_API_URL}/organizations/me/programs/${id}/activate`, method: "POST" },
+    { url: `${BACKEND_API_URL}/organizations/me/programs/${id}`, method: "PATCH" },
+  ];
+
+  try {
+    let upstream: Response | null = null;
+
+    for (const candidate of candidates) {
+      const res = await fetch(candidate.url, {
+        method: candidate.method,
+        headers: jsonHeaders,
+        body: bodyStr,
         cache: "no-store",
       });
-      if (fallbackUpstream.ok) {
-        upstream = fallbackUpstream;
+
+      upstream = res;
+      if (res.ok) {
+        break;
       }
+    }
+
+    if (!upstream) {
+      return NextResponse.json(
+        { message: "Failed to update program state." },
+        { status: 500 }
+      );
     }
 
     const raw = await upstream.text();
