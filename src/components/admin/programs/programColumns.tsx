@@ -1,18 +1,38 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowRight, ArrowUpDown, Building2 } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpDown,
+  Building2,
+  LoaderCircle,
+  Trash2,
+} from "lucide-react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   ProgramReviewBadge,
   ProgramStateBadge,
 } from "@/components/admin/programs/ProgramStatusBadge";
 import { ProgramManagementSummaryItem } from "@/lib/types/admin/programAdminTypes";
+import { useDeleteProgramMutation } from "@/lib/redux/services/program/programsApi";
+import { cn } from "@/lib/utils";
 
 /** The sortable header the users table uses, so both read the same. */
 function SortableHeader({
@@ -46,6 +66,92 @@ function initialsOf(name?: string) {
     .join("")
     .toUpperCase();
   return initials || "P";
+}
+
+function errorMessageOf(error: unknown) {
+  return (
+    (error as { data?: { message?: string } } | undefined)?.data?.message ??
+    "The program could not be deleted. Please try again."
+  );
+}
+
+function OwnerProgramActions({
+  program,
+}: {
+  program: ProgramManagementSummaryItem;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [deleteProgram, { isLoading }] = useDeleteProgramMutation();
+
+  const handleDelete = async () => {
+    try {
+      await deleteProgram(program.id).unwrap();
+      setIsOpen(false);
+      toast.success("Program deleted", {
+        description: `${program.name} was removed from your organization.`,
+      });
+    } catch (error) {
+      toast.error("Delete failed", { description: errorMessageOf(error) });
+    }
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-end gap-2">
+        <Link
+          href={`/dashboard/program-management/${program.id}`}
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "h-8 rounded-xl border-slate-200 px-3 text-sm font-semibold shadow-2xs dark:border-slate-800"
+          )}
+        >
+          View
+          <ArrowRight data-icon="inline-end" />
+        </Link>
+        <Button
+          type="button"
+          variant="destructive"
+          size="icon-sm"
+          aria-label={`Delete ${program.name}`}
+          onClick={() => setIsOpen(true)}
+        >
+          <Trash2 />
+        </Button>
+      </div>
+
+      <AlertDialog
+        open={isOpen}
+        onOpenChange={(nextOpen) => !isLoading && setIsOpen(nextOpen)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogMedia>
+              <Trash2 aria-hidden="true" />
+            </AlertDialogMedia>
+            <AlertDialogTitle>Delete {program.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes the program from your organization. This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              type="button"
+              variant="destructive"
+              disabled={isLoading}
+              onClick={handleDelete}
+            >
+              {isLoading && (
+                <LoaderCircle data-icon="inline-start" className="animate-spin" />
+              )}
+              {isLoading ? "Deleting..." : "Delete program"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
 }
 
 export const getProgramColumns =
@@ -158,24 +264,25 @@ export const getProgramColumns =
           Actions
         </div>
       ),
-      cell: ({ row }) => (
-        <div className="flex items-center justify-end">
-          <Button
-            render={
-              <Link
-                href={`/dashboard/program-management/${row.original.id}${
-                  scope === "admin" ? "?scope=admin" : ""
-                }`}
-              />
-            }
-            variant="outline"
-            size="sm"
-            className="h-8 cursor-pointer rounded-xl border-slate-200 px-3 text-sm font-semibold shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800"
-          >
-            {scope === "admin" ? "Review" : "View"}
-            <ArrowRight data-icon="inline-end" />
-          </Button>
-        </div>
-      ),
+      cell: ({ row }) => {
+        if (scope === "owner") {
+          return <OwnerProgramActions program={row.original} />;
+        }
+
+        return (
+          <div className="flex items-center justify-end">
+            <Link
+              href={`/dashboard/program-management/${row.original.id}?scope=admin`}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "h-8 rounded-xl border-slate-200 px-3 text-sm font-semibold shadow-2xs dark:border-slate-800"
+              )}
+            >
+              Review
+              <ArrowRight data-icon="inline-end" />
+            </Link>
+          </div>
+        );
+      },
     },
   ];

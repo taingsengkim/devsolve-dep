@@ -3,24 +3,38 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ExternalLink, ArrowRight } from "lucide-react";
+import { ExternalLink, ArrowRight, Globe } from "lucide-react";
 import { DashboardProgram } from "@/lib/types/dashboard/types";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface DashboardMyProgramsProps {
   programs: DashboardProgram[];
+  audience: "COMPANY" | "USER";
 }
 
-export const DashboardMyPrograms: React.FC<DashboardMyProgramsProps> = ({ programs }) => {
+export const DashboardMyPrograms: React.FC<DashboardMyProgramsProps> = ({
+  programs,
+  audience,
+}) => {
+  const isCompany = audience === "COMPANY";
+  const listHref = isCompany
+    ? "/dashboard/program-management"
+    : "/dashboard/programs";
+  const programHref = (id: string) =>
+    isCompany
+      ? `/dashboard/program-management/${id}`
+      : `/dashboard/programs/${id}`;
+
   return (
     <div className="bg-white dark:bg-neutral-900 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-xs p-5 flex flex-col justify-between h-full">
       <div>
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-neutral-800">
           <h2 className="text-base font-semibold text-slate-900 dark:text-neutral-100">
-            My Programs
+            {isCompany ? "Organization Programs" : "Recently Reported Programs"}
           </h2>
           <Link
-            href="/dashboard/programs"
+            href={listHref}
             className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
           >
             <span>View All</span>
@@ -36,6 +50,19 @@ export const DashboardMyPrograms: React.FC<DashboardMyProgramsProps> = ({ progra
         </div>
 
         <div className="divide-y divide-slate-100 dark:divide-neutral-800/60">
+          {programs.length === 0 && (
+            <div className="flex min-h-44 flex-col items-center justify-center gap-2 px-4 text-center">
+              <Globe className="size-8 text-slate-300 dark:text-neutral-700" />
+              <p className="text-sm font-semibold text-slate-700 dark:text-neutral-200">
+                {isCompany ? "No programs yet" : "No reported programs yet"}
+              </p>
+              <p className="text-sm text-slate-500 dark:text-neutral-400">
+                {isCompany
+                  ? "Create a program to begin receiving security reports."
+                  : "Programs connected to your submitted reports will appear here."}
+              </p>
+            </div>
+          )}
           {programs.map((program, idx) => (
             <motion.div
               key={program.id}
@@ -44,18 +71,23 @@ export const DashboardMyPrograms: React.FC<DashboardMyProgramsProps> = ({ progra
               transition={{ duration: 0.2, delay: idx * 0.05 }}
             >
               <Link
-                href={`/dashboard/programs/${program.id}`}
+                href={programHref(program.id)}
                 className="grid grid-cols-12 gap-2 items-center py-3.5 px-2 hover:bg-slate-50 dark:hover:bg-neutral-800/40 rounded-lg transition-colors group"
               >
                 {/* Program Name & Logo */}
                 <div className="col-span-6 flex items-center gap-3 min-w-0">
-                  <div
-                    className={`w-7 h-7 rounded-md flex items-center justify-center font-bold text-xs text-white shrink-0 ${
-                      program.logoBgColor || "bg-blue-600"
-                    }`}
-                  >
-                    {program.name.slice(0, 2).toUpperCase()}
-                  </div>
+                  <Avatar className="size-8 shrink-0 rounded-lg after:rounded-lg">
+                    {program.logoUrl && (
+                      <AvatarImage
+                        src={program.logoUrl}
+                        alt={`${program.companyName} logo`}
+                        className="rounded-lg"
+                      />
+                    )}
+                    <AvatarFallback className="rounded-lg bg-blue-600 text-sm font-bold text-white">
+                      {program.name.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                   <span className="text-sm font-semibold text-slate-900 dark:text-neutral-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
                     {program.name}
                   </span>
@@ -68,6 +100,10 @@ export const DashboardMyPrograms: React.FC<DashboardMyProgramsProps> = ({ progra
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       <span>Open</span>
                     </Badge>
+                  ) : program.status === "Closed" ? (
+                    <Badge variant="outline">Closed</Badge>
+                  ) : program.status === "Private" ? (
+                    <Badge variant="secondary">Private</Badge>
                   ) : (
                     <Badge className="bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shadow-none">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />

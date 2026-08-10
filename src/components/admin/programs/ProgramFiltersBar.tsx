@@ -83,11 +83,10 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
         multiple={false}
         value={[submissionStateFilter]}
         onValueChange={(values) => {
-          const next = values[values.length - 1] as
-            | ProgramSubmissionState
-            | "ALL"
-            | undefined;
-          if (next) onSubmissionStateChange(next);
+          const next = values[values.length - 1] as ProgramSubmissionState | "ALL" | undefined;
+          if (next) {
+            onSubmissionStateChange(next);
+          }
         }}
         spacing={1}
         className="min-w-0 max-w-full overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800/80"

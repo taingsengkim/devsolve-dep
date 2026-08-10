@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 import React from "react";
 import { motion } from "motion/react";
+import { AlertTriangle } from "lucide-react";
 import { useGetDashboardOverviewQuery } from "@/lib/redux/services/dashboardApi";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardStatCards } from "@/components/dashboard/DashboardStatCards";
@@ -13,38 +14,114 @@ import { DashboardReportStatus } from "@/components/dashboard/DashboardReportSta
 import { DashboardReportSeverity } from "@/components/dashboard/DashboardReportSeverity";
 import { AdminDashboardOverview } from "@/components/admin/AdminDashboardOverview";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+function DashboardSkeleton() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="space-y-6 w-full pb-12 animate-pulse"
+    >
+      <div className="h-20 rounded-2xl bg-slate-200/60 dark:bg-neutral-800" />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((item) => (
+          <div
+            key={item}
+            className="h-28 rounded-2xl bg-slate-200/60 dark:bg-neutral-800"
+          />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="h-80 rounded-2xl bg-slate-200/60 lg:col-span-5 dark:bg-neutral-800" />
+        <div className="h-80 rounded-2xl bg-slate-200/60 lg:col-span-7 dark:bg-neutral-800" />
+      </div>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {[1, 2].map((item) => (
+          <div
+            key={item}
+            className="h-72 rounded-2xl bg-slate-200/60 dark:bg-neutral-800"
+          />
+        ))}
+      </div>
+    </motion.div>
+  );
+}
 
 export default function DashboardPage() {
-  const { user } = useSidebarAuth();
+  const { user, areRolesResolved } = useSidebarAuth();
   const isAdminUser = user?.roles?.includes("ADMIN") || user?.role?.includes("ADMIN");
+  const isCompanyUser = user?.roles?.includes("COMPANY") ?? false;
+  const dashboardView = isCompanyUser ? "company" : "user";
 
-  const viewMode = isAdminUser ? "ADMIN" : "COMPANY";
+  const {
+    data: dashboardData,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = useGetDashboardOverviewQuery(
+    { view: dashboardView },
+    { skip: !areRolesResolved || Boolean(isAdminUser) },
+  );
 
-  const { data: dashboardData, isLoading, isFetching, refetch } = useGetDashboardOverviewQuery();
+  if (!areRolesResolved) {
+    return <DashboardSkeleton />;
+  }
 
-  if (viewMode === "ADMIN") {
+  if (isAdminUser) {
     return <AdminDashboardOverview />;
   }
 
-  if (isLoading || !dashboardData) {
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
+
+  if (isError || !dashboardData) {
+    const message =
+      (error as { data?: { message?: string } } | undefined)?.data?.message ??
+      "We could not load your dashboard data.";
+
     return (
-      <div className="space-y-6 w-full pb-12 animate-pulse">
-        <div className="h-14 bg-slate-200/60 dark:bg-neutral-800 rounded-xl" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-28 bg-slate-200/60 dark:bg-neutral-800 rounded-xl" />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-5 h-80 bg-slate-200/60 dark:bg-neutral-800 rounded-xl" />
-          <div className="lg:col-span-7 h-80 bg-slate-200/60 dark:bg-neutral-800 rounded-xl" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[1, 2].map((i) => (
-            <div key={i} className="h-72 bg-slate-200/60 dark:bg-neutral-800 rounded-xl" />
-          ))}
-        </div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="space-y-6 w-full pb-12"
+      >
+        <Card className="mx-auto max-w-xl rounded-2xl text-center">
+          <CardHeader className="justify-items-center">
+            <span className="flex size-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+              <AlertTriangle className="size-7" aria-hidden="true" />
+            </span>
+            <CardTitle className="text-xl font-bold">
+              Dashboard unavailable
+            </CardTitle>
+            <CardDescription className="text-base">{message}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Your account is connected, but the latest overview could not be
+              retrieved from the API.
+            </p>
+          </CardContent>
+          <CardFooter className="justify-center">
+            <Button type="button" variant="outline" onClick={() => refetch()}>
+              Try again
+            </Button>
+          </CardFooter>
+        </Card>
+      </motion.div>
     );
   }
 
@@ -56,7 +133,12 @@ export default function DashboardPage() {
       className="space-y-6 w-full pb-12"
     >
       {/* Page Header with option to switch back to Admin Platform View */}
-      <DashboardHeader onRefresh={refetch} isRefreshing={isFetching} />
+      <DashboardHeader
+        onRefresh={refetch}
+        isRefreshing={isFetching}
+        audience={dashboardData.audience}
+        organizationName={dashboardData.organization?.name}
+      />
 
       {/* Top 4 Stat Metric Cards */}
       <DashboardStatCards stats={dashboardData.stats} />
@@ -70,7 +152,10 @@ export default function DashboardPage() {
           />
         </div>
         <div className="lg:col-span-7">
-          <DashboardMyPrograms programs={dashboardData.myPrograms} />
+          <DashboardMyPrograms
+            programs={dashboardData.myPrograms}
+            audience={dashboardData.audience}
+          />
         </div>
       </div>
 

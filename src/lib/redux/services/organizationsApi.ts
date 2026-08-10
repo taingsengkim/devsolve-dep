@@ -194,6 +194,26 @@ export const organizationsApi = proxyApi.injectEndpoints({
       }),
       invalidatesTags: ["Organization"],
     }),
+    uploadOrganizationLogo: builder.mutation<Organization, File>({
+      query: (file) => {
+        const body = new FormData();
+        body.append("file", file);
+
+        return {
+          url: "/organizations/me/logo",
+          method: "PUT",
+          body,
+        };
+      },
+      invalidatesTags: ["Organization"],
+    }),
+    removeOrganizationLogo: builder.mutation<Organization, void>({
+      query: () => ({
+        url: "/organizations/me/logo",
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Organization"],
+    }),
     deleteMyOrganization: builder.mutation<void, void>({
       query: () => ({
         url: "/organizations/me",
@@ -315,6 +335,8 @@ export const {
   useRegisterOrganizationMutation,
   useGetMyOrganizationQuery,
   useUpdateMyOrganizationMutation,
+  useUploadOrganizationLogoMutation,
+  useRemoveOrganizationLogoMutation,
   useDeleteMyOrganizationMutation,
   useGetOrganizationVerificationQuery,
   useSendVerificationEmailMutation,

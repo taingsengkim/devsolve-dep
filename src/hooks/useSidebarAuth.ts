@@ -5,6 +5,7 @@ import { extractRealmRolesFromToken } from "@/lib/auth/token-utils";
 import { useGetEditProfileFormQuery } from "@/lib/redux/services/profileApi";
 import { clearAccessToken } from "@/lib/auth/access-token";
 import { baseApi } from "@/lib/redux/services/baseApi";
+import { proxyApi } from "@/lib/redux/services/proxyApi";
 
 /** Shape of the object returned by authClient.getAccessToken */
 interface AccessTokenResponse {
@@ -104,6 +105,7 @@ export function useSidebarAuth() {
 
       // 2. Dispatch RTK Query resetApiState to wipe cached user data from Redux
       dispatch(baseApi.util.resetApiState());
+      dispatch(proxyApi.util.resetApiState());
 
       // 3. Clear better-auth session & cookies on the client domain
       await authClient.signOut();

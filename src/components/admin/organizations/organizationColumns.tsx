@@ -51,7 +51,10 @@ export function getOrganizationColumns({
           <div className="flex items-center gap-3 py-1">
             <Avatar size="lg">
               {item.logoUrl && (
-                <AvatarImage src={item.logoUrl} alt={`${item.companyName} logo`} />
+                <AvatarImage
+                  src={item.logoUrl}
+                  alt={`${item.companyName} logo`}
+                />
               )}
               <AvatarFallback className="font-semibold text-slate-700 dark:text-slate-300">
                 {initial}
@@ -71,7 +74,9 @@ export function getOrganizationColumns({
                     {item.domain.replace(/^https?:\/\//, "")}
                   </span>
                 )}
-                {item.domain && item.orgCode && <span aria-hidden="true">•</span>}
+                {item.domain && item.orgCode && (
+                  <span aria-hidden="true">•</span>
+                )}
                 {item.orgCode && (
                   <span className="font-mono text-slate-500 dark:text-slate-400">
                     {item.orgCode}
@@ -128,11 +133,14 @@ export function getOrganizationColumns({
       ),
       cell: ({ row }) => {
         const item = row.original;
-        const industry = item.industry || item.businessType || "Technology";
+        const industry = item.industry || item.businessType || "—";
 
         return (
           <div className="flex flex-col gap-1">
-            <Badge variant="secondary" className="rounded-lg text-sm font-medium">
+            <Badge
+              variant="secondary"
+              className="rounded-lg text-sm font-medium"
+            >
               {industry}
             </Badge>
             {item.companySize && (
@@ -171,7 +179,8 @@ export function getOrganizationColumns({
         </Button>
       ),
       cell: ({ row }) => {
-        const dateValue = row.original.submittedAt || row.original.registrationDate;
+        const dateValue =
+          row.original.submittedAt || row.original.registrationDate;
 
         return (
           <div className="flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-400">
@@ -193,18 +202,17 @@ export function getOrganizationColumns({
 
         return (
           <div className="flex items-center justify-end gap-2">
-            {onQuickAudit &&
-              (item.status === "PENDING" || item.status === "UNDER_REVIEW") && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onQuickAudit(item)}
-                  className="rounded-lg text-sm font-medium"
-                >
-                  <ShieldCheck data-icon="inline-start" />
-                  Audit
-                </Button>
-              )}
+            {onQuickAudit && item.status === "PENDING" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onQuickAudit(item)}
+                className="rounded-lg text-sm font-medium"
+              >
+                <ShieldCheck data-icon="inline-start" />
+                Audit
+              </Button>
+            )}
 
             <Link
               href={`/dashboard/company-verification/${item.id}`}

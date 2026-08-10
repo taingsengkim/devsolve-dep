@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import {
   ArrowRight,
+  Building2,
   ChevronDown,
   LayoutDashboard,
   Loader2,
@@ -14,13 +15,16 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useSidebarAuth } from "@/hooks/useSidebarAuth";
+import type { SidebarUser } from "@/hooks/useSidebarAuth";
+import { cn } from "@/lib/utils";
 
 function getInitials(text: string): string {
   return text
@@ -35,6 +39,22 @@ interface NavbarUserMenuProps {
   /** Sign-in handler, used only while signed out. */
   onLogin: () => void;
   isLoggingIn: boolean;
+  user?: SidebarUser;
+  identity: NavbarIdentity;
+  isIdentityPending: boolean;
+  onSignOut: () => void;
+}
+
+export interface NavbarIdentity {
+  isCompany: boolean;
+  name: string;
+  detail?: string;
+  status?: string;
+  image?: string | null;
+  profileHref: string;
+  profileLabel: string;
+  settingsHref: string;
+  settingsLabel: string;
 }
 
 /**
@@ -45,10 +65,15 @@ interface NavbarUserMenuProps {
  * pages had no idea a session existed, so a signed-in reader was still being
  * asked to log in on every page outside /dashboard.
  */
-export function NavbarUserMenu({ onLogin, isLoggingIn }: NavbarUserMenuProps) {
-  const { user, isPending, displayName, handleSignOut } = useSidebarAuth();
-
-  if (isPending) {
+export function NavbarUserMenu({
+  onLogin,
+  isLoggingIn,
+  user,
+  identity,
+  isIdentityPending,
+  onSignOut,
+}: NavbarUserMenuProps) {
+  if (isIdentityPending) {
     return (
       <div
         aria-hidden
@@ -97,15 +122,34 @@ export function NavbarUserMenu({ onLogin, isLoggingIn }: NavbarUserMenuProps) {
         render={
           <button
             type="button"
-            aria-label="Account menu"
-            className="hidden cursor-pointer items-center gap-2 rounded-full border border-slate-200/80 bg-white p-1 pr-2 shadow-xs transition-colors hover:border-blue-200 hover:bg-blue-50 sm:inline-flex dark:border-neutral-800 dark:bg-neutral-900/80 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800"
+            aria-label={identity.isCompany ? "Organization menu" : "Account menu"}
+            className={cn(
+              "hidden cursor-pointer items-center gap-2 border border-slate-200/80 bg-white p-1 pr-2 shadow-xs transition-colors hover:border-blue-200 hover:bg-blue-50 sm:inline-flex dark:border-neutral-800 dark:bg-neutral-900/80 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800",
+              identity.isCompany ? "rounded-xl" : "rounded-full",
+            )}
           />
         }
       >
-        <Avatar className="size-8 shrink-0">
-          {user.image && <AvatarImage src={user.image} alt="" />}
-          <AvatarFallback className="bg-blue-600 text-xs font-bold text-white">
-            {getInitials(displayName)}
+        <Avatar
+          className={cn(
+            "size-8 shrink-0",
+            identity.isCompany && "rounded-lg after:rounded-lg",
+          )}
+        >
+          {identity.image && (
+            <AvatarImage
+              src={identity.image}
+              alt={identity.isCompany ? `${identity.name} logo` : ""}
+              className={cn(identity.isCompany && "rounded-lg")}
+            />
+          )}
+          <AvatarFallback
+            className={cn(
+              "bg-blue-600 text-xs font-bold text-white",
+              identity.isCompany && "rounded-lg",
+            )}
+          >
+            {getInitials(identity.name)}
           </AvatarFallback>
         </Avatar>
         <ChevronDown className="size-4 text-slate-400 dark:text-neutral-500" />
@@ -117,51 +161,63 @@ export function NavbarUserMenu({ onLogin, isLoggingIn }: NavbarUserMenuProps) {
       >
         <div className="px-3 py-2.5">
           <p className="truncate text-sm font-bold text-slate-900 dark:text-neutral-100">
-            {displayName}
+            {identity.name}
           </p>
-          {user.email && (
+          {identity.detail && (
             <p className="truncate text-sm text-slate-500 dark:text-neutral-400">
-              {user.email}
+              {identity.detail}
             </p>
+          )}
+          {identity.status && identity.status !== identity.detail && (
+            <Badge variant="secondary" className="mt-2 max-w-full rounded-lg">
+              <span className="truncate">{identity.status}</span>
+            </Badge>
           )}
         </div>
 
         <DropdownMenuSeparator className="bg-slate-200/70 dark:bg-neutral-800" />
 
-        <DropdownMenuItem
-          render={<Link href="/dashboard/profile" />}
-          className="cursor-pointer gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium"
-        >
-          <UserRound className="size-4 text-slate-400 dark:text-neutral-500" />
-          My profile
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            render={<Link href={identity.profileHref} />}
+            className="cursor-pointer gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium"
+          >
+            {identity.isCompany ? (
+              <Building2 className="size-4 text-slate-400 dark:text-neutral-500" />
+            ) : (
+              <UserRound className="size-4 text-slate-400 dark:text-neutral-500" />
+            )}
+            {identity.profileLabel}
+          </DropdownMenuItem>
 
-        {/* Leaving the dashboard for a public page must not be a one-way trip. */}
-        <DropdownMenuItem
-          render={<Link href="/dashboard" />}
-          className="cursor-pointer gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium"
-        >
-          <LayoutDashboard className="size-4 text-slate-400 dark:text-neutral-500" />
-          Dashboard
-        </DropdownMenuItem>
+          <DropdownMenuItem
+            render={<Link href="/dashboard" />}
+            className="cursor-pointer gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium"
+          >
+            <LayoutDashboard className="size-4 text-slate-400 dark:text-neutral-500" />
+            Dashboard
+          </DropdownMenuItem>
 
-        <DropdownMenuItem
-          render={<Link href="/dashboard/profile/settings" />}
-          className="cursor-pointer gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium"
-        >
-          <Settings className="size-4 text-slate-400 dark:text-neutral-500" />
-          Settings
-        </DropdownMenuItem>
+          <DropdownMenuItem
+            render={<Link href={identity.settingsHref} />}
+            className="cursor-pointer gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium"
+          >
+            <Settings className="size-4 text-slate-400 dark:text-neutral-500" />
+            {identity.settingsLabel}
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
 
         <DropdownMenuSeparator className="bg-slate-200/70 dark:bg-neutral-800" />
 
-        <DropdownMenuItem
-          onClick={handleSignOut}
-          className="cursor-pointer gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-rose-600 dark:text-rose-400"
-        >
-          <LogOut className="size-4" />
-          Log out
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            onClick={onSignOut}
+            className="cursor-pointer gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-rose-600 dark:text-rose-400"
+          >
+            <LogOut className="size-4" />
+            Log out
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );

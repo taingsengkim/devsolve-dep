@@ -1,92 +1,50 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/lib/auth/auth";
+import { type NextRequest } from "next/server";
+import * as z from "zod";
 
-const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
-const PROVIDER_ID = "keycloak";
+import {
+  asUuid,
+  badJson,
+  badRequest,
+  bearerTokenFor,
+  relay,
+  unauthorized,
+  unreachable,
+  upstreamFetch,
+  validationFailed,
+} from "@/lib/api/proxy";
 
-async function bearerTokenFor(request: NextRequest): Promise<string | null> {
-  const session = await auth.api.getSession({ headers: request.headers });
-  if (!session) return null;
-
-  try {
-    const { accessToken } = await auth.api.getAccessToken({
-      body: { providerId: PROVIDER_ID },
-      headers: request.headers,
-    });
-    return accessToken ?? null;
-  } catch {
-    return null;
-  }
-}
-
-const unauthorized = () =>
-  NextResponse.json({ message: "Not authenticated" }, { status: 401 });
-
-const unreachable = () =>
-  NextResponse.json(
-    { message: "Unable to reach the organization service. Please try again." },
-    { status: 502 }
-  );
+const rejectionSchema = z.object({
+  reason: z.string().trim().min(1, "A rejection reason is required").max(1000),
+});
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const token = await bearerTokenFor(request);
   if (!token) return unauthorized();
 
-  const { id } = await params;
+  const id = asUuid((await params).id);
+  if (!id) return badRequest("Organization id must be a valid UUID");
 
-  let payload: unknown = null;
+  let body: unknown;
   try {
-    const text = await request.text();
-    if (text) {
-      payload = JSON.parse(text);
-    }
+    body = await request.json();
   } catch {
-    return NextResponse.json(
-      { message: "Request body must be valid JSON" },
-      { status: 400 }
-    );
+    return badJson();
   }
 
+  const parsed = rejectionSchema.safeParse(body);
+  if (!parsed.success) return validationFailed(parsed.error);
+
   try {
-    const upstream = await fetch(
-      `${BACKEND_API_URL}/admin/organizations/${id}/reject`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: payload ? JSON.stringify(payload) : undefined,
-        cache: "no-store",
-      }
+    const upstream = await upstreamFetch(
+      `/admin/organizations/${id}/reject`,
+      token,
+      { method: "PATCH", body: JSON.stringify(parsed.data) },
     );
-
-    const raw = await upstream.text();
-    let body: unknown = null;
-    if (raw) {
-      try {
-        body = JSON.parse(raw);
-      } catch {
-        body = { message: raw };
-      }
-    }
-
-    if (!upstream.ok) {
-      const message =
-        (body as { message?: string } | null)?.message ??
-        "Failed to reject organization.";
-      return NextResponse.json(
-        { message, details: body },
-        { status: upstream.status }
-      );
-    }
-
-    return NextResponse.json(body, { status: upstream.status });
+    return relay(upstream, "Failed to reject organization.");
   } catch {
-    return unreachable();
+    return unreachable("organization");
   }
 }

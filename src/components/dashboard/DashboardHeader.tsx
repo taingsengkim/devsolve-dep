@@ -2,26 +2,37 @@
 
 import React from "react";
 import Link from "next/link";
-import { PlusCircle, Globe, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { PlusCircle, Globe, RefreshCw, Settings2 } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface DashboardHeaderProps {
   onRefresh?: () => void;
   isRefreshing?: boolean;
+  audience: "COMPANY" | "USER";
+  organizationName?: string;
 }
 
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   onRefresh,
   isRefreshing = false,
+  audience,
+  organizationName,
 }) => {
+  const isCompany = audience === "COMPANY";
+
   return (
     <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-neutral-800">
-      <div className="space-y-1">
+      <div className="flex flex-col gap-1">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">
-          Dashboard
+          {isCompany
+            ? `${organizationName || "Company"} Dashboard`
+            : "Researcher Dashboard"}
         </h1>
         <p className="text-sm font-normal text-slate-500 dark:text-neutral-400">
-          Real-time intelligence and vulnerability operations
+          {isCompany
+            ? "Monitor your security programs, incoming reports, and bounty activity."
+            : "Track your submitted reports, validation progress, and rewards."}
         </p>
       </div>
 
@@ -34,30 +45,38 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             disabled={isRefreshing}
             className="hidden sm:inline-flex items-center gap-2 text-sm font-medium border-slate-200 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-900 rounded-lg text-slate-700 dark:text-neutral-300 cursor-pointer"
           >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            <RefreshCw
+              data-icon="inline-start"
+              className={cn(isRefreshing && "animate-spin")}
+            />
             <span>Refresh</span>
           </Button>
         )}
 
-        <Link href="/dashboard/programs">
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-slate-200 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-900 text-slate-700 dark:text-neutral-300 rounded-lg cursor-pointer"
-          >
-            <Globe className="w-4 h-4 text-slate-500" />
-            <span className="text-sm font-medium">Explore Programs</span>
-          </Button>
+        <Link
+          href={isCompany ? "/dashboard/program-management" : "/dashboard/programs"}
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "rounded-lg border-slate-200 text-slate-700 dark:border-neutral-800 dark:text-neutral-300",
+          )}
+        >
+          {isCompany ? (
+            <Settings2 data-icon="inline-start" />
+          ) : (
+            <Globe data-icon="inline-start" />
+          )}
+          {isCompany ? "Manage Programs" : "Explore Programs"}
         </Link>
 
-        <Link href="/dashboard/submit-report">
-          <Button
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-xs rounded-lg transition-colors cursor-pointer"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span className="text-sm font-medium">Submit Report</span>
-          </Button>
+        <Link
+          href={isCompany ? "/dashboard/create-program" : "/dashboard/submit-report"}
+          className={cn(
+            buttonVariants({ size: "sm" }),
+            "rounded-lg bg-blue-600 font-medium text-white shadow-xs hover:bg-blue-700",
+          )}
+        >
+          <PlusCircle data-icon="inline-start" />
+          {isCompany ? "Create Program" : "Submit Report"}
         </Link>
       </div>
     </header>

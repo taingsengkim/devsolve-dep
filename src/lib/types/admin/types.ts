@@ -47,21 +47,32 @@ export type PendingOrgIndustry =
   | "NONPROFIT"
   | string;
 
-export interface PendingOrganizationItem {
+export type OrganizationReviewStatus = "PENDING" | "ACTIVE" | "REJECTED";
+export type OrganizationVerificationFilter =
+  | "ALL"
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED";
+
+export interface OrganizationReviewSummaryItem {
   id: string;
   name: string;
   slug: string;
-  websiteUrl: string;
+  websiteUrl?: string;
   industry: PendingOrgIndustry;
-  companySize: string;
-  country: string;
-  status: "PENDING";
+  companySize?: string;
+  country?: string;
+  status: OrganizationReviewStatus;
   ownerId: string;
-  ownerFullName: string;
-  ownerEmail: string;
+  ownerFullName?: string;
+  ownerEmail?: string;
   submissionVersion: number;
   createdAt: string;
 }
+
+export type PendingOrganizationItem = OrganizationReviewSummaryItem & {
+  status: "PENDING";
+};
 
 export interface PageableSort {
   empty: boolean;
@@ -93,6 +104,7 @@ export interface PaginatedResponse<T> {
 }
 
 export type PendingOrganizationsResponse = PaginatedResponse<PendingOrganizationItem>;
+export type OrganizationsResponse = PaginatedResponse<OrganizationReviewSummaryItem>;
 
 export interface OrganizationResponse {
   id: string;
@@ -115,7 +127,7 @@ export interface OrganizationResponse {
   industry?: string;
   companySize?: string;
   country?: string;
-  status: "PENDING" | "ACTIVE" | "REJECTED" | string;
+  status: OrganizationReviewStatus;
   verifiedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -143,12 +155,12 @@ export interface CompanyVerificationItem {
   companyName: string;
   email: string;
   domain: string;
-  taxId: string;
+  taxId?: string;
   businessType: string;
   registrationDate: string;
   submittedAt?: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "UNDER_REVIEW";
-  documentsCount: number;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  documentsCount?: number;
   notes?: string;
   contactName?: string;
   jobTitle?: string;
@@ -326,6 +338,50 @@ export interface AdminDashboardOverviewResponse {
     items: AdminActionQueueItem[];
   };
   recentActivity: AdminActivityFeedItem[];
+}
+
+export interface AdminOverviewResponse {
+  generatedAt?: string;
+  users: {
+    total: number;
+    active: number;
+    suspended: number;
+    removed: number;
+  };
+  organizations: {
+    total: number;
+    active: number;
+    pendingReview: number;
+    rejected: number;
+  };
+  programs: {
+    total: number;
+    draft: number;
+    active: number;
+    paused: number;
+    closed: number;
+    pendingReview: number;
+  };
+  reports: {
+    total: number;
+    open: number;
+    newReports: number;
+    triaging: number;
+    needsMoreInfo: number;
+    validConfirmed: number;
+    resolved: number;
+    rejected: number;
+    duplicate: number;
+  };
+  moderation: {
+    totalPending: number;
+    organizations: number;
+    programs: number;
+    problems: number;
+    showcases: number;
+    solutions: number;
+    contentFlags: number;
+  };
 }
 
 // ─── Real API: Moderation Actions & Admin Users ─────────────────────────────

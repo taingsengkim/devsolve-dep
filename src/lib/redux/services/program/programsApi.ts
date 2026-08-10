@@ -124,6 +124,5 @@ export const {
   useGetMyCompanyProgramsQuery,
   useGetProgramByIdQuery,
   useCreateProgramMutation,
-  useUpdateProgramMutation,
   useDeleteProgramMutation,
 } = programsApi;

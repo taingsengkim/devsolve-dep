@@ -8,7 +8,10 @@ import {
 import { clearAccessToken, getAccessToken } from "@/lib/auth/access-token";
 
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL,
+  // All requests MUST route through the Next.js server-side proxy (/api/...),
+  // which adds the Bearer token and forwards server-to-server to the backend.
+  // Never point directly at NEXT_PUBLIC_BACKEND_API_URL from the client.
+  baseUrl: "/api",
   prepareHeaders: async (headers) => {
     // The token lives with better-auth against the session cookie, not in
     // localStorage — asking the client for it is the only way to get one.
