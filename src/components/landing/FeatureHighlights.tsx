@@ -5,9 +5,13 @@ import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { useTheme } from "next-themes";
 import { ArrowUpRight } from "lucide-react";
-import SectionBackdrop, { ACCENT, PRIMARY, SECONDARY } from "./SectionBackdrop";
+import SectionBackdrop, {
+  ACCENT,
+  PRIMARY,
+  SECONDARY,
+  useIsDark,
+} from "./SectionBackdrop";
 
 // Register plugins client side safely
 if (typeof window !== "undefined") {
@@ -192,8 +196,12 @@ const ARC_PATH = (() => {
 export function FeatureHighlights() {
   const containerRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  /* GSAP tweens these colours numerically, so they cannot be `var()` tokens
+     the way the rest of the landing palette is — this section keeps a JS
+     branch. `useIsDark` is gated on mount, so the server render and the
+     first client render agree and hydration stays quiet; the timeline is
+     rebuilt on the flip either way. */
+  const isDark = useIsDark();
   const tone = isDark ? TONES.dark : TONES.light;
 
   const totalUnits = ACTS.reduce(

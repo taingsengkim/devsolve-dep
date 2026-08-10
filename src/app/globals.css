@@ -101,6 +101,79 @@
     rgba(255, 255, 255, 0.62) 45%,
     transparent 78%
   );
+
+}
+
+/* ─── Landing & about palette ────────────────────────────────────────────
+   These sections paint through inline `style` and SVG presentation
+   attributes, neither of which a `dark:` variant can reach — the same bind
+   --hero-glow is in. Resolving them in JS instead is what caused a
+   hydration mismatch: next-themes' blocking script means the client's first
+   render already knows the theme while the server render never did, so the
+   two disagreed on every value. A custom property renders as one identical
+   string on both sides and is resolved by the browser, which also avoids
+   the post-mount repaint a `mounted` gate would have cost.
+
+   Alphas are baked into the colours rather than carried on a separate
+   opacity property, because Motion owns opacity on these elements and
+   interpolates it numerically — it cannot tween a var().
+
+   `.ds-tone-*` pins a subtree to one palette regardless of theme, which is
+   what the backdrop's `tone` prop needs. Setting the properties directly on
+   the pinned element beats what it would otherwise inherit, so the pin wins
+   on either theme without a specificity fight.
+
+   Order matters: the dark block follows the light one, so on <html> — where
+   both `:root` and `.dark` can match at equal specificity — dark wins. */
+:root,
+.ds-tone-light {
+  --ds-ink: #1e293b;
+  --ds-surface: #ffffff;
+  --ds-trend: #2563eb;
+  --ds-delta: #047857;
+  --ds-deemphasis: #cbd5e1;
+
+  /* Ordered severity ramp — heaviest ink is most severe. */
+  --ds-tier-1: #1e293b;
+  --ds-tier-2: #94a3b8;
+  --ds-tier-3: #e2e8f0;
+
+  /* Inverted tile (the rank chip): fill plus the type that sits on it. */
+  --ds-tile-bg: #1e293b;
+  --ds-tile-ink: #ffffff;
+
+  --ds-grid: rgb(30 41 59 / 0.05);
+  --ds-blob-a: rgb(37 99 235 / 0.13);
+  --ds-blob-b: rgb(16 185 129 / 0.11);
+  --ds-blob-c: rgb(30 41 59 / 0.08);
+  --ds-cell-primary: rgb(37 99 235 / 0.07);
+  --ds-cell-accent: rgb(16 185 129 / 0.07);
+  --ds-mote-primary: rgb(37 99 235 / 0.5);
+  --ds-mote-accent: rgb(16 185 129 / 0.5);
+}
+
+/* Measured against --ds-surface (#0A0A0A): #60A5FA 7.8:1 and #34D399
+   10.3:1, both clear of the 4.5:1 floor for anything set as text. */
+.dark,
+.ds-tone-dark {
+  --ds-ink: #fafafa;
+  --ds-surface: #0a0a0a;
+  --ds-trend: #60a5fa;
+  --ds-delta: #34d399;
+  --ds-deemphasis: #525252;
+  --ds-tier-1: #fafafa;
+  --ds-tier-2: #737373;
+  --ds-tier-3: #404040;
+  --ds-tile-bg: #fafafa;
+  --ds-tile-ink: #171717;
+  --ds-grid: rgb(255 255 255 / 0.07);
+  --ds-blob-a: rgb(37 99 235 / 0.24);
+  --ds-blob-b: rgb(16 185 129 / 0.18);
+  --ds-blob-c: rgb(37 99 235 / 0.16);
+  --ds-cell-primary: rgb(37 99 235 / 0.1);
+  --ds-cell-accent: rgb(16 185 129 / 0.1);
+  --ds-mote-primary: rgb(37 99 235 / 0.7);
+  --ds-mote-accent: rgb(16 185 129 / 0.7);
 }
 
 .dark {
@@ -148,6 +221,7 @@
     rgba(38, 38, 38, 0.35) 45%,
     transparent 78%
   );
+
 }
 
 @layer base {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useId, useMemo } from "react";
+import React, { useId, useMemo, useSyncExternalStore } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { useTheme } from "next-themes";
 
@@ -28,25 +28,47 @@ export const INK_DARK = "#FAFAFA";
      ink    neutral-50   #FAFAFA   = --foreground   oklch(0.985 0 0)   */
 export const SURFACE_DARK = "#0A0A0A";
 
-/**
- * Heading ink for the current theme.
- *
- * The landing sections set their headings through inline `style`, which no
- * `dark:` variant can override, so the value has to be resolved in JS. Before
- * the theme is known (server render, first client render) this reports the
- * light ink, matching what the markup already paints.
- */
+/* ─── Theme-dependent values ─────────────────────────────────────────────
+   These sections paint through inline `style` and SVG presentation
+   attributes, which no `dark:` variant can reach. Resolving them in JS is
+   what used to break hydration: next-themes' blocking script sets the class
+   before React runs, so the client's *first* render already knows the theme
+   while the server render never did — the two disagreed on every one of
+   these values.
+
+   So they are custom properties instead (defined in globals.css). The
+   rendered string is identical on both sides, the browser resolves it, and
+   there is no post-mount repaint either.
+   ──────────────────────────────────────────────────────────────────── */
+
+/** Heading ink for the current theme. */
 export function useInk() {
-  return useIsDark() ? INK_DARK : SECONDARY;
+  return "var(--ds-ink)";
 }
 
+/** Page surface — for rings that punch a mark out of the background. */
+export const SURFACE = "var(--ds-surface)";
+
+/* A store that reports `false` to the server and `true` to the client, which
+   is how you ask React "has this hydrated yet?" without a setState in an
+   effect. The subscribe callback is module-level so it stays referentially
+   stable and never resubscribes. */
+const neverChanges = () => () => {};
+const onClient = () => true;
+const onServer = () => false;
+
 /**
- * Whether the dark theme is active. Reports `false` until the theme resolves,
- * which matches the light markup the server sent.
+ * Whether the dark theme is active.
+ *
+ * Only for values that genuinely cannot be a custom property — GSAP tweens
+ * colours numerically and cannot interpolate a `var()`. Gated on hydration
+ * so the server render and the first client render agree; callers get
+ * `false` for one frame, then the real value.
  */
 export function useIsDark() {
   const { resolvedTheme } = useTheme();
-  return resolvedTheme === "dark";
+  const hydrated = useSyncExternalStore(neverChanges, onClient, onServer);
+  return hydrated && resolvedTheme === "dark";
 }
 
 /* Deterministic PRNG so server and client render identical positions. */
@@ -87,6 +109,28 @@ export type SectionBackdropProps = {
 const CELL_COUNT = 10;
 const PARTICLE_COUNT = 14;
 
+/* Static now that the colours are tokens — nothing here varies by theme. */
+const BLOBS = [
+  {
+    color: "var(--ds-blob-a)",
+    className: "left-[-14%] top-[4%] h-[30rem] w-[30rem]",
+    path: { x: [0, 80, -40, 0], y: [0, -50, 40, 0], scale: [1, 1.12, 0.94, 1] },
+    duration: 28,
+  },
+  {
+    color: "var(--ds-blob-b)",
+    className: "right-[-10%] top-[30%] h-[26rem] w-[26rem]",
+    path: { x: [0, -60, 36, 0], y: [0, 60, -26, 0], scale: [1, 0.92, 1.14, 1] },
+    duration: 34,
+  },
+  {
+    color: "var(--ds-blob-c)",
+    className: "bottom-[-12%] left-1/3 h-[22rem] w-[34rem]",
+    path: { x: [0, 54, -54, 0], y: [0, -34, 18, 0], scale: [1, 1.08, 0.96, 1] },
+    duration: 40,
+  },
+];
+
 /**
  * The animated layer shared by every landing section — grid paper, drifting
  * aurora, pulsing cells, scan beams and rising motes. Only transform and
@@ -105,22 +149,13 @@ export function SectionBackdrop({
   const reduce = useReducedMotion();
   const rawId = useId();
   const uid = rawId.replace(/[^a-zA-Z0-9]/g, "");
-  // `resolvedTheme` is undefined on the server and on the first client render,
-  // so both agree on the light backdrop and hydration stays quiet; it then
-  // repaints once the real theme is known. Safe here because the whole layer
-  // is decorative and aria-hidden.
-  const { resolvedTheme } = useTheme();
-  const dark = tone ? tone === "dark" : resolvedTheme === "dark";
-
-  const gridStroke = dark ? "#ffffff" : SECONDARY;
-  const gridOpacity = dark ? 0.07 : 0.05;
 
   const cellSpecs = useMemo(() => {
     const rand = mulberry32(seed * 977 + 7);
     return Array.from({ length: CELL_COUNT }, () => ({
       col: Math.floor(rand() * 22),
       row: Math.floor(rand() * 11),
-      color: rand() > 0.5 ? PRIMARY : ACCENT,
+      color: rand() > 0.5 ? "var(--ds-cell-primary)" : "var(--ds-cell-accent)",
       delay: rand() * 9,
       duration: 3.5 + rand() * 3,
     }));
@@ -134,46 +169,28 @@ export function SectionBackdrop({
       delay: rand() * 16,
       duration: 16 + rand() * 12,
       drift: (rand() - 0.5) * 70,
-      color: rand() > 0.55 ? ACCENT : PRIMARY,
+      color: rand() > 0.55 ? "var(--ds-mote-accent)" : "var(--ds-mote-primary)",
     }));
   }, [seed]);
 
-  const blobs = useMemo(
-    () => [
-      {
-        color: PRIMARY,
-        className: "left-[-14%] top-[4%] h-[30rem] w-[30rem]",
-        path: { x: [0, 80, -40, 0], y: [0, -50, 40, 0], scale: [1, 1.12, 0.94, 1] },
-        duration: 28,
-        opacity: dark ? 0.24 : 0.13,
-      },
-      {
-        color: ACCENT,
-        className: "right-[-10%] top-[30%] h-[26rem] w-[26rem]",
-        path: { x: [0, -60, 36, 0], y: [0, 60, -26, 0], scale: [1, 0.92, 1.14, 1] },
-        duration: 34,
-        opacity: dark ? 0.18 : 0.11,
-      },
-      {
-        color: dark ? PRIMARY : SECONDARY,
-        className: "bottom-[-12%] left-1/3 h-[22rem] w-[34rem]",
-        path: { x: [0, 54, -54, 0], y: [0, -34, 18, 0], scale: [1, 1.08, 0.96, 1] },
-        duration: 40,
-        opacity: dark ? 0.16 : 0.08,
-      },
-    ],
-    [dark],
-  );
-
   return (
-    <div className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`} aria-hidden>
-      {/* Drifting colour fields */}
+    <div
+      /* `tone` pins this layer to one palette regardless of theme. A class,
+         not a JS branch, so it costs nothing at hydration. */
+      className={`pointer-events-none absolute inset-0 overflow-hidden ${
+        tone ? `ds-tone-${tone}` : ""
+      } ${className}`}
+      aria-hidden
+    >
+      {/* Drifting colour fields. The alpha lives in the token rather than on
+          an `opacity` property — Motion owns opacity here and cannot tween a
+          var(), so the two would fight. */}
       {aurora &&
-        blobs.map((blob, i) => (
+        BLOBS.map((blob, i) => (
           <motion.div
             key={i}
             className={`absolute rounded-full blur-[110px] ${blob.className}`}
-            style={{ backgroundColor: blob.color, opacity: blob.opacity }}
+            style={{ backgroundColor: blob.color }}
             animate={reduce ? undefined : blob.path}
             transition={{ duration: blob.duration, repeat: Infinity, ease: "easeInOut" }}
           />
@@ -191,8 +208,7 @@ export function SectionBackdrop({
             <path
               d={`M ${gridSize} 0 L 0 0 0 ${gridSize}`}
               fill="none"
-              stroke={gridStroke}
-              strokeOpacity={gridOpacity}
+              stroke="var(--ds-grid)"
               strokeWidth="1"
             />
           </pattern>
@@ -209,7 +225,9 @@ export function SectionBackdrop({
               height={gridSize - 2}
               fill={cell.color}
               initial={{ opacity: 0 }}
-              animate={reduce ? undefined : { opacity: [0, dark ? 0.1 : 0.07, 0] }}
+              /* Peaks at 1 because the tint level is carried by the token's
+                 alpha; the theme cannot reach a numeric keyframe. */
+              animate={reduce ? undefined : { opacity: [0, 1, 0] }}
               transition={{
                 duration: cell.duration,
                 repeat: Infinity,
@@ -261,7 +279,8 @@ export function SectionBackdrop({
             animate={{
               y: ["0%", "-1600%"],
               x: [0, p.drift, 0],
-              opacity: [0, dark ? 0.7 : 0.5, dark ? 0.7 : 0.5, 0],
+              /* As with the cells: brightness is the token's alpha. */
+              opacity: [0, 1, 1, 0],
             }}
             transition={{
               duration: p.duration,

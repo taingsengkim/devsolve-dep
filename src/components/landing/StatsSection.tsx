@@ -2,14 +2,8 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
-import { useTheme } from "next-themes";
 import { ArrowUpRight } from "lucide-react";
-import SectionBackdrop, {
-  INK_DARK,
-  PRIMARY,
-  SECONDARY,
-  SURFACE_DARK,
-} from "./SectionBackdrop";
+import SectionBackdrop, { SURFACE } from "./SectionBackdrop";
 
 /* ─── Palette ───────────────────────────────────────────────────────────
    Mark colours were checked with the palette validator against a white
@@ -21,38 +15,19 @@ import SectionBackdrop, {
                  used strictly as ink.
 
    Every one of those was measured against white, so none of them carries
-   over to the near-black surface — each is restated below against
-   neutral-950 (#0A0A0A, the `--background` this app resolves to in dark),
-   keeping the same roles and the same 4.5:1 floor for anything set as text:
-     · #60A5FA (blue-400)    — 7.8:1. The trend mark and the kicker.
-     · #34D399 (emerald-400) — 10.3:1. The delta, which is text.
-     · #525252 (neutral-600) — the de-emphasised baseline, a mark only.
+   over to the near-black surface. Both sets live in globals.css as `--ds-*`
+   custom properties — see the note there for why they are tokens and not a
+   JS branch — and the dark restatements hold the same 4.5:1 floor for
+   anything set as text (blue-400 7.8:1, emerald-400 10.3:1 on #0A0A0A).
    ──────────────────────────────────────────────────────────────────── */
-const TONES = {
-  light: {
-    deemphasis: "#CBD5E1",
-    deltaInk: "#047857",
-    trend: PRIMARY,
-    /* Ring that lifts the endpoint dot off the card behind it. */
-    dotRing: "#FFFFFF",
-    ink: SECONDARY,
-  },
-  dark: {
-    deemphasis: "#525252",
-    deltaInk: "#34D399",
-    trend: "#60A5FA",
-    /* Has to be the page surface, or the dot gets a halo. */
-    dotRing: SURFACE_DARK,
-    ink: INK_DARK,
-  },
+const TONE = {
+  deemphasis: "var(--ds-deemphasis)",
+  deltaInk: "var(--ds-delta)",
+  trend: "var(--ds-trend)",
+  /* Ring that lifts the endpoint dot off the surface behind it. */
+  dotRing: SURFACE,
+  ink: "var(--ds-ink)",
 } as const;
-
-type Tone = (typeof TONES)[keyof typeof TONES];
-
-function useTone(): Tone {
-  const { resolvedTheme } = useTheme();
-  return resolvedTheme === "dark" ? TONES.dark : TONES.light;
-}
 
 /* ─── Data — 12 monthly points per metric ──────────────────────────── */
 type Stat = {
@@ -163,7 +138,7 @@ function Sparkline({
   delay?: number;
 }) {
   const reduce = useReducedMotion();
-  const tone = useTone();
+  const tone = TONE;
   const pad = 5;
   const min = Math.min(...series);
   const max = Math.max(...series);
@@ -239,7 +214,7 @@ function Sparkline({
 
 /* ─── Delta chip — sign + arrow + named period, never colour alone ──── */
 function Delta({ value }: { value: number }) {
-  const tone = useTone();
+  const tone = TONE;
   return (
     <span
       className="inline-flex items-baseline gap-1.5 text-sm font-semibold"
@@ -258,7 +233,7 @@ function Delta({ value }: { value: number }) {
 export function StatsSection() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
-  const tone = useTone();
+  const tone = TONE;
 
   const heroTarget = HERO.series[HERO.series.length - 1];
   const heroDelta = quarterDelta(HERO.series);

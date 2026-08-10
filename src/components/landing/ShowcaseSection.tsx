@@ -5,13 +5,7 @@ import Link from "next/link";
 import { motion, useInView } from "motion/react";
 import { ArrowUpRight, Award, Flame, ShieldCheck, Trophy, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import SectionBackdrop, {
-  INK_DARK,
-  PRIMARY,
-  SECONDARY,
-  useInk,
-  useIsDark,
-} from "./SectionBackdrop";
+import SectionBackdrop, { PRIMARY, useInk } from "./SectionBackdrop";
 
 /* Severity is an ordered scale, so the breakdown rides an ink-weight ramp
    rather than unrelated hues. Each tier is labelled with its count, so the
@@ -19,13 +13,13 @@ import SectionBackdrop, {
 
    The ramp runs heaviest-first on light and lightest-first on dark: what
    carries the ordering is distance from the surface, not the direction of
-   travel, so it has to flip with the surface. */
-const TIER_RAMP = {
-  light: [SECONDARY, "#94A3B8", "#E2E8F0"],
-  /* neutral-500 / neutral-700 — the dark surfaces are the neutral scale, so
-     a ramp built on slate greys would drift blue against them. */
-  dark: [INK_DARK, "#737373", "#404040"],
-} as const;
+   travel, so it has to flip with the surface — which the tokens do, without
+   a JS branch that the server could not have resolved. */
+const TIER_RAMP = [
+  "var(--ds-tier-1)",
+  "var(--ds-tier-2)",
+  "var(--ds-tier-3)",
+] as const;
 
 const TIER_LABELS = [
   { key: "critical", label: "Critical" },
@@ -33,10 +27,7 @@ const TIER_LABELS = [
   { key: "medium", label: "Medium" },
 ] as const;
 
-const tiersFor = (dark: boolean) => {
-  const ramp = dark ? TIER_RAMP.dark : TIER_RAMP.light;
-  return TIER_LABELS.map((t, i) => ({ ...t, color: ramp[i] }));
-};
+const TIERS = TIER_LABELS.map((t, i) => ({ ...t, color: TIER_RAMP[i] }));
 
 type Researcher = {
   handle: string;
@@ -106,12 +97,11 @@ function SeverityBar({
   inView: boolean;
   delay?: number;
 }) {
-  const tiers = tiersFor(useIsDark());
   const total = data.critical + data.high + data.medium;
   const segments = [
-    { ...tiers[0], value: data.critical },
-    { ...tiers[1], value: data.high },
-    { ...tiers[2], value: data.medium },
+    { ...TIERS[0], value: data.critical },
+    { ...TIERS[1], value: data.high },
+    { ...TIERS[2], value: data.medium },
   ];
 
   return (
@@ -134,9 +124,7 @@ function SeverityBar({
 export function ShowcaseSection() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
-  const isDark = useIsDark();
   const ink = useInk();
-  const tiers = tiersFor(isDark);
 
   return (
     <section
@@ -188,7 +176,7 @@ export function ShowcaseSection() {
           <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-neutral-500">
             Findings by severity
           </span>
-          {tiers.map((t) => (
+          {TIERS.map((t) => (
             <span
               key={t.key}
               className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-neutral-400"
@@ -223,8 +211,8 @@ export function ShowcaseSection() {
                     className="flex h-11 w-11 items-center justify-center rounded-xl text-base font-bold"
                     style={{
                       backgroundColor:
-                        i === 0 ? PRIMARY : isDark ? INK_DARK : SECONDARY,
-                      color: i !== 0 && isDark ? "#171717" : "#FFFFFF",
+                        i === 0 ? PRIMARY : "var(--ds-tile-bg)",
+                      color: i === 0 ? "#FFFFFF" : "var(--ds-tile-ink)",
                     }}
                   >
                     {r.handle.replace(/^0x/, "").slice(0, 1).toUpperCase()}
