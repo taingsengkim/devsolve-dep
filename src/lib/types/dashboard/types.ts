@@ -54,6 +54,14 @@ export interface SecurityFeedItem {
 }
 
 export interface DashboardOverviewResponse {
+  audience: "COMPANY" | "USER";
+  organization?: {
+    id: string;
+    name: string;
+    slug?: string;
+    logoUrl?: string;
+    status?: string;
+  };
   stats: StatMetric[];
   actionQueue: {
     totalCount: number;

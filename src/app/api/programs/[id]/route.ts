@@ -25,6 +25,14 @@ const unreachable = () =>
     { status: 502 }
   );
 
+const unauthorized = () =>
+  NextResponse.json({ message: "Not authenticated" }, { status: 401 });
+
+const isUuid = (value: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+    value
+  );
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -40,12 +48,12 @@ export async function GET(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-  const primaryUrl = isUuid
+  const idIsUuid = isUuid(id);
+  const primaryUrl = idIsUuid
     ? `${BACKEND_API_URL}/programs/${id}`
     : `${BACKEND_API_URL}/programs/handle/${id}`;
 
-  const secondaryUrl = isUuid
+  const secondaryUrl = idIsUuid
     ? `${BACKEND_API_URL}/programs/handle/${id}`
     : `${BACKEND_API_URL}/programs/${id}`;
 
@@ -88,6 +96,57 @@ export async function GET(
     }
 
     return NextResponse.json(body, { status: upstream.status });
+  } catch {
+    return unreachable();
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const token = await bearerTokenFor(request);
+  if (!token) return unauthorized();
+
+  const { id } = await params;
+  if (!isUuid(id)) {
+    return NextResponse.json(
+      { message: "Program id must be a valid UUID" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const upstream = await fetch(`${BACKEND_API_URL}/programs/${id}`, {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+
+    if (!upstream.ok) {
+      const raw = await upstream.text();
+      let body: unknown = null;
+      if (raw) {
+        try {
+          body = JSON.parse(raw);
+        } catch {
+          body = { message: raw };
+        }
+      }
+
+      const message =
+        (body as { message?: string } | null)?.message ??
+        "Failed to delete program.";
+      return NextResponse.json(
+        { message, details: body },
+        { status: upstream.status }
+      );
+    }
+
+    return new NextResponse(null, { status: 204 });
   } catch {
     return unreachable();
   }

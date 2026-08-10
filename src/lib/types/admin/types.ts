@@ -328,6 +328,50 @@ export interface AdminDashboardOverviewResponse {
   recentActivity: AdminActivityFeedItem[];
 }
 
+export interface AdminOverviewResponse {
+  generatedAt?: string;
+  users: {
+    total: number;
+    active: number;
+    suspended: number;
+    removed: number;
+  };
+  organizations: {
+    total: number;
+    active: number;
+    pendingReview: number;
+    rejected: number;
+  };
+  programs: {
+    total: number;
+    draft: number;
+    active: number;
+    paused: number;
+    closed: number;
+    pendingReview: number;
+  };
+  reports: {
+    total: number;
+    open: number;
+    newReports: number;
+    triaging: number;
+    needsMoreInfo: number;
+    validConfirmed: number;
+    resolved: number;
+    rejected: number;
+    duplicate: number;
+  };
+  moderation: {
+    totalPending: number;
+    organizations: number;
+    programs: number;
+    problems: number;
+    showcases: number;
+    solutions: number;
+    contentFlags: number;
+  };
+}
+
 // ─── Real API: Moderation Actions & Admin Users ─────────────────────────────
 
 export type ModerationActionTargetType =

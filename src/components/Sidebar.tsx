@@ -23,6 +23,10 @@ import { Separator } from "@/components/ui/separator";
 import { useNotification } from "@/components/notifications/NotificationContext";
 import { NotificationTrigger } from "@/components/notifications/NotificationTrigger";
 import { useGetBookmarksQuery } from "@/lib/redux/services/bookmarksApi";
+import {
+  type Organization,
+  useGetMyOrganizationQuery,
+} from "@/lib/redux/services/organizationsApi";
 import { cn } from "@/lib/utils";
 
 function getInitials(text: string): string {
@@ -32,6 +36,21 @@ function getInitials(text: string): string {
     .join("")
     .toUpperCase()
     .slice(0, 2);
+}
+
+function organizationStatusLabel(status?: string): string {
+  switch (status) {
+    case "ACTIVE":
+      return "Verified company";
+    case "PENDING":
+      return "Under review";
+    case "REJECTED":
+      return "Verification rejected";
+    case "SUSPENDED":
+      return "Company suspended";
+    default:
+      return "Company workspace";
+  }
 }
 
 /** Does this path sit under that nav href? */
@@ -46,6 +65,9 @@ interface SidebarContentProps {
   user?: SidebarUser;
   isPending: boolean;
   displayName: string;
+  organization?: Organization;
+  isCompany: boolean;
+  isOrganizationLoading: boolean;
   onNavItemClick?: () => void;
   onSignOut: () => void;
   /** Desktop icon-rail mode. The toggle itself lives on the aside's edge. */
@@ -57,6 +79,9 @@ function SidebarContent({
   user,
   isPending,
   displayName,
+  organization,
+  isCompany,
+  isOrganizationLoading,
   onNavItemClick,
   onSignOut,
   collapsed = false,
@@ -88,6 +113,25 @@ function SidebarContent({
     new Set(filteredNavItems.map((item) => item.category || "Overview")),
   );
 
+  const identityName = isCompany
+    ? organization?.name || "Company workspace"
+    : displayName;
+  const identityImage = isCompany ? organization?.logoUrl : user?.image;
+  const identityDetail = isCompany
+    ? organization?.slug
+      ? `@${organization.slug}`
+      : organization?.domain || organizationStatusLabel(organization?.status)
+    : user?.email;
+  const identityStatus = isCompany
+    ? organizationStatusLabel(organization?.status)
+    : undefined;
+  const identityIsLoading =
+    isPending || (isCompany && isOrganizationLoading);
+  const settingsHref = isCompany
+    ? "/dashboard/organizations"
+    : "/dashboard/profile/settings";
+  const settingsLabel = isCompany ? "Organization settings" : "Settings";
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Close control, drawer only. Desktop has no row here at all — its
@@ -111,13 +155,13 @@ function SidebarContent({
       <Link
         href="/dashboard/profile"
         onClick={onNavItemClick}
-        title={collapsed ? displayName : undefined}
+        title={collapsed ? identityName : undefined}
         className={cn(
           "mb-3 flex shrink-0 items-center gap-3 rounded-xl border border-slate-200/60 bg-white/60 p-3 shadow-2xs transition-colors hover:bg-white dark:border-neutral-800 dark:bg-neutral-900/60 dark:hover:bg-neutral-900",
           collapsed && "justify-center px-0",
         )}
       >
-        {isPending ? (
+        {identityIsLoading ? (
           <div className="flex w-full animate-pulse items-center gap-3">
             <div className="size-10 shrink-0 rounded-full bg-slate-300/60 dark:bg-neutral-700" />
             {!collapsed && (
@@ -129,28 +173,49 @@ function SidebarContent({
           </div>
         ) : (
           <>
-            <Avatar className="size-10 shrink-0 border-2 border-blue-500">
-              {user?.image && <AvatarImage src={user.image} alt="" />}
-              <AvatarFallback className="bg-blue-600 font-bold text-white">
-                {getInitials(displayName)}
+            <Avatar
+              className={cn(
+                "size-10 shrink-0 border-2 border-blue-500",
+                isCompany && "rounded-xl after:rounded-xl",
+              )}
+            >
+              {identityImage && (
+                <AvatarImage
+                  src={identityImage}
+                  alt={isCompany ? `${identityName} logo` : ""}
+                  className={cn(isCompany && "rounded-xl")}
+                />
+              )}
+              <AvatarFallback
+                className={cn(
+                  "bg-blue-600 font-bold text-white",
+                  isCompany && "rounded-xl",
+                )}
+              >
+                {getInitials(identityName)}
               </AvatarFallback>
             </Avatar>
 
             {!collapsed && (
-              <div className="flex min-w-0 flex-col">
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span
                   className="truncate text-sm font-bold text-slate-800 dark:text-neutral-100"
-                  title={displayName}
+                  title={identityName}
                 >
-                  {displayName}
+                  {identityName}
                 </span>
-                {user?.email && (
+                {identityDetail && (
                   <span
                     className="truncate text-sm text-slate-500 dark:text-neutral-400"
-                    title={user.email}
+                    title={identityDetail}
                   >
-                    {user.email}
+                    {identityDetail}
                   </span>
+                )}
+                {identityStatus && identityStatus !== identityDetail && (
+                  <Badge variant="secondary" className="mt-1 max-w-full">
+                    <span className="truncate">{identityStatus}</span>
+                  </Badge>
                 )}
               </div>
             )}
@@ -249,16 +314,16 @@ function SidebarContent({
       {/* Footer */}
       <div className="mt-auto shrink-0 space-y-1.5 border-t border-slate-200/60 pt-3 dark:border-neutral-800">
         <Link
-          href="/dashboard/profile/settings"
+          href={settingsHref}
           onClick={onNavItemClick}
-          title={collapsed ? "Settings" : undefined}
+          title={collapsed ? settingsLabel : undefined}
           className={cn(
             "flex h-10 w-full items-center rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-2xs transition-colors hover:bg-blue-700",
             collapsed ? "justify-center px-0" : "justify-start gap-3 px-3",
           )}
         >
           <Settings className="size-4 shrink-0" />
-          {!collapsed && <span>Settings</span>}
+          {!collapsed && <span>{settingsLabel}</span>}
         </Link>
 
         <Button
@@ -285,7 +350,25 @@ const Sidebar = () => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const { user, isPending, displayName, handleSignOut } = useSidebarAuth();
+  const {
+    user,
+    isPending,
+    areRolesResolved,
+    displayName,
+    handleSignOut,
+  } = useSidebarAuth();
+  const isCompany = user?.roles?.includes("COMPANY") ?? false;
+  const {
+    data: organization,
+    isLoading: isOrganizationLoading,
+    isFetching: isOrganizationFetching,
+  } = useGetMyOrganizationQuery(undefined, {
+    skip: !areRolesResolved || !isCompany,
+  });
+  const isCompanyIdentityLoading =
+    !areRolesResolved || isOrganizationLoading || isOrganizationFetching;
+  const isSidebarIdentityPending =
+    isPending || (Boolean(user) && !areRolesResolved);
 
   /* Escape closes the drawer, and the page behind it stops scrolling while it
      is open — a drawer you can scroll past is a drawer that feels broken. */
@@ -370,8 +453,11 @@ const Sidebar = () => {
               <SidebarContent
                 pathname={pathname}
                 user={user}
-                isPending={isPending}
+                isPending={isSidebarIdentityPending}
                 displayName={displayName}
+                organization={organization}
+                isCompany={isCompany}
+                isOrganizationLoading={isCompanyIdentityLoading}
                 onNavItemClick={() => setIsOpen(false)}
                 onSignOut={handleSignOut}
               />
@@ -391,8 +477,11 @@ const Sidebar = () => {
         <SidebarContent
           pathname={pathname}
           user={user}
-          isPending={isPending}
+          isPending={isSidebarIdentityPending}
           displayName={displayName}
+          organization={organization}
+          isCompany={isCompany}
+          isOrganizationLoading={isCompanyIdentityLoading}
           onSignOut={handleSignOut}
           collapsed={collapsed}
         />
