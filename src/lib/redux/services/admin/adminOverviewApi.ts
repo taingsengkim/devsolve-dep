@@ -1,14 +1,17 @@
-import { baseApi } from "../baseApi";
-import { AdminDashboardOverviewResponse } from "@/lib/types/admin/types";
+import { proxyApi } from "../proxyApi";
+import type { AdminOverviewResponse } from "@/lib/types/admin/types";
 
-export const adminOverviewApi = baseApi.injectEndpoints({
+export const adminOverviewApi = proxyApi.injectEndpoints({
   endpoints: (builder) => ({
-    getAdminOverview: builder.query<AdminDashboardOverviewResponse, void>({
-      query: () => "/admin/overview",
-      providesTags: ["Report", "Program", "AdminUser", "AdminProblem", "AdminProgram", "ContentReport"],
+    getAdminOverview: builder.query<AdminOverviewResponse, void>({
+      query: () => ({
+        url: "/admin/overview",
+        method: "GET",
+      }),
+      providesTags: ["AdminProgram", "Program", "Organization", "Report"],
     }),
   }),
+  overrideExisting: true,
 });
 
 export const { useGetAdminOverviewQuery } = adminOverviewApi;
-

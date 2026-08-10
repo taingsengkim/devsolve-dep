@@ -4,18 +4,25 @@ import { useState } from "react";
 import {
   Organization,
   OrganizationIndustry,
+  useRemoveOrganizationLogoMutation,
   useUpdateMyOrganizationMutation,
+  useUploadOrganizationLogoMutation,
 } from "@/lib/redux/services/organizationsApi";
 import { OrgStatusBadge } from "./OrgStatusBadge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Building2, Globe, MapPin, Users, Calendar, Edit3, Link2, ExternalLink } from "lucide-react";
+import { Building2, Globe, MapPin, Users, Calendar, Edit3, Link2, ExternalLink, ImageUp, LoaderCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import {
+  ORGANIZATION_LOGO_ACCEPT_ATTR,
+  validateOrganizationLogoFile,
+} from "@/lib/validations/organization-logo";
 
 interface MyOrgCardProps {
   organization: Organization;
@@ -43,6 +50,11 @@ const COMPANY_SIZES = [
 export function MyOrgCard({ organization }: MyOrgCardProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [updateOrg, { isLoading: isUpdating }] = useUpdateMyOrganizationMutation();
+  const [uploadLogo, { isLoading: isUploadingLogo }] =
+    useUploadOrganizationLogoMutation();
+  const [removeLogo, { isLoading: isRemovingLogo }] =
+    useRemoveOrganizationLogoMutation();
+  const isLogoBusy = isUploadingLogo || isRemovingLogo;
 
   const [formData, setFormData] = useState({
     name: organization.name || "",
@@ -83,6 +95,40 @@ export function MyOrgCard({ organization }: MyOrgCardProps) {
     }
   };
 
+  const handleLogoPick = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    const reason = validateOrganizationLogoFile(file);
+    if (reason) {
+      toast.error("Invalid logo", { description: reason });
+      return;
+    }
+
+    try {
+      await uploadLogo(file).unwrap();
+      toast.success("Organization logo updated");
+    } catch (error) {
+      const message =
+        (error as { data?: { message?: string } })?.data?.message ??
+        "The logo could not be uploaded.";
+      toast.error("Upload failed", { description: message });
+    }
+  };
+
+  const handleLogoRemove = async () => {
+    try {
+      await removeLogo().unwrap();
+      toast.success("Organization logo removed");
+    } catch (error) {
+      const message =
+        (error as { data?: { message?: string } })?.data?.message ??
+        "The logo could not be removed.";
+      toast.error("Remove failed", { description: message });
+    }
+  };
+
   return (
     <>
       <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
@@ -116,15 +162,58 @@ export function MyOrgCard({ organization }: MyOrgCardProps) {
               </div>
             </div>
 
-            <Button
-              onClick={handleOpenEdit}
-              variant="outline"
-              size="sm"
-              className="gap-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-            >
-              <Edit3 className="w-4 h-4" />
-              Edit Profile
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <label
+                htmlFor="organization-logo-upload"
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "cursor-pointer border-slate-300 dark:border-slate-700",
+                  isLogoBusy && "pointer-events-none opacity-50"
+                )}
+              >
+                {isUploadingLogo ? (
+                  <LoaderCircle data-icon="inline-start" className="animate-spin" />
+                ) : (
+                  <ImageUp data-icon="inline-start" />
+                )}
+                {isUploadingLogo ? "Uploading..." : "Change logo"}
+                <input
+                  id="organization-logo-upload"
+                  type="file"
+                  accept={ORGANIZATION_LOGO_ACCEPT_ATTR}
+                  disabled={isLogoBusy}
+                  className="sr-only"
+                  onChange={handleLogoPick}
+                />
+              </label>
+
+              {organization.logoUrl && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={isLogoBusy}
+                  onClick={handleLogoRemove}
+                >
+                  {isRemovingLogo ? (
+                    <LoaderCircle data-icon="inline-start" className="animate-spin" />
+                  ) : (
+                    <Trash2 data-icon="inline-start" />
+                  )}
+                  {isRemovingLogo ? "Removing..." : "Remove logo"}
+                </Button>
+              )}
+
+              <Button
+                onClick={handleOpenEdit}
+                variant="outline"
+                size="sm"
+                className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <Edit3 data-icon="inline-start" />
+                Edit Profile
+              </Button>
+            </div>
           </div>
         </CardHeader>
 

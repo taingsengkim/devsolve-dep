@@ -27,7 +27,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { useGetAdminOverviewQuery } from "@/lib/redux/services/admin/adminOverviewApi";
+import { useAdminOverview } from "@/hooks/useAdminOverview";
 import {
   Select,
   SelectContent,
@@ -47,7 +47,12 @@ const topAssets = [
 
 export default function OrganizationAnalyticsPage() {
   const [timeRange, setTimeRange] = useState("6m");
-  const { data: adminOverview, isLoading, isFetching, refetch } = useGetAdminOverviewQuery();
+  const {
+    adminData: adminOverview,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useAdminOverview();
 
   // Dynamic monthly report trend data from adminOverview or fallback
   const reportTrendData = adminOverview?.activityChart?.map((item) => ({

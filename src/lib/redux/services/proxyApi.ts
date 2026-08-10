@@ -15,6 +15,7 @@ export const proxyApi = createApi({
   tagTypes: [
     "Category",
     "Program",
+    "Report",
     "AdminProgram",
     "Organization",
     "OrganizationVerification",

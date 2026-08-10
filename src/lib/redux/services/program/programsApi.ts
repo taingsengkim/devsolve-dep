@@ -82,6 +82,18 @@ export const programsApi = proxyApi.injectEndpoints({
       }),
       invalidatesTags: ["Program"],
     }),
+
+    // DELETE /programs/{id} (organization owner)
+    deleteProgram: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/programs/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        "Program",
+        { type: "Program", id },
+      ],
+    }),
   }),
 
   overrideExisting: true,
@@ -92,4 +104,5 @@ export const {
   useGetMyCompanyProgramsQuery,
   useGetProgramByIdQuery,
   useCreateProgramMutation,
+  useDeleteProgramMutation,
 } = programsApi;

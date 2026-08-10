@@ -85,7 +85,9 @@ export function AdminReportStatusDonut({
               <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden dark:bg-neutral-800">
                 <div
                   className={`h-full rounded-full ${item.barBg}`}
-                  style={{ width: `${(item.value / total) * 100}%` }}
+                  style={{
+                    width: `${total > 0 ? (item.value / total) * 100 : 0}%`,
+                  }}
                 />
               </div>
 

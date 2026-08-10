@@ -144,17 +144,19 @@ export default function CompanyProfileView() {
 
   const programs = programsResponse?.content ?? [];
   const activePrograms = programs.filter(
-    (program) => program.state === "ACTIVE"
+    (program) => program.state === "ACTIVE",
   ).length;
   const pendingPrograms = programs.filter(
-    (program) => program.submissionState === "PENDING_REVIEW"
+    (program) => program.submissionState === "PENDING_REVIEW",
   ).length;
   const recentPrograms = [...programs]
     .sort((first, second) => {
       const firstDate = Date.parse(first.createdAt || "");
       const secondDate = Date.parse(second.createdAt || "");
-      return (Number.isNaN(secondDate) ? 0 : secondDate) -
-        (Number.isNaN(firstDate) ? 0 : firstDate);
+      return (
+        (Number.isNaN(secondDate) ? 0 : secondDate) -
+        (Number.isNaN(firstDate) ? 0 : firstDate)
+      );
     })
     .slice(0, 4);
   const websiteUrl = safeExternalUrl(organization.websiteUrl);
@@ -211,7 +213,7 @@ export default function CompanyProfileView() {
           href="/dashboard/organizations"
           className={cn(
             buttonVariants({ variant: "outline", size: "lg" }),
-            "rounded-xl"
+            "rounded-xl",
           )}
         >
           <Settings2 data-icon="inline-start" />
@@ -219,10 +221,13 @@ export default function CompanyProfileView() {
         </Link>
       </header>
 
-      <Card className="rounded-2xl border-l-4 border-l-primary shadow-xs">
+      <Card className="rounded-2xl shadow-xs">
         <CardHeader className="border-b">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            <Avatar className="size-24 rounded-2xl" aria-label={organization.name}>
+            <Avatar
+              className="size-24 rounded-2xl"
+              aria-label={organization.name}
+            >
               {organization.logoUrl && (
                 <AvatarImage
                   src={organization.logoUrl}
@@ -243,7 +248,9 @@ export default function CompanyProfileView() {
                 <Badge variant="secondary">Organization profile</Badge>
               </div>
               <CardDescription className="text-base">
-                {organization.slug ? `@${organization.slug}` : "Organization account"}
+                {organization.slug
+                  ? `@${organization.slug}`
+                  : "Organization account"}
               </CardDescription>
               <p className="max-w-3xl text-base leading-relaxed text-muted-foreground">
                 {organization.description ||
@@ -308,7 +315,10 @@ export default function CompanyProfileView() {
         </CardFooter>
       </Card>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Organization summary">
+      <section
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+        aria-label="Organization summary"
+      >
         {[
           {
             label: "All programs",
@@ -331,7 +341,8 @@ export default function CompanyProfileView() {
           {
             label: "Review queue",
             value: pendingPrograms,
-            helper: pendingPrograms === 1 ? "Program pending" : "Programs pending",
+            helper:
+              pendingPrograms === 1 ? "Program pending" : "Programs pending",
             icon: ShieldCheck,
           },
         ].map((stat) => (
