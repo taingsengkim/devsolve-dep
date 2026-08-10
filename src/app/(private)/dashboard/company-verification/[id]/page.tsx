@@ -40,7 +40,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  useGetOrganizationByIdQuery,
+  useGetAdminOrganizationByIdQuery,
   useApproveOrganizationMutation,
   useRejectOrganizationMutation,
   useGetOrganizationReviewHistoryQuery,
@@ -107,7 +107,7 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
     isLoading: isOrgLoading,
     isFetching: isOrgFetching,
     isError: isOrgError,
-  } = useGetOrganizationByIdQuery(companyId, { skip: !companyId || !isUuid });
+  } = useGetAdminOrganizationByIdQuery(companyId, { skip: !companyId || !isUuid });
 
   const { data: rawReviewHistory } = useGetOrganizationReviewHistoryQuery(companyId, {
     skip: !companyId || !isUuid || isOrgError,
