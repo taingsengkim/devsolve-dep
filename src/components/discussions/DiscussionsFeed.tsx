@@ -15,6 +15,8 @@ import { DiscussionPagination } from "@/components/discussions/DiscussionPaginat
 import { DiscussionSidebar } from "@/components/discussions/DiscussionSidebar";
 import { DiscussionSkeleton } from "@/components/discussions/DiscussionSkeleton";
 import { useDiscussionFilters } from "@/hooks/useDiscussionFilters";
+import { useMySolutionStatus } from "@/hooks/useMySolutionStatus";
+import { useGetMyProfileQuery } from "@/lib/redux/services/solutionsApi";
 import type {
   DiscussionCategory,
 } from "@/lib/types/dicussion/types";
@@ -74,6 +76,12 @@ export function DiscussionsFeed({
   const { data: topics = [], isLoading: isLoadingTopics } = topicsResult;
   const { data: tags = [], isLoading: isLoadingTags } = tagsResult;
   const { data: stats, isLoading: isLoadingStats } = statsResult;
+
+  /* Answers the reader has posted that are not public yet, so a problem they
+     have already answered says so on its card. Asked once for the whole feed
+     rather than once per card, and not at all for a signed-out visitor. */
+  const { data: me } = useGetMyProfileQuery();
+  const { unresolvedFor } = useMySolutionStatus({ skip: !me?.id });
 
   const isInitialLoading = isLoadingFeed && !discussions;
   const isSearchPending =
@@ -181,6 +189,11 @@ export function DiscussionsFeed({
                             key={post.id}
                             post={post}
                             index={index}
+                            myAnswer={
+                              post.category === "Problems"
+                                ? unresolvedFor(post.id)
+                                : undefined
+                            }
                           />
                         ))}
                       </motion.div>

@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Eye,
   Flag,
+  Image as ImageIcon,
   LayoutTemplate,
   MessageSquare,
   Network,
@@ -107,10 +108,6 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
     ...(embeddedSteps?.length ? embeddedSteps : (fetchedSteps ?? [])),
   ].sort((a, b) => a.stepNumber - b.stepNumber);
 
-  const [showcaseTab, setShowcaseTab] = useState<
-    "overview" | "diagram" | "code"
-  >("overview");
-
   /* ── Votes ── */
   const { data: votes } = useGetVoteSummaryQuery({
     type: "SHOWCASE",
@@ -199,9 +196,6 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
       </div>
     );
   }
-
-  const diagrams = steps.filter((step) => step.diagramUrl);
-  const snippets = steps.filter((step) => step.codeSnippet);
 
   return (
     <motion.div
@@ -324,136 +318,95 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
               </div>
             </div>
 
-            {/* Navigation Tabs for Showcase Features */}
-            <div className="flex items-center space-x-2 border-b border-slate-200 dark:border-slate-800 pb-2">
-              <TabButton
-                active={showcaseTab === "overview"}
-                onClick={() => setShowcaseTab("overview")}
-              >
-                <Terminal className="h-4 w-4" />
-                <span>Steps &amp; Implementation</span>
-              </TabButton>
-              <TabButton
-                active={showcaseTab === "diagram"}
-                onClick={() => setShowcaseTab("diagram")}
-              >
-                <Network className="h-4 w-4" />
-                <span>Architecture Diagram</span>
-              </TabButton>
-              <TabButton
-                active={showcaseTab === "code"}
-                onClick={() => setShowcaseTab("code")}
-              >
-                <Code2 className="h-4 w-4" />
-                <span>Key Code Snippet</span>
-              </TabButton>
-            </div>
-
-            {/* Tab 1: Steps & Implementation */}
-            {showcaseTab === "overview" && (
-              <div className={`${CARD} p-6 space-y-4`}>
+            {/* ── Build guide ──────────────────────────────────────────────
+                One pass through the steps, each carrying its own code,
+                screenshot and diagram. They were three tabs over the same
+                steps, which made a reader hop between views to assemble what
+                one step was actually saying. */}
+            <div className={`${CARD} p-6 space-y-4`}>
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                   <Terminal className="h-4 w-4 text-blue-600" />
-                  <span>Implementation Flow</span>
+                  <span>Build guide</span>
                 </h3>
+                {steps.length > 0 && (
+                  <span className="text-sm font-semibold tabular-nums text-slate-500 dark:text-slate-400">
+                    {steps.length} {steps.length === 1 ? "step" : "steps"}
+                  </span>
+                )}
+              </div>
 
-                {steps.length === 0 ? (
-                  <EmptyTab>This showcase has no build steps yet.</EmptyTab>
-                ) : (
-                  <div className="space-y-3">
-                    {steps.map((step, index) => (
-                      <div
-                        key={step.id}
-                        className="flex gap-3 items-start bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-100 dark:border-slate-800 text-sm"
-                      >
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-xs">
-                          {index + 1}
-                        </span>
-                        <div className="min-w-0 flex-1 space-y-2">
-                          <p className="text-base font-bold text-slate-900 dark:text-slate-100">
-                            {step.title}
-                          </p>
-                          <MarkdownView source={step.description} />
-                          {step.imageUrl && (
+              {steps.length === 0 ? (
+                <EmptyTab>This showcase has no build steps yet.</EmptyTab>
+              ) : (
+                <ol className="space-y-3">
+                  {steps.map((step, index) => (
+                    <li
+                      key={step.id}
+                      className="flex gap-3 items-start bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-100 dark:border-slate-800 text-sm"
+                    >
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-xs">
+                        {index + 1}
+                      </span>
+
+                      <div className="min-w-0 flex-1 space-y-3">
+                        <p className="text-base font-bold text-slate-900 dark:text-slate-100">
+                          {step.title}
+                        </p>
+
+                        <MarkdownView source={step.description} />
+
+                        {step.codeSnippet && (
+                          <figure className="space-y-1.5">
+                            <figcaption className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                              <Code2 aria-hidden="true" className="size-3.5" />
+                              Code
+                            </figcaption>
+                            <pre className="overflow-x-auto rounded-xl bg-slate-900 p-4 font-mono text-sm leading-relaxed text-blue-300">
+                              {step.codeSnippet}
+                            </pre>
+                          </figure>
+                        )}
+
+                        {step.imageUrl && (
+                          <figure className="space-y-1.5">
+                            <figcaption className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                              <ImageIcon aria-hidden="true" className="size-3.5" />
+                              Screenshot
+                            </figcaption>
                             <ShowcaseImage
                               url={step.imageUrl}
                               alt={`${step.title} screenshot`}
                               heightClassName="h-48 sm:h-56"
                               sizes="(max-width: 1024px) 90vw, 720px"
                             />
-                          )}
-                        </div>
+                          </figure>
+                        )}
+
+                        {step.diagramUrl && (
+                          <figure className="space-y-1.5">
+                            <figcaption className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                              <Network aria-hidden="true" className="size-3.5" />
+                              Diagram
+                            </figcaption>
+                            {/* Taller than a screenshot: a diagram is the thing
+                                being read, and its labels have to stay legible. */}
+                            <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-3 dark:border-blue-500/20 dark:bg-blue-500/5">
+                              <ShowcaseImage
+                                url={step.diagramUrl}
+                                alt={`${step.title} diagram`}
+                                heightClassName="h-64 sm:h-80"
+                                framed={false}
+                              />
+                            </div>
+                          </figure>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Tab 2: Architecture Diagram */}
-            {showcaseTab === "diagram" && (
-              <div className={`${CARD} p-6`}>
-                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center space-x-2">
-                  <Network className="h-4 w-4 text-blue-600" />
-                  <span>Architecture &amp; Flow Diagrams</span>
-                </h3>
-
-                {diagrams.length === 0 ? (
-                  <EmptyTab>
-                    No diagrams were attached to this build guide.
-                  </EmptyTab>
-                ) : (
-                  <div className="space-y-5">
-                    {diagrams.map((step) => (
-                      <figure key={step.id} className="space-y-2">
-                        <figcaption className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                          Step {steps.indexOf(step) + 1} · {step.title}
-                        </figcaption>
-                        <div className="rounded-xl border border-blue-100 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 p-3">
-                          {/* Taller than a screenshot: a diagram is the thing
-                              being read, and its labels have to stay legible. */}
-                          <ShowcaseImage
-                            url={step.diagramUrl as string}
-                            alt={`${step.title} diagram`}
-                            heightClassName="h-64 sm:h-80"
-                            framed={false}
-                          />
-                        </div>
-                      </figure>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Tab 3: Code Snippet */}
-            {showcaseTab === "code" && (
-              <div className={`${CARD} p-6`}>
-                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center space-x-2">
-                  <Code2 className="h-4 w-4 text-blue-600" />
-                  <span>Core Logic / Implementation Code</span>
-                </h3>
-
-                {snippets.length === 0 ? (
-                  <EmptyTab>
-                    No code snippets were attached to this build guide.
-                  </EmptyTab>
-                ) : (
-                  <div className="space-y-5">
-                    {snippets.map((step) => (
-                      <div key={step.id} className="space-y-2">
-                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                          Step {steps.indexOf(step) + 1} · {step.title}
-                        </p>
-                        <pre className="rounded-xl bg-slate-900 p-4 text-sm font-mono text-blue-300 overflow-x-auto leading-relaxed">
-                          {step.codeSnippet}
-                        </pre>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
 
             {/* Comments Thread */}
             <div className={`${CARD} p-6`}>
@@ -586,30 +539,6 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
         </div>
       </main>
     </motion.div>
-  );
-}
-
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all cursor-pointer ${
-        active
-          ? "bg-blue-600 text-white shadow-xs"
-          : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
-      }`}
-    >
-      {children}
-    </button>
   );
 }
 

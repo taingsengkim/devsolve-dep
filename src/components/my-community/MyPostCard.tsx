@@ -1,19 +1,35 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
+import { toast } from "sonner";
 import {
   AlertCircle,
   Eye,
   FilePen,
   ImageOff,
+  LoaderCircle,
   Pencil,
   SquareArrowOutUpRight,
+  Trash2,
 } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useDeleteProblemMutation } from "@/lib/redux/services/problemsApi";
+import { useDeleteSolutionMutation } from "@/lib/redux/services/solutionsApi";
+import { useDeleteShowcaseMutation } from "@/lib/redux/services/showcasesApi";
 import type { MyPost } from "@/lib/redux/services/myCommunityApi";
 import { cn } from "@/lib/utils";
 
@@ -49,7 +65,45 @@ function formatDate(iso: string) {
   });
 }
 
+/** What deleting one costs, in the author's words. */
+const DELETE_COPY: Record<MyPost["kind"], string> = {
+  Problem:
+    "Answers already posted under it go with it, and anyone holding a link will find nothing there.",
+  Solution:
+    "The problem stays; only your answer to it is withdrawn. If it was the accepted one, that problem goes back to unsolved.",
+  Showcase:
+    "This one is not reversible — the showcase and its build steps are destroyed.",
+};
+
 export function MyPostCard({ post }: { post: MyPost }) {
+  const [confirming, setConfirming] = useState(false);
+
+  const [deleteProblem, { isLoading: deletingProblem }] =
+    useDeleteProblemMutation();
+  const [deleteSolution, { isLoading: deletingSolution }] =
+    useDeleteSolutionMutation();
+  const [deleteShowcase, { isLoading: deletingShowcase }] =
+    useDeleteShowcaseMutation();
+
+  const deleting = deletingProblem || deletingSolution || deletingShowcase;
+
+  const onDelete = async () => {
+    try {
+      if (post.kind === "Problem") {
+        await deleteProblem(post.id).unwrap();
+      } else if (post.kind === "Solution") {
+        await deleteSolution({ id: post.id, problemId: post.problemId }).unwrap();
+      } else {
+        await deleteShowcase(post.id).unwrap();
+      }
+
+      toast.success(`${post.kind} deleted.`, { description: post.title });
+      setConfirming(false);
+    } catch (caught) {
+      toast.error(messageOf(caught, `The ${post.kind.toLowerCase()} could not be deleted.`));
+    }
+  };
+
   return (
     <motion.article
       layout
@@ -175,9 +229,72 @@ export function MyPostCard({ post }: { post: MyPost }) {
                 Edit
               </Button>
             )}
+
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={deleting}
+              onClick={() => setConfirming(true)}
+              aria-label={`Delete ${post.title}`}
+              className="cursor-pointer rounded-xl border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 dark:border-rose-500/30 dark:text-rose-300 dark:hover:bg-rose-500/10"
+            >
+              {deleting ? (
+                <LoaderCircle
+                  data-icon="inline-start"
+                  aria-hidden="true"
+                  className="animate-spin motion-reduce:animate-none"
+                />
+              ) : (
+                <Trash2 data-icon="inline-start" aria-hidden="true" />
+              )}
+              Delete
+            </Button>
           </div>
         </div>
       </div>
+
+      <AlertDialog
+        open={confirming}
+        onOpenChange={(open) => !open && !deleting && setConfirming(false)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete “{post.title}”?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {DELETE_COPY[post.kind]}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={(event) => {
+                event.preventDefault();
+                void onDelete();
+              }}
+              className="bg-rose-600 text-white hover:bg-rose-700"
+            >
+              {deleting ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.article>
   );
+}
+
+/** Pulls something readable out of an RTK Query error. */
+function messageOf(error: unknown, fallback: string): string {
+  if (typeof error === "object" && error !== null && "data" in error) {
+    const data = (error as { data?: unknown }).data;
+    if (typeof data === "string" && data) return data;
+    if (typeof data === "object" && data !== null && "message" in data) {
+      const message = (data as { message?: unknown }).message;
+      if (typeof message === "string" && message) return message;
+    }
+  }
+  return fallback;
 }

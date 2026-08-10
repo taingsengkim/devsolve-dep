@@ -7,6 +7,8 @@ import {
   ThanksEntry,
   EditProfileFormData,
   AccountStatus,
+  FollowRecord,
+  FollowingCounts,
 } from "./types";
 
 export const mockProfile: Profile = {
@@ -152,4 +154,4 @@ export const mockEditProfileForm: EditProfileFormData = {
     communityActivity: { inApp: false, email: false },
     followActivity: { inApp: true, email: false },
   },
-};
+};

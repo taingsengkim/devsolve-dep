@@ -9,8 +9,10 @@ import {
   CheckCircle2,
   ChevronUp,
   CircleDot,
+  Clock,
   Eye,
   MessageSquare,
+  XCircle,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,16 +26,23 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useVoteDiscussionMutation } from "@/lib/redux/services/discussionsApi";
 import {
-  useBookmarkDiscussionMutation,
-  useVoteDiscussionMutation,
-} from "@/lib/redux/services/discussionsApi";
+  useAddBookmarkMutation,
+  useRemoveBookmarkMutation,
+} from "@/lib/redux/services/bookmarksApi";
 import type { DiscussionPost } from "@/lib/types/dicussion/types";
+import {
+  MY_COMMUNITY_HREF,
+  type MySolutionStatus,
+} from "@/hooks/useMySolutionStatus";
 import { cn } from "@/lib/utils";
 
 interface DiscussionCardProps {
   post: DiscussionPost;
   index?: number;
+  /** An answer the reader posted here that is not public yet, if any. */
+  myAnswer?: MySolutionStatus;
 }
 
 function getInitials(name: string) {
@@ -49,10 +58,14 @@ function getInitials(name: string) {
 export const DiscussionCard: React.FC<DiscussionCardProps> = ({
   post,
   index = 0,
+  myAnswer,
 }) => {
+  const bookmarkableType = post.category === "Showcase" ? "SHOWCASE" : "PROBLEM";
+
   const [voteDiscussion, { isLoading: isVoting }] = useVoteDiscussionMutation();
-  const [bookmarkDiscussion, { isLoading: isBookmarking }] =
-    useBookmarkDiscussionMutation();
+  const [addBookmark, { isLoading: isAddingBookmark }] = useAddBookmarkMutation();
+  const [removeBookmark, { isLoading: isRemovingBookmark }] = useRemoveBookmarkMutation();
+  const isBookmarking = isAddingBookmark || isRemovingBookmark;
 
   const [localVotes, setLocalVotes] = useState(post.votes);
   const [localUpvoted, setLocalUpvoted] = useState(post.isUpvoted ?? false);
@@ -85,8 +98,8 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
 
     const result = await voteDiscussion({
       id: post.id,
-      category: post.category,
-      upvote,
+      type: bookmarkableType,
+      isUpvoted: upvote,
     });
 
     // Nothing else holds the true count, so a rejected vote is rolled back here.
@@ -102,11 +115,9 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
     const bookmarked = !localBookmarked;
     setLocalBookmarked(bookmarked);
 
-    const result = await bookmarkDiscussion({
-      id: post.id,
-      category: post.category,
-      bookmarked,
-    });
+    const result = bookmarked
+      ? await addBookmark({ type: bookmarkableType, targetId: post.id })
+      : await removeBookmark({ type: bookmarkableType, targetId: post.id });
 
     if ("error" in result) setLocalBookmarked(!bookmarked);
   };
@@ -156,6 +167,30 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
                 )}
                 {post.status}
               </Badge>
+            )}
+
+            {/* The reader's own answer, held for review or turned away. It is
+                a real link over the card's own overlay, so it opts back into
+                pointer events and sits above it. */}
+            {myAnswer && (
+              <Link
+                href={MY_COMMUNITY_HREF}
+                className={cn(
+                  "pointer-events-auto relative z-10 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-sm font-bold transition-colors",
+                  myAnswer.review === "REJECTED"
+                    ? "bg-rose-100 text-rose-700 hover:bg-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25"
+                    : "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:hover:bg-amber-500/25",
+                )}
+              >
+                {myAnswer.review === "REJECTED" ? (
+                  <XCircle aria-hidden="true" className="size-3.5" />
+                ) : (
+                  <Clock aria-hidden="true" className="size-3.5" />
+                )}
+                {myAnswer.review === "REJECTED"
+                  ? "Your answer was rejected"
+                  : "Your answer is in review"}
+              </Link>
             )}
           </div>
 

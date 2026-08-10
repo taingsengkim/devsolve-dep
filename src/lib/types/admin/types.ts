@@ -377,4 +377,6 @@ export interface GetAdminUsersParams {
   pageNumber?: number;
   pageSize?: number;
 }
-
+export * from "./programAdminTypes";
+export * from "./problemAdminTypes";
+export * from "./solutionAdminTypes";

@@ -3,7 +3,7 @@
 import React, { useState, use } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import { AlertCircle, ArrowLeft, Bookmark } from "lucide-react";
+import { AlertCircle, ArrowLeft } from "lucide-react";
 import { useGetProgramByIdQuery } from "@/lib/redux/services/program/programsApi";
 import { ProgramDetailHero } from "@/components/programs/ProgramDetailHero";
 import { ProgramDetailSidebar } from "@/components/programs/ProgramDetailSidebar";
@@ -26,17 +26,12 @@ export default function ProgramDetailPage({
   const resolvedParams = use(params);
   const programId = resolvedParams.id;
   const [activeTab, setActiveTab] = useState<ProgramDetailTabId>("overview");
-  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
 
   const {
     data: program,
     isLoading,
     isError,
   } = useGetProgramByIdQuery(programId);
-
-  const toggleBookmark = () => {
-    setIsBookmarked((prev) => !prev);
-  };
 
   const pathname = usePathname();
   // Determine the base path: if pathname starts with /dashboard/programs, go to /dashboard/programs, else go to /programs

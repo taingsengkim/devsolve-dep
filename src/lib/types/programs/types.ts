@@ -3,7 +3,15 @@ export type ProgramState = "DRAFT" | "PUBLISHED" | "ARCHIVED" | "ACTIVE";
 export type ProgramType = "All" | "Bounty" | "Response";
 export type SubmissionState = "PENDING_REVIEW" | "APPROVED" | "REJECTED";
 export type ProgramVisibility = "PUBLIC" | "PRIVATE";
-export type AssetType = "WILDCARD" | "URL" | "CIDR" | "MOBILE" | "OTHER";
+export type AssetType =
+  | "URL"
+  | "WILDCARD"
+  | "IP_RANGE"
+  | "MOBILE_APP"
+  | "API"
+  | "SOURCE_CODE"
+  | "HARDWARE"
+  | "OTHER";
 export type SeverityLevel = "NONE" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
 // 1. NEW INTERFACES FOR RULES & EXCLUSIONS
@@ -30,15 +38,15 @@ export interface ProgramReward {
 }
 
 export interface Asset {
-  assetType: "URL" | "IP" | "MOBILE" | "OTHER";
+  assetType: AssetType;
   identifier: string;
   description: string;
   isInScope: boolean;
-  maxSeverity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+  maxSeverity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "NONE";
 }
 
 export interface RewardTier {
-  severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+  severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "NONE";
   minAmount: number;
   maxAmount: number;
   points: number;
@@ -48,8 +56,8 @@ export interface CreateProgramRequest {
   handle: string;
   name: string;
   description: string;
-  engagementType: "BOUNTY" | "VDP";
-  visibility: "PUBLIC" | "PRIVATE";
+  engagementType: "BOUNTY" | "RESPONSE";
+  visibility: "PUBLIC" | "PRIVATE" | "INVITE_ONLY";
   policy: string;
   proofOfConceptRequirements: string;
   rulesOfEngagement: RuleSection;

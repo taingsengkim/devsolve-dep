@@ -2,11 +2,14 @@ import { baseApi } from "./baseApi";
 import type { Page } from "./showcasesApi";
 import type {
   CreateProblemRequest,
+  ProblemSeverity,
   ProblemStatus,
+  ProblemType,
+  ProblemUpdateRequest,
   SdlcPhase,
 } from "@/lib/validations/problem";
 
-export type { ProblemStatus };
+export type { ProblemSeverity, ProblemStatus, ProblemType };
 
 /** Query parameters `findPublished` accepts. */
 export interface ProblemFeedParams {
@@ -21,10 +24,18 @@ export interface ProblemFeedParams {
   sort?: string;
 }
 
+/**
+ * Mirrors `AuthorSummary`, with one caveat the schema does not capture: the
+ * name arrives as `fullName` from `/problems` and as `displayName` from
+ * `/problems/{id}/solutions`. Both are declared, and `authorNameOf` is what
+ * reads them — never either field directly.
+ */
 export interface AuthorSummary {
   id?: string;
   fullName?: string;
+  displayName?: string;
   avatarUrl?: string;
+  /** Absent on the author embedded in a solution. */
   reputation?: number;
 }
 
@@ -49,12 +60,19 @@ export interface TagSummary {
 
 export interface AttachmentSummary {
   id?: string;
-  fileName?: string;
+  /** The upstream field. `fileName` was the old, wrong name for it. */
+  originalFileName?: string;
   downloadUrl?: string;
   mimeType?: string;
   sizeBytes?: number;
   uploadedBy?: string;
   createdAt?: string;
+}
+
+/** `EnvironmentSummary` — where the problem was seen, as opposed to what it uses. */
+export interface EnvironmentSummary {
+  technology?: string;
+  version?: string;
 }
 
 /** Mirrors the backend `ProblemResponse` returned after submission. */
@@ -64,13 +82,35 @@ export interface ProblemResponse {
   category?: CategorySummary;
   title?: string;
   description?: string;
+  problemType?: ProblemType;
   sdlcPhase?: SdlcPhase;
+  severity?: ProblemSeverity;
+  expectedBehavior?: string;
+  actualBehavior?: string;
+  reproductionSteps?: string[];
+  environment?: EnvironmentSummary[];
+  attemptsTried?: string;
+  errorMessage?: string;
+  repositoryUrl?: string;
   status?: ProblemStatus;
   viewCount?: number;
   technologies?: TechnologySummary[];
   tags?: TagSummary[];
   attachments?: AttachmentSummary[];
   contentWarnings?: string[];
+  /* Counts and viewer state the detail response carries, so a page that has
+     the problem does not have to fetch them a second time. */
+  solutionCount?: number;
+  commentCount?: number;
+  voteScore?: number;
+  bookmarkCount?: number;
+  /** Plural: a problem may accept more than one answer. */
+  acceptedSolutionIds?: string[];
+  isBookmarkedByViewer?: boolean;
+  viewerVote?: string;
+  canEdit?: boolean;
+  canDelete?: boolean;
+  canAcceptSolution?: boolean;
   publishedAt?: string;
   deletedAt?: string;
   version?: number;
@@ -92,6 +132,87 @@ export const problemsApi = baseApi.injectEndpoints({
       providesTags: (_result, _error, id) => [{ type: "Problem", id }],
     }),
 
+    /**
+     * PATCH /api/problems/{id} — the author revising their own problem.
+     *
+     * `version` becomes the `If-Match` header, quoted the way the upstream
+     * ETag is (`ETag: "3"` for `version: 3`). Saving over someone else's
+     * newer version is refused with a 412 rather than silently winning.
+     */
+    updateProblem: builder.mutation<
+      ProblemResponse,
+      { id: string; version: number; body: ProblemUpdateRequest }
+    >({
+      query: ({ id, version, body }) => ({
+        url: `/problems/${id}`,
+        method: "PATCH",
+        headers: { "If-Match": `"${version}"` },
+        body,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Problem", id },
+        { type: "Problem", id: "LIST" },
+        { type: "Problem", id: "MINE" },
+        { type: "Discussion", id: "LIST" },
+      ],
+    }),
+
+    /**
+     * DELETE /api/problems/{id} — the author withdrawing their own problem.
+     * A soft delete upstream, so the record survives but stops being served.
+     */
+    deleteProblem: builder.mutation<void, string>({
+      query: (id) => ({ url: `/problems/${id}`, method: "DELETE" }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: "Problem", id },
+        { type: "Problem", id: "LIST" },
+        { type: "Problem", id: "MINE" },
+        { type: "Discussion", id: "LIST" },
+      ],
+    }),
+
+    /**
+     * PUT /api/problems/{problemId}/accepted-solutions — the asker marking an
+     * answer as one that worked. Only the problem's author may do it, and the
+     * backend is what enforces that.
+     *
+     * Plural, and additive: accepting a second answer does not replace the
+     * first, so a problem solved two ways can say so.
+     */
+    setAcceptedSolution: builder.mutation<
+      ProblemResponse,
+      { problemId: string; solutionId: string }
+    >({
+      query: ({ problemId, solutionId }) => ({
+        url: `/problems/${problemId}/accepted-solutions`,
+        method: "PUT",
+        body: { solutionId },
+      }),
+      invalidatesTags: (_result, _error, { problemId }) => [
+        { type: "Problem", id: problemId },
+        { type: "Solution", id: problemId },
+      ],
+    }),
+
+    /**
+     * DELETE /api/problems/{problemId}/accepted-solutions/{solutionId} —
+     * un-accepting one answer. The id is in the path because several may be
+     * accepted at once, so which one is being withdrawn has to be named.
+     */
+    removeAcceptedSolution: builder.mutation<
+      ProblemResponse,
+      { problemId: string; solutionId: string }
+    >({
+      query: ({ problemId, solutionId }) => ({
+        url: `/problems/${problemId}/accepted-solutions/${solutionId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, { problemId }) => [
+        { type: "Problem", id: problemId },
+        { type: "Solution", id: problemId },
+      ],
+    }),
+
     /** GET /api/problems -> the published feed. Approved problems only. */
     getProblems: builder.query<Page<ProblemResponse>, ProblemFeedParams | void>({
       query: (args) => {
@@ -110,6 +231,10 @@ export const problemsApi = baseApi.injectEndpoints({
 
 export const {
   useCreateProblemMutation,
+  useUpdateProblemMutation,
   useGetProblemByIdQuery,
   useGetProblemsQuery,
+  useDeleteProblemMutation,
+  useSetAcceptedSolutionMutation,
+  useRemoveAcceptedSolutionMutation,
 } = problemsApi;

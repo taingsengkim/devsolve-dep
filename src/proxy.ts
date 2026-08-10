@@ -19,8 +19,14 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  // If NOT authenticated and visiting a private route → go to landing page
+  // If NOT authenticated and visiting a private route
   if (!sessionCookie && pathname.startsWith("/dashboard")) {
+    if (pathname.startsWith("/dashboard/profile/")) {
+      const rest = pathname.slice("/dashboard/profile/".length);
+      if (rest && !rest.startsWith("settings")) {
+        return NextResponse.redirect(new URL(`/profile/${rest}`, request.url));
+      }
+    }
     return NextResponse.redirect(new URL("/", request.url));
   }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
@@ -18,6 +18,8 @@ import {
   Send,
   Play,
   X,
+  Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import { AnimatedBeam } from "@/components/ui/animated-beam";
 
@@ -33,6 +35,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-slate-50/50 text-gray-900 font-sans antialiased">
       <AboutHeroSection />
+      <OfferSection />
       <TechStackSection />
       <TeamSection />
       <ContactSection />
@@ -40,8 +43,29 @@ export default function AboutPage() {
   );
 }
 
+const HERO_STATS: { value: string; label: string }[] = [
+  { value: "150+", label: "Active Programs" },
+  { value: "2.5K+", label: "Top Developers" },
+  { value: "5.0K+", label: "Solutions" },
+];
+
 function AboutHeroSection() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Close on Escape and move focus into the dialog when it opens.
+  useEffect(() => {
+    if (!isVideoOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsVideoOpen(false);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    closeButtonRef.current?.focus();
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isVideoOpen]);
 
   return (
     <section className="relative w-full py-10 sm:py-16 lg:py-20 px-4 sm:px-8 lg:px-12 bg-[#09131D] text-white overflow-hidden">
@@ -52,7 +76,6 @@ function AboutHeroSection() {
       <div className="max-w-7xl mx-auto space-y-10 sm:space-y-14">
         {/* Top Header Layout (Split 2-Column with Divider) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center pt-2 sm:pt-4">
-          
           {/* Left Column: Established badge & Main Title */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -60,14 +83,14 @@ function AboutHeroSection() {
             transition={{ duration: 0.6 }}
             className="lg:col-span-7 space-y-4"
           >
-            <div className="flex items-center gap-3">
-              <span className="text-xs sm:text-sm font-light tracking-wider text-slate-400 uppercase">
-                Establish
+            <span className="inline-flex items-center gap-2 border border-slate-700/70 bg-white/5 rounded-full pl-3 pr-4 py-1.5 shadow-2xs">
+              <span className="text-[11px] sm:text-xs font-light tracking-wider text-slate-400 uppercase">
+                Established
               </span>
-              <span className="text-sm sm:text-base font-bold text-white tracking-widest uppercase">
+              <span className="text-xs sm:text-sm font-bold text-white tracking-widest uppercase">
                 2026
               </span>
-            </div>
+            </span>
 
             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.08]">
               We Are{" "}
@@ -80,7 +103,7 @@ function AboutHeroSection() {
           </motion.div>
 
           {/* Vertical Divider (Desktop) */}
-          <div className="hidden lg:block lg:col-span-1 justify-self-center">
+          <div className="hidden lg:block lg:col-span-1 justify-self-center" aria-hidden="true">
             <div className="w-[1px] h-32 bg-slate-800/80" />
           </div>
 
@@ -96,34 +119,18 @@ function AboutHeroSection() {
             </p>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-4 border-t border-slate-800/70">
-              <div>
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight">
-                  150 +
+            <dl className="grid grid-cols-3 divide-x divide-slate-800/70 gap-4 pt-4 border-t border-slate-800/70">
+              {HERO_STATS.map((stat) => (
+                <div key={stat.label} className="first:pl-0 pl-4">
+                  <dt className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight">
+                    {stat.value}
+                  </dt>
+                  <dd className="text-[11px] sm:text-xs text-slate-400 font-medium leading-tight mt-1">
+                    {stat.label}
+                  </dd>
                 </div>
-                <div className="text-[11px] sm:text-xs text-slate-400 font-medium leading-tight mt-1">
-                  Active Programs
-                </div>
-              </div>
-
-              <div>
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight">
-                  2.5K +
-                </div>
-                <div className="text-[11px] sm:text-xs text-slate-400 font-medium leading-tight mt-1">
-                  Top Developers
-                </div>
-              </div>
-
-              <div>
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight">
-                  5.0K +
-                </div>
-                <div className="text-[11px] sm:text-xs text-slate-400 font-medium leading-tight mt-1">
-                  Solutions 
-                </div>
-              </div>
-            </div>
+              ))}
+            </dl>
           </motion.div>
         </div>
 
@@ -134,10 +141,10 @@ function AboutHeroSection() {
           transition={{ duration: 0.7, delay: 0.25 }}
           className="relative w-full h-[320px] sm:h-[480px] lg:h-[580px] rounded-2xl sm:rounded-3xl lg:rounded-[36px] overflow-hidden group shadow-2xl border border-slate-800/60"
         >
-          {/* Main Hero Image from Unsplash/Internet */}
+          {/* Main Hero Image */}
           <Image
             src="/about-hero-team.jpg"
-            alt="We Are Creative Digital Agency Team"
+            alt="The DevSolve team collaborating in a studio setting"
             fill
             priority
             className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
@@ -152,12 +159,13 @@ function AboutHeroSection() {
             <button
               onClick={() => setIsVideoOpen(true)}
               aria-label="Play presentation video"
-              className="relative group/btn cursor-pointer focus:outline-none"
+              aria-haspopup="dialog"
+              className="relative group/btn cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#09131D] focus-visible:ring-[#00D2B4] rounded-full"
             >
               {/* Outer Pulse Animation Ring */}
-              <span className="absolute -inset-4 rounded-full bg-[#00D2B4]/30 animate-ping duration-1000" />
-              
-              {/* Teal Play Button Circle matching mockup */}
+              <span className="absolute -inset-4 rounded-full bg-[#00D2B4]/30 animate-ping duration-1000 motion-reduce:animate-none" />
+
+              {/* Teal Play Button Circle */}
               <div className="relative w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full bg-[#00D2B4] hover:bg-[#00c0a5] text-slate-950 flex items-center justify-center shadow-xl shadow-[#00D2B4]/40 transition-all duration-300 group-hover/btn:scale-110">
                 <Play className="w-7 h-7 sm:w-9 sm:h-9 lg:w-10 lg:h-10 fill-slate-950 translate-x-0.5" />
               </div>
@@ -173,6 +181,9 @@ function AboutHeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="DevSolve presentation video"
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
             onClick={() => setIsVideoOpen(false)}
           >
@@ -186,8 +197,10 @@ function AboutHeroSection() {
             >
               {/* Close Button */}
               <button
+                ref={closeButtonRef}
                 onClick={() => setIsVideoOpen(false)}
-                className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-700 text-white flex items-center justify-center transition cursor-pointer"
+                aria-label="Close video"
+                className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-700 text-white flex items-center justify-center transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D2B4]"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -195,8 +208,8 @@ function AboutHeroSection() {
               <div className="relative aspect-video w-full">
                 <iframe
                   className="w-full h-full"
-                  src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1"
-                  title="DevSolve Creative Video"
+                  src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1"
+                  title="DevSolve platform overview"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
@@ -223,7 +236,6 @@ function OfferSection() {
     <section className="bg-slate-50/50 py-16 md:py-24 border-y border-gray-100">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-12">
-          
           <h2 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
             Everything in One Place
           </h2>
@@ -237,14 +249,14 @@ function OfferSection() {
             const Icon = ICON_MAP[item.iconName as keyof typeof ICON_MAP] || Bug;
             return (
               <div
-                key={index}
+                key={item.title ?? index}
                 className={`bg-white rounded-3xl p-7 border ${item.borderColor} shadow-xs hover:shadow-md transition duration-200 flex flex-col justify-between`}
               >
                 <div>
                   <div
                     className={`w-11 h-11 rounded-2xl ${item.accentBg} ${item.accentText} flex items-center justify-center mb-6`}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-5 h-5" aria-hidden="true" />
                   </div>
                   <h3 className="text-base font-bold text-gray-900 mb-2">
                     {item.title}
@@ -287,7 +299,6 @@ function TechStackSection() {
   return (
     <section className="max-w-7xl mx-auto px-6 py-16 md:py-20">
       <div className="text-center mb-12">
-
         <h2 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
           Built with Modern Technologies
         </h2>
@@ -310,9 +321,9 @@ function TechStackSection() {
 
         {/* Left Column - Frontend & Security */}
         <div className="flex flex-col justify-between h-full z-10 gap-3">
-          {leftTechs.map((item, idx) => (
+          {leftTechs.map((item) => (
             <div
-              key={idx}
+              key={item.tech.name}
               ref={item.ref}
               className={`bg-white rounded-2xl p-2.5 sm:p-4 border ${item.tech.borderColor} shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2.5 sm:gap-3.5 w-36 sm:w-52 lg:w-60 bg-white/90 backdrop-blur-sm group cursor-default`}
             >
@@ -321,7 +332,7 @@ function TechStackSection() {
               >
                 <Image
                   src={item.tech.image}
-                  alt={`${item.tech.name} logo`}
+                  alt=""
                   fill
                   className="object-contain p-1"
                 />
@@ -347,7 +358,7 @@ function TechStackSection() {
             <div className="w-16 h-16 sm:w-24 sm:h-24 lg:w-28 lg:h-28 relative flex items-center justify-center overflow-hidden rounded-full">
               <Image
                 src="/devsolve-logo.png"
-                alt="DevSolve Logo"
+                alt="DevSolve logo"
                 fill
                 className="object-contain p-1"
               />
@@ -360,9 +371,9 @@ function TechStackSection() {
 
         {/* Right Column - Backend & Infrastructure */}
         <div className="flex flex-col justify-between h-full z-10 gap-3">
-          {rightTechs.map((item, idx) => (
+          {rightTechs.map((item) => (
             <div
-              key={idx}
+              key={item.tech.name}
               ref={item.ref}
               className={`bg-white rounded-2xl p-2.5 sm:p-4 border ${item.tech.borderColor} shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2.5 sm:gap-3.5 w-36 sm:w-52 lg:w-60 bg-white/90 backdrop-blur-sm group cursor-default`}
             >
@@ -371,7 +382,7 @@ function TechStackSection() {
               >
                 <Image
                   src={item.tech.image}
-                  alt={`${item.tech.name} logo`}
+                  alt=""
                   fill
                   className="object-contain p-1"
                 />
@@ -391,7 +402,7 @@ function TechStackSection() {
         {/* Animated Beams (Left to Center) */}
         {leftTechs.map((item, idx) => (
           <AnimatedBeam
-            key={`left-${idx}`}
+            key={`left-${item.tech.name}`}
             containerRef={containerRef}
             fromRef={item.ref}
             toRef={centerRef}
@@ -406,7 +417,7 @@ function TechStackSection() {
         {/* Animated Beams (Center to Right) */}
         {rightTechs.map((item, idx) => (
           <AnimatedBeam
-            key={`right-${idx}`}
+            key={`right-${item.tech.name}`}
             containerRef={containerRef}
             fromRef={centerRef}
             toRef={item.ref}
@@ -418,7 +429,6 @@ function TechStackSection() {
           />
         ))}
       </div>
-
     </section>
   );
 }
@@ -427,8 +437,8 @@ function TeamSection() {
   const [activeTab, setActiveTab] = useState<"all" | "mentors" | "developers">("all");
 
   const allMembers = [
-    ...SUPERVISORS.map((m) => ({ ...m, category: "mentors" })),
-    ...STUDENT_DEVELOPERS.map((m) => ({ ...m, category: "developers" })),
+    ...SUPERVISORS.map((m) => ({ ...m, category: "mentors" as const })),
+    ...STUDENT_DEVELOPERS.map((m) => ({ ...m, category: "developers" as const })),
   ];
 
   const filteredMembers = allMembers.filter((m) => {
@@ -437,12 +447,17 @@ function TeamSection() {
     return true;
   });
 
+  const tabs: { id: "all" | "mentors" | "developers"; label: string; count: number }[] = [
+    { id: "all", label: "All Experts", count: allMembers.length },
+    { id: "mentors", label: "Mentors", count: SUPERVISORS.length },
+    { id: "developers", label: "Developers", count: STUDENT_DEVELOPERS.length },
+  ];
+
   return (
     <section id="team" className="max-w-7xl mx-auto px-6 py-16 md:py-24">
-      {/* Header section matching mockup */}
+      {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
         <div>
-  
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-gray-900 tracking-tight">
             Our Team of Experts
           </h2>
@@ -452,46 +467,35 @@ function TeamSection() {
         </div>
 
         {/* Filter Tabs */}
-        <div className="inline-flex items-center p-1 bg-slate-200/60 rounded-full text-xs font-medium self-start md:self-auto">
-          <button
-            onClick={() => setActiveTab("all")}
-            className={`px-4 py-2 rounded-full transition-all duration-200 cursor-pointer ${
-              activeTab === "all"
-                ? "bg-white text-gray-900 shadow-xs font-semibold"
-                : "text-gray-500 hover:text-gray-900"
-            }`}
-          >
-            All Experts ({allMembers.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("mentors")}
-            className={`px-4 py-2 rounded-full transition-all duration-200 cursor-pointer ${
-              activeTab === "mentors"
-                ? "bg-white text-gray-900 shadow-xs font-semibold"
-                : "text-gray-500 hover:text-gray-900"
-            }`}
-          >
-            Mentors ({SUPERVISORS.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("developers")}
-            className={`px-4 py-2 rounded-full transition-all duration-200 cursor-pointer ${
-              activeTab === "developers"
-                ? "bg-white text-gray-900 shadow-xs font-semibold"
-                : "text-gray-500 hover:text-gray-900"
-            }`}
-          >
-            Developers ({STUDENT_DEVELOPERS.length})
-          </button>
+        <div
+          role="tablist"
+          aria-label="Filter team members"
+          className="inline-flex items-center p-1 bg-slate-200/60 rounded-full text-xs font-medium self-start md:self-auto"
+        >
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 rounded-full transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                activeTab === tab.id
+                  ? "bg-white text-gray-900 shadow-xs font-semibold"
+                  : "text-gray-500 hover:text-gray-900"
+              }`}
+            >
+              {tab.label} ({tab.count})
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Responsive Grid matching mockup */}
+      {/* Responsive Grid */}
       <motion.div
         layout
         className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 gap-y-10"
       >
-        {/* Join The Team Card (First card as shown in mockup) */}
+        {/* Join The Team Card */}
         {(activeTab === "all" || activeTab === "developers") && (
           <motion.div
             layout
@@ -503,7 +507,7 @@ function TeamSection() {
           >
             <div>
               <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest block">
-                JOIN THE TEAM
+                Join the team
               </span>
               <h3 className="text-2xl sm:text-3xl font-light text-gray-900 leading-tight mt-4">
                 Want to shape the future of technology?
@@ -515,7 +519,7 @@ function TeamSection() {
 
             <Link
               href="#contact"
-              className="inline-flex items-center justify-center bg-gray-900 hover:bg-black text-white text-xs font-medium px-6 py-3 rounded-full transition shadow-xs w-fit group cursor-pointer"
+              className="inline-flex items-center justify-center bg-gray-900 hover:bg-black text-white text-xs font-medium px-6 py-3 rounded-full transition shadow-xs w-fit group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900"
             >
               Apply Now
               <ArrowRight className="ml-2 w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
@@ -530,6 +534,12 @@ function TeamSection() {
           ))}
         </AnimatePresence>
       </motion.div>
+
+      {filteredMembers.length === 0 && (
+        <p className="text-center text-sm text-gray-400 py-16">
+          No team members found in this category yet.
+        </p>
+      )}
     </section>
   );
 }
@@ -542,9 +552,9 @@ function MemberCard({ member }: { member: TeamMember }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3 }}
-      className="flex flex-col group cursor-pointer"
+      className="flex flex-col group"
     >
-      {/* Image Container with aspect ratio matching mockup */}
+      {/* Image Container */}
       <div className="relative aspect-[3/4] rounded-3xl overflow-hidden bg-[#f3f4f6] border border-gray-100 shadow-2xs group-hover:shadow-md transition-all duration-300">
         <Image
           src={member.image}
@@ -557,17 +567,17 @@ function MemberCard({ member }: { member: TeamMember }) {
         {/* Hover overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-        {/* Social Icons Overlay (Bottom Right of Image as in mockup) */}
+        {/* Social Icons Overlay */}
         <div className="absolute bottom-3 right-3 flex items-center gap-1.5 z-10">
           {member.github && (
             <a
               href={member.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full bg-black/80 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all duration-300 shadow-xs hover:scale-110"
-              title="GitHub"
+              className="w-8 h-8 rounded-full bg-black/80 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all duration-300 shadow-xs hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              aria-label={`${member.name}'s GitHub profile`}
             >
-              <FaGithub className="w-3.5 h-3.5" />
+              <FaGithub className="w-3.5 h-3.5" aria-hidden="true" />
             </a>
           )}
           {member.linkedin && (
@@ -575,10 +585,10 @@ function MemberCard({ member }: { member: TeamMember }) {
               href={member.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full bg-black/80 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all duration-300 shadow-xs hover:scale-110"
-              title="LinkedIn"
+              className="w-8 h-8 rounded-full bg-black/80 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all duration-300 shadow-xs hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              aria-label={`${member.name}'s LinkedIn profile`}
             >
-              <FaLinkedin className="w-3.5 h-3.5" />
+              <FaLinkedin className="w-3.5 h-3.5" aria-hidden="true" />
             </a>
           )}
           {member.telegram && (
@@ -586,19 +596,19 @@ function MemberCard({ member }: { member: TeamMember }) {
               href={member.telegram}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full bg-black/80 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all duration-300 shadow-xs hover:scale-110"
-              title="Telegram"
+              className="w-8 h-8 rounded-full bg-black/80 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all duration-300 shadow-xs hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              aria-label={`${member.name}'s Telegram`}
             >
-              <FaTelegram className="w-3.5 h-3.5" />
+              <FaTelegram className="w-3.5 h-3.5" aria-hidden="true" />
             </a>
           )}
           {member.email && (
             <a
               href={`mailto:${member.email}`}
-              className="w-8 h-8 rounded-full bg-black/80 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all duration-300 shadow-xs hover:scale-110"
-              title="Email"
+              className="w-8 h-8 rounded-full bg-black/80 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all duration-300 shadow-xs hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              aria-label={`Email ${member.name}`}
             >
-              <FaGlobe className="w-3.5 h-3.5" />
+              <FaGlobe className="w-3.5 h-3.5" aria-hidden="true" />
             </a>
           )}
         </div>
@@ -625,9 +635,50 @@ function MemberCard({ member }: { member: TeamMember }) {
   );
 }
 
+type FormState = {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+};
+
+const EMPTY_FORM: FormState = { name: "", email: "", subject: "", message: "" };
+
 function ContactSection() {
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  const handleChange = (field: keyof FormState) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("submitting");
+    setError(null);
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) throw new Error("Failed to send message");
+
+      setStatus("success");
+      setForm(EMPTY_FORM);
+    } catch {
+      setStatus("error");
+      setError("Something went wrong sending your message. Please try again or email us directly.");
+    }
+  };
+
   return (
-    <section className="bg-slate-50/50 py-16 md:py-24 border-t border-gray-100">
+    <section id="contact" className="bg-slate-50/50 py-16 md:py-24 border-t border-gray-100">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-12">
           <h2 className="text-xs font-semibold text-blue-600 uppercase tracking-widest">
@@ -649,7 +700,7 @@ function ContactSection() {
               <div className="space-y-4">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                    <Mail className="w-5 h-5" />
+                    <Mail className="w-5 h-5" aria-hidden="true" />
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</p>
@@ -663,7 +714,7 @@ function ContactSection() {
 
             <div className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 rounded-3xl p-8 border border-blue-100 shadow-xs">
               <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center mb-4">
-                <GraduationCap className="w-6 h-6" />
+                <GraduationCap className="w-6 h-6" aria-hidden="true" />
               </div>
               <h3 className="text-base font-bold text-gray-900 mb-2">University Project</h3>
               <p className="text-sm text-gray-600 leading-relaxed">
@@ -674,64 +725,117 @@ function ContactSection() {
             </div>
           </div>
 
-          {/* Complete Contact Form */}
+          {/* Contact Form */}
           <div className="lg:col-span-7">
             <div className="bg-white rounded-3xl p-8 shadow-xs border border-gray-100">
               <h3 className="text-lg font-bold text-gray-900 mb-6">Send a Message</h3>
-              <form className="space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              {status === "success" ? (
+                <div className="flex flex-col items-center justify-center text-center py-10 gap-3">
+                  <CheckCircle2 className="w-10 h-10 text-emerald-500" aria-hidden="true" />
+                  <p className="text-sm font-semibold text-gray-900">Message sent</p>
+                  <p className="text-xs text-gray-500 max-w-xs">
+                    Thanks for reaching out — we'll get back to you as soon as possible.
+                  </p>
+                  <button
+                    onClick={() => setStatus("idle")}
+                    className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-700 cursor-pointer"
+                  >
+                    Send another message
+                  </button>
+                </div>
+              ) : (
+                <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="contact-name" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                        Full Name
+                      </label>
+                      <input
+                        id="contact-name"
+                        name="name"
+                        type="text"
+                        required
+                        placeholder="John Doe"
+                        value={form.name}
+                        onChange={handleChange("name")}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="contact-email" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                        Email Address
+                      </label>
+                      <input
+                        id="contact-email"
+                        name="email"
+                        type="email"
+                        required
+                        placeholder="john@example.com"
+                        value={form.email}
+                        onChange={handleChange("email")}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
+                      />
+                    </div>
+                  </div>
+
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                      Full Name
+                    <label htmlFor="contact-subject" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                      Subject
                     </label>
                     <input
+                      id="contact-subject"
+                      name="subject"
                       type="text"
-                      placeholder="John Doe"
+                      required
+                      placeholder="How can we help?"
+                      value={form.subject}
+                      onChange={handleChange("subject")}
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                     />
                   </div>
+
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                      Email Address
+                    <label htmlFor="contact-message" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                      Message
                     </label>
-                    <input
-                      type="email"
-                      placeholder="john@example.com"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
+                    <textarea
+                      id="contact-message"
+                      name="message"
+                      rows={4}
+                      required
+                      placeholder="Write your message here..."
+                      value={form.message}
+                      onChange={handleChange("message")}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition resize-none"
                     />
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                    Subject
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="How can we help?"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
-                  />
-                </div>
+                  {status === "error" && error && (
+                    <p role="alert" className="text-xs font-medium text-red-600">
+                      {error}
+                    </p>
+                  )}
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                    Message
-                  </label>
-                  <textarea
-                    rows={4}
-                    placeholder="Write your message here..."
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition resize-none"
-                  ></textarea>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-6 py-3.5 rounded-xl transition shadow-md shadow-blue-600/20 gap-2 cursor-pointer"
-                >
-                  <Send className="w-4 h-4" />
-                  Send Message
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    disabled={status === "submitting"}
+                    className="w-full inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium text-sm px-6 py-3.5 rounded-xl transition shadow-md shadow-blue-600/20 gap-2 cursor-pointer"
+                  >
+                    {status === "submitting" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" aria-hidden="true" />
+                        Send Message
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </div>

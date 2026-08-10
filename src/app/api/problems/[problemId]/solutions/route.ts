@@ -1,13 +1,19 @@
 import { type NextRequest } from "next/server";
 import {
   asUuid,
+  badJson,
   badRequest,
   bearerTokenFor,
+  forbidden,
   forwardQuery,
   relay,
+  subjectOf,
+  unauthorized,
   unreachable,
   upstreamFetch,
+  validationFailed,
 } from "@/lib/api/proxy";
+import { solutionCreateSchema } from "@/lib/validations/solution";
 
 /**
  * GET /api/problems/{problemId}/solutions — the answers on one problem.
@@ -36,6 +42,60 @@ export async function GET(request: NextRequest, context: Context) {
       token,
     );
     return relay(upstream, "Unable to load the answers.");
+  } catch {
+    return unreachable("problem");
+  }
+}
+
+/**
+ * POST /api/problems/{problemId}/solutions — answer a problem.
+ *
+ * An author may not answer their own problem, so the problem is read first and
+ * its author compared with the caller. This is a guard, not the authority:
+ * the backend owns the rule, and anything it refuses comes back unchanged.
+ */
+export async function POST(request: NextRequest, context: Context) {
+  const token = await bearerTokenFor(request);
+  if (!token) return unauthorized();
+
+  const { problemId: raw } = await context.params;
+  const problemId = asUuid(raw);
+  if (!problemId) return badRequest("Problem id must be a UUID");
+
+  let payload: unknown;
+  try {
+    payload = await request.json();
+  } catch {
+    return badJson();
+  }
+
+  const parsed = solutionCreateSchema.safeParse(payload);
+  if (!parsed.success) return validationFailed(parsed.error);
+
+  try {
+    const problemResponse = await upstreamFetch(
+      `/problems/${problemId}`,
+      token,
+    );
+    if (!problemResponse.ok) {
+      return relay(problemResponse, "That problem could not be found.");
+    }
+
+    const problem = (await problemResponse.json()) as {
+      author?: { id?: string };
+    };
+    const caller = subjectOf(token);
+
+    if (caller && problem.author?.id && problem.author.id === caller) {
+      return forbidden("You cannot answer your own problem.");
+    }
+
+    const upstream = await upstreamFetch(
+      `/problems/${problemId}/solutions`,
+      token,
+      { method: "POST", body: JSON.stringify(parsed.data) },
+    );
+    return relay(upstream, "Your solution could not be posted.");
   } catch {
     return unreachable("problem");
   }

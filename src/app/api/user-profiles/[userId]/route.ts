@@ -19,13 +19,16 @@ type Context = { params: Promise<{ userId: string }> };
 
 export async function GET(request: NextRequest, context: Context) {
   const { userId: raw } = await context.params;
-  const userId = asUuid(raw);
-  if (!userId) return badRequest("User id must be a UUID");
+  const identifier = raw?.trim();
+  if (!identifier) return badRequest("User identifier is required");
 
   const token = await bearerTokenFor(request);
 
   try {
-    const upstream = await upstreamFetch(`/user-profiles/${userId}`, token);
+    const upstream = await upstreamFetch(
+      `/user-profiles/${encodeURIComponent(identifier)}`,
+      token,
+    );
     return relay(upstream, "Unable to load that profile.");
   } catch {
     return unreachable("profile");

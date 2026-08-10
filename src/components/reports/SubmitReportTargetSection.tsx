@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import {
   UseFormRegister,
   FieldErrors,
@@ -85,8 +84,8 @@ export function SubmitReportTargetSection({
   const selectedHttpMethod = watch("httpMethod") || "GET";
   const selectedProgramId = watch("programId");
 
-  const companyInitials = selectedProgram?.companyName
-    ? selectedProgram.companyName.substring(0, 2).toUpperCase()
+  const companyInitials = selectedProgram?.organizationName
+    ? selectedProgram.organizationName.substring(0, 2).toUpperCase()
     : "CV";
 
   const inScopeList: string[] =
@@ -103,16 +102,15 @@ export function SubmitReportTargetSection({
           "*.nexacloud.com (excluding out-of-scope)",
         ];
 
-  const outOfScopeList =
-    selectedProgram?.rulesExclusions &&
-    selectedProgram.rulesExclusions.length > 0
-      ? selectedProgram.rulesExclusions
-      : [
-          "cdn.nexacloud.com",
-          "status.nexacloud.com",
-          "Third-party integrations",
-          "Production customer databases",
-        ];
+  // Program (list-shape) carries no exclusions/rules data — that only exists
+  // on ProgramDetail, which this multi-program picker doesn't fetch — so this
+  // section stays a placeholder until that's wired through.
+  const outOfScopeList = [
+    "cdn.nexacloud.com",
+    "status.nexacloud.com",
+    "Third-party integrations",
+    "Production customer databases",
+  ];
 
   return (
     <div className="space-y-6 font-sans">
@@ -135,42 +133,27 @@ export function SubmitReportTargetSection({
       {/* Dynamic Program Header Banner */}
       <div className="bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          {selectedProgram?.logoUrl ? (
-            <Image
-              src={selectedProgram.logoUrl}
-              alt={selectedProgram.companyName || "Company logo"}
-              width={44}
-              height={44}
-              unoptimized
-              className="w-11 h-11 rounded-xl object-contain shrink-0 bg-white p-1 shadow-xs border border-slate-200 dark:border-slate-800"
-            />
-          ) : (
-            <div
-              className={`w-11 h-11 rounded-xl ${
-                selectedProgram?.logoBgColor || "bg-blue-600"
-              } flex items-center justify-center text-white font-bold text-base shrink-0 shadow-xs`}
-            >
-              {companyInitials}
-            </div>
-          )}
+          <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-base shrink-0 shadow-xs">
+            {companyInitials}
+          </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                {selectedProgram?.title || "Security Program"}
+                {selectedProgram?.name || "Security Program"}
               </h3>
               <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                {selectedProgram?.isPrivate ? "Private" : "Public"}
+                {selectedProgram?.visibility === "PRIVATE" ? "Private" : "Public"}
               </span>
               <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                {selectedProgram?.type || "Bounty"}
+                {selectedProgram?.engagementType === "RESPONSE" ? "Response" : "Bounty"}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-              {selectedProgram?.companyName || "Company"} · Max{" "}
-              {selectedProgram?.maxReward ||
-                selectedProgram?.rewardRange ||
-                "$10,000"}{" "}
-              · Avg response {selectedProgram?.stats?.responseTime || "2 days"}
+              {selectedProgram?.organizationName || "Company"} · Max{" "}
+              {selectedProgram?.maximumBounty
+                ? `$${selectedProgram.maximumBounty.toLocaleString()}`
+                : "$10,000"}{" "}
+              · Avg response 2 days
             </p>
           </div>
         </div>

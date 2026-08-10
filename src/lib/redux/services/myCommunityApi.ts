@@ -33,6 +33,8 @@ export interface MyPost {
   note?: string;
   /** A showcase with an edit queued behind the live version. */
   hasPendingEdit?: boolean;
+  /** For a solution, the problem it answers — needed to delete it cleanly. */
+  problemId?: string;
 }
 
 interface Paged<T> {
@@ -52,16 +54,27 @@ interface MyProblem {
     | "CLOSED"
     | "REJECTED";
   viewCount?: number;
+  /** The backend's own gate on whether this problem may still be revised. */
+  canEdit?: boolean;
   publishedAt?: string;
   createdAt?: string;
 }
 
+/**
+ * `SolutionResponse`, trimmed to what a row here shows. Acceptance and review
+ * are two separate things upstream: `isAccepted` is the asker picking this
+ * answer, `moderation.status` is a moderator letting it be seen at all.
+ */
 interface MySolution {
   id: string;
   problemId?: string;
-  description?: string;
-  reviewStatus?: "PENDING" | "APPROVED" | "REJECTED" | "ACCEPTED";
-  rejectionReason?: string;
+  summary?: string;
+  bodyMarkdown?: string;
+  isAccepted?: boolean;
+  moderation?: {
+    status?: "PENDING" | "APPROVED" | "REJECTED";
+    rejectionReason?: string;
+  };
   createdAt?: string;
 }
 
@@ -134,6 +147,9 @@ export const myCommunityApi = baseApi.injectEndpoints({
               problem.publishedAt ||
               problem.createdAt ||
               new Date().toISOString(),
+            /* `canEdit` is the backend's own gate — a published problem with
+               answers under it is not the same as an untouched draft. */
+            editHref: problem.canEdit ? `/community/${problem.id}/edit` : undefined,
             views: problem.viewCount ?? 0,
             state: PROBLEM_STATE[problem.status],
           }),
@@ -141,25 +157,33 @@ export const myCommunityApi = baseApi.injectEndpoints({
 
         const solutions = contentOf<MySolution>(solutionsResult).map(
           (solution): MyPost => {
-            const body = excerptOf(solution.description ?? "", 200);
+            const body = excerptOf(solution.bodyMarkdown ?? "", 200);
+            /* The summary is written to be the title. Falling back to the
+               first line of the body covers answers posted before it existed. */
+            const review = solution.moderation?.status;
             return {
               id: solution.id,
               kind: "Solution",
-              title: firstLine(body) || "Solution",
+              title: solution.summary?.trim() || firstLine(body) || "Solution",
               excerpt: body,
               href: solution.problemId
                 ? `/community/${solution.problemId}`
                 : undefined,
+              /* The edit route is nested under the problem, so an answer that
+                 does not name one cannot be edited from here. */
+              editHref: solution.problemId
+                ? `/community/${solution.problemId}/solutions/${solution.id}/edit`
+                : undefined,
+              problemId: solution.problemId,
               createdAt: solution.createdAt || new Date().toISOString(),
-              state:
-                solution.reviewStatus === "ACCEPTED"
-                  ? { label: "Accepted", tone: "live" }
-                  : solution.reviewStatus === "APPROVED"
-                    ? { label: "Published", tone: "live" }
-                    : solution.reviewStatus === "REJECTED"
-                      ? { label: "Rejected", tone: "blocked" }
-                      : { label: "Awaiting review", tone: "pending" },
-              note: solution.rejectionReason,
+              state: solution.isAccepted
+                ? { label: "Accepted", tone: "live" }
+                : review === "APPROVED"
+                  ? { label: "Published", tone: "live" }
+                  : review === "REJECTED"
+                    ? { label: "Rejected", tone: "blocked" }
+                    : { label: "Awaiting review", tone: "pending" },
+              note: solution.moderation?.rejectionReason,
             };
           },
         );
@@ -196,8 +220,12 @@ export const myCommunityApi = baseApi.injectEndpoints({
           ),
         };
       },
+      /* One tag per source list, so deleting a post of any kind refreshes this
+         page without the other two being refetched for nothing. */
       providesTags: [
         { type: "Showcase", id: "MINE" },
+        { type: "Problem", id: "MINE" },
+        { type: "Solution", id: "MINE" },
         { type: "Discussion", id: "LIST" },
       ],
     }),

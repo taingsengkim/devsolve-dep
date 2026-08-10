@@ -12,9 +12,10 @@ type ReportAction = "DISMISS" | "WARN" | "REMOVE";
 interface ContentReportCardProps {
   report: ContentReportItem;
   onAction: (id: string, action: ReportAction) => void;
+  onViewDetail?: (id: string) => void;
 }
 
-export function ContentReportCard({ report, onAction }: ContentReportCardProps) {
+export function ContentReportCard({ report, onAction, onViewDetail }: ContentReportCardProps) {
   return (
     <Card className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xs hover:shadow-xs transition duration-200">
       <CardContent className="p-0 space-y-4">
@@ -27,7 +28,10 @@ export function ContentReportCard({ report, onAction }: ContentReportCardProps) 
             >
               {report.type}
             </Badge>
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-snug">
+            <h3
+              onClick={() => onViewDetail?.(report.id)}
+              className="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-snug cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition"
+            >
               {report.title}
             </h3>
           </div>
@@ -38,7 +42,10 @@ export function ContentReportCard({ report, onAction }: ContentReportCardProps) 
 
         {/* Optional Content Preview Snippet */}
         {report.snippet && (
-          <p className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800/60 leading-relaxed font-normal">
+          <p
+            onClick={() => onViewDetail?.(report.id)}
+            className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800/60 leading-relaxed font-normal cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition"
+          >
             {report.snippet}
           </p>
         )}

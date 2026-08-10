@@ -40,12 +40,32 @@ export async function GET(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  const primaryUrl = isUuid
+    ? `${BACKEND_API_URL}/programs/${id}`
+    : `${BACKEND_API_URL}/programs/handle/${id}`;
+
+  const secondaryUrl = isUuid
+    ? `${BACKEND_API_URL}/programs/handle/${id}`
+    : `${BACKEND_API_URL}/programs/${id}`;
+
   try {
-    const upstream = await fetch(`${BACKEND_API_URL}/programs/${id}`, {
+    let upstream = await fetch(primaryUrl, {
       method: "GET",
       headers,
       cache: "no-store",
     });
+
+    if (upstream.status === 404) {
+      const fallbackUpstream = await fetch(secondaryUrl, {
+        method: "GET",
+        headers,
+        cache: "no-store",
+      });
+      if (fallbackUpstream.ok) {
+        upstream = fallbackUpstream;
+      }
+    }
 
     const raw = await upstream.text();
     let body: unknown = null;

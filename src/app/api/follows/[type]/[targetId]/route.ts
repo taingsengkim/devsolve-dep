@@ -28,7 +28,7 @@ const unreachable = () =>
     { status: 502 }
   );
 
-export async function POST(
+async function handleFollow(
   request: NextRequest,
   context: { params: Promise<{ type: string; targetId: string }> }
 ) {
@@ -39,7 +39,7 @@ export async function POST(
 
   try {
     const upstream = await fetch(`${BACKEND_API_URL}/follows/${type}/${targetId}`, {
-      method: "POST",
+      method: "PUT",
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
@@ -67,6 +67,20 @@ export async function POST(
   } catch {
     return unreachable();
   }
+}
+
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ type: string; targetId: string }> }
+) {
+  return handleFollow(request, context);
+}
+
+export async function POST(
+  request: NextRequest,
+  context: { params: Promise<{ type: string; targetId: string }> }
+) {
+  return handleFollow(request, context);
 }
 
 export async function DELETE(

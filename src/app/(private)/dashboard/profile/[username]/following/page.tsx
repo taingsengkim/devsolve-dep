@@ -7,12 +7,26 @@ import FollowingList from "@/components/profile/following/FollowingList";
 import {
   useGetProfileByUsernameQuery,
   useGetMyFollowsQuery,
+  useGetUserFollowingQuery,
 } from "@/lib/redux/services/profileApi";
 
 export default function FollowingPage() {
   const { username } = useParams<{ username: string }>();
   const { data: overview, isLoading: isLoadingProfile, isError } = useGetProfileByUsernameQuery(username);
-  const { data: follows, isLoading: isLoadingFollows } = useGetMyFollowsQuery();
+
+  const isOwnProfile = overview?.profile.isOwnProfile ?? false;
+  const userId = overview?.profile.id ?? "";
+
+  const { data: myFollows, isLoading: isLoadingMyFollows } = useGetMyFollowsQuery(undefined, {
+    skip: !overview || !isOwnProfile,
+  });
+
+  const { data: userFollows, isLoading: isLoadingUserFollows } = useGetUserFollowingQuery(userId, {
+    skip: !overview || isOwnProfile || !userId,
+  });
+
+  const isLoadingFollows = isOwnProfile ? isLoadingMyFollows : isLoadingUserFollows;
+  const follows = isOwnProfile ? myFollows : userFollows;
 
   if (isLoadingProfile || isLoadingFollows) {
     return (

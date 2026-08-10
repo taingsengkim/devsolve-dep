@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React, { useState } from "react";
+import React from "react";
 import {
   Bookmark,
   Send,
@@ -9,15 +9,37 @@ import {
   Layers,
   Calendar,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Program, ProgramDetail } from "@/lib/types/programs/types";
 import { Button } from "@/components/ui/button";
+import {
+  useGetBookmarkStatusQuery,
+  useAddBookmarkMutation,
+  useRemoveBookmarkMutation,
+} from "@/lib/redux/services/bookmarksApi";
 
 interface ProgramDetailHeroProps {
   program: ProgramDetail;
 }
 
 export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
-  const [isSaved, setIsSaved] = useState(false);
+  const { data: isSaved } = useGetBookmarkStatusQuery({ type: "PROGRAM", targetId: program.id });
+  const [addBookmark, { isLoading: isSaving }] = useAddBookmarkMutation();
+  const [removeBookmark, { isLoading: isRemoving }] = useRemoveBookmarkMutation();
+  const isToggling = isSaving || isRemoving;
+
+  const handleToggleSave = async () => {
+    if (isToggling) return;
+    try {
+      if (isSaved) {
+        await removeBookmark({ type: "PROGRAM", targetId: program.id }).unwrap();
+      } else {
+        await addBookmark({ type: "PROGRAM", targetId: program.id }).unwrap();
+      }
+    } catch {
+      toast.error("Failed to update bookmark. Please try again.");
+    }
+  };
 
   const isBounty = program.offersBounties || program.engagementType === "BOUNTY";
 
@@ -85,7 +107,8 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
           {/* TOP RIGHT BUTTONS */}
           <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
             <Button
-              onClick={() => setIsSaved(!isSaved)}
+              onClick={handleToggleSave}
+              disabled={isToggling}
               variant="outline"
               size="sm"
               className={`rounded-lg h-9 border-slate-200 text-xs font-semibold gap-1.5 transition-all ${

@@ -115,6 +115,215 @@
         }
       }
     },
+    "/api/v1/showcases/{id}/cover-image": {
+      "put": {
+        "tags": ["show-cases-controller"],
+        "operationId": "uploadCoverImage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string", "format": "binary" }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ShowCasesResponse" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["show-cases-controller"],
+        "operationId": "removeCoverImage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ShowCasesResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/showcase-steps/{showcaseId}/{stepId}/image": {
+      "put": {
+        "tags": ["show-case-step-controller"],
+        "operationId": "uploadImage",
+        "parameters": [
+          {
+            "name": "showcaseId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "stepId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string", "format": "binary" }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShowcaseStepResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["show-case-step-controller"],
+        "operationId": "removeImage",
+        "parameters": [
+          {
+            "name": "showcaseId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "stepId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShowcaseStepResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/showcase-steps/{showcaseId}/{stepId}/diagram": {
+      "put": {
+        "tags": ["show-case-step-controller"],
+        "operationId": "uploadDiagram",
+        "parameters": [
+          {
+            "name": "showcaseId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "stepId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string", "format": "binary" }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShowcaseStepResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["show-case-step-controller"],
+        "operationId": "removeDiagram",
+        "parameters": [
+          {
+            "name": "showcaseId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "stepId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShowcaseStepResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/follows/{type}/{targetId}": {
       "put": {
         "tags": ["follow-controller"],
@@ -4690,6 +4899,59 @@
           "updatedAt": { "type": "string", "format": "date-time" }
         }
       },
+      "ShowCasesResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "authorId": { "type": "string" },
+          "authorName": { "type": "string" },
+          "categoryId": { "type": "string", "format": "uuid" },
+          "categoryName": { "type": "string" },
+          "title": { "type": "string" },
+          "overview": { "type": "string" },
+          "coverImageUrl": { "type": "string" },
+          "liveUrl": { "type": "string" },
+          "repoUrl": { "type": "string" },
+          "videoUrl": { "type": "string" },
+          "reviewStatus": {
+            "type": "string",
+            "enum": ["PENDING", "APPROVED", "REJECTED"]
+          },
+          "viewCount": { "type": "integer", "format": "int32" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "tags": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ShowcaseTagResponse" }
+          },
+          "steps": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ShowcaseStepResponse" }
+          }
+        }
+      },
+      "ShowcaseStepResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "stepNumber": { "type": "integer", "format": "int32" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "codeSnippet": { "type": "string" },
+          "imageUrl": { "type": "string" },
+          "diagramUrl": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ShowcaseTagResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" }
+        }
+      },
       "FollowResponse": {
         "type": "object",
         "properties": {
@@ -4742,50 +5004,19 @@
           "coverImageUrl": { "type": "string" },
           "liveUrl": { "type": "string" },
           "repoUrl": { "type": "string" },
-          "videoUrl": { "type": "string" }
+          "videoUrl": { "type": "string" },
+          "tagIds": {
+            "type": "array",
+            "items": { "type": "string", "format": "uuid" },
+            "uniqueItems": true
+          },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true
+          }
         },
         "required": ["overview", "title"]
-      },
-      "ShowCasesResponse": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "authorId": { "type": "string" },
-          "authorName": { "type": "string" },
-          "categoryId": { "type": "string", "format": "uuid" },
-          "categoryName": { "type": "string" },
-          "title": { "type": "string" },
-          "overview": { "type": "string" },
-          "coverImageUrl": { "type": "string" },
-          "liveUrl": { "type": "string" },
-          "repoUrl": { "type": "string" },
-          "videoUrl": { "type": "string" },
-          "reviewStatus": {
-            "type": "string",
-            "enum": ["PENDING", "APPROVED", "REJECTED"]
-          },
-          "viewCount": { "type": "integer", "format": "int32" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" },
-          "steps": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ShowcaseStepResponse" }
-          }
-        }
-      },
-      "ShowcaseStepResponse": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "stepNumber": { "type": "integer", "format": "int32" },
-          "title": { "type": "string" },
-          "description": { "type": "string" },
-          "codeSnippet": { "type": "string" },
-          "imageUrl": { "type": "string" },
-          "diagramUrl": { "type": "string" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
-        }
       },
       "ShowcaseViewCountResponse": {
         "type": "object",
@@ -5754,7 +5985,17 @@
           "coverImageUrl": { "type": "string" },
           "liveUrl": { "type": "string" },
           "repoUrl": { "type": "string" },
-          "videoUrl": { "type": "string" }
+          "videoUrl": { "type": "string" },
+          "tagIds": {
+            "type": "array",
+            "items": { "type": "string", "format": "uuid" },
+            "uniqueItems": true
+          },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true
+          }
         }
       },
       "UpdateShowcaseStepRequest": {
@@ -6097,11 +6338,11 @@
             "items": { "$ref": "#/components/schemas/VoteResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6109,11 +6350,11 @@
         "type": "object",
         "properties": {
           "offset": { "type": "integer", "format": "int64" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "unpaged": { "type": "boolean" },
           "pageNumber": { "type": "integer", "format": "int32" },
           "pageSize": { "type": "integer", "format": "int32" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
-          "paged": { "type": "boolean" },
-          "unpaged": { "type": "boolean" }
+          "paged": { "type": "boolean" }
         }
       },
       "SortObject": {
@@ -6137,11 +6378,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6176,11 +6417,11 @@
             "items": { "$ref": "#/components/schemas/SolutionResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6195,11 +6436,11 @@
             "items": { "$ref": "#/components/schemas/ShowCasesSummaryResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6224,6 +6465,10 @@
           "hasUnpublishedRevision": { "type": "boolean" },
           "rejectionReason": { "type": "string" },
           "viewCount": { "type": "integer", "format": "int32" },
+          "tags": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ShowcaseTagResponse" }
+          },
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" }
         }
@@ -6239,11 +6484,11 @@
             "items": { "$ref": "#/components/schemas/ProblemResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6258,11 +6503,11 @@
             "items": { "$ref": "#/components/schemas/ShowCasesResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6293,6 +6538,10 @@
           "reviewedAt": { "type": "string", "format": "date-time" },
           "rejectionReason": { "type": "string" },
           "submittedAt": { "type": "string", "format": "date-time" },
+          "tags": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ShowcaseTagResponse" }
+          },
           "steps": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ShowcaseStepResponse" }
@@ -6310,11 +6559,11 @@
             "items": { "$ref": "#/components/schemas/ReportResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6331,11 +6580,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6423,11 +6672,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6477,11 +6726,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6525,11 +6774,11 @@
             "items": { "$ref": "#/components/schemas/NotificationResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6571,11 +6820,11 @@
             "items": { "$ref": "#/components/schemas/FollowerResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6590,11 +6839,11 @@
             "items": { "$ref": "#/components/schemas/FollowResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6609,11 +6858,11 @@
             "items": { "$ref": "#/components/schemas/FlagResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6628,11 +6877,11 @@
             "items": { "$ref": "#/components/schemas/CommentResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6658,11 +6907,11 @@
             "items": { "$ref": "#/components/schemas/BookmarkResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6698,11 +6947,11 @@
             "items": { "$ref": "#/components/schemas/AdminUserSummaryResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6719,11 +6968,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6750,6 +6999,10 @@
             "type": "string",
             "enum": ["PENDING", "APPROVED", "REJECTED"]
           },
+          "tags": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ShowcaseTagResponse" }
+          },
           "submittedAt": { "type": "string", "format": "date-time" }
         }
       },
@@ -6766,11 +7019,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6869,11 +7122,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6922,11 +7175,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       },
@@ -6941,11 +7194,11 @@
             "items": { "$ref": "#/components/schemas/ModerationActionResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
         }
       }

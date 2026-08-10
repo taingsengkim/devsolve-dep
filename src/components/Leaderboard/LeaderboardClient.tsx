@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   useGetLeaderboardQuery,
   useGetMyLeaderboardRankQuery,
@@ -25,15 +25,24 @@ const DEFAULT_FILTERS: LeaderboardFilterState = {
 export default function LeaderboardClient() {
   const [filters, setFilters] =
     useState<LeaderboardFilterState>(DEFAULT_FILTERS);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const tableRef = useRef<HTMLDivElement>(null);
+
+  // Debounce search so typing updates the input field instantly while avoiding rapid API re-queries
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(filters.search.trim());
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [filters.search]);
 
   const { data, isLoading } = useGetLeaderboardQuery({
     period: filters.period,
     country: filters.country,
     severity: filters.severity as SeverityLabel | "all",
-    search: filters.search,
+    search: debouncedSearch,
   });
   const { data: myRank } = useGetMyLeaderboardRankQuery(filters.period);
 
@@ -43,7 +52,7 @@ export default function LeaderboardClient() {
       setFilters((current) => ({ ...current, ...patch }));
       setPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -67,7 +76,7 @@ export default function LeaderboardClient() {
     <div className="space-y-8">
       <LeaderboardPodium podium={data.podium} period={filters.period} />
 
-      {/* <LeaderboardHighlights highlights={data.highlights} /> */}
+      {/* Filter & Search Bar */}
       <LeaderboardFilters
         value={filters}
         countries={data.countries}
@@ -79,8 +88,6 @@ export default function LeaderboardClient() {
           <h2 className="text-xl font-bold tracking-tight text-[#1E293B]">
             Full ranking
           </h2>
-          {/* Result count sits with the heading it describes, not in a row of
-              its own above the filters. */}
           <p className="text-sm font-medium text-slate-500">
             <span className="font-semibold text-slate-900 tabular-nums">
               {entries.length}

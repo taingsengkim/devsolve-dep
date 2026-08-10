@@ -22,9 +22,9 @@ async function bearerTokenFor(request: NextRequest): Promise<string | null> {
 const unauthorized = () =>
   NextResponse.json({ message: "Not authenticated" }, { status: 401 });
 
-export async function POST(
+async function handleDismiss(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  params: Promise<{ id: string }>
 ) {
   const token = await bearerTokenFor(request);
   if (!token) return unauthorized();
@@ -38,7 +38,7 @@ export async function POST(
 
   try {
     const upstream = await fetch(targetUrl, {
-      method: "POST",
+      method: "PATCH",
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
@@ -73,4 +73,18 @@ export async function POST(
       { status: 502 }
     );
   }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  return handleDismiss(request, context.params);
+}
+
+export async function POST(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  return handleDismiss(request, context.params);
 }
