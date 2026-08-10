@@ -405,13 +405,13 @@ export async function GET(request: NextRequest) {
     const [reportsResult, programsResult, organizationResult] = await Promise.all([
       upstreamJson(
         isCompany
-          ? "/reports?size=500&sort=submittedAt,DESC"
-          : "/reports/mine?size=500&sort=submittedAt,DESC",
+          ? "/reports?size=100&sort=submittedAt,DESC"
+          : "/reports/mine?size=100&sort=submittedAt,DESC",
         token,
       ),
       isCompany
         ? upstreamJson(
-            "/organizations/me/programs?size=500&sort=updatedAt,DESC",
+            "/organizations/me/programs?size=100&sort=updatedAt,DESC",
             token,
           )
         : Promise.resolve(null),
