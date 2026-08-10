@@ -80,16 +80,13 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
     <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs xl:flex-row xl:items-center dark:border-slate-800 dark:bg-slate-900">
       {/* REVIEW STATE TABS */}
       <ToggleGroup
-        multiple={false}
-        value={[submissionStateFilter]}
-        onValueChange={(values) => {
-          const next = values[values.length - 1] as
-            | ProgramSubmissionState
-            | "ALL"
-            | undefined;
-          if (next) onSubmissionStateChange(next);
+        type="single"
+        value={submissionStateFilter}
+        onValueChange={(value: string) => {
+          if (value) {
+            onSubmissionStateChange(value as ProgramSubmissionState | "ALL");
+          }
         }}
-        spacing={1}
         className="min-w-0 max-w-full overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800/80"
       >
         {REVIEW_TABS.map((tab) => {

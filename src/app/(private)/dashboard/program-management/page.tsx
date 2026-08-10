@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowLeft, Plus } from "lucide-react";
@@ -30,14 +30,34 @@ export default function ProgramManagementPage() {
   >("ALL");
   const [stateFilter, setStateFilter] = useState<ProgramState | "ALL">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(20);
 
-  // ADMIN queries
-  const { data: adminOverallResponse } = useGetAdminProgramsQuery(
-    { size: 100 },
+  // Debounce search input — waits 400 ms before sending to backend
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery.trim());
+      setPageIndex(0);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Lightweight queries to fetch total counts for stat cards & tab badges
+  const adminPendingCountQuery = useGetAdminProgramsQuery(
+    { submissionState: "PENDING_REVIEW", size: 1 },
     { skip: !isAdmin }
   );
+  const adminApprovedCountQuery = useGetAdminProgramsQuery(
+    { submissionState: "APPROVED", size: 1 },
+    { skip: !isAdmin }
+  );
+  const adminRejectedCountQuery = useGetAdminProgramsQuery(
+    { submissionState: "REJECTED", size: 1 },
+    { skip: !isAdmin }
+  );
+
+  // PRIMARY ADMIN DATA QUERY — Sends query parameters (submissionState, page, size, state) directly to backend API
   const {
     data: adminResponse,
     isLoading: isAdminLoading,
@@ -47,13 +67,14 @@ export default function ProgramManagementPage() {
       submissionState:
         submissionStateFilter === "ALL" ? undefined : submissionStateFilter,
       state: stateFilter === "ALL" ? undefined : stateFilter,
+      search: debouncedSearch || undefined,
       page: pageIndex,
       size: pageSize,
     },
     { skip: !isAdmin }
   );
 
-  // COMPANY queries (GET /organizations/me/programs)
+  // COMPANY DATA QUERY (for non-admin users)
   const { data: companyOverallResponse } = useGetMyCompanyProgramsQuery(
     { size: 100 },
     { skip: isAdmin }
@@ -71,50 +92,48 @@ export default function ProgramManagementPage() {
   );
 
   const activeResponse = isAdmin ? adminResponse : companyResponse;
-  const overallResponse = isAdmin ? adminOverallResponse : companyOverallResponse;
   const isLoading = isAdmin ? isAdminLoading : isCompanyLoading;
   const isFetching = isAdmin ? isAdminFetching : isCompanyFetching;
 
-  const programs: ProgramManagementSummaryItem[] = useMemo(
+  // Calculate stat cards & tab counts directly from backend responses
+  const counts = useMemo(() => {
+    if (isAdmin) {
+      const pendingCount = adminPendingCountQuery.data?.totalElements ?? 0;
+      const approvedCount = adminApprovedCountQuery.data?.totalElements ?? 0;
+      const rejectedCount = adminRejectedCountQuery.data?.totalElements ?? 0;
+      return {
+        all: pendingCount + approvedCount + rejectedCount,
+        pendingReview: pendingCount,
+        approved: approvedCount,
+        rejected: rejectedCount,
+      };
+    } else {
+      const items = companyOverallResponse?.content ?? companyResponse?.content ?? [];
+      const total = companyOverallResponse?.totalElements ?? items.length;
+      return {
+        all: total,
+        pendingReview: items.filter((p) => p.submissionState === "PENDING_REVIEW").length,
+        approved: items.filter((p) => p.submissionState === "APPROVED").length,
+        rejected: items.filter((p) => p.submissionState === "REJECTED").length,
+      };
+    }
+  }, [
+    isAdmin,
+    adminPendingCountQuery.data,
+    adminApprovedCountQuery.data,
+    adminRejectedCountQuery.data,
+    companyOverallResponse,
+    companyResponse,
+  ]);
+
+  // Data from backend — search/filter is fully server-side via query params
+  const displayedPrograms: ProgramManagementSummaryItem[] = useMemo(
     () => activeResponse?.content ?? [],
     [activeResponse]
   );
-  const totalElements = activeResponse?.totalElements ?? programs.length;
-  const totalPages = activeResponse?.totalPages ?? 1;
 
-  const filteredPrograms = useMemo(() => {
-    let result = programs;
-
-    // Apply client-side filters for Company view if needed
-    if (!isAdmin) {
-      if (submissionStateFilter !== "ALL") {
-        result = result.filter((p) => p.submissionState === submissionStateFilter);
-      }
-      if (stateFilter !== "ALL") {
-        result = result.filter((p) => p.state === stateFilter);
-      }
-    }
-
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return result;
-    return result.filter(
-      (p) =>
-        p.name?.toLowerCase().includes(q) ||
-        p.handle?.toLowerCase().includes(q) ||
-        p.organizationName?.toLowerCase().includes(q)
-    );
-  }, [programs, searchQuery, isAdmin, submissionStateFilter, stateFilter]);
-
-  const counts = useMemo(() => {
-    const items = overallResponse?.content ?? programs;
-    return {
-      all: overallResponse?.totalElements ?? totalElements,
-      pendingReview: items.filter((p) => p.submissionState === "PENDING_REVIEW")
-        .length,
-      approved: items.filter((p) => p.submissionState === "APPROVED").length,
-      rejected: items.filter((p) => p.submissionState === "REJECTED").length,
-    };
-  }, [overallResponse, programs, totalElements]);
+  const totalElements = activeResponse?.totalElements ?? displayedPrograms.length;
+  const totalPages = activeResponse?.totalPages ?? Math.max(1, Math.ceil(totalElements / pageSize));
 
   const handleSubmissionStateChange = useCallback(
     (state: ProgramSubmissionState | "ALL") => {
@@ -236,7 +255,7 @@ export default function ProgramManagementPage() {
         ) : (
           <ProgramDataTable
             columns={columns}
-            data={filteredPrograms}
+            data={displayedPrograms}
             pageIndex={pageIndex}
             pageSize={pageSize}
             pageCount={totalPages}

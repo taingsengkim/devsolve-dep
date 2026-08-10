@@ -3,6 +3,7 @@ import {
   PendingOrganizationsResponse,
   OrganizationResponse,
   OrganizationReviewHistoryItem,
+  PaginatedResponse,
 } from "@/lib/types/admin/types";
 
 export const companyVerificationApi = baseApi.injectEndpoints({
@@ -18,6 +19,24 @@ export const companyVerificationApi = baseApi.injectEndpoints({
           pageSize: params?.pageSize ?? 20,
         },
       }),
+      providesTags: ["CompanyVerification"],
+    }),
+
+    getAdminOrganizations: builder.query<
+      PendingOrganizationsResponse | PaginatedResponse<OrganizationResponse>,
+      { status?: string; pageNumber?: number; pageSize?: number } | void
+    >({
+      query: (params) => {
+        const queryParams: Record<string, any> = {
+          pageNumber: params?.pageNumber ?? 0,
+          pageSize: params?.pageSize ?? 100,
+        };
+        if (params?.status) queryParams.status = params.status;
+        return {
+          url: "/admin/organizations",
+          params: queryParams,
+        };
+      },
       providesTags: ["CompanyVerification"],
     }),
 
@@ -62,6 +81,7 @@ export const companyVerificationApi = baseApi.injectEndpoints({
 
 export const {
   useGetPendingOrganizationsQuery,
+  useGetAdminOrganizationsQuery,
   useGetOrganizationByIdQuery,
   useApproveOrganizationMutation,
   useRejectOrganizationMutation,

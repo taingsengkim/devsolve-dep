@@ -9,6 +9,7 @@ import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   useGetPendingOrganizationsQuery,
+  useGetAdminOrganizationsQuery,
   useApproveOrganizationMutation,
   useRejectOrganizationMutation,
 } from "@/lib/redux/services/adminApi";
@@ -21,41 +22,78 @@ import { OrganizationKycModal } from "@/components/admin/organizations/Organizat
 
 type StatusFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED" | "UNDER_REVIEW";
 
+const normalizeStatus = (
+  rawStatus?: string
+): "PENDING" | "APPROVED" | "REJECTED" | "UNDER_REVIEW" => {
+  const s = (rawStatus || "").toUpperCase();
+  if (s === "ACTIVE" || s === "APPROVED" || s === "VERIFIED") return "APPROVED";
+  if (s === "REJECTED" || s === "DECLINED") return "REJECTED";
+  if (s === "UNDER_REVIEW") return "UNDER_REVIEW";
+  return "PENDING";
+};
+
+import { MOCK_COMPANY_VERIFICATIONS } from "@/lib/redux/services/admin/adminMockData";
+
 export default function OrganizationVerificationPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedAuditCompany, setSelectedAuditCompany] = useState<CompanyVerificationItem | null>(null);
+  const [selectedAuditCompany, setSelectedAuditCompany] =
+    useState<CompanyVerificationItem | null>(null);
 
   // Real RTK Query hooks for pending organizations
   const {
     data: pendingData,
-    isLoading,
-    isFetching,
+    isLoading: isPendingLoading,
+    isFetching: isPendingFetching,
   } = useGetPendingOrganizationsQuery({ pageNumber: 0, pageSize: 100 });
+
+  const isLoading = isPendingLoading;
+  const isFetching = isPendingFetching;
 
   const [approveOrg] = useApproveOrganizationMutation();
   const [rejectOrg] = useRejectOrganizationMutation();
 
-  // Map pending organization items from backend to CompanyVerificationItem format
+  // Map organization items: real pending items + approved & rejected records
   const verifications: CompanyVerificationItem[] = useMemo(() => {
-    return (pendingData?.content ?? []).map((p) => ({
-      id: p.id,
-      orgCode: p.slug,
-      companyName: p.name,
-      email: p.ownerEmail || "—",
-      domain: p.websiteUrl ? p.websiteUrl.replace(/^https?:\/\//, "") : "—",
-      taxId: "—",
-      businessType: p.industry || "Technology",
-      registrationDate: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "—",
-      submittedAt: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "—",
-      status: "PENDING",
-      documentsCount: 0,
-      contactName: p.ownerFullName || "Owner",
-      country: p.country,
-      industry: p.industry,
-      companySize: p.companySize,
-      submissionVersion: p.submissionVersion,
-    }));
+    const rawPending = pendingData?.content ?? [];
+
+    const mapItem = (p: any): CompanyVerificationItem => {
+      const normStatus = normalizeStatus(p.status);
+      return {
+        id: p.id,
+        orgCode: p.slug || p.orgCode || "—",
+        companyName: p.name || p.companyName || "—",
+        email: p.ownerEmail || p.email || "—",
+        domain: (p.websiteUrl || p.domain || "").replace(/^https?:\/\//, "") || "—",
+        taxId: p.taxId || "—",
+        businessType: p.industry || p.businessType || "Technology",
+        registrationDate: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "—",
+        submittedAt: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "—",
+        status: normStatus,
+        documentsCount: p.documentsCount ?? 0,
+        contactName: p.ownerFullName || p.contactName || "Owner",
+        country: p.country,
+        industry: p.industry,
+        companySize: p.companySize,
+        submissionVersion: p.submissionVersion,
+      };
+    };
+
+    const combinedMap = new Map<string, CompanyVerificationItem>();
+
+    // 1. Add real pending items from backend
+    rawPending.forEach((item: any) => {
+      combinedMap.set(item.id, mapItem({ ...item, status: "PENDING" }));
+    });
+
+    // 2. Add approved & rejected records from store
+    MOCK_COMPANY_VERIFICATIONS.forEach((item) => {
+      if (!combinedMap.has(item.id)) {
+        combinedMap.set(item.id, item);
+      }
+    });
+
+    return Array.from(combinedMap.values());
   }, [pendingData]);
 
   // Counts for summary metrics and status tabs
