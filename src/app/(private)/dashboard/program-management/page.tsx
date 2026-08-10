@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { Suspense, useCallback, useMemo, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
@@ -34,8 +34,22 @@ function ProgramManagementPageContent() {
   const [stateFilter, setStateFilter] = useState<ProgramState | "ALL">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [sort, setSort] = useState("updatedAt,DESC");
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(20);
+
+  // Debounce search query changes (300ms) to update debouncedSearch and reset page
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Reset pageIndex to 0 when debounced search value changes
+  useEffect(() => {
+    setPageIndex(0);
+  }, [debouncedSearch]);
 
   // ADMIN queries
   const { data: adminOverallResponse } = useGetAdminProgramsQuery(
@@ -43,7 +57,7 @@ function ProgramManagementPageContent() {
     { skip: !isAdminScope }
   );
 
-  // PRIMARY ADMIN DATA QUERY — Sends query parameters (submissionState, page, size, state) directly to backend API
+  // PRIMARY ADMIN DATA QUERY — Sends query parameters (submissionState, state, search, page, size, sort) directly to backend API
   const {
     data: adminResponse,
     isLoading: isAdminLoading,
@@ -56,6 +70,7 @@ function ProgramManagementPageContent() {
       search: debouncedSearch || undefined,
       page: pageIndex,
       size: pageSize,
+      sort,
     },
     { skip: !isAdminScope }
   );
@@ -71,8 +86,13 @@ function ProgramManagementPageContent() {
     isFetching: isCompanyFetching,
   } = useGetMyCompanyProgramsQuery(
     {
+      submissionState:
+        submissionStateFilter === "ALL" ? undefined : submissionStateFilter,
+      state: stateFilter === "ALL" ? undefined : stateFilter,
+      search: debouncedSearch || undefined,
       page: pageIndex,
       size: pageSize,
+      sort,
     },
     { skip: isAdminScope }
   );
@@ -84,28 +104,82 @@ function ProgramManagementPageContent() {
   const isLoading = isAdminScope ? isAdminLoading : isCompanyLoading;
   const isFetching = isAdminScope ? isAdminFetching : isCompanyFetching;
 
-  // Calculate stat cards & tab counts directly from backend responses
-  const counts = useMemo(() => {
-    const items = overallResponse?.content ?? activeResponse?.content ?? [];
-    const total = overallResponse?.totalElements ?? activeResponse?.totalElements ?? items.length;
-    return {
-      all: total,
-      pendingReview: items.filter((p) => p.submissionState === "PENDING_REVIEW").length,
-      approved: items.filter((p) => p.submissionState === "APPROVED").length,
-      rejected: items.filter((p) => p.submissionState === "REJECTED").length,
-    };
-  }, [overallResponse, activeResponse]);
-
-  // Data from backend — search/filter is fully server-side via query params
-  const displayedPrograms: ProgramManagementSummaryItem[] = useMemo(
-    () => activeResponse?.content ?? [],
-    [activeResponse]
+  // Raw items from overall response or active response
+  const rawPrograms: ProgramManagementSummaryItem[] = useMemo(
+    () => overallResponse?.content ?? activeResponse?.content ?? [],
+    [overallResponse, activeResponse]
   );
-  const totalElements = activeResponse?.totalElements ?? displayedPrograms.length;
-  const totalPages = activeResponse?.totalPages ?? 1;
 
-  const filteredPrograms = displayedPrograms;
+  // Calculate stat cards & tab counts directly from raw programs
+  const counts = useMemo(() => {
+    return {
+      all: rawPrograms.length,
+      pendingReview: rawPrograms.filter((p) => p.submissionState === "PENDING_REVIEW").length,
+      approved: rawPrograms.filter((p) => p.submissionState === "APPROVED").length,
+      rejected: rawPrograms.filter((p) => p.submissionState === "REJECTED").length,
+    };
+  }, [rawPrograms]);
 
+  // Filter programs by submissionStateFilter, stateFilter, and searchQuery
+  const filteredPrograms = useMemo(() => {
+    let list = rawPrograms;
+
+    if (submissionStateFilter !== "ALL") {
+      list = list.filter((p) => p.submissionState === submissionStateFilter);
+    }
+
+    if (stateFilter !== "ALL") {
+      list = list.filter((p) => p.state === stateFilter);
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      list = list.filter(
+        (p) =>
+          p.name?.toLowerCase().includes(q) ||
+          p.handle?.toLowerCase().includes(q) ||
+          p.organizationName?.toLowerCase().includes(q)
+      );
+    }
+
+    return list;
+  }, [rawPrograms, submissionStateFilter, stateFilter, searchQuery]);
+
+  // Apply sorting by chosen field and direction
+  const sortedAndFilteredPrograms = useMemo(() => {
+    if (!sort) return filteredPrograms;
+    const list = [...filteredPrograms];
+    const [field, direction] = sort.split(",");
+    const isDesc = direction?.toUpperCase() === "DESC";
+
+    list.sort((a, b) => {
+      let valA: any = a[field as keyof ProgramManagementSummaryItem] ?? "";
+      let valB: any = b[field as keyof ProgramManagementSummaryItem] ?? "";
+
+      if (field === "createdAt" || field === "updatedAt") {
+        valA = new Date(valA).getTime() || 0;
+        valB = new Date(valB).getTime() || 0;
+      } else if (typeof valA === "string") {
+        valA = valA.toLowerCase();
+        valB = valB.toLowerCase();
+      }
+
+      if (valA < valB) return isDesc ? 1 : -1;
+      if (valA > valB) return isDesc ? -1 : 1;
+      return 0;
+    });
+
+    return list;
+  }, [filteredPrograms, sort]);
+
+  // Paginate the filtered & sorted list
+  const totalElements = sortedAndFilteredPrograms.length;
+  const totalPages = Math.ceil(totalElements / pageSize) || 1;
+
+  const displayedPrograms = useMemo(() => {
+    const start = pageIndex * pageSize;
+    return sortedAndFilteredPrograms.slice(start, start + pageSize);
+  }, [sortedAndFilteredPrograms, pageIndex, pageSize]);
 
   const handleSubmissionStateChange = useCallback(
     (state: ProgramSubmissionState | "ALL") => {
@@ -122,6 +196,10 @@ function ProgramManagementPageContent() {
 
   const handleSearchQueryChange = useCallback((query: string) => {
     setSearchQuery(query);
+  }, []);
+
+  const handleSortChange = useCallback((newSort: string) => {
+    setSort(newSort);
     setPageIndex(0);
   }, []);
 
@@ -218,6 +296,8 @@ function ProgramManagementPageContent() {
         onStateChange={handleStateChange}
         searchQuery={searchQuery}
         onSearchQueryChange={handleSearchQueryChange}
+        sort={sort}
+        onSortChange={handleSortChange}
         counts={counts}
       />
 

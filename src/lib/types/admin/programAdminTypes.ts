@@ -36,5 +36,5 @@ export interface GetAdminProgramsParams {
   search?: string;
   page?: number;
   size?: number;
-  sort?: string[];
+  sort?: string | string[];
 }

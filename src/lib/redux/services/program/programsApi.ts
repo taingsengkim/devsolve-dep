@@ -46,7 +46,14 @@ export const programsApi = proxyApi.injectEndpoints({
     // GET /organizations/me/programs (COMPANY role)
     getMyCompanyPrograms: builder.query<
       PageProgramManagementSummaryResponseDto,
-      { page?: number; size?: number; sort?: string } | void
+      {
+        page?: number;
+        size?: number;
+        sort?: string;
+        submissionState?: string;
+        state?: string;
+        search?: string;
+      } | void
     >({
       query: (params) => {
         const queryParams = new URLSearchParams();
@@ -58,6 +65,15 @@ export const programsApi = proxyApi.injectEndpoints({
         }
         if (params?.sort) {
           queryParams.append("sort", params.sort);
+        }
+        if (params?.submissionState) {
+          queryParams.append("submissionState", params.submissionState);
+        }
+        if (params?.state) {
+          queryParams.append("state", params.state);
+        }
+        if (params?.search && params.search.trim()) {
+          queryParams.append("search", params.search.trim());
         }
 
         const queryString = queryParams.toString();
