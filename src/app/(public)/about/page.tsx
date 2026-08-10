@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useRef, useEffect} from "react";
-import { Layers } from "lucide-react"; 
+import { useState, useRef, useEffect } from "react";
+import { Layers } from "lucide-react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { FaGithub, FaLinkedin, FaTelegram, FaGlobe } from "react-icons/fa6";
@@ -46,7 +46,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-slate-50/50 text-gray-900 font-sans antialiased">
       <AboutHeroSection />
-      <DevSolveOverview/>
+      <DevSolveOverview />
       <TechStackSection />
       <TeamSection />
       <ContactSection />
@@ -65,14 +65,14 @@ function AboutHeroSection() {
     { left: "60%", top: "12%", size: "w-3 h-3 sm:w-4 sm:h-4", delay: 1.5, duration: 9 },
     { left: "78%", top: "22%", size: "w-2.5 h-2.5 sm:w-3 sm:h-3", delay: 2, duration: 6.5 },
     { left: "90%", top: "10%", size: "w-4 h-4 sm:w-5 sm:h-5", delay: 0.2, duration: 7.5 },
-    
+
     { left: "5%", top: "45%", size: "w-3 h-3 sm:w-4 sm:h-4", delay: 1.2, duration: 8 },
     { left: "20%", top: "38%", size: "w-4 h-4 sm:w-5 sm:h-5", delay: 0.4, duration: 6.5 },
     { left: "35%", top: "52%", size: "w-2.5 h-2.5 sm:w-3 sm:h-3", delay: 1.8, duration: 7 },
     { left: "50%", top: "40%", size: "w-3.5 h-3.5 sm:w-4 sm:h-4", delay: 0.8, duration: 8.5 },
     { left: "68%", top: "48%", size: "w-4 h-4 sm:w-5 sm:h-5", delay: 2.2, duration: 6 },
     { left: "85%", top: "42%", size: "w-3 h-3 sm:w-4 sm:h-4", delay: 1.1, duration: 7.2 },
-    
+
     { left: "12%", top: "75%", size: "w-4 h-4 sm:w-5 sm:h-5", delay: 0.3, duration: 7 },
     { left: "28%", top: "82%", size: "w-3 h-3 sm:w-4 sm:h-4", delay: 1.6, duration: 8.2 },
     { left: "45%", top: "70%", size: "w-2.5 h-2.5 sm:w-3 sm:h-3", delay: 0.9, duration: 6.8 },
@@ -82,10 +82,9 @@ function AboutHeroSection() {
   ];
 
   return (
-    // <div className="relative w-full bg-slate-50 dark:bg-[#080E17] text-slate-900 dark:text-white transition-colors duration-300 overflow-hidden mb-4">
-      <div className="relative w-full bg-slate-50 dark:bg-[#080E17] text-slate-900 dark:text-white transition-colors duration-300 overflow-hidden">
+    <div className="relative w-full bg-slate-50 dark:bg-[#080E17] text-slate-900 dark:text-white transition-colors duration-300 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-60 dark:opacity-40">
-        
+
         <svg
           className="absolute inset-0 w-full h-full text-cyan-500/20 dark:text-cyan-400/15"
           xmlns="http://www.w3.org/2000/svg"
@@ -95,7 +94,7 @@ function AboutHeroSection() {
               <path d="M 80 0 L 0 0 0 80" fill="none" stroke="currentColor" strokeWidth="0.75" strokeDasharray="3 3" />
             </pattern>
           </defs>
-          
+
           <path d="M-100,100 Q 500,-50 1300,100" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" />
           <path d="M-100,250 Q 500,50 1300,250" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" />
           <path d="M-100,400 Q 500,180 1300,400" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" />
@@ -136,7 +135,7 @@ function AboutHeroSection() {
 
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20 lg:pt-20 lg:pb-28">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-          
+
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -274,10 +273,10 @@ const VISION_FEATURES = [
 
 function OfferSection() {
   return (
-    <section className="bg-slate-50/50 py-16 md:py-24 border-y border-gray-100">
+    <section className="bg-slate-50/50 py-12 md:py-16 border-y border-gray-100 ">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-12">
-          
+        <div className="text-center mb-4">
+
           <h2 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
             Everything in One Place
           </h2>
@@ -318,10 +317,10 @@ function OfferSection() {
 
 
 
- function DevSolveOverview() {
+function DevSolveOverview() {
   return (
     // <section className="bg-slate-50/50 py-16 sm:py-24 px-4 sm:px-6 lg:px-8 font-sans mb-12">
-    <section className="bg-slate-50/50 py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 font-sans">
+    <section className="bg-slate-50/50 py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 font-sans mb-12">
 
       <div className="max-w-7xl mx-auto space-y-20">
         <div>
@@ -546,7 +545,7 @@ export function TechStackSection({
 function TeamSection() {
   return (
     // <section id="team" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:px-6 lg:px-8 py-6 sm:py-10 md:py-14  ">
+    <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:px-6 lg:px-8 py-6 sm:py-10 md:py-14 mb-12 ">
       <div className="text-center mb-6 sm:mb-8 md:mb-10">
         <span className="text-blue-600 uppercase tracking-[0.2em] sm:tracking-[0.3em] text-xs sm:text-sm font-semibold">
           OUR TEAM
@@ -679,6 +678,12 @@ export function MemberCard({ member }: MemberCardProps) {
   );
 }
 
+
+
+
+
+
+
 function ContactSection() {
   const [formData, setFormData] = useState({
     name: "",
@@ -709,9 +714,9 @@ function ContactSection() {
   };
 
   return (
-       <div id="contact" className="py-14 sm:py-16 lg:py-20 bg-[#FFFFFF] text-[#0F172A]">
+    <div id="contact" className="py-14 sm:py-16 lg:py-20 bg-[#FFFFFF] text-[#0F172A]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <div className="text-center mb-12">
           <h2 className="text-[40px] font-bold text-[#0F172A] tracking-tight leading-tight">
             Get In Touch
@@ -723,7 +728,7 @@ function ContactSection() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          
+
           <div className="lg:col-span-7 bg-[#FFFFFF] rounded-3xl border border-[#CBD5E1] p-8 sm:p-10 shadow-xl">
             <h3 className="text-[22px] font-bold text-[#1E2B45] mb-6">
               Send Us a Message
@@ -819,7 +824,7 @@ function ContactSection() {
           </div>
 
           <div className="lg:col-span-5 space-y-6">
-            
+
             <div className="rounded-2xl border border-[#CBD5E1] bg-[#FFFFFF] p-6 shadow-sm flex items-start gap-4">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2B68F6]/10 text-[#2B68F6]">
                 <MapPin className="w-5 h-5" />
@@ -916,6 +921,9 @@ function ContactSection() {
   );
 }
 
+
+
+
 function useMemo<T>(factory: () => T, deps: readonly unknown[]): T {
   const ref = useRef<{ deps: readonly unknown[]; value: T } | null>(null);
 
@@ -930,3 +938,5 @@ function useMemo<T>(factory: () => T, deps: readonly unknown[]): T {
 
   return ref.current!.value;
 }
+
+
