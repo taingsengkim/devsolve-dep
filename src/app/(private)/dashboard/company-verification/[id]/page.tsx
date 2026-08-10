@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, use, useMemo } from "react";
+import React, { useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import {
   ChevronLeft,
   Building2,
-  Tag,
   User,
   Briefcase,
   Mail,
@@ -17,7 +16,6 @@ import {
   Activity,
   CheckCircle2,
   XCircle,
-  MessageSquare,
   Send,
   Hash,
   ShieldCheck,
@@ -27,7 +25,6 @@ import {
   Check,
   Loader2,
   AlertCircle,
-  BadgeCheck,
   ExternalLink,
   Calendar,
 } from "lucide-react";
@@ -161,9 +158,7 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
           ? "APPROVED"
           : realOrg.status === "PENDING"
             ? "PENDING"
-            : realOrg.status === "REJECTED"
-              ? "REJECTED"
-              : "UNDER_REVIEW") as "APPROVED" | "PENDING" | "REJECTED" | "UNDER_REVIEW",
+            : "REJECTED") as "APPROVED" | "PENDING" | "REJECTED",
         submittedAt: realOrg.createdAt
           ? new Date(realOrg.createdAt).toLocaleDateString("en-US", {
               year: "numeric",
@@ -178,69 +173,11 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
               day: "numeric",
             })
           : "—",
-        taxId: "—",
         orgCode: realOrg.slug,
-        documentsCount: 0,
-        notes: undefined,
-      };
-    }
-    if (mockOrg) {
-      return {
-        id: mockOrg.id,
-        companyName: mockOrg.companyName,
-        contactName: mockOrg.contactName || "—",
-        jobTitle: mockOrg.jobTitle || "Organization Owner",
-        email: mockOrg.email || "—",
-        phone: mockOrg.phone || "—",
-        website: mockOrg.website,
-        domain: mockOrg.domain,
-        country: mockOrg.country || "—",
-        industry: mockOrg.industry || mockOrg.businessType || "Technology",
-        businessType: mockOrg.businessType || "Technology",
-        companySize: mockOrg.companySize,
-        description: mockOrg.description,
-        joiningReason: undefined,
-        emailVerified: true,
-        submissionVersion: mockOrg.submissionVersion || 1,
-        rejectionReason: undefined,
-        reviewedAt: undefined,
-        verifiedAt: undefined,
-        status: mockOrg.status,
-        submittedAt: mockOrg.submittedAt || mockOrg.registrationDate,
-        registrationDate: mockOrg.registrationDate || "—",
-        taxId: mockOrg.taxId || "—",
-        orgCode: mockOrg.orgCode,
-        documentsCount: mockOrg.documentsCount || 0,
-        notes: mockOrg.notes,
-      };
-    }
-    return null;
-  }, [realOrg, mockOrg]);
-
-  const reviewHistory = useMemo((): OrganizationReviewHistoryItem[] | undefined => {
-    if (rawReviewHistory && rawReviewHistory.length > 0) return rawReviewHistory;
-    if (company?.reviewedAt || company?.rejectionReason || company?.verifiedAt) {
-      return [
-        {
-          id: `rev-${company.id}`,
-          organizationId: company.id,
-          decision: company.status,
-          action: company.status,
-          reason: company.rejectionReason ?? undefined,
-          reviewerId: undefined,
-          reviewerName: undefined,
-          notes: undefined,
-          reviewedAt: company.reviewedAt || company.verifiedAt || undefined,
-          createdAt: company.reviewedAt || company.verifiedAt || undefined,
-        },
-      ];
-    }
-    return undefined;
-  }, [rawReviewHistory, company]);
-
+      }
+    : null;
 
   // Local state
-  const [adminNote, setAdminNote] = useState("");
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
@@ -310,20 +247,18 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
     }
   };
 
-  const handleSaveNote = () => {
-    if (!company) return;
-    toast.success("Internal Note Saved", {
-      description: "Internal note updated successfully.",
-    });
-  };
-
   const displayValue = (val: string | undefined | null, fallback = "—") =>
     val?.trim() || fallback;
 
   /* ---- Loading skeleton ---- */
   if (isLoading) {
     return (
-      <div className="space-y-6 w-full pb-12 animate-pulse">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="space-y-6 w-full pb-12 animate-pulse"
+      >
         <div className="h-4 w-44 bg-slate-200 dark:bg-slate-800 rounded-lg" />
         <div className="h-24 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -337,14 +272,19 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
             <div className="h-24 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   /* ---- Error / Not found state ---- */
   if (isError || !company) {
     return (
-      <div className="space-y-6 w-full pb-12">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="space-y-6 w-full pb-12"
+      >
         <nav className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
           <Link
             href="/dashboard/company-verification"
@@ -367,7 +307,7 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
             Back to Organizations List
           </Button>
         </Card>
-      </div>
+      </motion.div>
     );
   }
 
@@ -666,37 +606,6 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
             )}
           </Card>
 
-          {/* ADMIN INTERNAL NOTES CARD */}
-          <Card className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-2xs space-y-4">
-            <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-slate-400" />
-                Internal Moderation Notes
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Notes stored for admin team audit and reference.
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <textarea
-                rows={3}
-                value={adminNote}
-                onChange={(e) => setAdminNote(e.target.value)}
-                placeholder="Add internal notes about this application (e.g. verified via tax registry)..."
-                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs resize-none"
-              />
-              <Button
-                variant="outline"
-                onClick={handleSaveNote}
-                disabled={isUpdating}
-                className="rounded-xl h-9 px-4 text-sm font-semibold border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 gap-1.5 shadow-2xs cursor-pointer"
-              >
-                <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
-                Save Internal Note
-              </Button>
-            </div>
-          </Card>
         </div>
 
         {/* ══ SIDEBAR COLUMN (1/3) ══════════════════════════════════ */}
@@ -743,7 +652,7 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
                   Organization Code
                 </dt>
                 <dd className="font-mono font-semibold text-slate-900 dark:text-slate-100 text-right">
-                  {displayValue(company.orgCode ?? company.taxId)}
+                  {displayValue(company.orgCode)}
                 </dd>
               </div>
 

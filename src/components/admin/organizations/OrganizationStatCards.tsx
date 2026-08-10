@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Building2, Clock, CheckCircle2, XCircle } from "lucide-react";
-import type { CompanyVerificationItem } from "@/lib/redux/services/adminApi";
 import { motion } from "motion/react";
 import {
   Card,
@@ -13,37 +12,39 @@ import {
 } from "@/components/ui/card";
 
 interface OrganizationStatCardsProps {
-  verifications: CompanyVerificationItem[];
+  counts: {
+    all: number;
+    pending: number;
+    approved: number;
+    rejected: number;
+  };
 }
 
-export const OrganizationStatCards: React.FC<OrganizationStatCardsProps> = ({ verifications }) => {
-  const total = verifications.length;
-  const pending = verifications.filter((v) => v.status === "PENDING").length;
-  const approved = verifications.filter((v) => v.status === "APPROVED").length;
-  const rejected = verifications.filter((v) => v.status === "REJECTED").length;
-
+export const OrganizationStatCards: React.FC<OrganizationStatCardsProps> = ({
+  counts,
+}) => {
   const stats = [
     {
       title: "Total Organizations",
-      value: total,
+      value: counts.all,
       subtext: "Registered on platform",
       icon: Building2,
     },
     {
       title: "Pending KYC Review",
-      value: pending,
+      value: counts.pending,
       subtext: "Requires admin audit",
       icon: Clock,
     },
     {
       title: "Verified Partners",
-      value: approved,
+      value: counts.approved,
       subtext: "Active VDP program access",
       icon: CheckCircle2,
     },
     {
       title: "Rejected Requests",
-      value: rejected,
+      value: counts.rejected,
       subtext: "Failed verification audit",
       icon: XCircle,
     },

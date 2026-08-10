@@ -1,77 +1,49 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/lib/auth/auth";
+import { type NextRequest } from "next/server";
+import * as z from "zod";
 
-const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
-const PROVIDER_ID = "keycloak";
+import {
+  asUuid,
+  badRequest,
+  bearerTokenFor,
+  relay,
+  unauthorized,
+  unreachable,
+  upstreamFetch,
+  validationFailed,
+} from "@/lib/api/proxy";
 
-async function bearerTokenFor(request: NextRequest): Promise<string | null> {
-  const session = await auth.api.getSession({ headers: request.headers });
-  if (!session) return null;
-
-  try {
-    const { accessToken } = await auth.api.getAccessToken({
-      body: { providerId: PROVIDER_ID },
-      headers: request.headers,
-    });
-    return accessToken ?? null;
-  } catch {
-    return null;
-  }
-}
-
-const unauthorized = () =>
-  NextResponse.json({ message: "Not authenticated" }, { status: 401 });
-
-const unreachable = () =>
-  NextResponse.json(
-    { message: "Unable to reach the organization service. Please try again." },
-    { status: 502 }
-  );
+const historyQuerySchema = z.object({
+  pageNumber: z.coerce.number().int().min(0).default(0),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+});
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const token = await bearerTokenFor(request);
   if (!token) return unauthorized();
 
-  const { id } = await params;
+  const id = asUuid((await params).id);
+  if (!id) return badRequest("Organization id must be a valid UUID");
+
+  const parsed = historyQuerySchema.safeParse(
+    Object.fromEntries(request.nextUrl.searchParams.entries()),
+  );
+  if (!parsed.success) return validationFailed(parsed.error);
+
+  const query = new URLSearchParams({
+    pageNumber: String(parsed.data.pageNumber),
+    pageSize: String(parsed.data.pageSize),
+  });
 
   try {
-    const upstream = await fetch(
-      `${BACKEND_API_URL}/admin/organizations/${id}/review-history`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        cache: "no-store",
-      }
+    const upstream = await upstreamFetch(
+      `/admin/organizations/${id}/review-history?${query.toString()}`,
+      token,
     );
-
-    const raw = await upstream.text();
-    let body: unknown = null;
-    if (raw) {
-      try {
-        body = JSON.parse(raw);
-      } catch {
-        body = { message: raw };
-      }
-    }
-
-    if (!upstream.ok) {
-      const message =
-        (body as { message?: string } | null)?.message ??
-        "Failed to fetch organization review history.";
-      return NextResponse.json(
-        { message, details: body },
-        { status: upstream.status }
-      );
-    }
-
-    return NextResponse.json(body, { status: upstream.status });
+    return relay(upstream, "Failed to fetch organization review history.");
   } catch {
-    return unreachable();
+    return unreachable("organization");
   }
 }

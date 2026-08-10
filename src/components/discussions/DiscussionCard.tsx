@@ -60,11 +60,14 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
   index = 0,
   myAnswer,
 }) => {
-  const bookmarkableType = post.category === "Showcase" ? "SHOWCASE" : "PROBLEM";
+  const bookmarkableType =
+    post.category === "Showcase" ? "SHOWCASE" : "PROBLEM";
 
   const [voteDiscussion, { isLoading: isVoting }] = useVoteDiscussionMutation();
-  const [addBookmark, { isLoading: isAddingBookmark }] = useAddBookmarkMutation();
-  const [removeBookmark, { isLoading: isRemovingBookmark }] = useRemoveBookmarkMutation();
+  const [addBookmark, { isLoading: isAddingBookmark }] =
+    useAddBookmarkMutation();
+  const [removeBookmark, { isLoading: isRemovingBookmark }] =
+    useRemoveBookmarkMutation();
   const isBookmarking = isAddingBookmark || isRemovingBookmark;
 
   const [localVotes, setLocalVotes] = useState(post.votes);
@@ -215,7 +218,6 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
                 alt={`${post.title} preview`}
                 fill
                 quality={90}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="object-cover transition-transform duration-300 group-hover:scale-[1.015]"
               />
             </div>

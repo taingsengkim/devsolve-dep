@@ -6,7 +6,6 @@ import {
   type SortingState,
   flexRender,
   getCoreRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
@@ -38,29 +37,42 @@ import {
 interface OrganizationDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  pageIndex: number;
+  pageSize: number;
+  pageCount: number;
+  totalRows: number;
+  isFetching?: boolean;
+  onPageChange: (pageIndex: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 }
 
 export function OrganizationDataTable<TData, TValue>({
   columns,
   data,
+  pageIndex,
+  pageSize,
+  pageCount,
+  totalRows,
+  isFetching = false,
+  onPageChange,
+  onPageSizeChange,
 }: OrganizationDataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-  });
 
+  // TanStack Table intentionally returns callable table helpers; React Compiler
+  // skips memoizing this component because those helpers cannot be made stable.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
-    onPaginationChange: setPagination,
     getSortedRowModel: getSortedRowModel(),
+    manualPagination: true,
+    pageCount,
     state: {
       sorting,
-      pagination,
+      pagination: { pageIndex, pageSize },
     },
   });
 
@@ -140,13 +152,13 @@ export function OrganizationDataTable<TData, TValue>({
                   Rows per page
                 </span>
                 <Select
-                  value={String(table.getState().pagination.pageSize)}
+                  value={String(pageSize)}
                   onValueChange={(val) => {
-                    if (val) table.setPageSize(Number(val));
+                    if (val) onPageSizeChange(Number(val));
                   }}
                 >
                   <SelectTrigger className="h-8 w-16 cursor-pointer rounded-xl border-slate-300 bg-white px-2.5 text-sm font-semibold text-slate-700 shadow-2xs dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
-                    <SelectValue placeholder={String(table.getState().pagination.pageSize)} />
+                    <SelectValue placeholder={String(pageSize)} />
                   </SelectTrigger>
                   <SelectContent align="start" className="min-w-20 rounded-2xl shadow-lg">
                     <SelectGroup>
@@ -167,13 +179,13 @@ export function OrganizationDataTable<TData, TValue>({
               <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Page{" "}
                 <span className="font-bold text-slate-700 dark:text-slate-200">
-                  {table.getState().pagination.pageIndex + 1}
+                  {pageIndex + 1}
                 </span>{" "}
                 of{" "}
                 <span className="font-bold text-slate-700 dark:text-slate-200">
-                  {table.getPageCount() || 1}
+                  {pageCount || 1}
                 </span>{" "}
-                ({data.length} total)
+                ({totalRows} total)
               </div>
             </div>
 
@@ -181,8 +193,8 @@ export function OrganizationDataTable<TData, TValue>({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
+                onClick={() => onPageChange(pageIndex - 1)}
+                disabled={pageIndex <= 0 || isFetching}
                 className="h-8 cursor-pointer rounded-xl border-slate-200 px-3 text-sm font-semibold disabled:opacity-40 dark:border-slate-800"
               >
                 <ChevronLeft data-icon="inline-start" />
@@ -191,8 +203,8 @@ export function OrganizationDataTable<TData, TValue>({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
+                onClick={() => onPageChange(pageIndex + 1)}
+                disabled={pageIndex + 1 >= pageCount || isFetching}
                 className="h-8 cursor-pointer rounded-xl border-slate-200 px-3 text-sm font-semibold disabled:opacity-40 dark:border-slate-800"
               >
                 Next
