@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, use } from "react";
+import React, { useState, use, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
@@ -174,8 +174,12 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
             })
           : "—",
         orgCode: realOrg.slug,
-      }
-    : null;
+      };
+    }
+    return mockOrg ?? null;
+  }, [realOrg, mockOrg]);
+
+  const reviewHistory = rawReviewHistory;
 
   // Local state
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
