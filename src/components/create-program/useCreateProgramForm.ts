@@ -7,6 +7,7 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   useCreateProgramMutation,
   useGetProgramByIdQuery,
+  useGetMyCompanyProgramByIdQuery,
   useUpdateProgramMutation,
 } from "@/lib/redux/services/program/programsApi";
 import type { Asset } from "@/lib/types/programs/types";
@@ -63,10 +64,18 @@ export function useCreateProgramForm() {
   });
 
   // RTK Query hooks
-  const { data: existingProgram, isLoading: isFetchingDraft } = useGetProgramByIdQuery(
+  const { data: publicProgram, isLoading: isFetchingPublic } = useGetProgramByIdQuery(
     programId || "",
     { skip: !programId }
   );
+
+  const { data: companyProgram, isLoading: isFetchingCompany } = useGetMyCompanyProgramByIdQuery(
+    programId || "",
+    { skip: !programId }
+  );
+
+  const existingProgram = publicProgram || companyProgram;
+  const isFetchingDraft = (isFetchingPublic && isFetchingCompany) || (!existingProgram && (isFetchingPublic || isFetchingCompany));
 
   const [createProgram, { isLoading: isCreating }] = useCreateProgramMutation();
   const [updateProgram, { isLoading: isUpdating }] = useUpdateProgramMutation();
@@ -116,27 +125,31 @@ export function useCreateProgramForm() {
       });
     }
 
-    if (existingProgram.assets && existingProgram.assets.length > 0) {
-      const inScope: ScopeTarget[] = existingProgram.assets
-        .filter((a) => a.isInScope)
+    const rawAssets = existingProgram.assets || existingProgram.inScopeAssets || [];
+    if (rawAssets.length > 0) {
+      const inScope: ScopeTarget[] = rawAssets
+        .filter((a) => a.isInScope !== false)
         .map((a, i) => ({
-          id: a.id || `in-${i}`,
+          id: (a as { id?: string }).id || `in-${i}`,
           type: a.assetType === "API" ? "API" : a.assetType === "MOBILE_APP" ? "MOBILE" : "WEB",
-          target: a.identifier || "",
+          target: a.identifier || (a as { target?: string }).target || "",
           description: a.description || "",
         }));
-      const outScope: ScopeTarget[] = existingProgram.assets
-        .filter((a) => !a.isInScope)
+      const outScope: ScopeTarget[] = rawAssets
+        .filter((a) => a.isInScope === false)
         .map((a, i) => ({
-          id: a.id || `out-${i}`,
+          id: (a as { id?: string }).id || `out-${i}`,
           type: a.assetType === "API" ? "API" : a.assetType === "MOBILE_APP" ? "MOBILE" : "WEB",
-          target: a.identifier || "",
+          target: a.identifier || (a as { target?: string }).target || "",
           description: a.description || "",
         }));
 
       if (inScope.length > 0) setInScopeTargets(inScope);
       if (outScope.length > 0) setOutOfScopeTargets(outScope);
     }
+
+    // Auto-navigate to the last tab (Tab 4) so user can directly click Create Program
+    setActiveTab(4);
   }, [existingProgram]);
 
   type AssetType =

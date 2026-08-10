@@ -114,6 +114,7 @@ export interface ProgramDetail {
   exclusions?: RuleSection;
 
   assets: ProgramAsset[];
+  inScopeAssets?: ProgramAsset[];
   rewards: ProgramReward[];
   createdAt: string;
   updatedAt: string;
