@@ -18,9 +18,9 @@ export const NotificationTrigger: React.FC<{ className?: string }> = ({ classNam
       onClick={openNotification}
       aria-label="Notifications"
       title="Notifications"
-      className={`relative w-10 h-10 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer shrink-0 ${className || ""}`}
+      className={`relative w-10 h-10 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer shrink-0 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 ${className || ""}`}
     >
-      <Bell className="w-5 h-5 text-slate-700" />
+      <Bell className="w-5 h-5 text-slate-700 dark:text-neutral-300" />
       {unreadCount > 0 && (
         <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />

@@ -47,7 +47,7 @@ export default function CommunityTab({ posts }: CommunityTabProps) {
 
   if (posts.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-200 bg-white p-10 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+      <div className="rounded-xl border border-dashed border-slate-200 bg-white p-10 text-center text-sm text-slate-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-500">
         No problems, solutions, or showcases posted yet.
       </div>
     );
@@ -58,7 +58,7 @@ export default function CommunityTab({ posts }: CommunityTabProps) {
       <div
         role="group"
         aria-label="Filter posts"
-        className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-slate-200/80 bg-white p-1.5 shadow-2xs dark:border-slate-800 dark:bg-slate-900"
+        className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-slate-200/80 bg-white p-1.5 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900"
       >
         {FILTERS.map((option) => {
           const isActive = filter === option.value;
@@ -74,7 +74,7 @@ export default function CommunityTab({ posts }: CommunityTabProps) {
               className={`relative cursor-pointer rounded-xl px-3.5 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                 isActive
                   ? "text-white"
-                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                  : "text-slate-600 hover:bg-slate-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
               }`}
             >
               {isActive && (
@@ -90,7 +90,7 @@ export default function CommunityTab({ posts }: CommunityTabProps) {
                   className={`rounded-md px-1.5 py-0.5 text-xs font-bold tabular-nums ${
                     isActive
                       ? "bg-white/20 text-white"
-                      : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                      : "bg-slate-100 text-slate-500 dark:bg-neutral-800 dark:text-neutral-400"
                   }`}
                 >
                   {count}
@@ -102,7 +102,7 @@ export default function CommunityTab({ posts }: CommunityTabProps) {
       </div>
 
       {visible.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-200 bg-white p-10 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-xl border border-dashed border-slate-200 bg-white p-10 text-center text-sm text-slate-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-500">
           Nothing under this filter yet.
         </div>
       ) : (

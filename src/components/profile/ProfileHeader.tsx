@@ -38,7 +38,7 @@ export default function ProfileHeader({
       {backHref ? (
         <Link
           href={backHref}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:hover:text-slate-200"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-neutral-400 dark:hover:text-neutral-200"
         >
           <ArrowLeft size={14} />
           Back to profile
@@ -51,12 +51,12 @@ export default function ProfileHeader({
         type="button"
         id="profile-share-btn"
         onClick={handleShare}
-        className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200/80 bg-white px-3 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200/80 bg-white px-3 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
       >
         {copied ? (
           <Check size={13} className="text-emerald-600" />
         ) : (
-          <Share2 size={13} className="text-slate-500" />
+          <Share2 size={13} className="text-slate-500 dark:text-neutral-400" />
         )}
         <span>{copied ? "Copied!" : "Share"}</span>
       </button>

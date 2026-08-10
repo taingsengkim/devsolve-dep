@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion } from "motion/react";
@@ -259,6 +259,20 @@ function Loaded({
         newest(a, b),
     );
   }, [solutionPage, sortOrder, acceptedIds]);
+
+  useEffect(() => {
+    if (isLoadingSolutions || solutions.length === 0) return;
+
+    const targetId = decodeURIComponent(window.location.hash.slice(1));
+    if (!targetId.startsWith("solution-")) return;
+
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    window.requestAnimationFrame(() => {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [isLoadingSolutions, solutions]);
 
   const comments = commentPage?.content ?? [];
   const attachments = problem.attachments ?? [];

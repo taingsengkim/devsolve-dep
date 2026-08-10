@@ -79,7 +79,7 @@ export default function FollowButton({
         isSmall ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"
       } ${
         isFollowing
-          ? "border border-slate-200/80 bg-slate-100/80 text-slate-700 hover:bg-slate-200/80 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          ? "border border-slate-200/80 bg-slate-100/80 text-slate-700 hover:bg-slate-200/80 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
           : "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500"
       } ${className}`}
     >

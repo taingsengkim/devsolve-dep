@@ -36,22 +36,28 @@ function toCategory(type: BookmarkableType): BookmarkItem["category"] {
     case "SOLUTION":
       return "Solutions";
     case "PROBLEM":
-    case "SHOWCASE":
       return "Problems";
+    case "SHOWCASE":
+      return "Showcases";
   }
 }
 
-// Discussions/problems aren't wired to real data yet (see discussionsApi.ts),
-// so PROBLEM/SHOWCASE targets still route through the discussions list rather
-// than a not-yet-real detail-by-id page.
-function toDetailUrl(type: BookmarkableType, targetId: string): string {
+function toDetailUrl(
+  type: BookmarkableType,
+  targetId: string,
+  solutionProblemId?: string,
+): string {
   switch (type) {
     case "PROGRAM":
       return `/dashboard/programs/${targetId}`;
-    case "SOLUTION":
     case "PROBLEM":
+      return `/community/${targetId}`;
     case "SHOWCASE":
-      return `/discussions/${targetId}`;
+      return `/showcases/${targetId}`;
+    case "SOLUTION":
+      return solutionProblemId
+        ? `/community/${solutionProblemId}#solution-${targetId}`
+        : "/community";
   }
 }
 
@@ -69,7 +75,10 @@ function toSavedAt(iso: string): string {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-function toBookmarkItem(raw: BookmarkApiResponse): BookmarkItem {
+function toBookmarkItem(
+  raw: BookmarkApiResponse,
+  solutionProblemId?: string,
+): BookmarkItem {
   return {
     id: raw.id,
     bookmarkableId: raw.bookmarkableId,
@@ -79,7 +88,11 @@ function toBookmarkItem(raw: BookmarkApiResponse): BookmarkItem {
     description: raw.targetPreview,
     savedAt: toSavedAt(raw.createdAt),
     tags: [],
-    url: toDetailUrl(raw.bookmarkableType, raw.bookmarkableId),
+    url: toDetailUrl(
+      raw.bookmarkableType,
+      raw.bookmarkableId,
+      solutionProblemId,
+    ),
     logoUrl: raw.targetImageUrl,
   };
 }
@@ -105,13 +118,38 @@ export const bookmarksApi = baseApi.injectEndpoints({
         if (result.error) return { error: result.error };
 
         const page = result.data as PageBookmarkApiResponse;
-        let items = page.content.map(toBookmarkItem);
+        const solutionParents = new Map<string, string>();
+
+        await Promise.all(
+          page.content.map(async (bookmark) => {
+            if (bookmark.bookmarkableType !== "SOLUTION") return;
+
+            const detail = await fetchWithBQ(
+              `/solutions/${bookmark.bookmarkableId}`,
+            );
+            if (detail.error) return;
+
+            const problemId = (detail.data as { problemId?: string })
+              .problemId;
+            if (problemId) {
+              solutionParents.set(bookmark.bookmarkableId, problemId);
+            }
+          }),
+        );
+
+        let items = page.content.map((bookmark) =>
+          toBookmarkItem(
+            bookmark,
+            solutionParents.get(bookmark.bookmarkableId),
+          ),
+        );
 
         const counts = {
           all: items.length,
           Program: items.filter((b) => b.category === "Program").length,
           Problems: items.filter((b) => b.category === "Problems").length,
           Solutions: items.filter((b) => b.category === "Solutions").length,
+          Showcases: items.filter((b) => b.category === "Showcases").length,
         };
 
         if (params?.category && params.category !== "all") {

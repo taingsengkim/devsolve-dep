@@ -53,17 +53,17 @@ function displayUrl(value: string): string {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5 sm:flex-row sm:items-start sm:gap-4">
-      <span className="shrink-0 text-sm font-medium text-slate-700 sm:w-28 sm:pt-px dark:text-slate-300">
+      <span className="shrink-0 text-sm font-medium text-slate-700 sm:w-28 sm:pt-px dark:text-neutral-300">
         {label}
       </span>
-      <span className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-slate-900 dark:text-slate-100">
+      <span className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-slate-900 dark:text-neutral-100">
         {children}
       </span>
     </div>
   );
 }
 
-const iconClass = "size-4 shrink-0 text-slate-500 dark:text-slate-400";
+const iconClass = "size-4 shrink-0 text-slate-500 dark:text-neutral-400";
 const linkClass =
   "flex min-w-0 items-center gap-1.5 font-semibold text-blue-600 hover:underline dark:text-blue-400";
 
@@ -92,7 +92,7 @@ export default function ProfileBio({ profile }: ProfileBioProps) {
     <div className="space-y-6 pt-2">
       {hasContact && (
         <div>
-          <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">
             Contact Information
           </h3>
 
@@ -135,7 +135,7 @@ export default function ProfileBio({ profile }: ProfileBioProps) {
                   rel="noreferrer"
                   className={linkClass}
                 >
-                  <SiGithub className="size-4 shrink-0 text-slate-700 dark:text-slate-300" />
+                  <SiGithub className="size-4 shrink-0 text-slate-700 dark:text-neutral-300" />
                   <span className="truncate">
                     {displayUrl(socialLinks.github)}
                   </span>
@@ -151,7 +151,7 @@ export default function ProfileBio({ profile }: ProfileBioProps) {
                   rel="noreferrer"
                   className={linkClass}
                 >
-                  <SiX className="size-4 shrink-0 text-slate-700 dark:text-slate-300" />
+                  <SiX className="size-4 shrink-0 text-slate-700 dark:text-neutral-300" />
                   <span className="truncate">
                     {displayUrl(socialLinks.twitter)}
                   </span>
@@ -165,11 +165,11 @@ export default function ProfileBio({ profile }: ProfileBioProps) {
       <div
         className={
           hasContact
-            ? "border-t border-slate-200/80 pt-5 dark:border-slate-800"
+            ? "border-t border-slate-200/80 pt-5 dark:border-neutral-800"
             : undefined
         }
       >
-        <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">
           Basic Information
         </h3>
 
@@ -215,12 +215,12 @@ export default function ProfileBio({ profile }: ProfileBioProps) {
         </div>
 
         {bio && (
-          <div className="mt-3 rounded-2xl border border-slate-200/80 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
-            <p className="mb-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <div className="mt-3 rounded-2xl border border-slate-200/80 bg-slate-50 p-4 dark:border-neutral-800 dark:bg-neutral-900/60">
+            <p className="mb-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">
               About
             </p>
             {/* Wrapping mid-word so an unbroken string can't widen the page */}
-            <p className="text-sm leading-relaxed text-slate-700 wrap-break-word dark:text-slate-300">
+            <p className="text-sm leading-relaxed text-slate-700 wrap-break-word dark:text-neutral-300">
               {bio}
             </p>
           </div>

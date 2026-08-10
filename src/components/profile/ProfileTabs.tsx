@@ -19,7 +19,7 @@ const TABS: { id: ProfileTabId; label: string; icon: LucideIcon }[] = [
 
 export default function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
   return (
-    <div className="border-b border-slate-200/80 dark:border-slate-800">
+    <div className="border-b border-slate-200/80 dark:border-neutral-800">
       {/* Four tabs don't fit a phone, so the rail scrolls — with the scrollbar
           hidden and the labels kept, because the icons alone aren't
           self-explanatory. `pr-1` keeps the last indicator off the edge. */}
@@ -33,11 +33,11 @@ export default function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps
               onClick={() => onTabChange(tab.id)}
               className={`relative flex shrink-0 items-center gap-2 whitespace-nowrap pb-3 pt-1 text-sm font-semibold transition cursor-pointer ${
                 isActive
-                  ? "text-slate-900 dark:text-slate-100"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                  ? "text-slate-900 dark:text-neutral-100"
+                  : "text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-neutral-200"
               }`}
             >
-              <Icon size={16} className={isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400"} />
+              <Icon size={16} className={isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-neutral-400"} />
               <span>{tab.label}</span>
               {isActive && (
                 <motion.div

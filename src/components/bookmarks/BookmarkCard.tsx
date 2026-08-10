@@ -11,17 +11,21 @@ import { toast } from "sonner";
 
 interface BookmarkCardProps {
   item: BookmarkItem;
-  onRemove: (item: BookmarkItem) => void;
+  onRemove: (item: BookmarkItem) => Promise<void>;
 }
 
 export const BookmarkCard: React.FC<BookmarkCardProps> = ({ item, onRemove }) => {
-  const handleRemove = (e: React.MouseEvent) => {
+  const handleRemove = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onRemove(item);
-    toast.success("Bookmark removed", {
-      description: `"${item.title}" removed from your saved items.`,
-    });
+    try {
+      await onRemove(item);
+      toast.success("Bookmark removed", {
+        description: `"${item.title}" removed from your saved items.`,
+      });
+    } catch {
+      toast.error("Bookmark could not be removed. Please try again.");
+    }
   };
 
   const getCategoryBadge = () => {
@@ -42,6 +46,12 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({ item, onRemove }) =>
         return (
           <Badge variant="outline" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-500/20 text-xs font-medium rounded-lg px-2.5 py-0.5">
             Solution
+          </Badge>
+        );
+      case "Showcases":
+        return (
+          <Badge variant="outline" className="rounded-lg border-violet-200/80 bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-700 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-300">
+            Showcase
           </Badge>
         );
       default:
@@ -69,7 +79,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({ item, onRemove }) =>
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.2 }}
-      className="bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 rounded-2xl p-5 shadow-2xs hover:shadow-md hover:ring-foreground/10 dark:hover:ring-foreground/20 transition-all duration-200 flex flex-col justify-between group space-y-4 relative"
+      className="group relative flex flex-col justify-between gap-4 rounded-2xl bg-card p-5 shadow-2xs ring-1 ring-foreground/5 transition-all duration-200 hover:shadow-md hover:ring-foreground/10 dark:ring-foreground/10 dark:hover:ring-foreground/20"
     >
       {/* CARD TOP BAR */}
       <div className="flex items-center justify-between gap-2">
@@ -88,14 +98,17 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({ item, onRemove }) =>
             <Clock className="w-3 h-3" />
             {item.savedAt}
           </span>
-          <button
+          <Button
             type="button"
-            onClick={handleRemove}
+            variant="ghost"
+            size="icon-sm"
+            onClick={(event) => void handleRemove(event)}
             title="Remove from saved bookmarks"
-            className="p-1.5 rounded-full hover:bg-muted text-blue-600 dark:text-blue-400 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
+            aria-label={`Remove ${item.title} from bookmarks`}
+            className="rounded-full text-blue-600 hover:text-red-600 dark:text-blue-400 dark:hover:text-red-400"
           >
-            <Bookmark className="w-4 h-4 fill-blue-600 dark:fill-blue-400 stroke-blue-600 dark:stroke-blue-400 hover:fill-transparent hover:stroke-red-600" />
-          </button>
+            <Bookmark className="fill-current" />
+          </Button>
         </div>
       </div>
 
@@ -185,16 +198,17 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({ item, onRemove }) =>
       </div>
 
       {/* FOOTER VIEW LINK */}
-      <div className="pt-2 border-t border-border flex items-center justify-end">
-        <Link href={item.url || "#"} className="w-full">
-          <Button
-            variant="outline"
-            className="w-full h-9 rounded-xl border-transparent text-xs font-semibold text-foreground hover:bg-muted hover:text-blue-600 dark:hover:text-blue-400 justify-between"
-          >
-            View Details
-            <ExternalLink className="w-3.5 h-3.5" />
-          </Button>
-        </Link>
+      <div className="flex items-center justify-end border-t border-border pt-2">
+        <Button
+          nativeButton={false}
+          render={<Link href={item.url || "/community"} />}
+          variant="outline"
+          size="lg"
+          className="w-full justify-between rounded-xl border-transparent text-sm font-semibold text-foreground hover:bg-muted hover:text-blue-600 dark:hover:text-blue-400"
+        >
+          View details
+          <ExternalLink data-icon="inline-end" />
+        </Button>
       </div>
     </motion.div>
   );

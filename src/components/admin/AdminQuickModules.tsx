@@ -49,12 +49,12 @@ const QUICK_MODULES: QuickModule[] = [
 
 export function AdminQuickModules() {
   return (
-    <Card className="gap-4 rounded-2xl border border-slate-200/70 bg-white py-5 shadow-2xs lg:col-span-5 dark:border-slate-800 dark:bg-slate-900">
+    <Card className="gap-4 rounded-2xl border border-slate-200/70 bg-white py-5 shadow-2xs lg:col-span-5 dark:border-neutral-800 dark:bg-neutral-900">
       <CardHeader className="px-5">
-        <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+        <CardTitle className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
           Quick admin modules
         </CardTitle>
-        <CardDescription className="text-sm text-slate-500 dark:text-slate-400">
+        <CardDescription className="text-sm text-slate-500 dark:text-neutral-400">
           Direct access to administrative platform suites
         </CardDescription>
       </CardHeader>
@@ -64,15 +64,15 @@ export function AdminQuickModules() {
           <Link
             key={href}
             href={href}
-            className="group flex cursor-pointer items-center justify-between rounded-xl border border-slate-200/60 bg-slate-50 p-3 transition-colors hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950/60 dark:hover:bg-slate-800"
+            className="group flex cursor-pointer items-center justify-between rounded-xl border border-slate-200/60 bg-slate-50 p-3 transition-colors hover:bg-slate-100 dark:border-neutral-800 dark:bg-neutral-950/60 dark:hover:bg-neutral-800"
           >
             <div className="flex items-center gap-3">
-              <Icon className="size-4 text-slate-500 transition-colors group-hover:text-slate-800 dark:group-hover:text-slate-200" />
-              <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+              <Icon className="size-4 text-slate-500 transition-colors group-hover:text-slate-800 dark:text-neutral-500 dark:group-hover:text-neutral-200" />
+              <span className="text-sm font-semibold text-slate-800 dark:text-neutral-200">
                 {label}
               </span>
             </div>
-            <ArrowUpRight className="size-3.5 text-slate-400 transition-colors group-hover:text-slate-700 dark:group-hover:text-slate-200" />
+            <ArrowUpRight className="size-3.5 text-slate-400 transition-colors group-hover:text-slate-700 dark:text-neutral-500 dark:group-hover:text-neutral-200" />
           </Link>
         ))}
       </CardContent>

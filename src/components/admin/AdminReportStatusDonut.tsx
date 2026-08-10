@@ -21,12 +21,12 @@ export function AdminReportStatusDonut({
   total,
 }: AdminReportStatusDonutProps) {
   return (
-    <Card className="lg:col-span-4 rounded-[20px] border border-slate-200/70 bg-white p-6 shadow-2xs flex flex-col justify-between">
+    <Card className="lg:col-span-4 rounded-[20px] border border-slate-200/70 bg-white p-6 shadow-2xs flex flex-col justify-between dark:border-neutral-800 dark:bg-neutral-900">
       <div>
-        <h3 className="text-lg font-bold text-slate-900 tracking-tight">
+        <h3 className="text-lg font-bold text-slate-900 tracking-tight dark:text-neutral-100">
           Report Status
         </h3>
-        <p className="text-sm text-slate-400 mt-0.5">All-time breakdown</p>
+        <p className="text-sm text-slate-400 mt-0.5 dark:text-neutral-400">All-time breakdown</p>
 
         {/* Recharts Donut Graphic */}
         <div className="my-4 relative h-[170px] w-full flex items-center justify-center">
@@ -47,9 +47,10 @@ export function AdminReportStatusDonut({
               </Pie>
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#ffffff",
+                  backgroundColor: "var(--popover)",
+                  color: "var(--popover-foreground)",
                   borderRadius: "12px",
-                  border: "1px solid #e2e8f0",
+                  border: "1px solid var(--border)",
                   fontSize: "12px",
                 }}
               />
@@ -58,10 +59,10 @@ export function AdminReportStatusDonut({
 
           {/* Center Donut Label */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-            <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            <span className="text-2xl font-extrabold text-slate-900 tracking-tight dark:text-neutral-100">
               {total}
             </span>
-            <span className="text-xs text-slate-400 font-medium">total</span>
+            <span className="text-xs text-slate-400 font-medium dark:text-neutral-500">total</span>
           </div>
         </div>
 
@@ -77,18 +78,18 @@ export function AdminReportStatusDonut({
                   className="size-2.5 rounded-full"
                   style={{ backgroundColor: item.color }}
                 />
-                <span className="font-semibold text-slate-600">{item.name}</span>
+                <span className="font-semibold text-slate-600 dark:text-neutral-300">{item.name}</span>
               </div>
 
               {/* Progress bar */}
-              <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden dark:bg-neutral-800">
                 <div
                   className={`h-full rounded-full ${item.barBg}`}
                   style={{ width: `${(item.value / total) * 100}%` }}
                 />
               </div>
 
-              <span className="font-bold text-slate-900 w-8 text-right shrink-0">
+              <span className="font-bold text-slate-900 w-8 text-right shrink-0 dark:text-neutral-100">
                 {item.value}
               </span>
             </div>

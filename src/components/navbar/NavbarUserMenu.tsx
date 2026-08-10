@@ -52,7 +52,7 @@ export function NavbarUserMenu({ onLogin, isLoggingIn }: NavbarUserMenuProps) {
     return (
       <div
         aria-hidden
-        className="hidden h-10 w-10 animate-pulse rounded-full bg-slate-200 sm:block dark:bg-slate-800"
+        className="hidden h-10 w-10 animate-pulse rounded-full bg-slate-200 sm:block dark:bg-neutral-800"
       />
     );
   }
@@ -65,7 +65,7 @@ export function NavbarUserMenu({ onLogin, isLoggingIn }: NavbarUserMenuProps) {
           variant="outline"
           onClick={onLogin}
           disabled={isLoggingIn}
-          className="hidden h-10 rounded-lg border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 shadow-xs transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed md:inline-flex xl:px-5 dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-blue-500/40 dark:hover:bg-slate-800 dark:hover:text-blue-200"
+          className="hidden h-10 rounded-lg border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 shadow-xs transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed md:inline-flex xl:px-5 dark:border-neutral-700/80 dark:bg-neutral-900/80 dark:text-neutral-100 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800 dark:hover:text-blue-200"
         >
           {isLoggingIn ? (
             <>
@@ -98,7 +98,7 @@ export function NavbarUserMenu({ onLogin, isLoggingIn }: NavbarUserMenuProps) {
           <button
             type="button"
             aria-label="Account menu"
-            className="hidden cursor-pointer items-center gap-2 rounded-full border border-slate-200/80 bg-white p-1 pr-2 shadow-xs transition-colors hover:border-blue-200 hover:bg-blue-50 sm:inline-flex dark:border-slate-800 dark:bg-slate-900/80 dark:hover:border-blue-500/40 dark:hover:bg-slate-800"
+            className="hidden cursor-pointer items-center gap-2 rounded-full border border-slate-200/80 bg-white p-1 pr-2 shadow-xs transition-colors hover:border-blue-200 hover:bg-blue-50 sm:inline-flex dark:border-neutral-800 dark:bg-neutral-900/80 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800"
           />
         }
       >
@@ -108,31 +108,31 @@ export function NavbarUserMenu({ onLogin, isLoggingIn }: NavbarUserMenuProps) {
             {getInitials(displayName)}
           </AvatarFallback>
         </Avatar>
-        <ChevronDown className="size-4 text-slate-400" />
+        <ChevronDown className="size-4 text-slate-400 dark:text-neutral-500" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="end"
-        className="w-60 rounded-2xl border-slate-200/90 bg-white p-1.5 dark:border-slate-800 dark:bg-slate-950"
+        className="w-60 rounded-2xl border-slate-200/90 bg-white p-1.5 dark:border-neutral-800 dark:bg-neutral-950"
       >
         <div className="px-3 py-2.5">
-          <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
+          <p className="truncate text-sm font-bold text-slate-900 dark:text-neutral-100">
             {displayName}
           </p>
           {user.email && (
-            <p className="truncate text-sm text-slate-500 dark:text-slate-400">
+            <p className="truncate text-sm text-slate-500 dark:text-neutral-400">
               {user.email}
             </p>
           )}
         </div>
 
-        <DropdownMenuSeparator className="bg-slate-200/70 dark:bg-slate-800" />
+        <DropdownMenuSeparator className="bg-slate-200/70 dark:bg-neutral-800" />
 
         <DropdownMenuItem
           render={<Link href="/dashboard/profile" />}
           className="cursor-pointer gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium"
         >
-          <UserRound className="size-4 text-slate-400" />
+          <UserRound className="size-4 text-slate-400 dark:text-neutral-500" />
           My profile
         </DropdownMenuItem>
 
@@ -141,7 +141,7 @@ export function NavbarUserMenu({ onLogin, isLoggingIn }: NavbarUserMenuProps) {
           render={<Link href="/dashboard" />}
           className="cursor-pointer gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium"
         >
-          <LayoutDashboard className="size-4 text-slate-400" />
+          <LayoutDashboard className="size-4 text-slate-400 dark:text-neutral-500" />
           Dashboard
         </DropdownMenuItem>
 
@@ -149,11 +149,11 @@ export function NavbarUserMenu({ onLogin, isLoggingIn }: NavbarUserMenuProps) {
           render={<Link href="/dashboard/profile/settings" />}
           className="cursor-pointer gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium"
         >
-          <Settings className="size-4 text-slate-400" />
+          <Settings className="size-4 text-slate-400 dark:text-neutral-500" />
           Settings
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator className="bg-slate-200/70 dark:bg-slate-800" />
+        <DropdownMenuSeparator className="bg-slate-200/70 dark:bg-neutral-800" />
 
         <DropdownMenuItem
           onClick={handleSignOut}

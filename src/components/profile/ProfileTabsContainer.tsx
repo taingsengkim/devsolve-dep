@@ -60,21 +60,21 @@ export default function ProfileTabsContainer({ stats, severity, badges, username
 
         {activeTab === "hacktivity" &&
           (hacktivityLoading ? (
-            <div className="p-6 text-sm text-slate-400">Loading hacktivity...</div>
+            <div className="p-6 text-sm text-slate-400 dark:text-neutral-500">Loading hacktivity...</div>
           ) : (
             <HacktivityTab entries={hacktivity ?? []} />
           ))}
 
         {activeTab === "community" &&
           (communityLoading ? (
-            <div className="p-6 text-sm text-slate-400">Loading community posts...</div>
+            <div className="p-6 text-sm text-slate-400 dark:text-neutral-500">Loading community posts...</div>
           ) : (
             <CommunityTab posts={communityPosts ?? []} />
           ))}
 
         {activeTab === "hall-of-thanks" &&
           (thanksLoading ? (
-            <div className="p-6 text-sm text-slate-400">Loading thanks...</div>
+            <div className="p-6 text-sm text-slate-400 dark:text-neutral-500">Loading thanks...</div>
           ) : (
             <HallOfThanksTab entries={thanks ?? []} />
           ))}

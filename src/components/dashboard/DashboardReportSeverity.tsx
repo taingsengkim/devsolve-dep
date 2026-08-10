@@ -41,9 +41,9 @@ export const DashboardReportSeverity: React.FC<DashboardReportSeverityProps> = (
   ];
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs p-5 flex flex-col justify-between h-full">
+    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-xs p-5 flex flex-col justify-between h-full">
       <div>
-        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <h2 className="text-base font-semibold text-slate-900 dark:text-neutral-100 pb-4 border-b border-slate-100 dark:border-neutral-800">
           Reports by Severity
         </h2>
 
@@ -59,13 +59,13 @@ export const DashboardReportSeverity: React.FC<DashboardReportSeverityProps> = (
                       {item.level}
                     </Badge>
                   </div>
-                  <span className="font-bold text-slate-900 dark:text-slate-100">
+                  <span className="font-bold text-slate-900 dark:text-neutral-100">
                     {item.count}
                   </span>
                 </div>
 
                 {/* Progress Bar Track */}
-                <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ease-out ${item.barClass}`}
                     style={{ width: `${Math.max(percentage, 3)}%` }}

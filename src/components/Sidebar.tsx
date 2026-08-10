@@ -100,7 +100,7 @@ function SidebarContent({
             variant="ghost"
             onClick={onNavItemClick}
             aria-label="Close menu"
-            className="size-9 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+            className="size-9 rounded-lg text-slate-500 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-neutral-100"
           >
             <X className="size-5" />
           </Button>
@@ -113,17 +113,17 @@ function SidebarContent({
         onClick={onNavItemClick}
         title={collapsed ? displayName : undefined}
         className={cn(
-          "mb-3 flex shrink-0 items-center gap-3 rounded-xl border border-slate-200/60 bg-white/60 p-3 shadow-2xs transition-colors hover:bg-white dark:border-slate-800 dark:bg-slate-900/60 dark:hover:bg-slate-900",
+          "mb-3 flex shrink-0 items-center gap-3 rounded-xl border border-slate-200/60 bg-white/60 p-3 shadow-2xs transition-colors hover:bg-white dark:border-neutral-800 dark:bg-neutral-900/60 dark:hover:bg-neutral-900",
           collapsed && "justify-center px-0",
         )}
       >
         {isPending ? (
           <div className="flex w-full animate-pulse items-center gap-3">
-            <div className="size-10 shrink-0 rounded-full bg-slate-300/60 dark:bg-slate-700" />
+            <div className="size-10 shrink-0 rounded-full bg-slate-300/60 dark:bg-neutral-700" />
             {!collapsed && (
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <div className="h-3.5 w-20 rounded bg-slate-300/60 dark:bg-slate-700" />
-                <div className="h-2.5 w-28 rounded bg-slate-300/60 dark:bg-slate-700" />
+                <div className="h-3.5 w-20 rounded bg-slate-300/60 dark:bg-neutral-700" />
+                <div className="h-2.5 w-28 rounded bg-slate-300/60 dark:bg-neutral-700" />
               </div>
             )}
           </div>
@@ -139,14 +139,14 @@ function SidebarContent({
             {!collapsed && (
               <div className="flex min-w-0 flex-col">
                 <span
-                  className="truncate text-sm font-bold text-slate-800 dark:text-slate-100"
+                  className="truncate text-sm font-bold text-slate-800 dark:text-neutral-100"
                   title={displayName}
                 >
                   {displayName}
                 </span>
                 {user?.email && (
                   <span
-                    className="truncate text-sm text-slate-500 dark:text-slate-400"
+                    className="truncate text-sm text-slate-500 dark:text-neutral-400"
                     title={user.email}
                   >
                     {user.email}
@@ -168,13 +168,13 @@ function SidebarContent({
           return (
             <div key={category} className="space-y-1">
               {catIndex > 0 && (
-                <Separator className="my-2.5 bg-slate-200/60 dark:bg-slate-800" />
+                <Separator className="my-2.5 bg-slate-200/60 dark:bg-neutral-800" />
               )}
 
               {collapsed ? (
                 <div className="py-1" aria-hidden />
               ) : (
-                <div className="select-none px-3 pb-1 pt-1 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                <div className="select-none px-3 pb-1 pt-1 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
                   {category}
                 </div>
               )}
@@ -203,7 +203,7 @@ function SidebarContent({
                       collapsed ? "justify-center px-0" : "justify-between",
                       isActive
                         ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                        : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+                        : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-100",
                     )}
                   >
                     {/* The rail is the only active cue left when labels are
@@ -227,7 +227,7 @@ function SidebarContent({
                           "size-4.5 shrink-0",
                           isActive
                             ? "text-blue-600 dark:text-blue-400"
-                            : "text-slate-400 dark:text-slate-500",
+                            : "text-slate-400 dark:text-neutral-500",
                         )}
                       />
                       {!collapsed && <span className="truncate">{item.name}</span>}
@@ -247,7 +247,7 @@ function SidebarContent({
       </nav>
 
       {/* Footer */}
-      <div className="mt-auto shrink-0 space-y-1.5 border-t border-slate-200/60 pt-3 dark:border-slate-800">
+      <div className="mt-auto shrink-0 space-y-1.5 border-t border-slate-200/60 pt-3 dark:border-neutral-800">
         <Link
           href="/dashboard/profile/settings"
           onClick={onNavItemClick}
@@ -317,7 +317,7 @@ const Sidebar = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex w-full items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur-md lg:hidden dark:border-slate-800 dark:bg-slate-900/90">
+      <header className="sticky top-0 z-40 flex w-full items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur-md lg:hidden dark:border-neutral-800 dark:bg-neutral-900/90">
         <Link href="/dashboard" className="flex items-center gap-2">
           <Image
             src="/logo-1.png"
@@ -327,7 +327,7 @@ const Sidebar = () => {
             className="size-9 object-contain"
             priority
           />
-          <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-neutral-100">
             DevSolve
           </span>
         </Link>
@@ -340,7 +340,7 @@ const Sidebar = () => {
             onClick={() => setIsOpen(true)}
             aria-label="Open menu"
             aria-expanded={isOpen}
-            className="cursor-pointer rounded-xl text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="cursor-pointer rounded-xl text-slate-700 hover:bg-slate-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
           >
             <Menu className="size-6" />
           </Button>
@@ -365,7 +365,7 @@ const Sidebar = () => {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed inset-y-0 left-0 z-50 flex h-full w-70 flex-col overflow-hidden border-r border-slate-200 bg-white p-4 shadow-2xl lg:hidden dark:border-slate-800 dark:bg-slate-950"
+              className="fixed inset-y-0 left-0 z-50 flex h-full w-70 flex-col overflow-hidden border-r border-slate-200 bg-white p-4 shadow-2xl lg:hidden dark:border-neutral-800 dark:bg-neutral-950"
             >
               <SidebarContent
                 pathname={pathname}
@@ -386,7 +386,7 @@ const Sidebar = () => {
       <motion.aside
         animate={{ width: collapsed ? 84 : 260 }}
         transition={{ type: "spring", stiffness: 380, damping: 34 }}
-        className="sticky top-0 z-30 hidden h-dvh shrink-0 flex-col overflow-visible border-r border-slate-200/80 p-4 lg:flex dark:border-slate-800"
+        className="sticky top-0 z-30 hidden h-dvh shrink-0 flex-col overflow-visible border-r border-slate-200/80 p-4 lg:flex dark:border-neutral-800"
       >
         <SidebarContent
           pathname={pathname}
@@ -402,7 +402,7 @@ const Sidebar = () => {
           onClick={() => setCollapsed((current) => !current)}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="absolute -right-3 top-8 flex size-6 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-md transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-blue-500/40 dark:hover:bg-slate-800 dark:hover:text-blue-300"
+          className="absolute -right-3 top-8 flex size-6 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-md transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800 dark:hover:text-blue-300"
         >
           {collapsed ? (
             <ChevronsRight className="size-3.5" />

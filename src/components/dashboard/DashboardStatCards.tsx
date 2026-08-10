@@ -38,7 +38,7 @@ const getStatConfig = (type: StatMetric["type"]) => {
     default:
       return {
         icon: Shield,
-        iconBg: "bg-slate-50 text-slate-600 dark:bg-slate-950 dark:text-slate-400",
+        iconBg: "bg-slate-50 text-slate-600 dark:bg-neutral-950 dark:text-neutral-400",
         borderHover: "hover:border-slate-300",
       };
   }
@@ -57,10 +57,10 @@ export const DashboardStatCards: React.FC<DashboardStatCardsProps> = ({ stats })
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, delay: idx * 0.05 }}
-            className={`bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs transition-all ${config.borderHover}`}
+            className={`bg-white dark:bg-neutral-900 rounded-xl p-5 border border-slate-200 dark:border-neutral-800 shadow-xs transition-all ${config.borderHover}`}
           >
             <div className="flex items-start justify-between">
-              <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+              <span className="text-sm font-medium text-slate-600 dark:text-neutral-400">
                 {stat.title}
               </span>
               <div className={`p-2 rounded-lg ${config.iconBg}`}>
@@ -69,10 +69,10 @@ export const DashboardStatCards: React.FC<DashboardStatCardsProps> = ({ stats })
             </div>
 
             <div className="mt-3 space-y-1">
-              <div className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+              <div className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">
                 {stat.value}
               </div>
-              <p className="text-xs sm:text-sm font-normal text-slate-500 dark:text-slate-400 flex items-center gap-1">
+              <p className="text-xs sm:text-sm font-normal text-slate-500 dark:text-neutral-400 flex items-center gap-1">
                 <span>{stat.subtext}</span>
               </p>
             </div>

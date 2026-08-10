@@ -13,10 +13,10 @@ interface DashboardMyProgramsProps {
 
 export const DashboardMyPrograms: React.FC<DashboardMyProgramsProps> = ({ programs }) => {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs p-5 flex flex-col justify-between h-full">
+    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-xs p-5 flex flex-col justify-between h-full">
       <div>
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-neutral-800">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-neutral-100">
             My Programs
           </h2>
           <Link
@@ -29,13 +29,13 @@ export const DashboardMyPrograms: React.FC<DashboardMyProgramsProps> = ({ progra
         </div>
 
         {/* Column Headers */}
-        <div className="grid grid-cols-12 gap-2 text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider py-3 border-b border-slate-100 dark:border-slate-800/60 px-2">
+        <div className="grid grid-cols-12 gap-2 text-xs font-medium text-slate-400 dark:text-neutral-500 uppercase tracking-wider py-3 border-b border-slate-100 dark:border-neutral-800/60 px-2">
           <div className="col-span-6">Program Name</div>
           <div className="col-span-3 text-center">Status</div>
           <div className="col-span-3 text-right">Reports</div>
         </div>
 
-        <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
+        <div className="divide-y divide-slate-100 dark:divide-neutral-800/60">
           {programs.map((program, idx) => (
             <motion.div
               key={program.id}
@@ -45,7 +45,7 @@ export const DashboardMyPrograms: React.FC<DashboardMyProgramsProps> = ({ progra
             >
               <Link
                 href={`/dashboard/programs/${program.id}`}
-                className="grid grid-cols-12 gap-2 items-center py-3.5 px-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-lg transition-colors group"
+                className="grid grid-cols-12 gap-2 items-center py-3.5 px-2 hover:bg-slate-50 dark:hover:bg-neutral-800/40 rounded-lg transition-colors group"
               >
                 {/* Program Name & Logo */}
                 <div className="col-span-6 flex items-center gap-3 min-w-0">
@@ -56,7 +56,7 @@ export const DashboardMyPrograms: React.FC<DashboardMyProgramsProps> = ({ progra
                   >
                     {program.name.slice(0, 2).toUpperCase()}
                   </div>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-neutral-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
                     {program.name}
                   </span>
                 </div>
@@ -77,7 +77,7 @@ export const DashboardMyPrograms: React.FC<DashboardMyProgramsProps> = ({ progra
                 </div>
 
                 {/* Reports Count & Link Icon */}
-                <div className="col-span-3 flex items-center justify-end gap-1.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                <div className="col-span-3 flex items-center justify-end gap-1.5 text-sm font-semibold text-slate-900 dark:text-neutral-100">
                   <span>{program.reportCount}</span>
                   <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
                 </div>

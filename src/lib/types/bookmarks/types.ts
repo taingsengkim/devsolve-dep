@@ -1,4 +1,9 @@
-export type BookmarkCategory = "all" | "Program" | "Problems" | "Solutions";
+export type BookmarkCategory =
+  | "all"
+  | "Program"
+  | "Problems"
+  | "Solutions"
+  | "Showcases";
 
 export type BookmarkSeverity = "Critical" | "High" | "Medium" | "Low";
 
@@ -9,7 +14,7 @@ export interface BookmarkItem {
   id: string;
   bookmarkableId: string;
   bookmarkableType: BookmarkableType;
-  category: "Program" | "Problems" | "Solutions";
+  category: Exclude<BookmarkCategory, "all">;
   title: string;
   description: string;
   savedAt: string;
@@ -51,6 +56,7 @@ export interface BookmarksResponse {
     Program: number;
     Problems: number;
     Solutions: number;
+    Showcases: number;
   };
   totalCount: number;
 }

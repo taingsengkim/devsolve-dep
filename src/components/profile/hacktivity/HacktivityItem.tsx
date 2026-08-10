@@ -21,26 +21,26 @@ function Icon({ entry }: { entry: HacktivityEntry }) {
   switch (entry.type) {
     case "resolved":
       return (
-        <div className={`${wrapper} bg-emerald-50`}>
-          <CheckCircle2 size={16} className="text-emerald-600" />
+        <div className={`${wrapper} bg-emerald-50 dark:bg-emerald-500/10`}>
+          <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-300" />
         </div>
       );
     case "badge":
       return (
-        <div className={`${wrapper} bg-amber-50`}>
-          <Award size={16} className="text-amber-500" />
+        <div className={`${wrapper} bg-amber-50 dark:bg-amber-500/10`}>
+          <Award size={16} className="text-amber-500 dark:text-amber-300" />
         </div>
       );
     case "rank":
       return (
-        <div className={`${wrapper} bg-blue-50`}>
-          <TrendingUp size={16} className="text-blue-600" />
+        <div className={`${wrapper} bg-blue-50 dark:bg-blue-500/10`}>
+          <TrendingUp size={16} className="text-blue-600 dark:text-blue-300" />
         </div>
       );
     case "retest":
       return (
-        <div className={`${wrapper} bg-indigo-50`}>
-          <RotateCw size={16} className="text-indigo-500" />
+        <div className={`${wrapper} bg-indigo-50 dark:bg-indigo-500/10`}>
+          <RotateCw size={16} className="text-indigo-500 dark:text-indigo-300" />
         </div>
       );
   }
@@ -49,20 +49,20 @@ function Icon({ entry }: { entry: HacktivityEntry }) {
 function Description({ entry }: { entry: HacktivityEntry }) {
   if (entry.type === "resolved") {
     return (
-      <p className="text-sm text-slate-800 dark:text-slate-200">
+      <p className="text-sm text-slate-800 dark:text-neutral-200">
         <span className="font-semibold">{entry.actorHandle}</span> resolved a{" "}
         <span className={`font-semibold ${entry.severity ? SEVERITY_COLOR[entry.severity] : ""}`}>
           {entry.severity && entry.severity[0].toUpperCase() + entry.severity.slice(1)}
         </span>{" "}
-        bug for <span className="font-bold text-slate-900 dark:text-slate-100">{entry.program}</span>
+        bug for <span className="font-bold text-slate-900 dark:text-neutral-100">{entry.program}</span>
       </p>
     );
   }
   if (entry.type === "badge") {
     return (
-      <p className="text-sm text-slate-800 dark:text-slate-200">
+      <p className="text-sm text-slate-800 dark:text-neutral-200">
         <span className="font-semibold">{entry.actorHandle}</span> earned the badge{" "}
-        <span className="ml-1 inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-950 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:text-amber-300">
+        <span className="ml-1 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
           {entry.badgeName}
         </span>
       </p>
@@ -70,28 +70,28 @@ function Description({ entry }: { entry: HacktivityEntry }) {
   }
   if (entry.type === "rank") {
     return (
-      <p className="text-sm text-slate-800 dark:text-slate-200">
+      <p className="text-sm text-slate-800 dark:text-neutral-200">
         <span className="font-semibold">{entry.actorHandle}</span> climbed to{" "}
         <span className="font-semibold text-blue-600 dark:text-blue-400">{entry.rankLabel}</span>
       </p>
     );
   }
   return (
-    <p className="text-sm text-slate-800 dark:text-slate-200">
+    <p className="text-sm text-slate-800 dark:text-neutral-200">
       <span className="font-semibold">{entry.actorHandle}</span> completed a retest for{" "}
-      <span className="font-bold text-slate-900 dark:text-slate-100">{entry.program}</span>
+      <span className="font-bold text-slate-900 dark:text-neutral-100">{entry.program}</span>
     </p>
   );
 }
 
 export default function HacktivityItem({ entry }: HacktivityItemProps) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 py-4 last:border-0">
+    <div className="flex items-start justify-between gap-4 border-b border-slate-100 py-4 last:border-0 dark:border-neutral-800">
       <div className="flex items-start gap-3">
         <Icon entry={entry} />
         <div>
           <Description entry={entry} />
-          <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400">{formatDate(entry.date)}</p>
+          <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-neutral-400">{formatDate(entry.date)}</p>
         </div>
       </div>
 

@@ -151,10 +151,11 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
 
   return (
     <motion.article
+      id={`solution-${solution.id}`}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: "easeOut", delay: index * 0.05 }}
-      className={`overflow-hidden rounded-2xl border bg-white shadow-xs transition-colors dark:bg-neutral-900 ${
+      className={`scroll-mt-28 overflow-hidden rounded-2xl border bg-white shadow-xs transition-colors dark:bg-neutral-900 ${
         isAccepted
           ? "border-emerald-400 ring-1 ring-emerald-400/30 dark:border-emerald-500/50 dark:ring-emerald-500/20"
           : "border-slate-200/80 dark:border-neutral-800"

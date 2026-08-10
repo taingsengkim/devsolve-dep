@@ -29,14 +29,14 @@ export default function ProfilePage() {
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="w-full pb-12"
       >
-        <div className="mx-auto max-w-lg space-y-4 rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
+        <div className="mx-auto max-w-lg space-y-4 rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
+          <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-neutral-800">
             <UserX className="size-6" />
           </span>
-          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+          <h1 className="text-xl font-bold text-slate-800 dark:text-neutral-100">
             Profile unavailable
           </h1>
-          <p className="text-base text-slate-500 dark:text-slate-400">
+          <p className="text-base text-slate-500 dark:text-neutral-400">
             We couldn&apos;t load{" "}
             <span className="font-semibold">@{username}</span> right now. The
             profile may not exist, or the connection dropped.
@@ -67,7 +67,7 @@ export default function ProfilePage() {
         className="w-full space-y-6 pb-16"
       >
         {/* Slim utility bar: breadcrumb left, cancel right */}
-        <div className="flex items-center justify-between border-b border-slate-200/80 pb-4 dark:border-slate-800">
+        <div className="flex items-center justify-between border-b border-slate-200/80 pb-4 dark:border-neutral-800">
           <nav
             aria-label="Breadcrumb"
             className="flex items-center gap-1.5 text-sm font-medium text-slate-500"
@@ -75,17 +75,17 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => setIsEditing(false)}
-              className="cursor-pointer transition-colors hover:text-slate-900 dark:hover:text-slate-200"
+              className="cursor-pointer transition-colors hover:text-slate-900 dark:hover:text-neutral-200"
             >
               @{profile.username}
             </button>
-            <ChevronRight className="size-3.5 text-slate-300 dark:text-slate-700" />
-            <span className="text-slate-900 dark:text-slate-200">
+            <ChevronRight className="size-3.5 text-slate-300 dark:text-neutral-700" />
+            <span className="text-slate-900 dark:text-neutral-200">
               Edit profile
             </span>
           </nav>
 
-          <p className="text-sm text-slate-400 dark:text-slate-500">
+          <p className="text-sm text-slate-400 dark:text-neutral-500">
             Changes are saved section by section.
           </p>
         </div>

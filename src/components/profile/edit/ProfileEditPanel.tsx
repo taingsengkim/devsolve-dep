@@ -71,7 +71,7 @@ function urlToEntry(url: string, id: string): SocialEntry {
 }
 
 const inputClass =
-  "h-11 rounded-xl border-slate-300 bg-white text-base text-slate-900 shadow-2xs transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-blue-500";
+  "h-11 rounded-xl border-slate-300 bg-white text-base text-slate-900 shadow-2xs transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:focus:border-blue-500";
 
 const errorInputClass =
   "border-rose-400 focus-visible:ring-rose-500/30 dark:border-rose-700";
@@ -93,7 +93,7 @@ function Field({
     <div className="space-y-1.5">
       <label
         htmlFor={htmlFor}
-        className="block text-sm font-semibold text-slate-800 dark:text-slate-200"
+        className="block text-sm font-semibold text-slate-800 dark:text-neutral-200"
       >
         {label}
       </label>
@@ -104,7 +104,7 @@ function Field({
         </p>
       ) : (
         hint && (
-          <p className="text-xs text-slate-500 dark:text-slate-400">{hint}</p>
+          <p className="text-xs text-slate-500 dark:text-neutral-400">{hint}</p>
         )
       )}
     </div>
@@ -126,13 +126,13 @@ function BioEditor({
 
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200">
+      <label className="block text-sm font-semibold text-slate-800 dark:text-neutral-200">
         Bio
       </label>
 
       {/* GitHub Tab Strip */}
-      <div className="rounded-xl border border-slate-300 bg-slate-50/50 dark:border-slate-700 dark:bg-slate-900/50 overflow-hidden shadow-2xs">
-        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100/70 px-3 pt-2 dark:border-slate-800 dark:bg-slate-900">
+      <div className="overflow-hidden rounded-xl border border-slate-300 bg-slate-50/50 shadow-2xs dark:border-neutral-700 dark:bg-neutral-900/50">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100/70 px-3 pt-2 dark:border-neutral-800 dark:bg-neutral-900">
           <div className="flex gap-1">
             <button
               type="button"
@@ -141,7 +141,7 @@ function BioEditor({
                 "flex items-center gap-1.5 border-b-2 px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
                 activeTab === "write"
                   ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
-                  : "border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
+                  : "border-transparent text-slate-600 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-neutral-200",
               )}
             >
               <Code2 size={13} />
@@ -154,7 +154,7 @@ function BioEditor({
                 "flex items-center gap-1.5 border-b-2 px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
                 activeTab === "preview"
                   ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
-                  : "border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
+                  : "border-transparent text-slate-600 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-neutral-200",
               )}
             >
               <Eye size={13} />
@@ -167,7 +167,7 @@ function BioEditor({
               "text-xs tabular-nums font-medium pb-1.5",
               value.length > MAX_BIO * 0.9
                 ? "text-rose-500"
-                : "text-slate-400 dark:text-slate-500",
+                : "text-slate-400 dark:text-neutral-500",
             )}
           >
             {value.length}/{MAX_BIO}
@@ -175,7 +175,7 @@ function BioEditor({
         </div>
 
         {/* Content Box */}
-        <div className="bg-white p-3.5 dark:bg-slate-950">
+        <div className="bg-white p-3.5 dark:bg-neutral-950">
           {activeTab === "write" ? (
             <textarea
               id="edit-bio"
@@ -185,7 +185,7 @@ function BioEditor({
               onChange={(e) => onChange(e.target.value)}
               placeholder="Tell the community about yourself. Markdown is supported."
               className={cn(
-                "min-h-[180px] w-full resize-y bg-transparent font-mono text-sm text-slate-900 outline-none placeholder:text-slate-400 placeholder:font-sans dark:text-slate-100",
+                "min-h-[180px] w-full resize-y bg-transparent font-mono text-sm text-slate-900 outline-none placeholder:text-slate-400 placeholder:font-sans dark:text-neutral-100",
                 error && errorInputClass,
               )}
             />
@@ -194,7 +194,7 @@ function BioEditor({
               {value.trim() ? (
                 <ReactMarkdown>{value}</ReactMarkdown>
               ) : (
-                <p className="text-sm italic text-slate-400 dark:text-slate-500">
+                <p className="text-sm italic text-slate-400 dark:text-neutral-500">
                   Nothing to preview
                 </p>
               )}
@@ -204,7 +204,7 @@ function BioEditor({
       </div>
 
       {/* Footer hint */}
-      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-neutral-400">
         {error ? (
           <p className="font-medium text-rose-600 dark:text-rose-400">{error}</p>
         ) : (
@@ -247,7 +247,7 @@ function SocialLinksEditor({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200">
+        <label className="block text-sm font-semibold text-slate-800 dark:text-neutral-200">
           Social links
         </label>
         <button
@@ -273,7 +273,7 @@ function SocialLinksEditor({
           >
             <div className="flex items-center gap-2 pt-1">
               <div className="relative flex-1">
-                <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 dark:text-slate-500">
+                <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 dark:text-neutral-500">
                   <Link2 size={15} />
                 </span>
                 <Input
@@ -292,7 +292,7 @@ function SocialLinksEditor({
               <button
                 type="button"
                 onClick={() => remove(entry.id)}
-                className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:text-slate-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:text-neutral-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
                 aria-label="Remove link"
               >
                 <Trash2 size={15} />
@@ -303,8 +303,8 @@ function SocialLinksEditor({
       </AnimatePresence>
 
       {entries.length === 0 && (
-        <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-4 text-center dark:border-slate-800 dark:bg-slate-900/30">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+        <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-4 text-center dark:border-neutral-800 dark:bg-neutral-900/30">
+          <p className="text-sm text-slate-500 dark:text-neutral-400">
             No social links added yet.
           </p>
           <button
@@ -375,7 +375,7 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
   if (isLoading || !values) {
     return (
       <div className="w-full space-y-6">
-        <div className="h-64 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800" />
+        <div className="h-64 animate-pulse rounded-2xl bg-slate-200 dark:bg-neutral-800" />
       </div>
     );
   }
@@ -483,7 +483,7 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
       <div className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_300px] lg:grid-cols-[1fr_340px] md:items-start">
         {/* Left Column: Form Fields */}
         <div className="space-y-6">
-          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 border-b border-slate-200/80 pb-3 dark:border-slate-800">
+          <h2 className="border-b border-slate-200/80 pb-3 text-xl font-bold tracking-tight text-slate-900 dark:border-neutral-800 dark:text-neutral-100">
             Public profile
           </h2>
 
@@ -516,8 +516,8 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
           />
 
           {/* Personal Details */}
-          <div className="space-y-4 pt-4 border-t border-slate-200/80 dark:border-slate-800">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          <div className="space-y-4 border-t border-slate-200/80 pt-4 dark:border-neutral-800">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
               Personal details
             </h3>
 
@@ -564,7 +564,7 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
                         "cursor-pointer rounded-xl px-4 py-2 text-sm font-semibold transition-colors",
                         active
                           ? "bg-blue-600 text-white shadow-xs"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700",
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700",
                       )}
                     >
                       {opt.label}
@@ -575,7 +575,7 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
                   <button
                     type="button"
                     onClick={() => patch({ gender: undefined })}
-                    className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+                    className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
                   >
                     Clear
                   </button>
@@ -585,8 +585,8 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
           </div>
 
           {/* Sticky Bottom Action Bar (equal to width of form) */}
-          <div className="sticky bottom-4 z-20 mt-8 flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-200/80 bg-white/95 px-5 py-4 shadow-xl backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 sm:px-6">
-            <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+          <div className="sticky bottom-4 z-20 mt-8 flex flex-col gap-3.5 rounded-2xl border border-slate-200/80 bg-white/95 px-5 py-4 shadow-xl backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/95 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-neutral-300">
               <span className="inline-block size-2 shrink-0 rounded-full bg-blue-600 animate-pulse" />
               <span>Careful — you have unsaved changes.</span>
             </div>
@@ -597,7 +597,7 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
                 variant="outline"
                 id="edit-cancel-btn"
                 onClick={onDone}
-                className="h-10 rounded-xl border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                className="h-10 rounded-xl border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
               >
                 <X size={14} />
                 Cancel
@@ -623,12 +623,12 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
 
         {/* Right Column: Profile Picture (GitHub Style) */}
         <div className="space-y-3 md:sticky md:top-6">
-          <label className="block text-base font-semibold text-slate-800 dark:text-slate-200">
+          <label className="block text-base font-semibold text-slate-800 dark:text-neutral-200">
             Profile picture
           </label>
 
-          <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-            <div className="relative aspect-square w-full max-w-[260px] overflow-hidden rounded-full border-2 border-slate-200/80 bg-slate-100 shadow-xs ring-4 ring-white dark:border-slate-700 dark:bg-slate-800 dark:ring-slate-950">
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="relative aspect-square w-full max-w-[260px] overflow-hidden rounded-full border-2 border-slate-200/80 bg-slate-100 shadow-xs ring-4 ring-white dark:border-neutral-700 dark:bg-neutral-800 dark:ring-neutral-950">
               {values.avatarUrl ? (
                 <Image
                   src={values.avatarUrl}
@@ -654,7 +654,7 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
               <label
                 htmlFor="profile-avatar-upload"
                 className={cn(
-                  "flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700",
+                  "flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700",
                   isAvatarBusy && "pointer-events-none opacity-60",
                 )}
               >
@@ -683,7 +683,7 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
               )}
             </div>
 
-            <p className="text-center text-xs font-medium text-slate-400 dark:text-slate-500">
+            <p className="text-center text-xs font-medium text-slate-400 dark:text-neutral-500">
               PNG, JPG or WebP · max 2 MB
             </p>
 

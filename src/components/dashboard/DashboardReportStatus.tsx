@@ -32,9 +32,9 @@ export const DashboardReportStatus: React.FC<DashboardReportStatusProps> = ({ di
   });
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs p-5 flex flex-col justify-between h-full">
+    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-xs p-5 flex flex-col justify-between h-full">
       <div>
-        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <h2 className="text-base font-semibold text-slate-900 dark:text-neutral-100 pb-4 border-b border-slate-100 dark:border-neutral-800">
           Reports by Status
         </h2>
 
@@ -49,7 +49,7 @@ export const DashboardReportStatus: React.FC<DashboardReportStatusProps> = ({ di
                 fill="transparent"
                 stroke="#E2E8F0"
                 strokeWidth={strokeWidth}
-                className="dark:stroke-slate-800"
+                className="dark:stroke-neutral-800"
               />
               {segments.map((seg, i) => (
                 <circle
@@ -67,7 +67,7 @@ export const DashboardReportStatus: React.FC<DashboardReportStatusProps> = ({ di
               ))}
             </svg>
             <div className="absolute flex flex-col items-center justify-center text-center">
-              <span className="text-xl font-bold text-slate-900 dark:text-slate-100">
+              <span className="text-xl font-bold text-slate-900 dark:text-neutral-100">
                 {total.toLocaleString()}
               </span>
               <span className="text-xs text-slate-400 font-medium">Total</span>
@@ -81,16 +81,16 @@ export const DashboardReportStatus: React.FC<DashboardReportStatusProps> = ({ di
               return (
                 <div
                   key={item.label}
-                  className="flex items-center justify-between text-sm py-1 border-b border-slate-50 dark:border-slate-800/40 last:border-none"
+                  className="flex items-center justify-between text-sm py-1 border-b border-slate-50 dark:border-neutral-800/40 last:border-none"
                 >
                   <div className="flex items-center gap-2.5">
                     <span className={`w-2.5 h-2.5 rounded-full ${item.bgClass}`} />
-                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                    <span className="font-medium text-slate-700 dark:text-neutral-300">
                       {item.label}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900 dark:text-slate-100">
+                    <span className="font-bold text-slate-900 dark:text-neutral-100">
                       {item.count}
                     </span>
                     <span className="text-xs text-slate-400 font-normal w-8 text-right">

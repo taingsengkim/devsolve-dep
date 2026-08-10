@@ -42,11 +42,11 @@ export const DashboardActionQueue: React.FC<DashboardActionQueueProps> = ({
   totalCount,
 }) => {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs p-5 flex flex-col justify-between h-full">
+    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-xs p-5 flex flex-col justify-between h-full">
       <div>
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-neutral-800">
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-neutral-100">
               Action Queue
             </h2>
             <Badge
@@ -58,7 +58,7 @@ export const DashboardActionQueue: React.FC<DashboardActionQueueProps> = ({
           </div>
         </div>
 
-        <div className="divide-y divide-slate-100 dark:divide-slate-800/60 mt-1">
+        <div className="divide-y divide-slate-100 dark:divide-neutral-800/60 mt-1">
           {items.map((item, idx) => {
             const config = getActionIcon(item.type);
             const Icon = config.icon;
@@ -72,24 +72,24 @@ export const DashboardActionQueue: React.FC<DashboardActionQueueProps> = ({
               >
                 <Link
                   href={item.linkHref}
-                  className="flex items-center justify-between py-3.5 px-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-lg transition-colors group"
+                  className="flex items-center justify-between py-3.5 px-2 hover:bg-slate-50 dark:hover:bg-neutral-800/40 rounded-lg transition-colors group"
                 >
                   <div className="flex items-center gap-3">
                     <div className={`p-2 rounded-lg shrink-0 ${config.bg}`}>
                       <Icon className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-slate-900 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      <p className="text-sm font-medium text-slate-900 dark:text-neutral-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {item.title}
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                      <p className="text-xs text-slate-500 dark:text-neutral-400">
                         {item.subtitle}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-slate-900 dark:text-slate-100 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-md">
+                    <span className="text-sm font-bold text-slate-900 dark:text-neutral-100 px-2 py-0.5 bg-slate-100 dark:bg-neutral-800 rounded-md">
                       {item.count}
                     </span>
                     <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
