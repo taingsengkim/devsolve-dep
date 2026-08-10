@@ -7,8 +7,11 @@ import {
   ArrowRight,
   ArrowUpDown,
   Building2,
+  Check,
   LoaderCircle,
   Trash2,
+  X,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -31,7 +34,15 @@ import {
   ProgramStateBadge,
 } from "@/components/admin/programs/ProgramStatusBadge";
 import { ProgramManagementSummaryItem } from "@/lib/types/admin/programAdminTypes";
-import { useDeleteProgramMutation } from "@/lib/redux/services/program/programsApi";
+import {
+  useDeleteProgramMutation,
+  useUpdateProgramStateMutation,
+} from "@/lib/redux/services/program/programsApi";
+import {
+  useApproveProgramMutation,
+  useRejectProgramMutation,
+} from "@/lib/redux/services/admin/programAdminApi";
+import { ProgramRejectDialog } from "@/components/admin/programs/ProgramRejectDialog";
 import { cn } from "@/lib/utils";
 
 /** The sortable header the users table uses, so both read the same. */
@@ -82,6 +93,22 @@ function OwnerProgramActions({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [deleteProgram, { isLoading }] = useDeleteProgramMutation();
+  const [updateProgramState, { isLoading: isActivating }] =
+    useUpdateProgramStateMutation();
+
+  const handleActivate = async () => {
+    try {
+      await updateProgramState({ id: program.id, state: "ACTIVE" }).unwrap();
+      toast.success("Program activated", {
+        description: `"${program.name}" is now active and published.`,
+      });
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message;
+      toast.error("Activation failed", {
+        description: message || "Failed to activate program.",
+      });
+    }
+  };
 
   const handleDelete = async () => {
     try {
@@ -95,14 +122,34 @@ function OwnerProgramActions({
     }
   };
 
+  const canActivate =
+    program.submissionState === "APPROVED" && program.state === "DRAFT";
+
   return (
     <>
       <div className="flex items-center justify-end gap-2">
+        {canActivate && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={isActivating || isLoading}
+            onClick={handleActivate}
+            className="h-8 rounded-xl border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400 dark:hover:bg-emerald-900/80 px-2.5 text-xs font-bold gap-1 cursor-pointer"
+          >
+            {isActivating ? (
+              <LoaderCircle className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Zap className="w-3.5 h-3.5 fill-current" />
+            )}
+            Activate
+          </Button>
+        )}
         <Link
           href={`/dashboard/program-management/${program.id}`}
           className={cn(
             buttonVariants({ variant: "outline", size: "sm" }),
-            "h-8 rounded-xl border-slate-200 px-3 text-sm font-semibold shadow-2xs dark:border-slate-800"
+            "h-8 rounded-xl border-slate-200 px-3 text-xs font-semibold shadow-2xs dark:border-slate-800"
           )}
         >
           View
@@ -150,6 +197,100 @@ function OwnerProgramActions({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </>
+  );
+}
+
+function AdminProgramActions({
+  program,
+}: {
+  program: ProgramManagementSummaryItem;
+}) {
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [approveProgram, { isLoading: isApproving }] =
+    useApproveProgramMutation();
+  const [rejectProgram, { isLoading: isRejecting }] =
+    useRejectProgramMutation();
+
+  const handleApprove = async () => {
+    try {
+      await approveProgram({ id: program.id }).unwrap();
+      toast.success("Program approved", {
+        description: `"${program.name}" has been approved for publication.`,
+      });
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message;
+      toast.error("Approval failed", {
+        description: message || "Failed to approve program.",
+      });
+    }
+  };
+
+  const handleRejectConfirm = async (reason: string) => {
+    try {
+      await rejectProgram({ id: program.id, reason }).unwrap();
+      toast.success("Program rejected", {
+        description: `"${program.name}" review feedback sent to organization.`,
+      });
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message;
+      toast.error("Rejection failed", {
+        description: message || "Failed to reject program.",
+      });
+    }
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-end gap-2">
+        {program.submissionState === "PENDING_REVIEW" && (
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isApproving || isRejecting}
+              onClick={handleApprove}
+              className="h-8 rounded-xl border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400 dark:hover:bg-emerald-900/80 px-2.5 text-xs font-bold gap-1 cursor-pointer"
+            >
+              {isApproving ? (
+                <LoaderCircle className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Check className="w-3.5 h-3.5" />
+              )}
+              Approve
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isApproving || isRejecting}
+              onClick={() => setRejectOpen(true)}
+              className="h-8 rounded-xl border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-800 dark:bg-rose-950/60 dark:text-rose-400 dark:hover:bg-rose-900/80 px-2.5 text-xs font-bold gap-1 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+              Reject
+            </Button>
+          </>
+        )}
+        <Link
+          href={`/dashboard/program-management/${program.id}?scope=admin`}
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "h-8 rounded-xl border-slate-200 px-3 text-xs font-semibold shadow-2xs dark:border-slate-800"
+          )}
+        >
+          Review
+          <ArrowRight data-icon="inline-end" />
+        </Link>
+      </div>
+
+      <ProgramRejectDialog
+        open={rejectOpen}
+        onClose={() => setRejectOpen(false)}
+        onConfirmReject={handleRejectConfirm}
+        programName={program.name}
+      />
     </>
   );
 }
@@ -269,20 +410,7 @@ export const getProgramColumns =
           return <OwnerProgramActions program={row.original} />;
         }
 
-        return (
-          <div className="flex items-center justify-end">
-            <Link
-              href={`/dashboard/program-management/${row.original.id}?scope=admin`}
-              className={cn(
-                buttonVariants({ variant: "outline", size: "sm" }),
-                "h-8 rounded-xl border-slate-200 px-3 text-sm font-semibold shadow-2xs dark:border-slate-800"
-              )}
-            >
-              Review
-              <ArrowRight data-icon="inline-end" />
-            </Link>
-          </div>
-        );
+        return <AdminProgramActions program={row.original} />;
       },
     },
   ];

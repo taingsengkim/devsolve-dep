@@ -46,7 +46,14 @@ export const programsApi = proxyApi.injectEndpoints({
     // GET /organizations/me/programs (COMPANY role)
     getMyCompanyPrograms: builder.query<
       PageProgramManagementSummaryResponseDto,
-      { page?: number; size?: number; sort?: string; state?: string; search?: string } | void
+      {
+        page?: number;
+        size?: number;
+        sort?: string;
+        submissionState?: string;
+        state?: string;
+        search?: string;
+      } | void
     >({
       query: (params) => {
         const queryParams = new URLSearchParams();
@@ -59,10 +66,13 @@ export const programsApi = proxyApi.injectEndpoints({
         if (params?.sort) {
           queryParams.append("sort", params.sort);
         }
-        if (params?.state && params.state !== "All") {
+        if (params?.submissionState) {
+          queryParams.append("submissionState", params.submissionState);
+        }
+        if (params?.state) {
           queryParams.append("state", params.state);
         }
-        if (params?.search && params.search.trim() !== "") {
+        if (params?.search && params.search.trim()) {
           queryParams.append("search", params.search.trim());
         }
 
@@ -72,6 +82,12 @@ export const programsApi = proxyApi.injectEndpoints({
           : "organizations/me/programs";
       },
       providesTags: ["Program"],
+    }),
+
+    // GET /organizations/me/programs/{id} (COMPANY role)
+    getMyCompanyProgramById: builder.query<ProgramDetail, string>({
+      query: (id) => `organizations/me/programs/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Program", id }],
     }),
 
     // GET /programs/{id}
@@ -120,6 +136,22 @@ export const programsApi = proxyApi.injectEndpoints({
         { type: "Program", id },
       ],
     }),
+
+    // PATCH /programs/{id} (update state: DRAFT -> ACTIVE)
+    updateProgramState: builder.mutation<
+      Program,
+      { id: string; state: "ACTIVE" | "PAUSED" | "CLOSED" | "DRAFT" }
+    >({
+      query: ({ id, state }) => ({
+        url: `/programs/${id}`,
+        method: "PATCH",
+        body: { state },
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        "Program",
+        { type: "Program", id },
+      ],
+    }),
   }),
 
   overrideExisting: true,
@@ -128,9 +160,11 @@ export const programsApi = proxyApi.injectEndpoints({
 export const {
   useGetProgramsQuery,
   useGetMyCompanyProgramsQuery,
+  useGetMyCompanyProgramByIdQuery,
   useGetProgramByIdQuery,
   useGetMyCompanyProgramByIdQuery,
   useCreateProgramMutation,
   useUpdateProgramMutation,
   useDeleteProgramMutation,
+  useUpdateProgramStateMutation,
 } = programsApi;

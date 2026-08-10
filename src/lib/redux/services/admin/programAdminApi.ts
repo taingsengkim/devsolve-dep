@@ -27,11 +27,12 @@ export const programAdminApi = proxyApi.injectEndpoints({
       GetAdminProgramsParams | void
     >({
       query: (params) => {
-        const { submissionState, state, search, page = 0, size = 20 } = params || {};
+        const { submissionState, state, search, page = 0, size = 20, sort } = params || {};
         const queryParams: Record<string, any> = { page, size };
         if (submissionState) queryParams.submissionState = submissionState;
         if (state) queryParams.state = state;
         if (search && search.trim()) queryParams.search = search.trim();
+        if (sort) queryParams.sort = sort;
         return {
           url: "/admin/programs",
           params: queryParams,
