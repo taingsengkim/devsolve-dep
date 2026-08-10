@@ -20,6 +20,7 @@ export interface ProgramManagementSummaryItem {
   minimumBounty?: number;
   maximumBounty?: number;
   rejectionReason?: string | null;
+  inScopeAssets?: Array<{ identifier?: string; target?: string }>;
   createdAt: string;
   updatedAt?: string;
 }
