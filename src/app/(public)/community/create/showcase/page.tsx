@@ -19,7 +19,7 @@ export default function PublicCreateShowcasePage() {
        Deliberately no `overflow-hidden`, unlike the landing sections: it would
        make this element the scroll container and the form's sticky sidebar
        would scroll away with the page. `SectionBackdrop` clips itself. */
-    <section className="relative min-h-[calc(100dvh-var(--navbar-height))] bg-slate-50 py-10 sm:py-14 dark:bg-slate-950">
+    <section className="relative min-h-[calc(100dvh-var(--navbar-height))] bg-slate-50 py-10 sm:py-14 dark:bg-neutral-950">
       <SectionBackdrop seed={5} gridSize={88} particles={false} beams={false} />
 
       <div className="relative mx-auto w-full max-w-7xl px-6 sm:px-12">
@@ -27,27 +27,27 @@ export default function PublicCreateShowcasePage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="border-b border-slate-200 pb-8 dark:border-slate-800"
+          className="border-b border-slate-200 pb-8 dark:border-neutral-800"
         >
           <nav
             aria-label="Breadcrumb"
-            className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400"
+            className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-neutral-400"
           >
             <Link
               href="/community"
-              className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
+              className="transition-colors hover:text-slate-900 dark:hover:text-neutral-200"
             >
               Community
             </Link>
-            <ChevronRight className="size-3.5 text-slate-300 dark:text-slate-600" />
+            <ChevronRight className="size-3.5 text-slate-300 dark:text-neutral-600" />
             <Link
               href="/community/create"
-              className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
+              className="transition-colors hover:text-slate-900 dark:hover:text-neutral-200"
             >
               New post
             </Link>
-            <ChevronRight className="size-3.5 text-slate-300 dark:text-slate-600" />
-            <span className="text-slate-900 dark:text-slate-200">Showcase</span>
+            <ChevronRight className="size-3.5 text-slate-300 dark:text-neutral-600" />
+            <span className="text-slate-900 dark:text-neutral-200">Showcase</span>
           </nav>
 
           <div className="mt-6 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
@@ -73,7 +73,7 @@ export default function PublicCreateShowcasePage() {
               </h1>
             </div>
 
-            <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+            <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
               Publish the project alongside the build guide that made it work.
               Steps, code and diagrams stay together, so anyone landing on it can
               follow the whole thing end to end.

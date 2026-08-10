@@ -268,7 +268,7 @@ function PodiumColumn({
                   {i > 0 && (
                     <span
                       aria-hidden
-                      className="hidden text-slate-400/70 sm:inline"
+                      className="hidden text-muted-foreground/70 sm:inline"
                     >
                       ·
                     </span>

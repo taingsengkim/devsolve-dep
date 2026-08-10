@@ -92,13 +92,13 @@ import {
  */
 
 const CARD =
-  "rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs";
+  "rounded-2xl border border-slate-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs";
 
 const SOLUTION_PAGE_SIZE = 50;
 const COMMENT_PAGE_SIZE = 50;
 
 const SEVERITY_STYLES: Record<ProblemSeverity, string> = {
-  LOW: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  LOW: "bg-slate-100 text-slate-700 dark:bg-neutral-800 dark:text-neutral-300",
   MEDIUM:
     "bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300",
   HIGH: "bg-orange-100 text-orange-800 dark:bg-orange-500/10 dark:text-orange-300",
@@ -330,12 +330,12 @@ function Loaded({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="min-h-screen bg-slate-50 pb-16 font-sans text-slate-800 dark:bg-slate-950 dark:text-slate-100"
+      className="min-h-screen bg-slate-50 pb-16 font-sans text-slate-800 dark:bg-neutral-950 dark:text-neutral-100"
     >
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <Link
           href="/community"
-          className="mb-5 inline-flex items-center gap-2 text-base font-semibold text-slate-500 transition-colors hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
+          className="mb-5 inline-flex items-center gap-2 text-base font-semibold text-slate-500 transition-colors hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
         >
           <ArrowLeft aria-hidden="true" className="size-4" />
           Back to Community
@@ -362,7 +362,7 @@ function Loaded({
                 </span>
 
                 {problem.problemType && (
-                  <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-neutral-800 dark:text-neutral-300">
                     {PROBLEM_TYPE_LABELS[problem.problemType]}
                   </span>
                 )}
@@ -374,25 +374,25 @@ function Loaded({
                   </span>
                 )}
                 {problem.sdlcPhase && (
-                  <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-neutral-800 dark:text-neutral-300">
                     {SDLC_LABELS[problem.sdlcPhase]}
                   </span>
                 )}
                 {problem.category?.name && (
-                  <span className="rounded-md border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                  <span className="rounded-md border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:border-neutral-700 dark:text-neutral-300">
                     {problem.category.name}
                   </span>
                 )}
               </div>
 
               <div className="flex items-start justify-between gap-4">
-                <h1 className="text-xl font-extrabold leading-snug tracking-tight text-slate-900 sm:text-2xl lg:text-3xl dark:text-slate-100">
+                <h1 className="text-xl font-extrabold leading-snug tracking-tight text-slate-900 sm:text-2xl lg:text-3xl dark:text-neutral-100">
                   {problem.title ?? "Untitled problem"}
                 </h1>
 
                 {/* Keep the vote actions available without surfacing an
                     aggregate problem score on the detail page. */}
-                <div className="flex shrink-0 flex-col items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800">
+                <div className="flex shrink-0 flex-col items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-neutral-700 dark:bg-neutral-800">
                   <button
                     type="button"
                     onClick={() => void onVote(1)}
@@ -402,7 +402,7 @@ function Loaded({
                     className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
                       hasUpvoted
                         ? "bg-blue-600 text-white"
-                        : "text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700"
+                        : "text-slate-500 hover:bg-slate-200 dark:text-neutral-400 dark:hover:bg-neutral-700"
                     }`}
                   >
                     <ChevronUp aria-hidden="true" className="size-4" />
@@ -416,7 +416,7 @@ function Loaded({
                     className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
                       hasDownvoted
                         ? "bg-rose-600 text-white"
-                        : "text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                        : "text-slate-400 hover:bg-slate-200 dark:hover:bg-neutral-700"
                     }`}
                   >
                     <ChevronDown aria-hidden="true" className="size-4" />
@@ -429,7 +429,7 @@ function Loaded({
                   {technologies.map((tech, i) => (
                     <span
                       key={tech.id ?? `${tech.name}-${i}`}
-                      className="rounded-lg border border-slate-200/60 bg-slate-100 px-2.5 py-1 font-mono text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                      className="rounded-lg border border-slate-200/60 bg-slate-100 px-2.5 py-1 font-mono text-xs font-medium text-slate-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
                     >
                       {tech.name}
                       {tech.version ? ` ${tech.version}` : ""}
@@ -450,7 +450,7 @@ function Loaded({
                 {problem.description ? (
                   <MarkdownView source={problem.description} />
                 ) : (
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                  <p className="text-sm text-slate-500 dark:text-neutral-400">
                     This problem was posted without a description.
                   </p>
                 )}
@@ -468,7 +468,7 @@ function Loaded({
                         <h3 className="mb-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
                           Expected
                         </h3>
-                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-neutral-300">
                           {problem.expectedBehavior}
                         </p>
                       </div>
@@ -478,7 +478,7 @@ function Loaded({
                         <h3 className="mb-1.5 text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">
                           Actual
                         </h3>
-                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-neutral-300">
                           {problem.actualBehavior}
                         </p>
                       </div>
@@ -495,10 +495,10 @@ function Loaded({
                   <ol className="space-y-2">
                     {reproductionSteps.map((step, i) => (
                       <li key={i} className="flex gap-3">
-                        <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[11px] font-bold tabular-nums text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                        <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[11px] font-bold tabular-nums text-slate-700 dark:bg-neutral-700 dark:text-neutral-200">
                           {i + 1}
                         </span>
-                        <p className="min-w-0 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                        <p className="min-w-0 text-sm leading-relaxed text-slate-700 dark:text-neutral-300">
                           {step}
                         </p>
                       </li>
@@ -516,7 +516,7 @@ function Loaded({
                 >
                   {/* The one place a horizontal scrollbar is right: wrapping a
                       stack trace destroys the thing being read. */}
-                  <pre className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900 p-4 text-xs leading-relaxed text-slate-100 dark:border-slate-700 dark:bg-slate-950">
+                  <pre className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900 p-4 text-xs leading-relaxed text-slate-100 dark:border-neutral-700 dark:bg-neutral-950">
                     <code>{problem.errorMessage}</code>
                   </pre>
                 </Section>
@@ -527,7 +527,7 @@ function Loaded({
                   title="Already tried"
                   icon={<Wrench aria-hidden="true" className="size-3.5" />}
                 >
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-neutral-300">
                     {problem.attemptsTried}
                   </p>
                 </Section>
@@ -542,7 +542,7 @@ function Loaded({
                     {environment.map((entry, i) => (
                       <span
                         key={`${entry.technology}-${i}`}
-                        className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                        className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-xs font-medium text-slate-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
                       >
                         {entry.technology}
                         {entry.version ? ` ${entry.version}` : ""}
@@ -558,13 +558,13 @@ function Loaded({
                     {attachments.map((file, i) => (
                       <div
                         key={file.id ?? `${file.originalFileName}-${i}`}
-                        className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-800/60"
+                        className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-neutral-800 dark:bg-neutral-800/60"
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
+                          <p className="truncate text-sm font-semibold text-slate-800 dark:text-neutral-200">
                             {file.originalFileName ?? "Unnamed file"}
                           </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                          <p className="text-xs text-slate-500 dark:text-neutral-400">
                             {[file.mimeType, formatBytes(file.sizeBytes)]
                               .filter(Boolean)
                               .join(" · ") || "—"}
@@ -575,7 +575,7 @@ function Loaded({
                             href={file.downloadUrl}
                             target="_blank"
                             rel="noreferrer noopener"
-                            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-white dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
                           >
                             <Download aria-hidden="true" className="size-3.5" />
                             Download
@@ -587,7 +587,7 @@ function Loaded({
                 </Section>
               )}
 
-              <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4 text-sm dark:border-slate-800">
+              <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4 text-sm dark:border-neutral-800">
                 <button
                   type="button"
                   onClick={() => void onBookmark()}
@@ -596,7 +596,7 @@ function Loaded({
                   className={`flex cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 py-1.5 font-medium transition disabled:opacity-50 ${
                     isBookmarked
                       ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300"
-                      : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                      : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
                   }`}
                 >
                   <Bookmark
@@ -611,7 +611,7 @@ function Loaded({
                 {problem.canEdit && (
                   <Link
                     href={`/community/${id}/edit`}
-                    className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 font-medium text-slate-600 transition hover:bg-slate-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
                   >
                     <Pencil className="size-4" />
                     Edit
@@ -623,7 +623,7 @@ function Loaded({
                     href={problem.repositoryUrl}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 font-medium text-slate-600 transition hover:bg-slate-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
                   >
                     <FolderGit2 aria-hidden="true" className="size-4" />
                     Repository
@@ -635,10 +635,10 @@ function Loaded({
             {/* ── Answers ── */}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">
+                <h2 className="text-base font-bold text-slate-800 dark:text-neutral-100">
                   {answerCount} {answerCount === 1 ? "Solution" : "Solutions"}
                 </h2>
-                <div className="flex items-center rounded-lg bg-slate-200/60 p-0.5 text-xs font-bold dark:bg-slate-800">
+                <div className="flex items-center rounded-lg bg-slate-200/60 p-0.5 text-xs font-bold dark:bg-neutral-800">
                   {(["votes", "newest"] as const).map((order) => (
                     <button
                       key={order}
@@ -647,8 +647,8 @@ function Loaded({
                       aria-pressed={sortOrder === order}
                       className={`cursor-pointer rounded-md px-3 py-1 transition-colors ${
                         sortOrder === order
-                          ? "bg-white text-slate-900 shadow-xs dark:bg-slate-900 dark:text-slate-100"
-                          : "text-slate-500 dark:text-slate-400"
+                          ? "bg-white text-slate-900 shadow-xs dark:bg-neutral-900 dark:text-neutral-100"
+                          : "text-slate-500 dark:text-neutral-400"
                       }`}
                     >
                       {order === "votes" ? "top" : "newest"}
@@ -680,13 +680,13 @@ function Loaded({
             {/* Why the composer is absent, when it is. Silence would read as a
                 bug to whoever came here to answer. */}
             {isOwnProblem && (
-              <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+              <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
                 This is your problem, so you cannot answer it yourself. You can
                 accept an answer once someone posts one.
               </p>
             )}
             {!isSignedIn && (
-              <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+              <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
                 Sign in to post a solution to this problem.
               </p>
             )}
@@ -696,13 +696,13 @@ function Loaded({
                 {[0, 1].map((i) => (
                   <div
                     key={i}
-                    className="h-32 rounded-2xl bg-slate-200 dark:bg-slate-800"
+                    className="h-32 rounded-2xl bg-slate-200 dark:bg-neutral-800"
                   />
                 ))}
               </div>
             ) : solutions.length === 0 ? (
               <p
-                className={`${CARD} p-8 text-center text-sm text-slate-500 dark:text-slate-400`}
+                className={`${CARD} p-8 text-center text-sm text-slate-500 dark:text-neutral-400`}
               >
                 {canAnswer
                   ? "No answers yet. Be the first to post one."
@@ -731,7 +731,7 @@ function Loaded({
 
             {/* ── Comments ── */}
             <section className={`${CARD} p-4 sm:p-6`}>
-              <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-slate-900 dark:text-slate-100">
+              <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-slate-900 dark:text-neutral-100">
                 <MessageSquare
                   aria-hidden="true"
                   className="size-4 text-slate-500"
@@ -744,30 +744,30 @@ function Loaded({
                   {comments.map((comment) => (
                     <div
                       key={comment.id}
-                      className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-800/60"
+                      className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm dark:border-neutral-800 dark:bg-neutral-800/60"
                     >
                       {comment.authorAvatarUrl ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img
                           src={comment.authorAvatarUrl}
                           alt=""
-                          className="size-8 shrink-0 rounded-full bg-slate-200 object-cover dark:bg-slate-700"
+                          className="size-8 shrink-0 rounded-full bg-slate-200 object-cover dark:bg-neutral-700"
                         />
                       ) : (
-                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600 dark:bg-neutral-700 dark:text-neutral-200">
                           {initialsOf(comment.authorName || "?")}
                         </span>
                       )}
                       <div className="min-w-0 flex-1">
                         <div className="mb-1 flex items-center justify-between gap-3">
-                          <span className="truncate font-bold text-slate-800 dark:text-slate-100">
+                          <span className="truncate font-bold text-slate-800 dark:text-neutral-100">
                             {comment.authorName || "Unknown"}
                           </span>
                           <span className="shrink-0 text-xs text-slate-400">
                             {formatDate(comment.createdAt, "")}
                           </span>
                         </div>
-                        <p className="whitespace-pre-wrap wrap-break-word leading-relaxed text-slate-700 dark:text-slate-300">
+                        <p className="whitespace-pre-wrap wrap-break-word leading-relaxed text-slate-700 dark:text-neutral-300">
                           {comment.content}
                         </p>
                       </div>
@@ -787,7 +787,7 @@ function Loaded({
                   maxLength={5000}
                   aria-label="Write a comment"
                   placeholder="Add a comment…"
-                  className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
                 />
                 <button
                   type="submit"
@@ -824,7 +824,7 @@ function Loaded({
             </section>
 
             <section className={`${CARD} space-y-3.5 p-4 text-sm sm:p-5`}>
-              <h2 className="border-b border-slate-100 pb-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:border-slate-800 dark:text-slate-500">
+              <h2 className="border-b border-slate-100 pb-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:border-neutral-800 dark:text-neutral-500">
                 Problem details
               </h2>
               {problem.problemType && (
@@ -851,7 +851,7 @@ function Loaded({
             </section>
 
             <section className={`${CARD} p-4 text-sm sm:p-5`}>
-              <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
                 Posted by
               </h2>
               <div className="flex items-center gap-3">
@@ -860,18 +860,18 @@ function Loaded({
                   <img
                     src={problem.author.avatarUrl}
                     alt=""
-                    className="size-10 shrink-0 rounded-full border border-slate-200 bg-slate-100 object-cover dark:border-slate-700 dark:bg-slate-800"
+                    className="size-10 shrink-0 rounded-full border border-slate-200 bg-slate-100 object-cover dark:border-neutral-700 dark:bg-neutral-800"
                   />
                 ) : (
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500 dark:bg-neutral-800 dark:text-neutral-300">
                     {initialsOf(authorNameOf(problem.author, "?"))}
                   </span>
                 )}
                 <div className="min-w-0">
-                  <p className="truncate text-base font-bold text-slate-900 dark:text-slate-100">
+                  <p className="truncate text-base font-bold text-slate-900 dark:text-neutral-100">
                     {authorNameOf(problem.author)}
                   </p>
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  <p className="text-xs font-medium text-slate-500 dark:text-neutral-400">
                     {(problem.author?.reputation ?? 0).toLocaleString()}{" "}
                     reputation
                   </p>
@@ -1019,8 +1019,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mt-6 border-t border-slate-100 pt-4 dark:border-slate-800">
-      <h2 className="mb-2.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+    <div className="mt-6 border-t border-slate-100 pt-4 dark:border-neutral-800">
+      <h2 className="mb-2.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
         {icon}
         {title}
       </h2>
@@ -1039,11 +1039,11 @@ function Stat({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl bg-slate-50 px-2 py-3 dark:bg-slate-800/60">
-      <p className="text-lg font-extrabold tabular-nums text-slate-900 dark:text-slate-100">
+    <div className="rounded-xl bg-slate-50 px-2 py-3 dark:bg-neutral-800/60">
+      <p className="text-lg font-extrabold tabular-nums text-slate-900 dark:text-neutral-100">
         {value}
       </p>
-      <p className="flex items-center justify-center gap-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+      <p className="flex items-center justify-center gap-1 text-xs font-semibold text-slate-500 dark:text-neutral-400">
         {icon}
         {label}
       </p>
@@ -1054,10 +1054,10 @@ function Stat({
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
+      <span className="shrink-0 text-xs text-slate-500 dark:text-neutral-400">
         {label}
       </span>
-      <span className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
+      <span className="truncate text-sm font-semibold text-slate-800 dark:text-neutral-200">
         {value}
       </span>
     </div>
@@ -1069,20 +1069,20 @@ function DetailSkeleton() {
     <div
       role="status"
       aria-label="Loading the problem"
-      className="min-h-screen animate-pulse bg-slate-50 pb-16 dark:bg-slate-950"
+      className="min-h-screen animate-pulse bg-slate-50 pb-16 dark:bg-neutral-950"
     >
       <span className="sr-only">Loading the problem…</span>
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <div className="h-5 w-44 rounded-lg bg-slate-200 dark:bg-slate-800" />
+        <div className="h-5 w-44 rounded-lg bg-slate-200 dark:bg-neutral-800" />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8 xl:grid-cols-4">
           <div className="space-y-6 lg:col-span-2 xl:col-span-3">
             <div className={`${CARD} space-y-4 p-4 sm:p-6`}>
-              <div className="h-6 w-32 rounded-full bg-slate-200 dark:bg-slate-800" />
-              <div className="h-8 w-3/4 rounded-lg bg-slate-200 dark:bg-slate-800" />
-              <div className="h-24 w-full rounded-lg bg-slate-200 dark:bg-slate-800" />
+              <div className="h-6 w-32 rounded-full bg-slate-200 dark:bg-neutral-800" />
+              <div className="h-8 w-3/4 rounded-lg bg-slate-200 dark:bg-neutral-800" />
+              <div className="h-24 w-full rounded-lg bg-slate-200 dark:bg-neutral-800" />
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="h-20 rounded-xl bg-slate-200 dark:bg-slate-800" />
-                <div className="h-20 rounded-xl bg-slate-200 dark:bg-slate-800" />
+                <div className="h-20 rounded-xl bg-slate-200 dark:bg-neutral-800" />
+                <div className="h-20 rounded-xl bg-slate-200 dark:bg-neutral-800" />
               </div>
             </div>
             <div className={`${CARD} h-32`} />
@@ -1108,12 +1108,12 @@ function NotFound({
   onRetry?: () => void;
 }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 text-center text-slate-800 dark:bg-slate-950 dark:text-slate-100">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 text-center text-slate-800 dark:bg-neutral-950 dark:text-neutral-100">
       <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
         <AlertCircle aria-hidden="true" className="size-7" />
       </div>
       <h1 className="mb-2 text-2xl font-bold">{title}</h1>
-      <p className="mb-4 text-slate-500 dark:text-slate-400">{body}</p>
+      <p className="mb-4 text-slate-500 dark:text-neutral-400">{body}</p>
       <div className="flex flex-wrap items-center justify-center gap-3">
         {onRetry && (
           <button

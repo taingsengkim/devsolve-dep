@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useTheme } from "next-themes";
 import "@uiw/react-markdown-preview/markdown.css";
 
 /**
@@ -26,8 +27,19 @@ interface MarkdownViewProps {
 }
 
 export function MarkdownView({ source, className }: MarkdownViewProps) {
+  const { resolvedTheme } = useTheme();
+
   return (
-    <div data-color-mode="auto" className={className}>
+    <div
+      data-color-mode={
+        resolvedTheme === "dark"
+          ? "dark"
+          : resolvedTheme === "light"
+            ? "light"
+            : "auto"
+      }
+      className={className}
+    >
       <MarkdownPreview
         source={source}
         /* The renderer paints its own surface; the page's card is the surface

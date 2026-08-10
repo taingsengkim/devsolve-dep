@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function LeaderboardPage() {
   return (
-    <div className="min-h-dvh bg-background text-foreground selection:bg-blue-100 selection:text-blue-900">
+    <div className="min-h-dvh bg-background text-foreground selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-blue-500/30 dark:selection:text-blue-50">
       {/* Header band, not a fold — people come here for the ranking, so the
           podium should already be on screen. */}
       <section className="relative overflow-hidden border-b border-border">

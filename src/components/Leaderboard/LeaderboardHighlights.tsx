@@ -26,7 +26,7 @@ const TONES: Record<LeaderboardHighlightKind, string> = {
   valid: "bg-blue-50 text-blue-700",
   critical: "bg-rose-50 text-rose-700",
   recognition: "bg-emerald-50 text-emerald-700",
-  climb: "bg-slate-100 text-slate-700",
+  climb: "bg-muted text-foreground",
 };
 
 /** The four "most X" cards — context the raw ranking alone doesn't give. */
@@ -49,7 +49,7 @@ export default function LeaderboardHighlights({
           >
             <Link
               href={profileHref(highlight.username)}
-              className="group flex h-full items-center gap-4 rounded-2xl bg-white p-4 shadow-[0_0_0_1px_rgba(30,41,59,0.08)] transition-shadow hover:shadow-[0_0_0_1px_rgba(37,99,235,0.35),0_10px_28px_-18px_rgba(37,99,235,0.5)]"
+              className="group flex h-full items-center gap-4 rounded-2xl bg-card p-4 ring-1 ring-foreground/5 transition-shadow hover:shadow-[0_10px_28px_-18px_rgba(37,99,235,0.5)] hover:ring-blue-500/40 dark:ring-foreground/10"
             >
               <div className="relative shrink-0">
                 <ResearcherAvatar
@@ -60,7 +60,7 @@ export default function LeaderboardHighlights({
                   size={44}
                 />
                 <span
-                  className={`absolute -bottom-1 -right-1 inline-flex h-5 w-5 items-center justify-center rounded-full ring-2 ring-white ${
+                  className={`absolute -bottom-1 -right-1 inline-flex h-5 w-5 items-center justify-center rounded-full ring-2 ring-card ${
                     TONES[highlight.kind]
                   }`}
                 >
@@ -69,19 +69,19 @@ export default function LeaderboardHighlights({
               </div>
 
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {highlight.label}
                 </p>
-                <p className="truncate text-sm font-semibold text-[#1E293B] group-hover:text-blue-700">
+                <p className="truncate text-sm font-semibold text-foreground group-hover:text-blue-700 dark:group-hover:text-blue-400">
                   {highlight.displayName}
                 </p>
               </div>
 
               <p className="shrink-0 text-right">
-                <span className="block text-2xl font-bold leading-none tracking-tighter text-[#1E293B]">
+                <span className="block text-2xl font-bold leading-none tracking-tighter text-foreground">
                   {formatNumber(highlight.value)}
                 </span>
-                <span className="mt-1 block text-xs font-medium text-slate-400">
+                <span className="mt-1 block text-xs font-medium text-muted-foreground">
                   {highlight.unit}
                 </span>
               </p>

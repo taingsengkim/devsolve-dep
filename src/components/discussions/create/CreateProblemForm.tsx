@@ -106,10 +106,10 @@ const SEVERITY_SELECT_ITEMS = [
 ];
 
 const CARD_CLASS =
-  "rounded-2xl border border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900";
+  "rounded-2xl border border-slate-200/80 bg-white shadow-xs dark:border-neutral-800 dark:bg-neutral-900";
 
 const CONTROL_CLASS =
-  "h-12 rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900";
+  "h-12 rounded-xl border-slate-300 bg-white text-base dark:border-neutral-700 dark:bg-neutral-900";
 
 const SERVER_FIELDS = new Set([
   "categoryId",
@@ -489,7 +489,7 @@ export function CreateProblemForm({
               className={CARD_CLASS}
               aria-labelledby="problem-details-heading"
             >
-              <CardHeader className="border-b border-slate-100 dark:border-slate-800">
+              <CardHeader className="border-b border-slate-100 dark:border-neutral-800">
                 <div className="flex items-start gap-3">
                   <Badge variant="outline" className="mt-0.5 font-mono">
                     01
@@ -616,7 +616,7 @@ export function CreateProblemForm({
               className={CARD_CLASS}
               aria-labelledby="problem-environment-heading"
             >
-              <CardHeader className="border-b border-slate-100 dark:border-slate-800">
+              <CardHeader className="border-b border-slate-100 dark:border-neutral-800">
                 <div className="flex items-start gap-3">
                   <Badge variant="outline" className="mt-0.5 font-mono">
                     02
@@ -759,7 +759,7 @@ export function CreateProblemForm({
                 </FieldSet>
               </CardContent>
 
-              <CardFooter className="flex-col items-stretch gap-3 border-t border-slate-100 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+              <CardFooter className="flex-col items-stretch gap-3 border-t border-slate-100 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between">
                 <FieldDescription>
                   {technologyFields.length}/{MAX_TECHNOLOGIES} technologies
                 </FieldDescription>
@@ -793,7 +793,7 @@ export function CreateProblemForm({
               className={CARD_CLASS}
               aria-labelledby="problem-diagnosis-heading"
             >
-              <CardHeader className="border-b border-slate-100 dark:border-slate-800">
+              <CardHeader className="border-b border-slate-100 dark:border-neutral-800">
                 <div className="flex items-start gap-3">
                   <Badge variant="outline" className="mt-0.5 font-mono">
                     03
@@ -838,7 +838,7 @@ export function CreateProblemForm({
                         placeholder="What should have happened."
                         aria-invalid={Boolean(errors.expectedBehavior)}
                         disabled={submitting}
-                        className="rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900"
+                        className="rounded-xl border-slate-300 bg-white text-base dark:border-neutral-700 dark:bg-neutral-900"
                         {...register("expectedBehavior")}
                       />
                       <FieldError>{errors.expectedBehavior?.message}</FieldError>
@@ -863,7 +863,7 @@ export function CreateProblemForm({
                         placeholder="What happens instead."
                         aria-invalid={Boolean(errors.actualBehavior)}
                         disabled={submitting}
-                        className="rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900"
+                        className="rounded-xl border-slate-300 bg-white text-base dark:border-neutral-700 dark:bg-neutral-900"
                         {...register("actualBehavior")}
                       />
                       <FieldError>{errors.actualBehavior?.message}</FieldError>
@@ -901,7 +901,7 @@ export function CreateProblemForm({
                             >
                               <span
                                 aria-hidden="true"
-                                className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                                className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold tabular-nums text-slate-600 dark:bg-neutral-800 dark:text-neutral-300"
                               >
                                 {index + 1}
                               </span>
@@ -978,7 +978,7 @@ export function CreateProblemForm({
                       placeholder="Paste the stack trace or console output, unedited."
                       aria-invalid={Boolean(errors.errorMessage)}
                       disabled={submitting}
-                      className="rounded-xl border-slate-300 bg-white font-mono text-sm dark:border-slate-700 dark:bg-slate-900"
+                      className="rounded-xl border-slate-300 bg-white font-mono text-sm dark:border-neutral-700 dark:bg-neutral-900"
                       {...register("errorMessage")}
                     />
                     <FieldDescription>
@@ -1008,7 +1008,7 @@ export function CreateProblemForm({
                       placeholder="Saves everyone from suggesting it again."
                       aria-invalid={Boolean(errors.attemptsTried)}
                       disabled={submitting}
-                      className="rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900"
+                      className="rounded-xl border-slate-300 bg-white text-base dark:border-neutral-700 dark:bg-neutral-900"
                       {...register("attemptsTried")}
                     />
                     <FieldError>{errors.attemptsTried?.message}</FieldError>
@@ -1180,7 +1180,7 @@ export function CreateProblemForm({
               className={CARD_CLASS}
               aria-labelledby="problem-context-heading"
             >
-              <CardHeader className="border-b border-slate-100 dark:border-slate-800">
+              <CardHeader className="border-b border-slate-100 dark:border-neutral-800">
                 <CardTitle>
                   <h2
                     id="problem-context-heading"
@@ -1472,7 +1472,7 @@ export function CreateProblemForm({
               className={CARD_CLASS}
               aria-labelledby="problem-tags-heading"
             >
-              <CardHeader className="border-b border-slate-100 dark:border-slate-800">
+              <CardHeader className="border-b border-slate-100 dark:border-neutral-800">
                 <CardTitle>
                   <h2
                     id="problem-tags-heading"
@@ -1602,7 +1602,7 @@ export function CreateProblemForm({
               className={CARD_CLASS}
               aria-labelledby="submit-problem-heading"
             >
-              <CardHeader className="border-b border-slate-100 dark:border-slate-800">
+              <CardHeader className="border-b border-slate-100 dark:border-neutral-800">
                 <div className="flex items-center justify-between gap-3">
                   <CardTitle>
                     <h2
@@ -1681,7 +1681,7 @@ export function CreateProblemForm({
                 )}
               </CardContent>
 
-              <CardFooter className="flex-col gap-2 border-t border-slate-100 dark:border-slate-800">
+              <CardFooter className="flex-col gap-2 border-t border-slate-100 dark:border-neutral-800">
                 <motion.div
                   className="w-full"
                   whileHover={submitting ? undefined : { y: -2 }}
@@ -1741,7 +1741,7 @@ function RequirementRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-3 text-sm">
-      <span className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+      <span className="flex items-center gap-2 text-slate-600 dark:text-neutral-300">
         {met ? (
           <Check className="size-4 text-primary" aria-hidden="true" />
         ) : (

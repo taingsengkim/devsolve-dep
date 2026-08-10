@@ -13,7 +13,7 @@ export default function PublicCreateProblemPage() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <section className="relative min-h-[calc(100dvh-var(--navbar-height))] bg-slate-50 py-10 sm:py-14 dark:bg-slate-950">
+      <section className="relative min-h-[calc(100dvh-var(--navbar-height))] bg-slate-50 py-10 sm:py-14 dark:bg-neutral-950">
         <SectionBackdrop
           seed={6}
           gridSize={88}
@@ -26,29 +26,29 @@ export default function PublicCreateProblemPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="border-b border-slate-200 pb-8 dark:border-slate-800"
+            className="border-b border-slate-200 pb-8 dark:border-neutral-800"
           >
             <nav
               aria-label="Breadcrumb"
-              className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400"
+              className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-neutral-400"
             >
               <Link
                 href="/community"
-                className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
+                className="transition-colors hover:text-slate-900 dark:hover:text-neutral-200"
               >
                 Community
               </Link>
-              <ChevronRight className="size-3.5 text-slate-300 dark:text-slate-600" />
+              <ChevronRight className="size-3.5 text-slate-300 dark:text-neutral-600" />
               <Link
                 href="/community/create"
-                className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
+                className="transition-colors hover:text-slate-900 dark:hover:text-neutral-200"
               >
                 New post
               </Link>
-              <ChevronRight className="size-3.5 text-slate-300 dark:text-slate-600" />
+              <ChevronRight className="size-3.5 text-slate-300 dark:text-neutral-600" />
               <span
                 aria-current="page"
-                className="text-slate-900 dark:text-slate-200"
+                className="text-slate-900 dark:text-neutral-200"
               >
                 Problem
               </span>
@@ -75,7 +75,7 @@ export default function PublicCreateProblemPage() {
                 </h1>
               </div>
 
-              <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+              <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
                 Describe what failed, where it happens, and what you already
                 tried. Clear context helps the right people reproduce it and
                 respond.

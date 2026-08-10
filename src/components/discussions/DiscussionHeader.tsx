@@ -48,7 +48,7 @@ export function DiscussionHeader({
   createLabel = "Start a discussion",
 }: DiscussionHeaderProps) {
   return (
-    <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+    <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-neutral-800">
       <div className="flex max-w-3xl flex-col gap-2.5">
         <nav
           aria-label="Breadcrumb"
@@ -64,7 +64,7 @@ export function DiscussionHeader({
         </nav>
 
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">
             {title}
           </h1>
           <Badge variant="tag" className="h-6 rounded-lg px-2.5 text-sm">

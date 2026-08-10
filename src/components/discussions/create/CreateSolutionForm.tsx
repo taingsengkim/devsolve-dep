@@ -74,10 +74,10 @@ import {
  */
 
 const CARD_CLASS =
-  "rounded-2xl border border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900";
+  "rounded-2xl border border-slate-200/80 bg-white shadow-xs dark:border-neutral-800 dark:bg-neutral-900";
 
 const CONTROL_CLASS =
-  "h-12 rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900";
+  "h-12 rounded-xl border-slate-300 bg-white text-base dark:border-neutral-700 dark:bg-neutral-900";
 
 const MAX_SUMMARY = 250;
 const MIN_SUMMARY = 10;
@@ -269,7 +269,7 @@ export function CreateSolutionForm({
               className={CARD_CLASS}
               aria-labelledby="solution-body-heading"
             >
-              <CardHeader className="border-b border-slate-100 dark:border-slate-800">
+              <CardHeader className="border-b border-slate-100 dark:border-neutral-800">
                 <div className="flex items-start gap-3">
                   <Badge variant="outline" className="mt-0.5 font-mono">
                     01
@@ -314,7 +314,7 @@ export function CreateSolutionForm({
                     aria-invalid={Boolean(errors.summary)}
                     className={CONTROL_CLASS}
                   />
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                  <p className="text-sm text-slate-500 dark:text-neutral-400">
                     This is the line people scan to choose between answers.
                   </p>
                   {errors.summary && (
@@ -347,7 +347,7 @@ export function CreateSolutionForm({
                     <SelectTrigger
                       id="solution-approach"
                       aria-invalid={Boolean(errors.approachType)}
-                      className="h-12! w-full rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900"
+                      className="h-12! w-full rounded-xl border-slate-300 bg-white text-base dark:border-neutral-700 dark:bg-neutral-900"
                     >
                       <SelectValue placeholder="Choose an approach" />
                     </SelectTrigger>
@@ -359,7 +359,7 @@ export function CreateSolutionForm({
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                  <p className="text-sm text-slate-500 dark:text-neutral-400">
                     {APPROACH_DESCRIPTIONS[approachType as ApproachType]}
                   </p>
                   {errors.approachType && (
@@ -430,7 +430,7 @@ export function CreateSolutionForm({
               className={CARD_CLASS}
               aria-labelledby="solution-proof-heading"
             >
-              <CardHeader className="border-b border-slate-100 dark:border-slate-800">
+              <CardHeader className="border-b border-slate-100 dark:border-neutral-800">
                 <div className="flex items-start gap-3">
                   <Badge variant="outline" className="mt-0.5 font-mono">
                     02
@@ -464,7 +464,7 @@ export function CreateSolutionForm({
                   </legend>
 
                   {steps.fields.length === 0 && (
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <p className="text-sm text-slate-500 dark:text-neutral-400">
                       Add the commands to run and what each should print.
                     </p>
                   )}
@@ -472,10 +472,10 @@ export function CreateSolutionForm({
                   {steps.fields.map((field, index) => (
                     <div
                       key={field.id}
-                      className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"
+                      className="rounded-xl border border-slate-200 p-3 dark:border-neutral-700"
                     >
                       <div className="mb-2 flex items-center justify-between gap-2">
-                        <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                        <span className="text-sm font-bold text-slate-500 dark:text-neutral-400">
                           Step {index + 1}
                         </span>
                         <Button
@@ -547,13 +547,13 @@ export function CreateSolutionForm({
                 </fieldset>
 
                 {/* ── What it was proven against ── */}
-                <fieldset className="space-y-3 border-t border-slate-100 pt-6 dark:border-slate-800">
+                <fieldset className="space-y-3 border-t border-slate-100 pt-6 dark:border-neutral-800">
                   <legend className="text-base font-semibold">
                     Tested with
                   </legend>
 
                   {tested.fields.length === 0 && (
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <p className="text-sm text-slate-500 dark:text-neutral-400">
                       The versions you actually ran this against.
                     </p>
                   )}
@@ -621,7 +621,7 @@ export function CreateSolutionForm({
                 </fieldset>
 
                 {/* ── What it costs ── */}
-                <div className="space-y-2 border-t border-slate-100 pt-6 dark:border-slate-800">
+                <div className="space-y-2 border-t border-slate-100 pt-6 dark:border-neutral-800">
                   <div className="flex items-baseline justify-between gap-3">
                     <Label
                       htmlFor="solution-tradeoffs"
@@ -645,7 +645,7 @@ export function CreateSolutionForm({
                     rows={4}
                     placeholder="What this costs — performance, complexity, anything it gives up."
                     disabled={submitting}
-                    className="rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900"
+                    className="rounded-xl border-slate-300 bg-white text-base dark:border-neutral-700 dark:bg-neutral-900"
                   />
                   {errors.tradeoffs && (
                     <p
@@ -658,11 +658,11 @@ export function CreateSolutionForm({
                 </div>
 
                 {/* ── Further reading ── */}
-                <fieldset className="space-y-3 border-t border-slate-100 pt-6 dark:border-slate-800">
+                <fieldset className="space-y-3 border-t border-slate-100 pt-6 dark:border-neutral-800">
                   <legend className="text-base font-semibold">Resources</legend>
 
                   {resources.fields.length === 0 && (
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <p className="text-sm text-slate-500 dark:text-neutral-400">
                       Docs, a repository, a recording — anything that backs the
                       answer up.
                     </p>
@@ -671,10 +671,10 @@ export function CreateSolutionForm({
                   {resources.fields.map((field, index) => (
                     <div
                       key={field.id}
-                      className="space-y-3 rounded-xl border border-slate-200 p-3 dark:border-slate-700"
+                      className="space-y-3 rounded-xl border border-slate-200 p-3 dark:border-neutral-700"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                        <span className="text-sm font-bold text-slate-500 dark:text-neutral-400">
                           Link {index + 1}
                         </span>
                         <Button
@@ -795,7 +795,7 @@ export function CreateSolutionForm({
             transition={{ duration: 0.35, delay: 0.04, ease: "easeOut" }}
           >
             <Card className={CARD_CLASS} aria-labelledby="answering-heading">
-              <CardHeader className="border-b border-slate-100 dark:border-slate-800">
+              <CardHeader className="border-b border-slate-100 dark:border-neutral-800">
                 <CardTitle>
                   <h2 id="answering-heading" className="text-lg font-bold">
                     Answering
@@ -806,20 +806,20 @@ export function CreateSolutionForm({
               <CardContent className="space-y-3 pt-6">
                 <Link
                   href={`/community/${problemId}`}
-                  className="block text-base font-bold text-slate-900 transition-colors hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-400"
+                  className="block text-base font-bold text-slate-900 transition-colors hover:text-blue-600 dark:text-neutral-100 dark:hover:text-blue-400"
                 >
                   {problem?.title ?? "This problem"}
                 </Link>
 
                 {problem?.description && (
-                  <p className="line-clamp-4 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                  <p className="line-clamp-4 text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
                     {excerptOf(problem.description, 220)}
                   </p>
                 )}
 
-                <p className="text-sm text-slate-500 dark:text-slate-400">
+                <p className="text-sm text-slate-500 dark:text-neutral-400">
                   by{" "}
-                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  <span className="font-semibold text-slate-700 dark:text-neutral-300">
                     {authorNameOf(problem?.author)}
                   </span>
                 </p>
@@ -827,11 +827,11 @@ export function CreateSolutionForm({
                 {Boolean(
                   problem?.technologies?.length || problem?.tags?.length,
                 ) && (
-                  <div className="flex flex-wrap gap-1.5 border-t border-slate-100 pt-3 dark:border-slate-800">
+                  <div className="flex flex-wrap gap-1.5 border-t border-slate-100 pt-3 dark:border-neutral-800">
                     {(problem?.technologies ?? []).map((tech, i) => (
                       <span
                         key={tech.id ?? `${tech.name}-${i}`}
-                        className="rounded-lg border border-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300"
+                        className="rounded-lg border border-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:border-neutral-700 dark:text-neutral-300"
                       >
                         {tech.name}
                       </span>
@@ -839,7 +839,7 @@ export function CreateSolutionForm({
                     {(problem?.tags ?? []).map((tag, i) => (
                       <span
                         key={tag.id ?? `${tag.name}-${i}`}
-                        className="rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                        className="rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500 dark:bg-neutral-800 dark:text-neutral-400"
                       >
                         #{tag.name}
                       </span>
@@ -859,7 +859,7 @@ export function CreateSolutionForm({
               className={CARD_CLASS}
               aria-labelledby="solution-ready-heading"
             >
-              <CardHeader className="border-b border-slate-100 dark:border-slate-800">
+              <CardHeader className="border-b border-slate-100 dark:border-neutral-800">
                 <CardTitle>
                   <h2 id="solution-ready-heading" className="text-lg font-bold">
                     Before you post
@@ -985,7 +985,7 @@ function ResourceTypeSelect({
     >
       <SelectTrigger
         id={`resource-type-${index}`}
-        className="h-12! w-full rounded-xl border-slate-300 bg-white text-base dark:border-slate-700 dark:bg-slate-900"
+        className="h-12! w-full rounded-xl border-slate-300 bg-white text-base dark:border-neutral-700 dark:bg-neutral-900"
       >
         <SelectValue />
       </SelectTrigger>
@@ -1011,7 +1011,7 @@ function RequirementRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-3 text-sm">
-      <span className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+      <span className="flex items-center gap-2 text-slate-600 dark:text-neutral-300">
         {met ? (
           <Check className="size-4 text-primary" aria-hidden="true" />
         ) : (

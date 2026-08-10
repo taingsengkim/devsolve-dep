@@ -443,7 +443,7 @@ export function CreatePostSelection({
   return (
     <div
       className={cn(
-        "relative flex min-h-dvh w-full overflow-hidden bg-[#F7F8FB] dark:bg-slate-950",
+        "relative flex min-h-dvh w-full overflow-hidden bg-[#F7F8FB] dark:bg-neutral-950",
         className,
       )}
     >
@@ -452,7 +452,7 @@ export function CreatePostSelection({
       <Link
         href={backHref}
         aria-label={backLabel}
-        className="absolute right-5 top-5 z-20 inline-flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-400 backdrop-blur transition-colors hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:hover:text-slate-100"
+        className="absolute right-5 top-5 z-20 inline-flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-400 backdrop-blur transition-colors hover:border-slate-300 hover:text-slate-900 dark:border-neutral-800 dark:bg-neutral-900/80 dark:hover:text-neutral-100"
       >
         <X className="size-4.5" />
       </Link>
@@ -475,14 +475,14 @@ export function CreatePostSelection({
           </div>
 
           <h1
-            className="font-bold leading-[1.05] tracking-[-0.035em] text-slate-900 dark:text-slate-100"
+            className="font-bold leading-[1.05] tracking-[-0.035em] text-slate-900 dark:text-neutral-100"
             style={{ fontSize: "clamp(30px, 3.6vw, 48px)" }}
           >
             {title}
             <span style={{ color: PRIMARY }}>?</span>
           </h1>
 
-          <p className="mt-3 max-w-xl text-base leading-[1.6] text-slate-500 dark:text-slate-400">
+          <p className="mt-3 max-w-xl text-base leading-[1.6] text-slate-500 dark:text-neutral-400">
             {description}
           </p>
         </motion.header>
@@ -516,22 +516,22 @@ export function CreatePostSelection({
                   style={
                     { "--format-accent": format.accent } as React.CSSProperties
                   }
-                  className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs transition-[border-color,box-shadow] duration-200 hover:border-(--format-accent)/45 hover:shadow-[0_18px_38px_-22px_var(--format-accent)] dark:border-slate-800 dark:bg-slate-900 sm:p-6"
+                  className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs transition-[border-color,box-shadow] duration-200 hover:border-(--format-accent)/45 hover:shadow-[0_18px_38px_-22px_var(--format-accent)] dark:border-neutral-800 dark:bg-neutral-900 sm:p-6"
                 >
                   {/* art well */}
-                  <div className="relative overflow-hidden rounded-xl border border-slate-200/70 bg-[#F8FAFC] dark:border-slate-800 dark:bg-slate-950/40">
+                  <div className="relative overflow-hidden rounded-xl border border-slate-200/70 bg-[#F8FAFC] dark:border-neutral-800 dark:bg-neutral-950/40">
                     <div className="aspect-26/15 w-full transition-transform duration-300 ease-out group-hover:scale-[1.03]">
                       <Art reduce={reduce} />
                     </div>
 
-                    <span className="absolute right-3 top-3 font-mono text-sm font-bold tabular-nums text-slate-300 dark:text-slate-700">
+                    <span className="absolute right-3 top-3 font-mono text-sm font-bold tabular-nums text-slate-300 dark:text-neutral-700">
                       {format.n}
                     </span>
                   </div>
 
                   <div className="mt-5 flex items-center gap-3">
                     <span
-                      className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 dark:border-slate-800"
+                      className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 dark:border-neutral-800"
                       style={{
                         backgroundColor: `color-mix(in srgb, ${format.accent} 9%, transparent)`,
                         color: format.accent,
@@ -540,13 +540,13 @@ export function CreatePostSelection({
                       <Icon className="size-4.5" />
                     </span>
 
-                    <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                    <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">
                       {format.title}
                       <span style={{ color: format.accent }}>.</span>
                     </h2>
                   </div>
 
-                  <p className="mt-2.5 text-sm leading-[1.7] text-slate-500 dark:text-slate-400">
+                  <p className="mt-2.5 text-sm leading-[1.7] text-slate-500 dark:text-neutral-400">
                     {format.body}
                   </p>
 
@@ -554,7 +554,7 @@ export function CreatePostSelection({
                     {format.brings.map((item) => (
                       <li
                         key={item}
-                        className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400"
+                        className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-500 dark:border-neutral-800 dark:text-neutral-400"
                       >
                         {item}
                       </li>
@@ -574,12 +574,12 @@ export function CreatePostSelection({
         </div>
 
         {/* ── Footer hint ── */}
-        <div className="mt-10 flex items-center justify-between gap-4 border-t border-slate-200 pt-5 dark:border-slate-800">
+        <div className="mt-10 flex items-center justify-between gap-4 border-t border-slate-200 pt-5 dark:border-neutral-800">
           <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
             Saved as a draft until published
           </span>
           <span className="flex items-center gap-2">
-            <span className="text-xs font-medium tracking-[0.2em] text-slate-300 dark:text-slate-700">
+            <span className="text-xs font-medium tracking-[0.2em] text-slate-300 dark:text-neutral-700">
               01 — {String(FORMATS.length).padStart(2, "0")}
             </span>
             <span

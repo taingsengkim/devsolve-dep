@@ -12,13 +12,13 @@ const INK: Record<Tone, { up: string; down: string; flat: string; fresh: string 
     // pedestals, not just on white.
     up: "text-emerald-700",
     down: "text-rose-700",
-    flat: "text-slate-500",
+    flat: "text-muted-foreground",
     fresh: "text-blue-700",
   },
   dark: {
     up: "text-emerald-300",
     down: "text-rose-300",
-    flat: "text-slate-400",
+    flat: "text-muted-foreground",
     fresh: "text-blue-300",
   },
 };

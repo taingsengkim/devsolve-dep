@@ -25,8 +25,8 @@ const ITEMS: { label: string; points: number; dot: string; glow: string }[] = [
   {
     label: "Low",
     points: REPUTATION_POINTS.low,
-    dot: "bg-slate-400",
-    glow: "rgba(100,116,139,0.35)",
+    dot: "bg-muted-foreground",
+    glow: "rgba(115,115,115,0.35)",
   },
   {
     label: "Recognition",

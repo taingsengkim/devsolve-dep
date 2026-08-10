@@ -38,7 +38,7 @@ export default function YourRankBar({
       aria-label="Your position on the leaderboard"
       className="sticky bottom-4 z-30"
     >
-      <div className="flex flex-col gap-4 rounded-2xl bg-[#1E293B] p-4 text-white shadow-[0_18px_44px_-20px_rgba(30,41,59,0.9)] sm:flex-row sm:items-center sm:justify-between sm:px-5">
+      <div className="flex flex-col gap-4 rounded-2xl bg-[#1E293B] p-4 text-white shadow-[0_18px_44px_-20px_rgba(30,41,59,0.9)] sm:flex-row sm:items-center sm:justify-between sm:px-5 dark:bg-neutral-800 dark:shadow-[0_18px_44px_-20px_rgba(0,0,0,0.9)] dark:ring-1 dark:ring-white/10">
         <div className="flex min-w-0 items-center gap-4">
           <ResearcherAvatar
             username={entry.username}
@@ -51,19 +51,19 @@ export default function YourRankBar({
           <div className="min-w-0">
             <p className="flex flex-wrap items-baseline gap-x-2 text-lg font-bold tracking-tight">
               You&apos;re #{formatNumber(entry.rank)}
-              <span className="text-sm font-medium text-slate-400">
+              <span className="text-sm font-medium text-slate-400 dark:text-neutral-400">
                 of {formatNumber(totalRanked)} · {PERIOD_LABEL_SHORT[period].toLowerCase()}
               </span>
             </p>
-            <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-300">
+            <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-300 dark:text-neutral-300">
               <span className="font-semibold text-white">
                 {formatNumber(entry.reputation)} pts
               </span>
-              <span className="text-slate-500">·</span>
+              <span className="text-slate-500 dark:text-neutral-500">·</span>
               <span>{formatNumber(entry.validReports)} valid</span>
-              <span className="text-slate-500">·</span>
+              <span className="text-slate-500 dark:text-neutral-500">·</span>
               <span>{formatNumber(entry.criticalReports)} critical</span>
-              <span className="text-slate-500">·</span>
+              <span className="text-slate-500 dark:text-neutral-500">·</span>
               <span>{formatNumber(entry.recognitionCount)} thanks</span>
               {topPercent != null && (
                 <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-xs font-semibold">
