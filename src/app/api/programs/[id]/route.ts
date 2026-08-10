@@ -64,7 +64,7 @@ export async function GET(
       cache: "no-store",
     });
 
-    if (upstream.status === 404) {
+    if (!upstream.ok) {
       const fallbackUpstream = await fetch(secondaryUrl, {
         method: "GET",
         headers,
@@ -72,6 +72,54 @@ export async function GET(
       });
       if (fallbackUpstream.ok) {
         upstream = fallbackUpstream;
+      } else if (token) {
+        if (idIsUuid) {
+          const adminUpstream = await fetch(
+            `${BACKEND_API_URL}/admin/programs/${id}`,
+            {
+              method: "GET",
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              cache: "no-store",
+            }
+          );
+          if (adminUpstream.ok) {
+            upstream = adminUpstream;
+          }
+        }
+
+        if (!upstream.ok) {
+          const orgProgramsUpstream = await fetch(
+            `${BACKEND_API_URL}/organizations/me/programs?size=100`,
+            {
+              method: "GET",
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              cache: "no-store",
+            }
+          );
+          if (orgProgramsUpstream.ok) {
+            const rawOrg = await orgProgramsUpstream.text();
+            if (rawOrg) {
+              try {
+                const parsed = JSON.parse(rawOrg);
+                const items: any[] = parsed.content ?? parsed ?? [];
+                const found = items.find(
+                  (item: any) => item.id === id || item.handle === id
+                );
+                if (found) {
+                  return NextResponse.json(found, { status: 200 });
+                }
+              } catch {
+                // Ignore JSON parse error
+              }
+            }
+          }
+        }
       }
     }
 

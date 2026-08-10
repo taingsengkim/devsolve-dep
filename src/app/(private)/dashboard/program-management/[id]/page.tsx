@@ -61,29 +61,29 @@ function ProgramDetailPageContent({
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
-  // Admin uses /api/admin/programs/${id} which bypasses public visibility
-  // filters so PENDING_REVIEW / PRIVATE programs are always accessible.
+  // Admin uses /api/admin/programs/${id} which bypasses public visibility filters
   const {
     data: adminDetail,
     isLoading: isAdminDetailLoading,
     refetch: refetchAdmin,
   } = useGetProgramDetailQuery(id, { skip: !isAdminScope });
 
-  // Company / public users fall back to the public programs endpoint.
+  // Company / public users query /api/programs/${id} which automatically falls back
+  // to backend /admin/programs/${id} for authenticated dashboard users.
   const {
     data: publicDetail,
     isLoading: isPublicLoading,
     refetch: refetchPublic,
-  } = useGetProgramByIdQuery(id, { skip: isAdminScope });
+  } = useGetProgramByIdQuery(id);
 
   const refetch = () => {
     if (isAdminScope) refetchAdmin();
-    else refetchPublic();
+    refetchPublic();
   };
 
-  const program = isAdminScope ? adminDetail : publicDetail;
+  const program = adminDetail ?? publicDetail;
 
-  const isLoading = isAdminScope ? isAdminDetailLoading : isPublicLoading;
+  const isLoading = isAdminScope ? isAdminDetailLoading : (isPublicLoading && !program);
   const isError = !isLoading && !program;
 
   const [approveProgram] = useApproveProgramMutation();
