@@ -265,7 +265,7 @@ function HubDisc() {
               {/* Copy of app/icon.png in public/ — importing the metadata
                   convention file directly is asking for trouble. */}
               <Image
-                src="/devsolve-mark.png"
+                src="/devsolve.png"
                 alt="DevSolve"
                 fill
                 sizes="160px"

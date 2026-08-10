@@ -16,11 +16,10 @@ export interface TeamMember {
 }
 
 export interface Technology {
-  image: string;
   name: string;
   description: string;
-  bgColor: string;
-  borderColor: string;
+  /** Lucide icon name, resolved through the about page's icon map. */
+  iconName: string;
 }
 
 export interface Offering {

@@ -46,7 +46,7 @@ export const STUDENT_DEVELOPERS: TeamMember[] = [
     badgeColor: "purple",
     subRole: "Full Stack",
     quote: '"Visionary leadership drives technical success."',
-    image: "/teams/Leader Taing Sengkim.DNG",
+    image: "/teams/Taing Sengkim.jpg",
     github: "https://github.com",
     linkedin: "https://linkedin.com",
     telegram: "https://t.me",
@@ -102,7 +102,7 @@ export const STUDENT_DEVELOPERS: TeamMember[] = [
     badgeColor: "blue",
     subRole: "Full Stack",
     quote: '"Design with security in mind from day one."',
-    image: "/teams/Dim Pathea.jpg",
+    image: "/teams/Dim Pathea.JPG",
     github: "https://github.com",
     linkedin: "https://linkedin.com",
     telegram: "https://t.me",
@@ -144,48 +144,55 @@ export const STUDENT_DEVELOPERS: TeamMember[] = [
 
 ];
 
+/* Ordered clockwise from the top of the constellation on the about page —
+   the layout there looks positions up by name, so reordering this list is
+   safe, but keeping the two in step keeps the entrance stagger travelling
+   around the ring rather than jumping across it. */
 export const TECHNOLOGIES: Technology[] = [
   {
-    image: "/react1.png",
-    name: "React",
-    description: "Frontend UI",
-    bgColor: "bg-sky-50",
-    borderColor: "border-sky-100 hover:border-sky-300",
+    name: "Next.js",
+    description: "App Router frontend and the server proxy layer",
+    iconName: "Triangle",
   },
   {
-    image: "/spring1.png",
     name: "Spring Boot",
-    description: "Backend API",
-    bgColor: "bg-emerald-50",
-    borderColor: "border-emerald-100 hover:border-emerald-300",
+    description: "Backend API and business logic",
+    iconName: "Leaf",
   },
   {
-    image: "/postgrest1.png",
     name: "PostgreSQL",
-    description: "Database",
-    bgColor: "bg-blue-50",
-    borderColor: "border-blue-100 hover:border-blue-300",
+    description: "Primary relational datastore",
+    iconName: "Database",
   },
   {
-    image: "/doker1.png",
-    name: "Docker",
-    description: "Containers",
-    bgColor: "bg-cyan-50",
-    borderColor: "border-cyan-100 hover:border-cyan-300",
+    name: "Redis",
+    description: "Caching and session storage",
+    iconName: "Zap",
   },
   {
-    image: "/keycloak1.png",
+    name: "MinIO",
+    description: "S3-compatible object storage",
+    iconName: "HardDrive",
+  },
+  {
+    name: "Meilisearch",
+    description: "Full-text search across the platform",
+    iconName: "Search",
+  },
+  {
     name: "Keycloak",
-    description: "Auth & SSO",
-    bgColor: "bg-purple-50",
-    borderColor: "border-purple-100 hover:border-purple-300",
+    description: "OIDC single sign-on with PKCE",
+    iconName: "KeyRound",
   },
   {
-    image: "/tailwind1.png",
-    name: "Tailwind CSS",
-    description: "Styling",
-    bgColor: "bg-teal-50",
-    borderColor: "border-teal-100 hover:border-teal-300",
+    name: "VirusTotal",
+    description: "Malware scanning on every upload",
+    iconName: "ShieldAlert",
+  },
+  {
+    name: "Reverse proxy",
+    description: "TLS termination and request routing",
+    iconName: "Waypoints",
   },
 ];
 
