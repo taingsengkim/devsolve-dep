@@ -15,7 +15,10 @@ export default function LeaderboardPage() {
       {/* Header band, not a fold — people come here for the ranking, so the
           podium should already be on screen. */}
       <section className="relative overflow-hidden border-b border-slate-200">
-        <SectionBackdrop seed={4} gridSize={72} particles={false} />
+        {/* Pinned light: this page has no dark styling yet, so letting the
+            backdrop follow the theme would put its white gridlines on a white
+            surface. Drop the prop once the page itself goes dark. */}
+        <SectionBackdrop tone="light" seed={4} gridSize={72} particles={false} />
 
         <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-7 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-8 lg:px-8">
           <div className="min-w-0">

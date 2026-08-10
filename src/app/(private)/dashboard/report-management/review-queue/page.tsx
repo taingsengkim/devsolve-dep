@@ -10,13 +10,14 @@ import type {
   PriorityReviewItem,
   ReviewQueueLane,
   ReviewQueueLaneFilter,
+  ReviewQueueLaneKey,
   ReviewSeverity,
 } from "@/components/report-management/review-queue/types";
 import { useGetManagedReportsQuery } from "@/lib/redux/services/reportsApi";
 
 function toReviewQueue(
   queueState?: "PENDING" | "UNDER_REVIEW" | "APPROVED" | "CLOSED",
-): ReviewQueueLaneFilter | null {
+): ReviewQueueLaneKey | null {
   if (queueState === "PENDING") return "Pending Intake";
   if (queueState === "UNDER_REVIEW") return "Under Review";
   if (queueState === "APPROVED") return "Approval Ready";
@@ -40,7 +41,7 @@ export default function Page() {
   const [severityFilter, setSeverityFilter] = useState<"All" | ReviewSeverity>("All");
   const [sortBy, setSortBy] = useState<"priority" | "recent">("priority");
 
-  const queueItems = useMemo<PriorityReviewItem[]>(() => {
+  const queueItems = useMemo(() => {
     return managedReports
       .map((report) => {
         const queue = toReviewQueue(report.queueState);
@@ -62,7 +63,7 @@ export default function Page() {
           logoSrc: report.programLogo,
         };
       })
-      .filter((item): item is PriorityReviewItem => Boolean(item));
+      .filter((item): item is NonNullable<typeof item> => Boolean(item));
   }, [managedReports]);
 
   const queueCounts = useMemo(() => {

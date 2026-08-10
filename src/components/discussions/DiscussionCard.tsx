@@ -9,8 +9,10 @@ import {
   CheckCircle2,
   ChevronUp,
   CircleDot,
+  Clock,
   Eye,
   MessageSquare,
+  XCircle,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,16 +26,23 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useVoteDiscussionMutation } from "@/lib/redux/services/discussionsApi";
 import {
-  useBookmarkDiscussionMutation,
-  useVoteDiscussionMutation,
-} from "@/lib/redux/services/discussionsApi";
+  useAddBookmarkMutation,
+  useRemoveBookmarkMutation,
+} from "@/lib/redux/services/bookmarksApi";
 import type { DiscussionPost } from "@/lib/types/dicussion/types";
+import {
+  MY_COMMUNITY_HREF,
+  type MySolutionStatus,
+} from "@/hooks/useMySolutionStatus";
 import { cn } from "@/lib/utils";
 
 interface DiscussionCardProps {
   post: DiscussionPost;
   index?: number;
+  /** An answer the reader posted here that is not public yet, if any. */
+  myAnswer?: MySolutionStatus;
 }
 
 function getInitials(name: string) {
@@ -49,10 +58,14 @@ function getInitials(name: string) {
 export const DiscussionCard: React.FC<DiscussionCardProps> = ({
   post,
   index = 0,
+  myAnswer,
 }) => {
+  const bookmarkableType = post.category === "Showcase" ? "SHOWCASE" : "PROBLEM";
+
   const [voteDiscussion, { isLoading: isVoting }] = useVoteDiscussionMutation();
-  const [bookmarkDiscussion, { isLoading: isBookmarking }] =
-    useBookmarkDiscussionMutation();
+  const [addBookmark, { isLoading: isAddingBookmark }] = useAddBookmarkMutation();
+  const [removeBookmark, { isLoading: isRemovingBookmark }] = useRemoveBookmarkMutation();
+  const isBookmarking = isAddingBookmark || isRemovingBookmark;
 
   const [localVotes, setLocalVotes] = useState(post.votes);
   const [localUpvoted, setLocalUpvoted] = useState(post.isUpvoted ?? false);
@@ -74,19 +87,39 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
     setLocalBookmarked(post.isBookmarked ?? false);
   }
 
+  /* The mutations take where the card is moving to, not a toggle, so the
+     optimistic state and the request can never disagree about direction. */
   const handleVote = async () => {
     if (isVoting) return;
 
-    setLocalVotes((votes) => (localUpvoted ? votes - 1 : votes + 1));
-    setLocalUpvoted((upvoted) => !upvoted);
-    await voteDiscussion({ id: post.id });
+    const upvote = !localUpvoted;
+    setLocalVotes((votes) => (upvote ? votes + 1 : votes - 1));
+    setLocalUpvoted(upvote);
+
+    const result = await voteDiscussion({
+      id: post.id,
+      type: bookmarkableType,
+      isUpvoted: upvote,
+    });
+
+    // Nothing else holds the true count, so a rejected vote is rolled back here.
+    if ("error" in result) {
+      setLocalVotes((votes) => (upvote ? votes - 1 : votes + 1));
+      setLocalUpvoted(!upvote);
+    }
   };
 
   const handleBookmark = async () => {
     if (isBookmarking) return;
 
-    setLocalBookmarked((bookmarked) => !bookmarked);
-    await bookmarkDiscussion({ id: post.id });
+    const bookmarked = !localBookmarked;
+    setLocalBookmarked(bookmarked);
+
+    const result = bookmarked
+      ? await addBookmark({ type: bookmarkableType, targetId: post.id })
+      : await removeBookmark({ type: bookmarkableType, targetId: post.id });
+
+    if ("error" in result) setLocalBookmarked(!bookmarked);
   };
 
   const isShowcase = post.category === "Showcase";
@@ -105,8 +138,10 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
         aria-labelledby={titleId}
         className="group relative gap-0 overflow-hidden rounded-2xl bg-card py-0 shadow-xs ring-1 ring-foreground/5 transition-shadow duration-200 hover:shadow-sm hover:ring-foreground/10 focus-within:ring-2 focus-within:ring-primary/40"
       >
+        {/* A showcase is a real record with its own page; a problem is still
+            served by the mock detail route under /community. */}
         <Link
-          href={`/community/${post.id}`}
+          href={isShowcase ? `/showcases/${post.id}` : `/community/${post.id}`}
           className="absolute inset-0 rounded-2xl outline-none"
         >
           <span className="sr-only">Open discussion: {post.title}</span>
@@ -133,6 +168,30 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
                 {post.status}
               </Badge>
             )}
+
+            {/* The reader's own answer, held for review or turned away. It is
+                a real link over the card's own overlay, so it opts back into
+                pointer events and sits above it. */}
+            {myAnswer && (
+              <Link
+                href={MY_COMMUNITY_HREF}
+                className={cn(
+                  "pointer-events-auto relative z-10 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-sm font-bold transition-colors",
+                  myAnswer.review === "REJECTED"
+                    ? "bg-rose-100 text-rose-700 hover:bg-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25"
+                    : "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:hover:bg-amber-500/25",
+                )}
+              >
+                {myAnswer.review === "REJECTED" ? (
+                  <XCircle aria-hidden="true" className="size-3.5" />
+                ) : (
+                  <Clock aria-hidden="true" className="size-3.5" />
+                )}
+                {myAnswer.review === "REJECTED"
+                  ? "Your answer was rejected"
+                  : "Your answer is in review"}
+              </Link>
+            )}
           </div>
 
           <CardTitle>
@@ -150,12 +209,13 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
 
         <CardContent className="pointer-events-none relative flex flex-col gap-4 px-5 py-4 sm:px-6">
           {isShowcase && post.thumbnailUrl && (
-            <div className="relative aspect-[16/7] overflow-hidden rounded-xl bg-muted ring-1 ring-foreground/5">
+            <div className="relative h-64 w-full overflow-hidden">
               <Image
                 src={post.thumbnailUrl}
                 alt={`${post.title} preview`}
                 fill
-                sizes="(max-width: 640px) calc(100vw - 3rem), (max-width: 1024px) calc(100vw - 5rem), 720px"
+                quality={90}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="object-cover transition-transform duration-300 group-hover:scale-[1.015]"
               />
             </div>

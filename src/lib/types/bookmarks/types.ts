@@ -2,8 +2,13 @@ export type BookmarkCategory = "all" | "Program" | "Problems" | "Solutions";
 
 export type BookmarkSeverity = "Critical" | "High" | "Medium" | "Low";
 
+// Matches the backend's BookmarkableType enum (GET/PUT/DELETE /bookmarks/{type}/{targetId}).
+export type BookmarkableType = "PROGRAM" | "PROBLEM" | "SOLUTION" | "SHOWCASE";
+
 export interface BookmarkItem {
   id: string;
+  bookmarkableId: string;
+  bookmarkableType: BookmarkableType;
   category: "Program" | "Problems" | "Solutions";
   title: string;
   description: string;

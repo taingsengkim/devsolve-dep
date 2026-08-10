@@ -3,15 +3,16 @@
 export const dynamic = "force-dynamic";
 
 import React, { useState, useMemo, useCallback } from "react";
+import Link from "next/link";
 import { motion } from "motion/react";
-import { Building2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { ArrowLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   useGetPendingOrganizationsQuery,
-  useGetCompanyVerificationsQuery,
-  useUpdateCompanyVerificationStatusMutation,
-  CompanyVerificationItem,
+  useApproveOrganizationMutation,
+  useRejectOrganizationMutation,
 } from "@/lib/redux/services/adminApi";
+import { CompanyVerificationItem } from "@/lib/types/admin/types";
 import { OrganizationStatCards } from "@/components/admin/organizations/OrganizationStatCards";
 import { OrganizationFiltersBar } from "@/components/admin/organizations/OrganizationFiltersBar";
 import { OrganizationDataTable } from "@/components/admin/organizations/OrganizationDataTable";
@@ -25,27 +26,19 @@ export default function OrganizationVerificationPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAuditCompany, setSelectedAuditCompany] = useState<CompanyVerificationItem | null>(null);
 
-  // RTK Query hooks
+  // Real RTK Query hooks for pending organizations
   const {
     data: pendingData,
-    isLoading: isPendingLoading,
-    isFetching: isPendingFetching,
+    isLoading,
+    isFetching,
   } = useGetPendingOrganizationsQuery({ pageNumber: 0, pageSize: 100 });
 
-  const {
-    data: mockVerifications = [],
-    isLoading: isMockLoading,
-    isFetching: isMockFetching,
-  } = useGetCompanyVerificationsQuery();
+  const [approveOrg] = useApproveOrganizationMutation();
+  const [rejectOrg] = useRejectOrganizationMutation();
 
-  const [updateStatus] = useUpdateCompanyVerificationStatusMutation();
-
-  const isLoading = isPendingLoading || isMockLoading;
-  const isFetching = isPendingFetching || isMockFetching;
-
-  // Unify pending org items from backend and mock verifications
-  const combinedVerifications = useMemo(() => {
-    const pendingItems: CompanyVerificationItem[] = (pendingData?.content ?? []).map((p) => ({
+  // Map pending organization items from backend to CompanyVerificationItem format
+  const verifications: CompanyVerificationItem[] = useMemo(() => {
+    return (pendingData?.content ?? []).map((p) => ({
       id: p.id,
       orgCode: p.slug,
       companyName: p.name,
@@ -63,28 +56,23 @@ export default function OrganizationVerificationPage() {
       companySize: p.companySize,
       submissionVersion: p.submissionVersion,
     }));
-
-    const pendingIds = new Set(pendingItems.map((p) => p.id));
-    const remainingMocks = mockVerifications.filter((m) => !pendingIds.has(m.id));
-
-    return [...pendingItems, ...remainingMocks];
-  }, [pendingData, mockVerifications]);
+  }, [pendingData]);
 
   // Counts for summary metrics and status tabs
   const counts = useMemo(
     () => ({
-      all: combinedVerifications.length,
-      pending: combinedVerifications.filter((v) => v.status === "PENDING").length,
-      underReview: combinedVerifications.filter((v) => v.status === "UNDER_REVIEW").length,
-      approved: combinedVerifications.filter((v) => v.status === "APPROVED").length,
-      rejected: combinedVerifications.filter((v) => v.status === "REJECTED").length,
+      all: verifications.length,
+      pending: verifications.filter((v) => v.status === "PENDING").length,
+      underReview: verifications.filter((v) => v.status === "UNDER_REVIEW").length,
+      approved: verifications.filter((v) => v.status === "APPROVED").length,
+      rejected: verifications.filter((v) => v.status === "REJECTED").length,
     }),
-    [combinedVerifications]
+    [verifications]
   );
 
   // Filtering by status & text query
   const filteredVerifications = useMemo(() => {
-    return combinedVerifications.filter((v) => {
+    return verifications.filter((v) => {
       const matchesStatus = statusFilter === "ALL" || v.status === statusFilter;
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
@@ -99,14 +87,18 @@ export default function OrganizationVerificationPage() {
 
       return matchesStatus && matchesSearch;
     });
-  }, [combinedVerifications, statusFilter, searchQuery]);
+  }, [verifications, statusFilter, searchQuery]);
 
-  // Audit modal status updater callback
+  // Audit modal status updater callback using real mutations
   const handleUpdateStatus = useCallback(
     async (id: string, status: "APPROVED" | "REJECTED", notes?: string) => {
-      await updateStatus({ id, status, notes }).unwrap();
+      if (status === "APPROVED") {
+        await approveOrg({ id }).unwrap();
+      } else {
+        await rejectOrg({ id, reason: notes || "Rejected during organization verification audit." }).unwrap();
+      }
     },
-    [updateStatus]
+    [approveOrg, rejectOrg]
   );
 
   const columns = useMemo(
@@ -126,7 +118,20 @@ export default function OrganizationVerificationPage() {
     >
       {/* PAGE HEADER */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-1 transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+            >
+              <ArrowLeft className="size-3.5" />
+              Dashboard
+            </Link>
+            <span>/</span>
+            <span className="font-semibold text-slate-700 dark:text-slate-300">
+              Organization Verification
+            </span>
+          </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             Organization Verification
           </h1>
@@ -137,17 +142,20 @@ export default function OrganizationVerificationPage() {
 
         {/* Pending badge count alert */}
         {counts.pending > 0 && (
-          <div className="shrink-0 flex items-center gap-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-2.5">
-            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-            <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+          <Badge
+            variant="outline"
+            className="h-9 shrink-0 gap-2 rounded-xl border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+          >
+            <span className="size-2 rounded-full bg-amber-500" />
+            <span>
               {counts.pending} pending review{counts.pending !== 1 ? "s" : ""}
             </span>
-          </div>
+          </Badge>
         )}
       </header>
 
       {/* STAT CARDS */}
-      {!isLoading && <OrganizationStatCards verifications={combinedVerifications} />}
+      {!isLoading && <OrganizationStatCards verifications={verifications} />}
       {isLoading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
           {[0, 1, 2, 3].map((i) => (
@@ -169,7 +177,7 @@ export default function OrganizationVerificationPage() {
       />
 
       {/* DATA TABLE */}
-      <main className="space-y-3">
+      <main className="flex flex-col gap-3">
         {isLoading || isFetching ? (
           <div className="space-y-3 animate-pulse">
             <div className="h-64 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
@@ -188,3 +196,4 @@ export default function OrganizationVerificationPage() {
     </motion.div>
   );
 }
+

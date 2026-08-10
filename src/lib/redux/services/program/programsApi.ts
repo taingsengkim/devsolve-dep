@@ -1,4 +1,4 @@
-import { baseApi } from "../baseApi";
+import { proxyApi } from "../proxyApi";
 import {
   Program,
   PaginatedResponse,
@@ -6,10 +6,11 @@ import {
   ProgramDetail,
   CreateProgramRequest,
 } from "@/lib/types/programs/types";
+import { PageProgramManagementSummaryResponseDto } from "@/lib/types/admin/programAdminTypes";
 
 export * from "@/lib/types/programs/types";
 
-export const programsApi = baseApi.injectEndpoints({
+export const programsApi = proxyApi.injectEndpoints({
   endpoints: (builder) => ({
     // GET /programs?page=0&size=20&search=...
     getPrograms: builder.query<
@@ -42,6 +43,31 @@ export const programsApi = baseApi.injectEndpoints({
       providesTags: ["Program"],
     }),
 
+    // GET /organizations/me/programs (COMPANY role)
+    getMyCompanyPrograms: builder.query<
+      PageProgramManagementSummaryResponseDto,
+      { page?: number; size?: number; sort?: string } | void
+    >({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params?.page !== undefined) {
+          queryParams.append("page", params.page.toString());
+        }
+        if (params?.size) {
+          queryParams.append("size", params.size.toString());
+        }
+        if (params?.sort) {
+          queryParams.append("sort", params.sort);
+        }
+
+        const queryString = queryParams.toString();
+        return queryString
+          ? `organizations/me/programs?${queryString}`
+          : "organizations/me/programs";
+      },
+      providesTags: ["Program"],
+    }),
+
     // GET /programs/{id}
     getProgramById: builder.query<ProgramDetail, string>({
       query: (id) => `programs/${id}`,
@@ -63,6 +89,7 @@ export const programsApi = baseApi.injectEndpoints({
 
 export const {
   useGetProgramsQuery,
+  useGetMyCompanyProgramsQuery,
   useGetProgramByIdQuery,
   useCreateProgramMutation,
 } = programsApi;

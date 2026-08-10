@@ -1,16 +1,10 @@
-import React from "react";
 import ProblemDetailPage from "@/components/discussions/ProblemDetailPage";
 
-interface PageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function PublicDiscussionDetailPage({ params }: PageProps) {
-  const { id } = await params;
-
-  return (
-    <div className="min-h-[100dvh] bg-[#F8FAFC]">
-      <ProblemDetailPage />
-    </div>
-  );
+/**
+ * One problem. The id is read from the route by the client component itself,
+ * which is also what paints the page background — a wrapper painting its own
+ * would have to repeat the light and dark halves of it to stay in step.
+ */
+export default function PublicDiscussionDetailPage() {
+  return <ProblemDetailPage />;
 }

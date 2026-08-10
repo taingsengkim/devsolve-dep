@@ -6,7 +6,7 @@ const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 const PROVIDER_ID = "keycloak";
 
 const moderationActionSchema = z.object({
-  action: z.enum(["WARN", "SUSPEND", "REMOVE", "BAN"]),
+  action: z.enum(["WARN", "SUSPEND", "REMOVE", "BAN", "REINSTATE"]),
   reason: z.string().min(1, "Reason is required").max(2000),
   expiresAt: z.string().optional(),
 });
@@ -44,7 +44,7 @@ export async function POST(
 
   const { id } = await params;
   if (!id) {
-    return NextResponse.json({ message: "User ID is required" }, { status: 400 });
+    return NextResponse.json({ message: "Target ID is required" }, { status: 400 });
   }
 
   let body: unknown;
@@ -64,6 +64,14 @@ export async function POST(
 
   const targetUrl = `${BACKEND_API_URL}/admin/${id}/moderation-actions`;
 
+  const payload: { action: string; reason: string; expiresAt?: string } = {
+    action: parsed.data.action,
+    reason: parsed.data.reason,
+  };
+  if (parsed.data.expiresAt) {
+    payload.expiresAt = parsed.data.expiresAt;
+  }
+
   try {
     const upstream = await fetch(targetUrl, {
       method: "POST",
@@ -72,7 +80,7 @@ export async function POST(
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(parsed.data),
+      body: JSON.stringify(payload),
       cache: "no-store",
     });
 
@@ -87,9 +95,12 @@ export async function POST(
     }
 
     if (!upstream.ok) {
+      console.error("Upstream error:", upstream.status, resBody);
       const message =
-        (resBody as { message?: string } | null)?.message ??
-        "Failed to apply moderation action.";
+        (resBody as { message?: string; error?: string } | null)?.message ||
+        (resBody as { message?: string; error?: string } | null)?.error ||
+        (typeof resBody === "string" ? resBody : null) ||
+        `Backend error (${upstream.status}): Failed to apply moderation action.`;
       return NextResponse.json(
         { message, details: resBody },
         { status: upstream.status }
@@ -101,3 +112,4 @@ export async function POST(
     return unreachable();
   }
 }
+

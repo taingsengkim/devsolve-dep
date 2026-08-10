@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 
+import { AuthGatedLink } from "@/components/auth/AuthGatedLink";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,7 +83,9 @@ export function DiscussionHeader({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.97 }}
       >
-        <Link
+        {/* Gated: an anonymous visitor gets the sign-in prompt here rather
+            than a form they cannot submit. */}
+        <AuthGatedLink
           href={createHref}
           className={cn(
             buttonVariants({ size: "lg" }),
@@ -91,7 +94,7 @@ export function DiscussionHeader({
         >
           <Plus data-icon="inline-start" aria-hidden="true" />
           {createLabel}
-        </Link>
+        </AuthGatedLink>
       </motion.div>
     </header>
   );

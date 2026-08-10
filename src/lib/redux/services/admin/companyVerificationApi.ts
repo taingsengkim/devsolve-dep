@@ -1,25 +1,22 @@
 import { baseApi } from "../baseApi";
 import {
-  CompanyVerificationItem,
   PendingOrganizationsResponse,
   OrganizationResponse,
   OrganizationReviewHistoryItem,
 } from "@/lib/types/admin/types";
-import {
-  mockCompanyVerificationsStore,
-  updateMockCompanyVerificationsStore,
-} from "./adminMockData";
 
 export const companyVerificationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // ─── Real API endpoints ───────────────────────────────────────────────
     getPendingOrganizations: builder.query<
       PendingOrganizationsResponse,
-      { pageNumber?: number; pageSize?: number }
+      { pageNumber?: number; pageSize?: number } | void
     >({
-      query: ({ pageNumber = 0, pageSize = 20 } = {}) => ({
+      query: (params) => ({
         url: "/admin/organizations/pending",
-        params: { pageNumber, pageSize },
+        params: {
+          pageNumber: params?.pageNumber ?? 0,
+          pageSize: params?.pageSize ?? 20,
+        },
       }),
       providesTags: ["CompanyVerification"],
     }),
@@ -60,41 +57,6 @@ export const companyVerificationApi = baseApi.injectEndpoints({
       }),
       providesTags: (_result, _error, id) => [{ type: "CompanyVerification", id }],
     }),
-
-    // ─── Legacy / Mock-fallback endpoints ────────────────────────────────
-    getCompanyVerifications: builder.query<CompanyVerificationItem[], void>({
-      queryFn: () => {
-        return { data: mockCompanyVerificationsStore.map((c) => ({ ...c })) };
-      },
-      providesTags: ["CompanyVerification"],
-    }),
-
-    getCompanyVerificationById: builder.query<CompanyVerificationItem, string>({
-      queryFn: (id) => {
-        const found = mockCompanyVerificationsStore.find((c) => c.id === id);
-        if (found) return { data: { ...found } };
-        return { data: { ...mockCompanyVerificationsStore[0] } };
-      },
-      providesTags: (_result, _error, id) => [{ type: "CompanyVerification", id }],
-    }),
-
-    updateCompanyVerificationStatus: builder.mutation<
-      CompanyVerificationItem,
-      { id: string; status: "APPROVED" | "REJECTED" | "UNDER_REVIEW"; notes?: string }
-    >({
-      // TODO: replace queryFn with query() when real API is ready
-      queryFn: ({ id, status, notes }) => {
-        updateMockCompanyVerificationsStore((prev) =>
-          prev.map((c) => (c.id === id ? { ...c, status, ...(notes ? { notes } : {}) } : c))
-        );
-        const updated = mockCompanyVerificationsStore.find((c) => c.id === id);
-        return { data: updated ? { ...updated } : { ...mockCompanyVerificationsStore[0] } };
-      },
-      invalidatesTags: (_result, _error, { id }) => [
-        { type: "CompanyVerification", id },
-        "CompanyVerification",
-      ],
-    }),
   }),
 });
 
@@ -104,7 +66,5 @@ export const {
   useApproveOrganizationMutation,
   useRejectOrganizationMutation,
   useGetOrganizationReviewHistoryQuery,
-  useGetCompanyVerificationsQuery,
-  useGetCompanyVerificationByIdQuery,
-  useUpdateCompanyVerificationStatusMutation,
 } = companyVerificationApi;
+

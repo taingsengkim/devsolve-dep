@@ -1,372 +1,468 @@
 "use client";
 
 import React, { useState } from "react";
-import { SolutionItem } from "@/lib/types/dicussion/types";
+import Link from "next/link";
+import { motion } from "motion/react";
 import {
-  ChevronUp,
-  ChevronDown,
+  BookOpen,
   Check,
-  FileText,
-  ListOrdered,
-  Code2,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  FileCode2,
+  FolderGit2,
+  Link2,
+  ListChecks,
+  MonitorPlay,
   Network,
-  Bookmark,
-  Flag,
-  Send,
-  CornerDownRight,
-  Heart,
-  MessageSquare,
+  Pencil,
+  Scale,
+  Video,
+  X,
+  type LucideIcon,
 } from "lucide-react";
 
-interface CommentNode {
-  id: string;
-  author: {
-    name: string;
-    avatarUrl: string;
-  };
-  content: string;
-  createdAt: string;
-  replyToAuthor?: string;
-  likes?: number;
-  isLiked?: boolean;
-  replies?: CommentNode[];
-}
+import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
+import type {
+  ResourceSummary,
+  SolutionResponse,
+} from "@/lib/redux/services/solutionsApi";
+import {
+  useGetVoteSummaryQuery,
+  useRemoveVoteMutation,
+  useSetVoteMutation,
+} from "@/lib/redux/services/votesApi";
+import {
+  APPROACH_LABELS,
+  RESOURCE_LABELS,
+  type ApproachType,
+  type ResourceType,
+} from "@/lib/validations/solution";
+import {
+  authorNameOf,
+  formatBytes,
+  formatDate,
+  initialsOf,
+} from "@/lib/discussions/format";
+
+/**
+ * One answer on a problem, off `SolutionResponse`.
+ *
+ * The response embeds its author and its own `voteScore`, so neither needs a
+ * follow-up request; the vote summary is still read because it is the only
+ * thing that says how *this* reader voted.
+ *
+ * Long answers are collapsed by default. A page with six of them is unreadable
+ * otherwise, and the summary line is written to be enough to choose by.
+ */
 
 interface SolutionCardProps {
-  solution: SolutionItem;
+  solution: SolutionResponse;
   index: number;
+  /** Shown only to whoever may accept — the problem's author. */
+  canAccept?: boolean;
+  onAccept?: (solutionId: string) => void;
+  /** Withdrawing an acceptance. Several answers may be accepted at once, so
+   *  each card offers to undo its own rather than clearing the problem's. */
+  onUnaccept?: (solutionId: string) => void;
+  isAccepting?: boolean;
+  /** The problem's own list wins over the solution's flag when the two
+   *  disagree, which they do for a moment after accepting. */
+  accepted?: boolean;
+  /** Whether the reader wrote this answer, so only they are offered Edit. */
+  isMine?: boolean;
 }
 
-const MAX_INDENT_DEPTH = 3;
+/** Roughly a screenful. Past this the body is worth folding away. */
+const COLLAPSE_OVER = 900;
 
-export const SolutionCard: React.FC<SolutionCardProps> = ({ solution, index }) => {
-  const [votes, setVotes] = useState(solution.votes);
-  const [hasVoted, setHasVoted] = useState(false);
-  const [activeTab, setActiveTab] = useState<"explanation" | "step-by-step" | "code" | "diagram">(
-    "explanation"
+const APPROACH_STYLES: Record<ApproachType, string> = {
+  FIX: "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/20",
+  WORKAROUND:
+    "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/20",
+  EXPLANATION:
+    "bg-sky-50 text-sky-700 ring-sky-600/20 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-400/20",
+  ALTERNATIVE:
+    "bg-violet-50 text-violet-700 ring-violet-600/20 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-400/20",
+};
+
+const RESOURCE_ICONS: Record<ResourceType, LucideIcon> = {
+  DOCUMENTATION: BookOpen,
+  REPOSITORY: FolderGit2,
+  VIDEO: Video,
+  DIAGRAM: Network,
+  DEMO: MonitorPlay,
+  ARTICLE: FileCode2,
+};
+
+export const SolutionCard: React.FC<SolutionCardProps> = ({
+  solution,
+  index,
+  canAccept = false,
+  onAccept,
+  onUnaccept,
+  isAccepting = false,
+  accepted,
+  isMine = false,
+}) => {
+  const { data: votes } = useGetVoteSummaryQuery({
+    type: "SOLUTION",
+    targetId: solution.id,
+  });
+
+  const [setVote, { isLoading: isSettingVote }] = useSetVoteMutation();
+  const [removeVote, { isLoading: isRemovingVote }] = useRemoveVoteMutation();
+  const isVoting = isSettingVote || isRemovingVote;
+
+  const body = solution.bodyMarkdown ?? "";
+  const [expanded, setExpanded] = useState(body.length <= COLLAPSE_OVER);
+  const isLong = body.length > COLLAPSE_OVER;
+
+  const hasUpvoted = votes?.currentUserVote === 1;
+  const hasDownvoted = votes?.currentUserVote === -1;
+  /* The summary is authoritative once loaded; until then the score that came
+     with the solution itself is the better guess than zero. */
+  const score = votes?.score ?? solution.voteScore ?? 0;
+
+  const isAccepted = accepted ?? Boolean(solution.isAccepted);
+  const author = solution.author;
+  const name = authorNameOf(author);
+
+  const verificationSteps = (solution.verificationSteps ?? []).filter(
+    (step) => step.instruction || step.expectedResult,
   );
-  const [isExpanded, setIsExpanded] = useState(solution.type === "rich");
+  const testedWith = (solution.testedWith ?? []).filter(
+    (entry) => entry.technology,
+  );
+  const resources = (solution.resources ?? []).filter((item) => item.url);
+  const attachments = (solution.attachments ?? []).filter(
+    (file) => file.downloadUrl,
+  );
 
-  const [comments, setComments] = useState<CommentNode[]>(solution.comments || []);
-  const [newTopComment, setNewTopComment] = useState("");
-  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
-  const [replyContent, setReplyContent] = useState("");
-
-  const handleVote = () => {
-    if (hasVoted) {
-      setVotes((v) => v - 1);
-      setHasVoted(false);
-    } else {
-      setVotes((v) => v + 1);
-      setHasVoted(true);
-    }
-  };
-
-  const toggleLikeInTree = (list: CommentNode[], commentId: string): CommentNode[] => {
-    return list.map((item) => {
-      if (item.id === commentId) {
-        const currentlyLiked = !!item.isLiked;
-        return {
-          ...item,
-          isLiked: !currentlyLiked,
-          likes: (item.likes || 0) + (currentlyLiked ? -1 : 1),
-        };
-      }
-      if (item.replies && item.replies.length > 0) {
-        return {
-          ...item,
-          replies: toggleLikeInTree(item.replies, commentId),
-        };
-      }
-      return item;
-    });
-  };
-
-  const handleToggleLike = (commentId: string) => {
-    setComments(toggleLikeInTree(comments, commentId));
-  };
-
-  const handleAddTopComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTopComment.trim()) return;
-
-    const newComment: CommentNode = {
-      id: `c-${Date.now()}`,
-      author: {
-        name: "Jame",
-        avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Jame",
-      },
-      content: newTopComment.trim(),
-      createdAt: "Just now",
-      likes: 0,
-      isLiked: false,
-      replies: [],
-    };
-
-    setComments([...comments, newComment]);
-    setNewTopComment("");
-  };
-
-  const addReplyToTree = (
-    list: CommentNode[],
-    parentId: string,
-    reply: CommentNode
-  ): CommentNode[] => {
-    return list.map((item) => {
-      if (item.id === parentId) {
-        return {
-          ...item,
-          replies: [...(item.replies || []), reply],
-        };
-      }
-      if (item.replies && item.replies.length > 0) {
-        return {
-          ...item,
-          replies: addReplyToTree(item.replies, parentId, reply),
-        };
-      }
-      return item;
-    });
-  };
-
-  const handleSendReply = (parentComment: CommentNode) => {
-    if (!replyContent.trim()) return;
-
-    const newReply: CommentNode = {
-      id: `r-${Date.now()}`,
-      author: {
-        name: "Jame",
-        avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Jame",
-      },
-      content: replyContent.trim(),
-      createdAt: "Just now",
-      replyToAuthor: parentComment.author.name,
-      likes: 0,
-      isLiked: false,
-      replies: [],
-    };
-
-    setComments(addReplyToTree(comments, parentComment.id, newReply));
-    setReplyContent("");
-    setActiveReplyId(null);
-  };
-
-  // Helper to count total replies recursively in a comment subtree
-  const countSubReplies = (comment: CommentNode): number => {
-    if (!comment.replies || comment.replies.length === 0) return 0;
-    return comment.replies.reduce((acc, child) => acc + 1 + countSubReplies(child), 0);
-  };
-
-  // Component for Individual Comment Items with Expand/Collapse State
-  const RenderCommentItem = ({
-    comment,
-    depth = 0,
-  }: {
-    comment: CommentNode;
-    depth?: number;
-  }) => {
-    const [showReplies, setShowReplies] = useState(false); // Collapsed by default!
-    const isReplying = activeReplyId === comment.id;
-    const shouldIndent = depth > 0 && depth <= MAX_INDENT_DEPTH;
-    const totalReplies = countSubReplies(comment);
-
-    return (
-      <div className={`space-y-1.5 ${shouldIndent ? "ml-4 border-l border-slate-200 pl-2.5 sm:ml-5 sm:pl-3" : ""}`}>
-        {/* Main Comment Box */}
-        <div className="group flex items-start justify-between rounded-xl bg-slate-50 p-2.5 text-sm text-slate-700 border border-slate-100">
-          <div className="flex items-start space-x-2 flex-1 min-w-0 pr-2">
-            <img
-              src={comment.author.avatarUrl}
-              alt={comment.author.name}
-              className="h-5 w-5 rounded-full mt-0.5 shrink-0"
-            />
-            <div className="leading-relaxed break-words min-w-0 flex-1">
-              <span className="font-bold text-slate-900 mr-1.5">{comment.author.name}:</span>
-
-              {comment.replyToAuthor && (
-                <span className="font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded text-xs mr-1.5 inline-block">
-                  @{comment.replyToAuthor}
-                </span>
-              )}
-
-              <span>{comment.content}</span>
-              <span className="text-xs text-slate-400 ml-2 inline-block">{comment.createdAt}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2.5 shrink-0 pt-0.5">
-            {/* Love Button */}
-            <button
-              type="button"
-              onClick={() => handleToggleLike(comment.id)}
-              className={`flex items-center space-x-1 text-xs transition-colors ${
-                comment.isLiked ? "text-rose-500 font-bold" : "text-slate-400 hover:text-rose-500"
-              }`}
-            >
-              <Heart className={`h-3.5 w-3.5 ${comment.isLiked ? "fill-rose-500 text-rose-500" : ""}`} />
-              {Boolean(comment.likes) && <span>{comment.likes}</span>}
-            </button>
-
-            {/* Reply Trigger */}
-            <button
-              type="button"
-              onClick={() => {
-                setActiveReplyId(isReplying ? null : comment.id);
-                setReplyContent("");
-              }}
-              className="text-xs font-semibold text-blue-600 hover:underline shrink-0"
-            >
-              Reply
-            </button>
-          </div>
-        </div>
-
-        {/* Sub-reply Input */}
-        {isReplying && (
-          <div className="flex items-center space-x-2 pt-1 pl-2">
-            <CornerDownRight className="h-4 w-4 text-slate-400 shrink-0" />
-
-            <div className="flex-1 flex items-center rounded-xl border border-blue-300 bg-white px-3 py-1.5 text-sm focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
-              <span className="text-blue-600 font-semibold mr-1.5 shrink-0 text-xs">
-                @{comment.author.name}
-              </span>
-              <input
-                type="text"
-                value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleSendReply(comment);
-                    setShowReplies(true);
-                  }
-                }}
-                placeholder="Write a reply..."
-                className="w-full bg-transparent focus:outline-none"
-                autoFocus
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                handleSendReply(comment);
-                setShowReplies(true);
-              }}
-              className="rounded-lg bg-blue-600 p-2 text-white hover:bg-blue-700 transition-colors shrink-0"
-            >
-              <Send className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        )}
-
-        {/* Toggle Button for viewing sub-replies */}
-        {totalReplies > 0 && (
-          <div className="pl-2 pt-0.5">
-            <button
-              type="button"
-              onClick={() => setShowReplies(!showReplies)}
-              className="flex items-center space-x-1.5 text-xs font-semibold text-slate-500 hover:text-blue-600 transition-colors"
-            >
-              <MessageSquare className="h-3.5 w-3.5 text-slate-400" />
-              <span>
-                {showReplies
-                  ? "Hide replies"
-                  : `View ${totalReplies} ${totalReplies === 1 ? "reply" : "replies"}`}
-              </span>
-              <ChevronDown
-                className={`h-3.5 w-3.5 transition-transform duration-200 ${
-                  showReplies ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-          </div>
-        )}
-
-        {/* Hidden / Expandable Child Replies */}
-        {showReplies && comment.replies && comment.replies.length > 0 && (
-          <div className="space-y-1.5 pt-1">
-            {comment.replies.map((child) => (
-              <RenderCommentItem key={child.id} comment={child} depth={depth + 1} />
-            ))}
-          </div>
-        )}
-      </div>
-    );
+  const castVote = async (value: 1 | -1) => {
+    if (isVoting) return;
+    const target = { type: "SOLUTION" as const, targetId: solution.id };
+    const current = votes?.currentUserVote;
+    // Voting the same way twice clears the vote, the way every such rail works.
+    if (current === value) await removeVote(target);
+    else await setVote({ ...target, value });
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden transition-all">
-      {solution.isAccepted && (
-        <div className="flex items-center space-x-2 bg-emerald-50 border-b border-emerald-100 px-5 py-2.5 text-sm font-bold text-emerald-700">
-          <Check className="h-4 w-4 text-emerald-600" />
-          <span>Accepted Solution</span>
-        </div>
+    <motion.article
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut", delay: index * 0.05 }}
+      className={`overflow-hidden rounded-2xl border bg-white shadow-xs transition-colors dark:bg-slate-900 ${
+        isAccepted
+          ? "border-emerald-400 ring-1 ring-emerald-400/30 dark:border-emerald-500/50 dark:ring-emerald-500/20"
+          : "border-slate-200/80 dark:border-slate-800"
+      }`}
+    >
+      {isAccepted && (
+        <p className="flex items-center gap-1.5 bg-emerald-50 px-4 py-2 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+          <CheckCircle2 aria-hidden="true" className="size-3.5" />
+          Accepted answer
+        </p>
       )}
 
-      {/* Main Body */}
-      <div className="p-5">
-        <div className="flex items-start space-x-4">
-          <div className="flex flex-col items-center shrink-0">
-            <button
-              onClick={handleVote}
-              className={`rounded-lg p-1.5 transition-colors ${
-                hasVoted ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-100"
-              }`}
-            >
-              <ChevronUp className="h-4 w-4" />
-            </button>
-            <span className="text-sm font-bold text-slate-800 my-1 tabular-nums">{votes}</span>
-            <button
-              onClick={() => {
-                if (hasVoted) handleVote();
-              }}
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"
-            >
-              <ChevronDown className="h-4 w-4" />
-            </button>
-          </div>
+      <div className="flex flex-col gap-4 p-4 sm:flex-row sm:p-5">
+        {/* Vote rail — a row on a phone, a column from `sm` up. */}
+        <div className="flex shrink-0 flex-row items-center gap-1 sm:flex-col">
+          <button
+            type="button"
+            onClick={() => void castVote(1)}
+            disabled={isVoting}
+            aria-pressed={hasUpvoted}
+            aria-label={hasUpvoted ? "Remove upvote" : "Upvote this answer"}
+            className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
+              hasUpvoted
+                ? "bg-blue-600 text-white"
+                : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+            }`}
+          >
+            <ChevronUp aria-hidden="true" className="size-4" />
+          </button>
+          <span className="text-sm font-bold tabular-nums text-slate-800 dark:text-slate-100">
+            {score}
+          </span>
+          <button
+            type="button"
+            onClick={() => void castVote(-1)}
+            disabled={isVoting}
+            aria-pressed={hasDownvoted}
+            aria-label={
+              hasDownvoted ? "Remove downvote" : "Downvote this answer"
+            }
+            className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
+              hasDownvoted
+                ? "bg-rose-600 text-white"
+                : "text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            <ChevronDown aria-hidden="true" className="size-4" />
+          </button>
+        </div>
 
-          <div className="flex-1 min-w-0">
-            <p className="text-base text-slate-700 leading-relaxed">{solution.explanation}</p>
-
-            <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-sm text-slate-500">
-              <div className="flex items-center space-x-2">
+        <div className="min-w-0 flex-1 space-y-4">
+          {/* ── Who, and what kind of answer ── */}
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2.5">
+              {author?.avatarUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img
-                  src={solution.author.avatarUrl}
-                  alt={solution.author.name}
-                  className="h-6 w-6 rounded-full bg-slate-100 border border-slate-200"
+                  src={author.avatarUrl}
+                  alt=""
+                  className="size-9 shrink-0 rounded-full border border-slate-200 bg-slate-100 object-cover dark:border-slate-700 dark:bg-slate-800"
                 />
-                <span className="font-semibold text-slate-900">{solution.author.name}</span>
-                <span>•</span>
-                <span className="text-slate-500">answered {solution.createdAt}</span>
+              ) : (
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                  {initialsOf(name)}
+                </span>
+              )}
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
+                  {name}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {author?.reputation !== undefined
+                    ? `${author.reputation.toLocaleString()} reputation · `
+                    : ""}
+                  {formatDate(solution.createdAt)}
+                </p>
               </div>
             </div>
 
-            {/* Threaded Comments */}
-            <div className="mt-4 border-t border-slate-100 pt-3 space-y-2">
-              {comments.map((comment) => (
-                <RenderCommentItem key={comment.id} comment={comment} />
-              ))}
-
-              <form onSubmit={handleAddTopComment} className="flex items-center space-x-2 pt-1">
-                <input
-                  type="text"
-                  value={newTopComment}
-                  onChange={(e) => setNewTopComment(e.target.value)}
-                  placeholder="Add a comment..."
-                  className="flex-1 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  className="rounded-lg bg-slate-100 px-3 py-2 text-slate-700 hover:bg-slate-200 transition-colors font-medium text-sm"
+            <div className="flex shrink-0 items-center gap-2">
+              {solution.approachType && (
+                <span
+                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold ring-1 ring-inset ${
+                    APPROACH_STYLES[solution.approachType]
+                  }`}
                 >
-                  <Send className="h-4 w-4" />
+                  {APPROACH_LABELS[solution.approachType]}
+                </span>
+              )}
+
+              {/* Accepting is additive — more than one answer may be marked —
+                  so the button is a toggle on each card rather than a single
+                  choice across the page. */}
+              {canAccept && !isAccepted && onAccept && (
+                <button
+                  type="button"
+                  onClick={() => onAccept(solution.id)}
+                  disabled={isAccepting}
+                  className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl border border-emerald-300 px-3 text-xs font-bold text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-500/40 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
+                >
+                  <Check aria-hidden="true" className="size-3.5" />
+                  Accept
                 </button>
-              </form>
+              )}
+
+              {canAccept && isAccepted && onUnaccept && (
+                <button
+                  type="button"
+                  onClick={() => onUnaccept(solution.id)}
+                  disabled={isAccepting}
+                  className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  <X aria-hidden="true" className="size-3.5" />
+                  Unaccept
+                </button>
+              )}
+
+              {/* Only the author, and only when the answer knows which problem
+                  it belongs to — the edit route is nested under it. */}
+              {isMine && solution.problemId && (
+                <Link
+                  href={`/community/${solution.problemId}/solutions/${solution.id}/edit`}
+                  className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                >
+                  <Pencil aria-hidden="true" className="size-3.5" />
+                  Edit
+                </Link>
+              )}
             </div>
           </div>
+
+          {/* ── The one-liner ── */}
+          {solution.summary && (
+            <h3 className="text-base font-bold leading-snug text-slate-900 sm:text-lg dark:text-slate-100">
+              {solution.summary}
+            </h3>
+          )}
+
+          {/* ── The answer itself ── */}
+          {body ? (
+            <div className="relative">
+              <div
+                id={`solution-body-${solution.id}`}
+                className={
+                  expanded
+                    ? undefined
+                    : "max-h-72 overflow-hidden mask-[linear-gradient(to_bottom,black_60%,transparent)]"
+                }
+              >
+                <MarkdownView source={body} />
+              </div>
+
+              {isLong && (
+                <button
+                  type="button"
+                  onClick={() => setExpanded((open) => !open)}
+                  aria-expanded={expanded}
+                  aria-controls={`solution-body-${solution.id}`}
+                  className="mt-2 inline-flex cursor-pointer items-center gap-1 text-sm font-bold text-blue-600 hover:underline dark:text-blue-400"
+                >
+                  {expanded ? (
+                    <>
+                      <ChevronUp aria-hidden="true" className="size-4" />
+                      Show less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown aria-hidden="true" className="size-4" />
+                      Read the full answer
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              This answer was posted without a body.
+            </p>
+          )}
+
+          {/* ── How to check it worked ── */}
+          {verificationSteps.length > 0 && (
+            <Panel
+              icon={<ListChecks aria-hidden="true" className="size-3.5" />}
+              title="How to verify"
+            >
+              <ol className="space-y-2.5">
+                {verificationSteps.map((step, i) => (
+                  <li key={i} className="flex gap-3">
+                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[11px] font-bold tabular-nums text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0 space-y-0.5">
+                      <p className="text-sm text-slate-700 dark:text-slate-200">
+                        {step.instruction}
+                      </p>
+                      {step.expectedResult && (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          <span className="font-semibold">Expect: </span>
+                          {step.expectedResult}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </Panel>
+          )}
+
+          {/* ── What it was proven against ── */}
+          {testedWith.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                Tested with
+              </span>
+              {testedWith.map((entry, i) => (
+                <span
+                  key={`${entry.technology}-${i}`}
+                  className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                >
+                  {entry.technology}
+                  {entry.version ? ` ${entry.version}` : ""}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* ── What it costs ── */}
+          {solution.tradeoffs && (
+            <Panel
+              icon={<Scale aria-hidden="true" className="size-3.5" />}
+              title="Trade-offs"
+            >
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                {solution.tradeoffs}
+              </p>
+            </Panel>
+          )}
+
+          {/* ── Links and files ── */}
+          {(resources.length > 0 || attachments.length > 0) && (
+            <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
+              {resources.map((resource, i) => (
+                <ResourceLink key={resource.id ?? i} resource={resource} />
+              ))}
+              {attachments.map((file, i) => (
+                <a
+                  key={file.id ?? i}
+                  href={file.downloadUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex h-8 max-w-full items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                >
+                  <Download aria-hidden="true" className="size-3.5 shrink-0" />
+                  <span className="truncate">
+                    {file.originalFileName ?? "Attachment"}
+                  </span>
+                  {file.sizeBytes !== undefined && (
+                    <span className="shrink-0 font-medium text-slate-400">
+                      {formatBytes(file.sizeBytes)}
+                    </span>
+                  )}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </motion.article>
   );
 };
+
+/** A labelled block inside a card — used for anything with a heading and body. */
+function Panel({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-xl border border-slate-100 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-800/40">
+      <h4 className="mb-2.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        {icon}
+        {title}
+      </h4>
+      {children}
+    </section>
+  );
+}
+
+function ResourceLink({ resource }: { resource: ResourceSummary }) {
+  const Icon = resource.type ? RESOURCE_ICONS[resource.type] : Link2;
+  const label =
+    resource.label ||
+    (resource.type ? RESOURCE_LABELS[resource.type] : "Resource");
+
+  return (
+    <a
+      href={resource.url}
+      target="_blank"
+      rel="noreferrer noopener"
+      className="inline-flex h-8 max-w-full items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+    >
+      <Icon aria-hidden="true" className="size-3.5 shrink-0" />
+      <span className="truncate">{label}</span>
+    </a>
+  );
+}

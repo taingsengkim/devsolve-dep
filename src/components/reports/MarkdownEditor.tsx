@@ -2,36 +2,62 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
+import { useTheme } from "next-themes";
+import type { RefMDEditor } from "@uiw/react-md-editor";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
   ssr: false,
   loading: () => (
-    <div className="h-96 w-full rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 animate-pulse flex items-center justify-center text-slate-400 text-base font-medium">
+    <div className="flex h-96 w-full animate-pulse items-center justify-center rounded-xl border border-slate-300 bg-slate-100 text-base font-medium text-slate-400 motion-reduce:animate-none dark:border-slate-700 dark:bg-slate-900">
       Loading Markdown Editor...
     </div>
   ),
 });
 
 interface MarkdownEditorProps {
+  id?: string;
+  name?: string;
   value: string;
   onChange: (value?: string) => void;
+  onBlur?: React.FocusEventHandler<HTMLTextAreaElement>;
+  inputRef?: (element: HTMLTextAreaElement | null) => void;
   placeholder?: string;
   height?: number;
+  maxLength?: number;
   error?: boolean;
+  disabled?: boolean;
+  required?: boolean;
+  ariaDescribedBy?: string;
 }
 
 export function MarkdownEditor({
+  id,
+  name,
   value,
   onChange,
+  onBlur,
+  inputRef,
   placeholder = "Describe the root cause, affected parameters, and overall architecture vulnerability...",
   height = 480,
+  maxLength,
   error = false,
+  disabled = false,
+  required = false,
+  ariaDescribedBy,
 }: MarkdownEditorProps) {
+  const { resolvedTheme } = useTheme();
+
   return (
     <div
-      data-color-mode="auto"
+      data-color-mode={
+        resolvedTheme === "dark"
+          ? "dark"
+          : resolvedTheme === "light"
+            ? "light"
+            : "auto"
+      }
       className={`w-full rounded-xl border transition-colors overflow-hidden ${
         error
           ? "border-red-500 ring-1 ring-red-500"
@@ -39,11 +65,22 @@ export function MarkdownEditor({
       }`}
     >
       <MDEditor
+        ref={(editor: RefMDEditor | null) =>
+          inputRef?.(editor?.textarea ?? null)
+        }
         value={value}
         onChange={onChange}
         height={height}
         preview="edit"
         textareaProps={{
+          id,
+          name,
+          disabled,
+          required,
+          maxLength,
+          onBlur,
+          "aria-invalid": error,
+          "aria-describedby": ariaDescribedBy,
           placeholder,
           style: {
             fontSize: "18px",

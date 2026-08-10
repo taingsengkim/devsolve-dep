@@ -1,524 +1,1143 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { getProblemDetailById } from "@/lib/types/dicussion/problemDetailMockdata";
-import { SolutionCard } from "@/components/discussions/SolutionCard";
-import { ProblemDetail , SolutionItem  } from "@/lib/types/dicussion/types";
+import { motion } from "motion/react";
+import { toast } from "sonner";
 import {
+  AlertCircle,
+  AlertTriangle,
   ArrowLeft,
-  ChevronUp,
-  ChevronDown,
+  ArrowRight,
   Bookmark,
-  Share2,
-  Flag,
-  Plus,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   CircleDot,
-
-  ExternalLink,
-  Terminal,
-  LayoutTemplate,
+  Clock,
+  Download,
+  Eye,
+  FolderGit2,
+  ListOrdered,
   MessageSquare,
+  Pencil,
+  Plus,
+  RotateCcw,
   Send,
-  Code2,
-  Network,
-  Cpu,
+  Server,
+  Target,
+  TerminalSquare,
+  Wrench,
+  XCircle,
 } from "lucide-react";
 
-import { motion } from "motion/react";
+import { SolutionCard } from "@/components/discussions/SolutionCard";
+import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
+import {
+  useGetProblemByIdQuery,
+  useRemoveAcceptedSolutionMutation,
+  useSetAcceptedSolutionMutation,
+  type ProblemResponse,
+  type ProblemSeverity,
+} from "@/lib/redux/services/problemsApi";
+import {
+  useGetMyProfileQuery,
+  useGetSolutionsByProblemQuery,
+} from "@/lib/redux/services/solutionsApi";
+import {
+  useGetVoteSummaryQuery,
+  useRemoveVoteMutation,
+  useSetVoteMutation,
+} from "@/lib/redux/services/votesApi";
+import {
+  useGetBookmarkStatusQuery,
+  useAddBookmarkMutation,
+  useRemoveBookmarkMutation,
+} from "@/lib/redux/services/bookmarksApi";
+import {
+  useCreateCommentMutation,
+  useGetCommentsQuery,
+} from "@/lib/redux/services/commentsApi";
+import {
+  PROBLEM_TYPE_LABELS,
+  SDLC_LABELS,
+  SEVERITY_LABELS,
+} from "@/lib/validations/problem";
+import {
+  authorNameOf,
+  formatBytes,
+  formatDate,
+  initialsOf,
+  messageOf,
+} from "@/lib/discussions/format";
+import {
+  MY_COMMUNITY_HREF,
+  useMySolutionStatus,
+  type MySolutionStatus,
+} from "@/hooks/useMySolutionStatus";
+
+/**
+ * One problem, read from the API — `GET /api/v1/problems/{id}` for the post,
+ * `/problems/{id}/solutions` for the answers, `/comments` for the thread, and
+ * the vote and bookmark endpoints for the two buttons.
+ *
+ * A problem carries far more than a title and a description: what was expected
+ * against what happened, the steps to reproduce it, the environment it broke
+ * in, what the author already tried. Each is rendered only when present, so a
+ * one-line question stays one line and a fully filled report reads as a report.
+ *
+ * Only problems reach this route: a showcase card links to `/showcases/{id}`,
+ * which has its own page. That is why nothing here branches on the two.
+ */
+
+const CARD =
+  "rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs";
+
+const SOLUTION_PAGE_SIZE = 50;
+const COMMENT_PAGE_SIZE = 50;
+
+const SEVERITY_STYLES: Record<ProblemSeverity, string> = {
+  LOW: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  MEDIUM:
+    "bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300",
+  HIGH: "bg-orange-100 text-orange-800 dark:bg-orange-500/10 dark:text-orange-300",
+  CRITICAL: "bg-rose-100 text-rose-800 dark:bg-rose-500/10 dark:text-rose-300",
+};
 
 export default function ProblemDetailPage() {
   const params = useParams();
   const problemId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+  const id = problemId ?? "";
 
-  const problem: ProblemDetail | undefined = getProblemDetailById(problemId || "1");
+  const {
+    data: problem,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useGetProblemByIdQuery(id, { skip: !id });
 
-  const [problemVotes, setProblemVotes] = useState<number>(() => problem?.votes ?? 0);
-  const [hasVotedProblem, setHasVotedProblem] = useState(false);
   const [sortOrder, setSortOrder] = useState<"votes" | "newest">("votes");
-  const [showcaseTab, setShowcaseTab] = useState<"overview" | "diagram" | "code">("overview");
 
-  // Get primary solution data if available (e.g. for step-by-step or diagram)
-  const primarySolution = problem?.solutions?.[0];
+  if (isLoading) return <DetailSkeleton />;
 
-  const [showcaseComments, setShowcaseComments] = useState<
-    Array<{ id: string; author: { name: string; avatarUrl: string }; content: string; createdAt: string }>
-  >(() => {
-    if (primarySolution?.comments && primarySolution.comments.length > 0) {
-      return primarySolution.comments;
-    }
-    return [
-      {
-        id: "c-1",
-        author: {
-          name: "Alex Dev",
-          avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Alex",
-        },
-        content: "Great breakdown! The architecture layout really helps clarify the data flow.",
-        createdAt: "2 hours ago",
-      },
-    ];
-  });
-  const [newShowcaseComment, setNewShowcaseComment] = useState("");
+  if (isError || !problem) {
+    const status =
+      typeof error === "object" && error !== null && "status" in error
+        ? (error as { status?: number }).status
+        : undefined;
 
-  if (!problem) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 flex flex-col items-center justify-center text-slate-800 dark:text-slate-100">
-        <h1 className="text-2xl font-bold mb-2">Post Not Found</h1>
-        <p className="text-slate-500 dark:text-slate-400 mb-4">
-          The requested discussion or post does not exist.
-        </p>
-        <Link
-          href="/community"
-          className="inline-flex items-center space-x-2 text-sm font-semibold text-blue-600 hover:underline"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Back to Community</span>
-        </Link>
-      </div>
+      <NotFound
+        title={status === 404 ? "Problem not found" : "Something went wrong"}
+        body={
+          status === 404
+            ? "It may have been removed, or the link may be wrong."
+            : "This problem could not be loaded right now."
+        }
+        onRetry={status === 404 ? undefined : () => void refetch()}
+      />
     );
   }
 
-  const handleVoteProblem = () => {
-    if (hasVotedProblem) {
-      setProblemVotes((v) => v - 1);
-      setHasVotedProblem(false);
-    } else {
-      setProblemVotes((v) => v + 1);
-      setHasVotedProblem(true);
-    }
-  };
+  return (
+    <Loaded
+      id={id}
+      problem={problem}
+      sortOrder={sortOrder}
+      onSortChange={setSortOrder}
+    />
+  );
+}
 
-  const handleAddShowcaseComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newShowcaseComment.trim()) return;
-    setShowcaseComments([
-      ...showcaseComments,
-      {
-        id: `sc-${Date.now()}`,
-        author: {
-          name: "Lor Vengroth",
-          avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Lor",
-        },
-        content: newShowcaseComment,
-        createdAt: "Just now",
-      },
-    ]);
-    setNewShowcaseComment("");
-  };
+/** Split out so the hooks below only run once a problem is actually loaded. */
+function Loaded({
+  id,
+  problem,
+  sortOrder,
+  onSortChange,
+}: {
+  id: string;
+  problem: ProblemResponse;
+  sortOrder: "votes" | "newest";
+  onSortChange: (order: "votes" | "newest") => void;
+}) {
+  const { data: solutionPage, isLoading: isLoadingSolutions } =
+    useGetSolutionsByProblemQuery({
+      problemId: id,
+      pageSize: SOLUTION_PAGE_SIZE,
+    });
 
-  const sortedSolutions: SolutionItem[] = [...(problem.solutions || [])].sort((a, b) => {
-    if (sortOrder === "votes") {
-      return b.votes - a.votes;
-    }
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  /* Who is reading. A signed-out visitor gets a 401 here, which is the answer
+     rather than an error: they cannot post either way. */
+  const { data: me } = useGetMyProfileQuery();
+  const isSignedIn = Boolean(me?.id);
+  const isOwnProblem = Boolean(me?.id && problem.author?.id === me.id);
+  const canAnswer = isSignedIn && !isOwnProblem;
+  /* The backend decides who may accept; `canAcceptSolution` is that decision.
+     Ownership is the fallback for a response that predates the field. */
+  const canAccept = problem.canAcceptSolution ?? isOwnProblem;
+
+  const { data: votes } = useGetVoteSummaryQuery({
+    type: "PROBLEM",
+    targetId: id,
   });
+  const [setVote, { isLoading: isSettingVote }] = useSetVoteMutation();
+  const [removeVote, { isLoading: isRemovingVote }] = useRemoveVoteMutation();
+  const isVoting = isSettingVote || isRemovingVote;
+  const hasUpvoted = votes?.currentUserVote === 1;
+  const hasDownvoted = votes?.currentUserVote === -1;
+  const score = votes?.score ?? problem.voteScore ?? 0;
 
-  const isShowcase = problem.category === "Showcase";
+  const { data: bookmarkStatus } = useGetBookmarkStatusQuery({
+    type: "PROBLEM",
+    targetId: id,
+  });
+  const [addBookmark, { isLoading: isAddingBookmark }] =
+    useAddBookmarkMutation();
+  const [removeBookmark, { isLoading: isRemovingBookmark }] =
+    useRemoveBookmarkMutation();
+  const isBookmarked = bookmarkStatus ?? problem.isBookmarkedByViewer ?? false;
+
+  const [acceptSolution, { isLoading: isSettingAccepted }] =
+    useSetAcceptedSolutionMutation();
+  const [unacceptSolution, { isLoading: isRemovingAccepted }] =
+    useRemoveAcceptedSolutionMutation();
+  const isAccepting = isSettingAccepted || isRemovingAccepted;
+  const isBookmarking = isAddingBookmark || isRemovingBookmark;
+
+  /* The problem owns the list of accepted answers, so it is the authority when
+     it and a solution's own `isAccepted` disagree — which they do between a
+     click and the refetch that follows it. */
+  const acceptedIds = useMemo(
+    () => new Set(problem.acceptedSolutionIds ?? []),
+    [problem.acceptedSolutionIds],
+  );
+
+  const { data: commentPage } = useGetCommentsQuery({
+    commentableType: "PROBLEM",
+    commentableId: id,
+    pageSize: COMMENT_PAGE_SIZE,
+  });
+  const [createComment, { isLoading: isPostingComment }] =
+    useCreateCommentMutation();
+  const [draft, setDraft] = useState("");
+  const [commentError, setCommentError] = useState<string | null>(null);
+
+  const isAcceptedSolution = (solutionId: string, flag?: boolean) =>
+    acceptedIds.size > 0 ? acceptedIds.has(solutionId) : Boolean(flag);
+
+  /* What the reader has already posted here. Only worth asking once they are
+     signed in — a visitor has nothing of their own to be told about. */
+  const { forProblem } = useMySolutionStatus({ skip: !isSignedIn });
+  const myAnswers = forProblem(id);
+  /* An approved answer is already in the list below under its own card, so
+     repeating it here would say the same thing twice. */
+  const unpublished = myAnswers.filter((mine) => mine.review !== "APPROVED");
+
+  const solutions = useMemo(() => {
+    const list = [...(solutionPage?.content ?? [])];
+    const newest = (a: (typeof list)[number], b: (typeof list)[number]) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+
+    if (sortOrder === "newest") return list.sort(newest);
+
+    /* Accepted first, then by score — the order someone scanning for the
+       answer wants. Several may be accepted, so this groups rather than
+       lifting a single winner. */
+    const accepted = (solution: (typeof list)[number]) =>
+      Number(
+        acceptedIds.size > 0
+          ? acceptedIds.has(solution.id)
+          : Boolean(solution.isAccepted),
+      );
+
+    return list.sort(
+      (a, b) =>
+        accepted(b) - accepted(a) ||
+        (b.voteScore ?? 0) - (a.voteScore ?? 0) ||
+        newest(a, b),
+    );
+  }, [solutionPage, sortOrder, acceptedIds]);
+
+  const comments = commentPage?.content ?? [];
+  const attachments = problem.attachments ?? [];
+  const tags = problem.tags ?? [];
+  const technologies = problem.technologies ?? [];
+  const environment = (problem.environment ?? []).filter(
+    (entry) => entry.technology,
+  );
+  const reproductionSteps = (problem.reproductionSteps ?? []).filter(Boolean);
+  const isResolved = problem.status === "RESOLVED";
+  const answerCount = solutionPage?.totalElements ?? problem.solutionCount ?? 0;
+
+  const onVote = async (value: 1 | -1) => {
+    if (isVoting) return;
+    const target = { type: "PROBLEM" as const, targetId: id };
+    if (votes?.currentUserVote === value) await removeVote(target);
+    else await setVote({ ...target, value });
+  };
+
+  const onBookmark = async () => {
+    if (isBookmarking) return;
+    if (isBookmarked) {
+      await removeBookmark({ type: "PROBLEM", targetId: id });
+    } else {
+      await addBookmark({ type: "PROBLEM", targetId: id });
+    }
+  };
+
+  const onAccept = async (solutionId: string) => {
+    try {
+      await acceptSolution({ problemId: id, solutionId }).unwrap();
+      toast.success("Answer accepted", {
+        description: "It now sits at the top of this problem.",
+      });
+    } catch (caught) {
+      toast.error(messageOf(caught, "That answer could not be accepted."));
+    }
+  };
+
+  const onUnaccept = async (solutionId: string) => {
+    try {
+      await unacceptSolution({ problemId: id, solutionId }).unwrap();
+      toast.success("Acceptance withdrawn");
+    } catch (caught) {
+      toast.error(messageOf(caught, "That answer could not be unaccepted."));
+    }
+  };
+
+  const onComment = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const content = draft.trim();
+    if (!content || isPostingComment) return;
+
+    try {
+      await createComment({
+        commentableType: "PROBLEM",
+        commentableId: id,
+        content,
+      }).unwrap();
+      setDraft("");
+      setCommentError(null);
+    } catch (caught) {
+      setCommentError(messageOf(caught, "Your comment could not be posted."));
+    }
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans pb-16"
+      className="min-h-screen bg-slate-50 pb-16 font-sans text-slate-800 dark:bg-slate-950 dark:text-slate-100"
     >
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <Link
           href="/community"
-          className="inline-flex items-center space-x-2 text-base font-semibold text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 mb-6 transition-colors"
+          className="mb-5 inline-flex items-center gap-2 text-base font-semibold text-slate-500 transition-colors hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
         >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Back to Community</span>
+          <ArrowLeft aria-hidden="true" className="size-4" />
+          Back to Community
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3 space-y-6">
-            {/* Main Title Header Card */}
-            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs">
-              <div className="flex items-center space-x-2 mb-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8 xl:grid-cols-4">
+          <div className="min-w-0 space-y-6 lg:col-span-2 xl:col-span-3">
+            {/* ── The problem ── */}
+            <section className={`${CARD} p-4 sm:p-6`}>
+              <div className="mb-3 flex flex-wrap items-center gap-2">
                 <span
-                  className={`inline-flex items-center space-x-1.5 rounded-full px-3 py-1 text-xs font-bold ${
-                    isShowcase
-                      ? "bg-blue-100 text-blue-700"
-                      : problem.status === "Solved"
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-blue-100 text-blue-700"
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
+                    isResolved
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+                      : "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300"
                   }`}
                 >
-                  {isShowcase ? (
-                    <LayoutTemplate className="h-3.5 w-3.5" />
-                  ) : problem.status === "Solved" ? (
-                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  {isResolved ? (
+                    <CheckCircle2 aria-hidden="true" className="size-3.5" />
                   ) : (
-                    <CircleDot className="h-3.5 w-3.5" />
+                    <CircleDot aria-hidden="true" className="size-3.5" />
                   )}
-                  <span>{problem.category}</span>
+                  {isResolved ? "Solved" : "Open"}
                 </span>
 
+                {problem.problemType && (
+                  <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    {PROBLEM_TYPE_LABELS[problem.problemType]}
+                  </span>
+                )}
+                {problem.severity && (
+                  <span
+                    className={`rounded-md px-2.5 py-1 text-xs font-bold ${SEVERITY_STYLES[problem.severity]}`}
+                  >
+                    {SEVERITY_LABELS[problem.severity]}
+                  </span>
+                )}
                 {problem.sdlcPhase && (
-                  <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                    {problem.sdlcPhase}
+                  <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    {SDLC_LABELS[problem.sdlcPhase]}
+                  </span>
+                )}
+                {problem.category?.name && (
+                  <span className="rounded-md border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                    {problem.category.name}
                   </span>
                 )}
               </div>
 
               <div className="flex items-start justify-between gap-4">
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
-                  {problem.title}
+                <h1 className="text-xl font-extrabold leading-snug tracking-tight text-slate-900 sm:text-2xl lg:text-3xl dark:text-slate-100">
+                  {problem.title ?? "Untitled problem"}
                 </h1>
 
-                <div className="flex items-center space-x-1 rounded-xl border border-slate-200 bg-slate-50 p-1 shrink-0">
+                {/* Vote rail — vertical, so it reads the same as the one on
+                    every answer below it. */}
+                <div className="flex shrink-0 flex-col items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800">
                   <button
-                    onClick={handleVoteProblem}
-                    className={`rounded-lg p-1.5 transition-colors ${
-                      hasVotedProblem
+                    type="button"
+                    onClick={() => void onVote(1)}
+                    disabled={isVoting}
+                    aria-pressed={hasUpvoted}
+                    aria-label={hasUpvoted ? "Remove upvote" : "Upvote"}
+                    className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
+                      hasUpvoted
                         ? "bg-blue-600 text-white"
-                        : "text-slate-500 hover:bg-slate-200"
+                        : "text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700"
                     }`}
                   >
-                    <ChevronUp className="h-4 w-4" />
+                    <ChevronUp aria-hidden="true" className="size-4" />
                   </button>
-                  <span className="text-sm font-bold text-slate-800 px-1.5 tabular-nums">
-                    {problemVotes}
+                  <span className="px-1.5 text-sm font-bold tabular-nums text-slate-800 dark:text-slate-100">
+                    {score}
                   </span>
-                  <button className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-200">
-                    <ChevronDown className="h-4 w-4" />
+                  <button
+                    type="button"
+                    onClick={() => void onVote(-1)}
+                    disabled={isVoting}
+                    aria-pressed={hasDownvoted}
+                    aria-label={hasDownvoted ? "Remove downvote" : "Downvote"}
+                    className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
+                      hasDownvoted
+                        ? "bg-rose-600 text-white"
+                        : "text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    }`}
+                  >
+                    <ChevronDown aria-hidden="true" className="size-4" />
                   </button>
                 </div>
               </div>
 
-              <div className="mt-3.5 flex flex-wrap gap-1.5">
-                {problem.tags.map((tag, i) => (
-                  <span
-                    key={i}
-                    className={`rounded-lg px-2.5 py-1 text-xs font-mono font-medium ${
-                      isShowcase
-                        ? "bg-blue-50 border border-blue-200/60 text-blue-800"
-                        : "bg-slate-100 border border-slate-200/60 text-slate-700"
-                    }`}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              <div className="mt-6 border-t border-slate-100 pt-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                  {isShowcase ? "Project Overview" : "Description"}
-                </h3>
-                <p className="text-base text-slate-700 leading-relaxed whitespace-pre-wrap">
-                  {problem.description}
-                </p>
-              </div>
-
-              <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4 text-sm">
-                <div className="flex items-center space-x-3">
-                  <button className="flex items-center space-x-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 text-slate-600 hover:bg-slate-50 font-medium">
-                    <Bookmark className="h-4 w-4" />
-                    <span>Bookmark</span>
-                  </button>
-                  <button className="flex items-center space-x-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 text-slate-600 hover:bg-slate-50 font-medium">
-                    <Share2 className="h-4 w-4" />
-                    <span>Share</span>
-                  </button>
-                  <button className="p-2 text-slate-400 hover:text-slate-600 rounded-lg">
-                    <Flag className="h-4 w-4" />
-                  </button>
+              {(tags.length > 0 || technologies.length > 0) && (
+                <div className="mt-3.5 flex flex-wrap gap-1.5">
+                  {technologies.map((tech, i) => (
+                    <span
+                      key={tech.id ?? `${tech.name}-${i}`}
+                      className="rounded-lg border border-slate-200/60 bg-slate-100 px-2.5 py-1 font-mono text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                    >
+                      {tech.name}
+                      {tech.version ? ` ${tech.version}` : ""}
+                    </span>
+                  ))}
+                  {tags.map((tag, i) => (
+                    <span
+                      key={tag.id ?? `${tag.name}-${i}`}
+                      className="rounded-lg border border-blue-200/60 bg-blue-50 px-2.5 py-1 font-mono text-xs font-medium text-blue-800 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300"
+                    >
+                      #{tag.name}
+                    </span>
+                  ))}
                 </div>
-              </div>
-            </div>
+              )}
 
-            {/* SHOWCASE VIEW vs REGULAR PROBLEM VIEW */}
-            {isShowcase ? (
-              <div className="space-y-6">
-                {/* Navigation Tabs for Showcase Features */}
-                <div className="flex items-center space-x-2 border-b border-slate-200 pb-2">
-                  <button
-                    onClick={() => setShowcaseTab("overview")}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
-                      showcaseTab === "overview"
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <Terminal className="h-4 w-4" />
-                    <span>Steps & Implementation</span>
-                  </button>
-                  <button
-                    onClick={() => setShowcaseTab("diagram")}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
-                      showcaseTab === "diagram"
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <Network className="h-4 w-4" />
-                    <span>Architecture Diagram</span>
-                  </button>
-                  <button
-                    onClick={() => setShowcaseTab("code")}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
-                      showcaseTab === "code"
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <Code2 className="h-4 w-4" />
-                    <span>Key Code Snippet</span>
-                  </button>
-                </div>
-
-                {/* Tab 1: Steps & Implementation */}
-                {showcaseTab === "overview" && (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-                    <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-                      <Terminal className="h-4 w-4 text-blue-600" />
-                      <span>Implementation Flow</span>
-                    </h3>
-                    <div className="space-y-3">
-                      {(primarySolution?.stepByStep || [
-                        "Initialize project repository and configure Next.js App Router setup with Tailwind CSS.",
-                        "Set up OAuth 2.0 Client credentials and configure PKCE code verifier and challenge generators.",
-                        "Build interactive UI state machine to visualize authorization code swaps in real-time.",
-                        "Add defense-in-depth security policies: HttpOnly cookies and strict Referrer-Policy headers.",
-                      ]).map((step, idx) => (
-                        <div
-                          key={idx}
-                          className="flex gap-3 items-start bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm"
-                        >
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-xs">
-                            {idx + 1}
-                          </span>
-                          <p className="text-slate-700 leading-relaxed">{step}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              <Section title="Description">
+                {problem.description ? (
+                  <MarkdownView source={problem.description} />
+                ) : (
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    This problem was posted without a description.
+                  </p>
                 )}
+              </Section>
 
-                {/* Tab 2: Architecture Diagram */}
-                {showcaseTab === "diagram" && (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-                    <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center space-x-2">
-                      <Network className="h-4 w-4 text-blue-600" />
-                      <span>Security Architecture Sequence Flow</span>
-                    </h3>
-                    <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-6 font-mono text-sm text-slate-800 leading-relaxed overflow-x-auto">
-                      <pre className="text-slate-700">
-{` +------------------+           +--------------------+           +----------------------+
- | Client Browser   |           |  Auth Server       |           |  Resource API        |
- +------------------+           +--------------------+           +----------------------+
-          |                               |                                |
-          | 1. Generate code_verifier     |                                |
-          |    and code_challenge (S256)  |                                |
-          |------------------------------>|                                |
-          |    Get Authorization Code     |                                |
-          |                               |                                |
-          | 2. Exchange Code + Verifier   |                                |
-          |------------------------------>|                                |
-          |    Validate SHA256 match      |                                |
-          |<------------------------------|                                |
-          |    Return Access Token        |                                |
-          |                               |                                |
-          | 3. Authenticated API Call (Bearer Token)                       |
-          |--------------------------------------------------------------->|
-          |                                                                |`}
-                      </pre>
-                    </div>
+              {/* ── Expected against actual, side by side where there is room ── */}
+              {(problem.expectedBehavior || problem.actualBehavior) && (
+                <Section
+                  title="Expected vs actual"
+                  icon={<Target aria-hidden="true" className="size-3.5" />}
+                >
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {problem.expectedBehavior && (
+                      <div className="rounded-xl border border-emerald-200/70 bg-emerald-50/60 p-4 dark:border-emerald-500/25 dark:bg-emerald-500/5">
+                        <h3 className="mb-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                          Expected
+                        </h3>
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                          {problem.expectedBehavior}
+                        </p>
+                      </div>
+                    )}
+                    {problem.actualBehavior && (
+                      <div className="rounded-xl border border-rose-200/70 bg-rose-50/60 p-4 dark:border-rose-500/25 dark:bg-rose-500/5">
+                        <h3 className="mb-1.5 text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">
+                          Actual
+                        </h3>
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                          {problem.actualBehavior}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
+                </Section>
+              )}
 
-                {/* Tab 3: Code Snippet */}
-                {showcaseTab === "code" && (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-                    <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center space-x-2">
-                      <Code2 className="h-4 w-4 text-blue-600" />
-                      <span>Core Logic / Implementation Code</span>
-                    </h3>
-                    <pre className="rounded-xl bg-slate-900 p-4 text-sm font-mono text-blue-300 overflow-x-auto leading-relaxed">
-                      {problem.codeSnippet || primarySolution?.codeFix || `// Core PKCE Challenge logic`}
-                    </pre>
-                  </div>
-                )}
+              {reproductionSteps.length > 0 && (
+                <Section
+                  title="Steps to reproduce"
+                  icon={<ListOrdered aria-hidden="true" className="size-3.5" />}
+                >
+                  <ol className="space-y-2">
+                    {reproductionSteps.map((step, i) => (
+                      <li key={i} className="flex gap-3">
+                        <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[11px] font-bold tabular-nums text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                          {i + 1}
+                        </span>
+                        <p className="min-w-0 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                          {step}
+                        </p>
+                      </li>
+                    ))}
+                  </ol>
+                </Section>
+              )}
 
-                {/* Comments Thread for Showcase */}
-                <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-                  <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center space-x-2">
-                    <MessageSquare className="h-4 w-4 text-slate-500" />
-                    <span>Comments ({showcaseComments.length})</span>
-                  </h3>
+              {problem.errorMessage && (
+                <Section
+                  title="Error output"
+                  icon={
+                    <TerminalSquare aria-hidden="true" className="size-3.5" />
+                  }
+                >
+                  {/* The one place a horizontal scrollbar is right: wrapping a
+                      stack trace destroys the thing being read. */}
+                  <pre className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900 p-4 text-xs leading-relaxed text-slate-100 dark:border-slate-700 dark:bg-slate-950">
+                    <code>{problem.errorMessage}</code>
+                  </pre>
+                </Section>
+              )}
 
-                  <div className="space-y-3 mb-4">
-                    {showcaseComments.map((comment) => (
-                      <div
-                        key={comment.id}
-                        className="text-sm text-slate-600 flex items-start space-x-3 bg-slate-50 p-4 rounded-xl border border-slate-100"
+              {problem.attemptsTried && (
+                <Section
+                  title="Already tried"
+                  icon={<Wrench aria-hidden="true" className="size-3.5" />}
+                >
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                    {problem.attemptsTried}
+                  </p>
+                </Section>
+              )}
+
+              {environment.length > 0 && (
+                <Section
+                  title="Environment"
+                  icon={<Server aria-hidden="true" className="size-3.5" />}
+                >
+                  <div className="flex flex-wrap gap-1.5">
+                    {environment.map((entry, i) => (
+                      <span
+                        key={`${entry.technology}-${i}`}
+                        className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                       >
-                        <img
-                          src={comment.author.avatarUrl}
-                          alt={comment.author.name}
-                          className="h-8 w-8 rounded-full bg-slate-200"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-slate-800">
-                              {comment.author.name}
-                            </span>
-                            <span className="text-xs text-slate-400">
-                              {comment.createdAt}
-                            </span>
-                          </div>
-                          <p className="text-slate-700 leading-relaxed">
-                            {comment.content}
+                        {entry.technology}
+                        {entry.version ? ` ${entry.version}` : ""}
+                      </span>
+                    ))}
+                  </div>
+                </Section>
+              )}
+
+              {attachments.length > 0 && (
+                <Section title="Attachments">
+                  <div className="space-y-2">
+                    {attachments.map((file, i) => (
+                      <div
+                        key={file.id ?? `${file.originalFileName}-${i}`}
+                        className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-800/60"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
+                            {file.originalFileName ?? "Unnamed file"}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {[file.mimeType, formatBytes(file.sizeBytes)]
+                              .filter(Boolean)
+                              .join(" · ") || "—"}
                           </p>
                         </div>
+                        {file.downloadUrl?.startsWith("https://") && (
+                          <a
+                            href={file.downloadUrl}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                          >
+                            <Download aria-hidden="true" className="size-3.5" />
+                            Download
+                          </a>
+                        )}
                       </div>
                     ))}
                   </div>
+                </Section>
+              )}
 
-                  <form onSubmit={handleAddShowcaseComment} className="flex items-center space-x-2">
-                    <input
-                      type="text"
-                      value={newShowcaseComment}
-                      onChange={(e) => setNewShowcaseComment(e.target.value)}
-                      placeholder="Share feedback on this showcase..."
-                      className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
-                    />
-                    <button
-                      type="submit"
-                      className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-xs"
-                    >
-                      <Send className="h-4 w-4" />
-                    </button>
-                  </form>
-                </div>
+              <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4 text-sm dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => void onBookmark()}
+                  disabled={isBookmarking}
+                  aria-pressed={isBookmarked}
+                  className={`flex cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 py-1.5 font-medium transition disabled:opacity-50 ${
+                    isBookmarked
+                      ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300"
+                      : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  <Bookmark
+                    className={`size-4 ${isBookmarked ? "fill-current" : ""}`}
+                  />
+                  {isBookmarked ? "Bookmarked" : "Bookmark"}
+                </button>
+
+                {/* Whether this problem may be edited is the backend's call,
+                    carried on the response — a published problem with answers
+                    under it is not the same as an untouched draft. */}
+                {problem.canEdit && (
+                  <Link
+                    href={`/community/${id}/edit`}
+                    className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    <Pencil className="size-4" />
+                    Edit
+                  </Link>
+                )}
+
+                {problem.repositoryUrl?.startsWith("https://") && (
+                  <a
+                    href={problem.repositoryUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    <FolderGit2 aria-hidden="true" className="size-4" />
+                    Repository
+                  </a>
+                )}
               </div>
-            ) : (
-              /* REGULAR PROBLEM VIEW */
-              <>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-base font-bold text-slate-800">
-                      {problem.solutions.length} Solutions
-                    </span>
-                    <div className="flex items-center bg-slate-200/60 p-0.5 rounded-lg text-xs font-bold">
-                      <button
-                        onClick={() => setSortOrder("votes")}
-                        className={`px-3 py-1 rounded-md transition-colors ${
-                          sortOrder === "votes"
-                            ? "bg-white text-slate-900 shadow-xs"
-                            : "text-slate-500"
-                        }`}
-                      >
-                        votes
-                      </button>
-                      <button
-                        onClick={() => setSortOrder("newest")}
-                        className={`px-3 py-1 rounded-md transition-colors ${
-                          sortOrder === "newest"
-                            ? "bg-white text-slate-900 shadow-xs"
-                            : "text-slate-500"
-                        }`}
-                      >
-                        newest
-                      </button>
-                    </div>
-                  </div>
+            </section>
 
-                  <button className="flex items-center space-x-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-emerald-700 transition-colors">
-                    <Plus className="h-4 w-4" />
-                    <span>Your Solution</span>
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  {sortedSolutions.map((sol, index) => (
-                    <SolutionCard key={sol.id} solution={sol} index={index} />
+            {/* ── Answers ── */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">
+                  {answerCount} {answerCount === 1 ? "Solution" : "Solutions"}
+                </h2>
+                <div className="flex items-center rounded-lg bg-slate-200/60 p-0.5 text-xs font-bold dark:bg-slate-800">
+                  {(["votes", "newest"] as const).map((order) => (
+                    <button
+                      key={order}
+                      type="button"
+                      onClick={() => onSortChange(order)}
+                      aria-pressed={sortOrder === order}
+                      className={`cursor-pointer rounded-md px-3 py-1 transition-colors ${
+                        sortOrder === order
+                          ? "bg-white text-slate-900 shadow-xs dark:bg-slate-900 dark:text-slate-100"
+                          : "text-slate-500 dark:text-slate-400"
+                      }`}
+                    >
+                      {order === "votes" ? "top" : "newest"}
+                    </button>
                   ))}
                 </div>
-              </>
-            )}
-          </div>
+              </div>
 
-          {/* Right Sidebar */}
-          <div className="space-y-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3.5 text-sm">
-              <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2 uppercase tracking-wider text-xs text-slate-400">
-                {isShowcase ? "Showcase Metadata" : "Problem Details"}
-              </h3>
-              {problem.sdlcPhase && (
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 text-xs">SDLC Phase</span>
-                  <span className="font-semibold text-slate-800 text-sm">
-                    {problem.sdlcPhase}
-                  </span>
+              {canAnswer && (
+                <Link
+                  href={`/community/${id}/solutions/create`}
+                  className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-2xs transition-colors hover:bg-emerald-700"
+                >
+                  <Plus aria-hidden="true" className="size-4" />
+                  {myAnswers.length > 0 ? "Post another" : "Post your solution"}
+                </Link>
+              )}
+            </div>
+
+            {/* ── The reader's own answers on this problem ──
+                A posted answer is held for review, so it is absent from the
+                list below until a moderator approves it. Without this the
+                author sees no trace of what they just wrote and assumes it
+                failed to send. */}
+            {unpublished.map((mine) => (
+              <MyAnswerNotice key={mine.solutionId} answer={mine} problemId={id} />
+            ))}
+
+            {/* Why the composer is absent, when it is. Silence would read as a
+                bug to whoever came here to answer. */}
+            {isOwnProblem && (
+              <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+                This is your problem, so you cannot answer it yourself. You can
+                accept an answer once someone posts one.
+              </p>
+            )}
+            {!isSignedIn && (
+              <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+                Sign in to post a solution to this problem.
+              </p>
+            )}
+
+            {isLoadingSolutions ? (
+              <div className="animate-pulse space-y-4">
+                {[0, 1].map((i) => (
+                  <div
+                    key={i}
+                    className="h-32 rounded-2xl bg-slate-200 dark:bg-slate-800"
+                  />
+                ))}
+              </div>
+            ) : solutions.length === 0 ? (
+              <p
+                className={`${CARD} p-8 text-center text-sm text-slate-500 dark:text-slate-400`}
+              >
+                {canAnswer
+                  ? "No answers yet. Be the first to post one."
+                  : "No answers yet."}
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {solutions.map((solution, index) => (
+                  <SolutionCard
+                    key={solution.id}
+                    solution={solution}
+                    index={index}
+                    canAccept={canAccept}
+                    isMine={Boolean(me?.id && solution.author?.id === me.id)}
+                    accepted={isAcceptedSolution(
+                      solution.id,
+                      solution.isAccepted,
+                    )}
+                    onAccept={(solutionId) => void onAccept(solutionId)}
+                    onUnaccept={(solutionId) => void onUnaccept(solutionId)}
+                    isAccepting={isAccepting}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* ── Comments ── */}
+            <section className={`${CARD} p-4 sm:p-6`}>
+              <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-slate-900 dark:text-slate-100">
+                <MessageSquare
+                  aria-hidden="true"
+                  className="size-4 text-slate-500"
+                />
+                Comments ({commentPage?.totalElements ?? comments.length})
+              </h2>
+
+              {comments.length > 0 && (
+                <div className="mb-4 space-y-3">
+                  {comments.map((comment) => (
+                    <div
+                      key={comment.id}
+                      className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-800/60"
+                    >
+                      {comment.authorAvatarUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={comment.authorAvatarUrl}
+                          alt=""
+                          className="size-8 shrink-0 rounded-full bg-slate-200 object-cover dark:bg-slate-700"
+                        />
+                      ) : (
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                          {initialsOf(comment.authorName || "?")}
+                        </span>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1 flex items-center justify-between gap-3">
+                          <span className="truncate font-bold text-slate-800 dark:text-slate-100">
+                            {comment.authorName || "Unknown"}
+                          </span>
+                          <span className="shrink-0 text-xs text-slate-400">
+                            {formatDate(comment.createdAt, "")}
+                          </span>
+                        </div>
+                        <p className="whitespace-pre-wrap wrap-break-word leading-relaxed text-slate-700 dark:text-slate-300">
+                          {comment.content}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 text-xs">Category</span>
-                <span className="font-semibold text-slate-800 text-sm">
-                  {problem.category}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 text-xs">Views</span>
-                <span className="font-semibold text-slate-800 text-sm">
-                  {problem.viewsCount.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 text-xs">Posted</span>
-                <span className="font-semibold text-slate-800 text-sm">
-                  {problem.postedDate}
-                </span>
-              </div>
-            </div>
 
-            {isShowcase && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs text-sm space-y-3">
-                <h3 className="font-bold text-slate-900 uppercase tracking-wider text-xs text-slate-400">
-                  Project Links
-                </h3>
-                <a
-                  href="https://github.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
-                >
-                  <div className="flex items-center space-x-2 font-semibold text-slate-700 text-sm">
-                    <span>GitHub Repository</span>
-                  </div>
-                  <ExternalLink className="h-4 w-4 text-slate-400" />
-                </a>
-              </div>
-            )}
-
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs text-sm">
-              <h3 className="font-bold text-slate-900 mb-3 uppercase tracking-wider text-xs text-slate-400">
-                Posted By
-              </h3>
-              <div className="flex items-center space-x-3">
-                <img
-                  src={problem.postedBy.avatarUrl}
-                  alt={problem.postedBy.name}
-                  className="h-10 w-10 rounded-full bg-slate-100 border border-slate-200"
+              <form onSubmit={onComment} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={draft}
+                  onChange={(event) => {
+                    setDraft(event.target.value);
+                    if (commentError) setCommentError(null);
+                  }}
+                  maxLength={5000}
+                  aria-label="Write a comment"
+                  placeholder="Add a comment…"
+                  className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                 />
-                <div>
-                  <p className="font-bold text-slate-900 text-base">
-                    {problem.postedBy.name}
+                <button
+                  type="submit"
+                  disabled={isPostingComment || !draft.trim()}
+                  aria-label="Post comment"
+                  className="shrink-0 cursor-pointer rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-blue-700 disabled:opacity-50"
+                >
+                  <Send aria-hidden="true" className="size-4" />
+                </button>
+              </form>
+              {commentError && (
+                <p
+                  className="mt-2 text-sm font-medium text-rose-600 dark:text-rose-400"
+                  role="alert"
+                >
+                  {commentError}
+                </p>
+              )}
+            </section>
+          </div>
+
+          {/* ── Sidebar ── */}
+          <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
+            {/* The figures, as tiles — quicker to read than a list of rows. */}
+            <section className={`${CARD} p-4 sm:p-5`}>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <Stat label="Score" value={score.toLocaleString()} />
+                <Stat label="Answers" value={answerCount.toLocaleString()} />
+                <Stat
+                  label="Views"
+                  value={(problem.viewCount ?? 0).toLocaleString()}
+                  icon={<Eye aria-hidden="true" className="size-3" />}
+                />
+              </div>
+            </section>
+
+            <section className={`${CARD} space-y-3.5 p-4 text-sm sm:p-5`}>
+              <h2 className="border-b border-slate-100 pb-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:border-slate-800 dark:text-slate-500">
+                Problem details
+              </h2>
+              {problem.problemType && (
+                <Row
+                  label="Type"
+                  value={PROBLEM_TYPE_LABELS[problem.problemType]}
+                />
+              )}
+              {problem.severity && (
+                <Row
+                  label="Severity"
+                  value={SEVERITY_LABELS[problem.severity]}
+                />
+              )}
+              {problem.sdlcPhase && (
+                <Row
+                  label="SDLC phase"
+                  value={SDLC_LABELS[problem.sdlcPhase]}
+                />
+              )}
+              <Row label="Category" value={problem.category?.name ?? "—"} />
+              <Row label="Posted" value={formatDate(problem.createdAt)} />
+              <Row label="Published" value={formatDate(problem.publishedAt)} />
+            </section>
+
+            <section className={`${CARD} p-4 text-sm sm:p-5`}>
+              <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                Posted by
+              </h2>
+              <div className="flex items-center gap-3">
+                {problem.author?.avatarUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={problem.author.avatarUrl}
+                    alt=""
+                    className="size-10 shrink-0 rounded-full border border-slate-200 bg-slate-100 object-cover dark:border-slate-700 dark:bg-slate-800"
+                  />
+                ) : (
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                    {initialsOf(authorNameOf(problem.author, "?"))}
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <p className="truncate text-base font-bold text-slate-900 dark:text-slate-100">
+                    {authorNameOf(problem.author)}
                   </p>
-                  <p className="text-xs text-slate-500 font-medium">
-                    {problem.postedBy.reputation.toLocaleString()} reputation
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {(problem.author?.reputation ?? 0).toLocaleString()}{" "}
+                    reputation
                   </p>
                 </div>
               </div>
-            </div>
-          </div>
+            </section>
+
+            {problem.contentWarnings && problem.contentWarnings.length > 0 && (
+              <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm dark:border-amber-500/30 dark:bg-amber-500/10 sm:p-5">
+                <h2 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">
+                  <AlertTriangle aria-hidden="true" className="size-3.5" />
+                  Content warnings
+                </h2>
+                <ul className="space-y-1 text-amber-800 dark:text-amber-200">
+                  {problem.contentWarnings.map((warning, i) => (
+                    <li key={i}>{warning}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </aside>
         </div>
       </main>
     </motion.div>
+  );
+}
+
+/**
+ * One of the reader's own answers that is not on the page yet — waiting on a
+ * moderator, or turned away by one.
+ *
+ * It links to their dashboard rather than offering an action here: this page
+ * shows a problem, and everything they can do about the answer itself (read
+ * the rejection, delete it, post a replacement) lives under My Community.
+ */
+function MyAnswerNotice({
+  answer,
+  problemId,
+}: {
+  answer: MySolutionStatus;
+  problemId: string;
+}) {
+  const isRejected = answer.review === "REJECTED";
+
+  return (
+    <div
+      className={`flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between ${
+        isRejected
+          ? "border-rose-200 bg-rose-50 dark:border-rose-500/30 dark:bg-rose-500/10"
+          : "border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10"
+      }`}
+    >
+      <div className="flex min-w-0 items-start gap-3">
+        {isRejected ? (
+          <XCircle
+            aria-hidden="true"
+            className="mt-0.5 size-5 shrink-0 text-rose-600 dark:text-rose-400"
+          />
+        ) : (
+          <Clock
+            aria-hidden="true"
+            className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400"
+          />
+        )}
+
+        <div className="min-w-0 space-y-1">
+          <p
+            className={`text-sm font-bold ${
+              isRejected
+                ? "text-rose-800 dark:text-rose-200"
+                : "text-amber-800 dark:text-amber-200"
+            }`}
+          >
+            {isRejected
+              ? "Your solution was not approved"
+              : "Your solution is waiting for review"}
+          </p>
+
+          {answer.summary && (
+            <p
+              className={`truncate text-sm font-medium ${
+                isRejected
+                  ? "text-rose-700 dark:text-rose-300"
+                  : "text-amber-700 dark:text-amber-300"
+              }`}
+            >
+              “{answer.summary}”
+            </p>
+          )}
+
+          <p
+            className={`text-sm ${
+              isRejected
+                ? "text-rose-700 dark:text-rose-300"
+                : "text-amber-700 dark:text-amber-300"
+            }`}
+          >
+            {isRejected
+              ? (answer.rejectionReason ??
+                "No reason was given. You can edit it and post again.")
+              : `Posted ${formatDate(answer.createdAt, "recently")}. Nobody else can see it until a moderator approves it.`}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex shrink-0 flex-wrap items-center gap-2 self-start sm:self-auto">
+        {/* Editing is the next step after a rejection, so it leads. A pending
+            answer can be edited too, which resets its place in the queue. */}
+        <Link
+          href={`/community/${problemId}/solutions/${answer.solutionId}/edit`}
+          className={`inline-flex h-9 items-center gap-1.5 rounded-xl px-3.5 text-sm font-bold text-white transition ${
+            isRejected
+              ? "bg-rose-600 hover:bg-rose-700"
+              : "bg-amber-600 hover:bg-amber-700"
+          }`}
+        >
+          <Pencil aria-hidden="true" className="size-4" />
+          Edit answer
+        </Link>
+
+        <Link
+          href={MY_COMMUNITY_HREF}
+          className={`inline-flex h-9 items-center gap-1.5 rounded-xl border px-3.5 text-sm font-bold transition ${
+            isRejected
+              ? "border-rose-300 text-rose-700 hover:bg-rose-100 dark:border-rose-500/40 dark:text-rose-300 dark:hover:bg-rose-500/20"
+              : "border-amber-300 text-amber-800 hover:bg-amber-100 dark:border-amber-500/40 dark:text-amber-300 dark:hover:bg-amber-500/20"
+          }`}
+        >
+          My Community
+          <ArrowRight aria-hidden="true" className="size-4" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+/** A titled block inside the problem card, with its own rule above it. */
+function Section({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mt-6 border-t border-slate-100 pt-4 dark:border-slate-800">
+      <h2 className="mb-2.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        {icon}
+        {title}
+      </h2>
+      {children}
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl bg-slate-50 px-2 py-3 dark:bg-slate-800/60">
+      <p className="text-lg font-extrabold tabular-nums text-slate-900 dark:text-slate-100">
+        {value}
+      </p>
+      <p className="flex items-center justify-center gap-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+        {icon}
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
+        {label}
+      </span>
+      <span className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function DetailSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-label="Loading the problem"
+      className="min-h-screen animate-pulse bg-slate-50 pb-16 dark:bg-slate-950"
+    >
+      <span className="sr-only">Loading the problem…</span>
+      <main className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div className="h-5 w-44 rounded-lg bg-slate-200 dark:bg-slate-800" />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8 xl:grid-cols-4">
+          <div className="space-y-6 lg:col-span-2 xl:col-span-3">
+            <div className={`${CARD} space-y-4 p-4 sm:p-6`}>
+              <div className="h-6 w-32 rounded-full bg-slate-200 dark:bg-slate-800" />
+              <div className="h-8 w-3/4 rounded-lg bg-slate-200 dark:bg-slate-800" />
+              <div className="h-24 w-full rounded-lg bg-slate-200 dark:bg-slate-800" />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="h-20 rounded-xl bg-slate-200 dark:bg-slate-800" />
+                <div className="h-20 rounded-xl bg-slate-200 dark:bg-slate-800" />
+              </div>
+            </div>
+            <div className={`${CARD} h-32`} />
+          </div>
+          <div className="space-y-6">
+            <div className={`${CARD} h-24`} />
+            <div className={`${CARD} h-48`} />
+            <div className={`${CARD} h-28`} />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function NotFound({
+  title,
+  body,
+  onRetry,
+}: {
+  title: string;
+  body: string;
+  onRetry?: () => void;
+}) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 text-center text-slate-800 dark:bg-slate-950 dark:text-slate-100">
+      <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+        <AlertCircle aria-hidden="true" className="size-7" />
+      </div>
+      <h1 className="mb-2 text-2xl font-bold">{title}</h1>
+      <p className="mb-4 text-slate-500 dark:text-slate-400">{body}</p>
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700"
+          >
+            <RotateCcw aria-hidden="true" className="size-4" />
+            Try again
+          </button>
+        )}
+        <Link
+          href="/community"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400"
+        >
+          <ArrowLeft aria-hidden="true" className="size-4" />
+          Back to Community
+        </Link>
+      </div>
+    </div>
   );
 }

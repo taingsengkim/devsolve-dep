@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 
 export default function BookmarksPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<BookmarkCategory>("Problems"); // Default selected tab as in reference screenshot
+  const [selectedCategory, setSelectedCategory] = useState<BookmarkCategory>("Program");
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "title">("newest");
   const [selectedSeverity, setSelectedSeverity] = useState("All");
@@ -137,7 +137,9 @@ export default function BookmarksPage() {
                 <BookmarkCard
                   key={item.id}
                   item={item}
-                  onRemove={(id) => removeBookmark(id)}
+                  onRemove={(bookmark) =>
+                    removeBookmark({ type: bookmark.bookmarkableType, targetId: bookmark.bookmarkableId })
+                  }
                 />
               ))}
             </AnimatePresence>

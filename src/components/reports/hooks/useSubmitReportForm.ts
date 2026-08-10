@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useGetProgramsQuery } from "@/lib/redux/services/program/programsApi";
+import { useGetProgramsQuery, useGetProgramByIdQuery } from "@/lib/redux/services/program/programsApi";
 import { useSubmitReportMutation } from "@/lib/redux/services/reportsApi";
 import {
   submitReportSchema,
@@ -43,6 +43,9 @@ export function useSubmitReportForm() {
 
   const { data: programsData, isLoading: isProgramsLoading } =
     useGetProgramsQuery();
+  const { data: specificProgram } = useGetProgramByIdQuery(preselectedProgramId, {
+    skip: !preselectedProgramId,
+  });
   const [submitReport, { isLoading: isSubmitting }] = useSubmitReportMutation();
 
   const programs = programsData?.content || [];
@@ -83,31 +86,35 @@ export function useSubmitReportForm() {
   const selectedProgramId = watch("programId");
   const selectedSeverity = watch("severity");
 
-  const selectedProgram =
-    programs.find((p: any) => p.id === selectedProgramId) || programs[0] || null;
+  const selectedProgram: any =
+    specificProgram ||
+    programs.find((p: any) => p.id === selectedProgramId) ||
+    programs[0] ||
+    null;
 
   // Synchronize preselected program ID when programs arrive asynchronously.
   useEffect(() => {
-    if (programs.length === 0) return;
-    const found = programs.find((p: any) => p.id === preselectedProgramId);
-    if (found) {
-      setValue("programId", found.id);
-    } else if (!programs.some((p: any) => p.id === selectedProgramId)) {
+    if (preselectedProgramId) {
+      setValue("programId", preselectedProgramId);
+      return;
+    }
+    if (programs.length > 0 && !selectedProgramId) {
       setValue("programId", programs[0].id);
     }
   }, [preselectedProgramId, programs, setValue, selectedProgramId]);
 
   // Sync default target asset when selected program changes if using placeholder
   useEffect(() => {
-    if (
-      selectedProgram &&
-      selectedProgram.inScopeAssets &&
-      selectedProgram.inScopeAssets.length > 0
-    ) {
+    const scopeAssets = selectedProgram?.inScopeAssets || selectedProgram?.assets || [];
+    if (selectedProgram && scopeAssets.length > 0) {
       const currentAsset = watch("targetAsset");
-      const firstAsset = selectedProgram.inScopeAssets[0];
-      const rawDomain = typeof firstAsset === "string" ? firstAsset : ((firstAsset as any)?.identifier || (firstAsset as any)?.name || "example.com");
-      const defaultDomain = typeof rawDomain === "string" ? rawDomain.replace("*.", "api.") : "api.example.com";
+      const firstAsset = scopeAssets[0];
+      const rawDomain =
+        typeof firstAsset === "string"
+          ? firstAsset
+          : (firstAsset as any)?.identifier || (firstAsset as any)?.name || "example.com";
+      const defaultDomain =
+        typeof rawDomain === "string" ? rawDomain.replace("*.", "api.") : "api.example.com";
       if (
         !currentAsset ||
         currentAsset === "https://api.nexacloud.com/v1/invoices/1337"
@@ -115,7 +122,7 @@ export function useSubmitReportForm() {
         setValue("targetAsset", `https://${defaultDomain}/v1/endpoint`);
       }
     }
-  }, [selectedProgram?.id, setValue, watch]);
+  }, [selectedProgram?.id, setValue, watch, selectedProgram]);
 
   // Handle Step Navigation & Validation
   const validateCurrentStep = async (): Promise<boolean> => {
@@ -125,16 +132,12 @@ export function useSubmitReportForm() {
       fieldsToValidate = [
         "programId",
         "targetAsset",
-        "httpMethod",
-        "environment",
+        "title",
+        "category",
+        "severity",
       ];
     } else if (currentStep === 2) {
-      fieldsToValidate = ["title", "category", "severity"];
-    } else if (currentStep === 3) {
       fieldsToValidate = ["summaryPoC"];
-    } else if (currentStep === 4) {
-      // Step 4 is PoC optional/unvalidated
-      return true;
     }
 
     if (fieldsToValidate.length > 0) {
@@ -148,7 +151,7 @@ export function useSubmitReportForm() {
     const isValid = await validateCurrentStep();
     if (isValid) {
       setCompletedSteps((prev) => Array.from(new Set([...prev, currentStep])));
-      setCurrentStep((prev) => Math.min(prev + 1, 5));
+      setCurrentStep((prev) => Math.min(prev + 1, 2));
     }
   };
 
@@ -157,7 +160,7 @@ export function useSubmitReportForm() {
   };
 
   const goToStep = (step: number) => {
-    if (step >= 1 && step <= 5) {
+    if (step >= 1 && step <= 2) {
       setCurrentStep(step);
     }
   };
@@ -237,9 +240,9 @@ export function useSubmitReportForm() {
     setSubmitError(null);
     const selectedProg = programs.find((p: any) => p.id === values.programId);
     const programName = selectedProg
-      ? (selectedProg.name || selectedProg.organizationName || (selectedProg as any).companyName)
+      ? selectedProg.organizationName
       : "CloudVault Security Program";
-    const assetId = selectedProg?.inScopeAssets?.[0]?.id || values.targetAsset || "";
+    const assetId = selectedProg?.inScopeAssets?.[0]?.id;
 
     try {
       const res = await submitReport({

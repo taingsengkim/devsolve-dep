@@ -4,10 +4,11 @@ import {
   ProfileStats,
   SeverityStats,
   HacktivityEntry,
-  CommunityPost,
   ThanksEntry,
   EditProfileFormData,
   AccountStatus,
+  FollowRecord,
+  FollowingCounts,
 } from "./types";
 
 export const mockProfile: Profile = {
@@ -15,9 +16,6 @@ export const mockProfile: Profile = {
   username: "narongseu",
   displayName: "Narong Seu",
   avatarInitials: "NR",
-  isVerified: true,
-  rankBadgeLabel: "Top 10",
-  verifiedBadgeLabel: "Verified User",
   bio: "Full-stack security researcher specializing in API abuse, server-side vulnerabilities, and OAuth misconfigurations. I enjoy finding critical bugs in authentication flows and payment systems. Open to private program invitations.",
   location: "Phnom Penh, Cambodia",
   memberSince: "March 2023",
@@ -71,30 +69,6 @@ export const mockHacktivity: HacktivityEntry[] = [
   { id: "h6", type: "resolved", actorHandle: "@ghostkode", date: "2025-05-28", severity: "critical", program: "AuthFlow", bounty: 12000 },
   { id: "h7", type: "badge", actorHandle: "@ghostkode", date: "2025-05-20", badgeName: "Century" },
   { id: "h8", type: "resolved", actorHandle: "@ghostkode", date: "2025-05-14", severity: "high", program: "ShieldNet", bounty: 4200 },
-];
-
-export const mockCommunityPosts: CommunityPost[] = [
-  {
-    id: "c1",
-    title: "JWT token leaks via Referer header on OAuth redirect",
-    description:
-      "When a user authenticates via OAuth and gets redirected back with the JWT as a query param, modern browsers send the full URL in the Referer header on subsequent requests — analytics scripts, CDN assets, etc. Is this a real exploitable vector or low risk in practice?",
-    tag: "Problem",
-    votes: 142,
-    answers: 2,
-    views: 2841,
-    isSolved: true,
-    date: "2025-06-12",
-  },
-  {
-    id: "c2",
-    title: "How to Resolve JWT Token",
-    description: "3 steps to resolve the jwt token",
-    tag: "Solutions",
-    votes: 1,
-    answers: 3,
-    date: "2025-06-12",
-  },
 ];
 
 export const mockThanks: ThanksEntry[] = [
@@ -180,4 +154,4 @@ export const mockEditProfileForm: EditProfileFormData = {
     communityActivity: { inApp: false, email: false },
     followActivity: { inApp: true, email: false },
   },
-};
+};

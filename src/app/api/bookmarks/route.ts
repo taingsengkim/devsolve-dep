@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const queryString = searchParams.toString();
-  const targetUrl = `${BACKEND_API_URL}/bookmarks${
+  const targetUrl = `${BACKEND_API_URL}/bookmarks/mine${
     queryString ? `?${queryString}` : ""
   }`;
 

@@ -150,7 +150,7 @@ function PodiumColumn({
             <motion.span
               whileHover={reduce ? undefined : { scale: 1.06 }}
               transition={{ type: "spring", stiffness: 400, damping: 22 }}
-              className="block rounded-full bg-white p-1"
+              className="inline-flex shrink-0 items-center justify-center rounded-full bg-white p-1"
               // Ring takes the pedestal's rim colour, so each column reads as
               // one hue from crown to floor.
               style={{ boxShadow: `0 0 0 2px ${tone.edge}` }}

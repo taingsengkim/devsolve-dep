@@ -136,7 +136,7 @@ export default function Footer() {
     <footer
       onMouseEnter={() => setIsFooterHovered(true)}
       onMouseLeave={() => setIsFooterHovered(false)}
-      className="w-full bg-[#FAFBFD] border-t border-slate-200/70 text-slate-700 relative overflow-hidden font-sans"
+      className="w-full bg-[#FAFBFD] border-t border-slate-200/70 text-slate-700 relative overflow-hidden font-sans dark:bg-slate-950 dark:border-slate-800/80 dark:text-slate-300"
     >
       {/* Smooth Cursor Effect on Footer Hover */}
       {isFooterHovered && (
@@ -172,9 +172,8 @@ export default function Footer() {
       </div>
 
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-8 relative z-10">
-
         {/* Sponsors and Organized By Group */}
-        <section className="text-center pb-10 border-b border-slate-200/70">
+        <section className="text-center pb-10 border-b border-slate-200/70 dark:border-slate-800/80">
           <motion.h2
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -182,7 +181,8 @@ export default function Footer() {
             transition={{ duration: 0.4 }}
             className="text-xl sm:text-2xl font-extrabold text-[#0066FF] tracking-tight mb-6 sm:mb-8"
           >
-            Our <span className="text-[#00C853]">Sponsors</span> And Organized By
+            Our <span className="text-[#00C853]">Sponsors</span> And Organized
+            By
           </motion.h2>
 
           {/* Logo Group Container */}
@@ -232,7 +232,7 @@ export default function Footer() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4, delay: 0.15 }}
-          className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 py-10 sm:py-12 border-b border-slate-200/70"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 py-10 sm:py-12 border-b border-slate-200/70 dark:border-slate-800/80"
         >
           {/* Brand Info Column (lg:col-span-4) */}
           <div className="lg:col-span-4 flex flex-col items-start gap-4">
@@ -245,20 +245,24 @@ export default function Footer() {
                 height={36}
                 className="w-9 h-9 object-contain transition-transform group-hover:scale-105"
               />
-              <span className="text-xl font-bold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">
+              <span className="text-xl font-bold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors dark:text-slate-100 dark:group-hover:text-blue-400">
                 DevSolve
               </span>
             </Link>
 
             {/* Tagline & Subtitle */}
-            <p className="text-sm text-slate-600 leading-relaxed font-normal max-w-md">
-              Bug bounty and vulnerability disclosure platform for developers, security engineers, and organizations. Built to find vulnerabilities before attackers do.
+            <p className="text-sm text-slate-600 leading-relaxed font-normal max-w-md dark:text-slate-400">
+              Bug bounty and vulnerability disclosure platform for developers,
+              security engineers, and organizations. Built to find
+              vulnerabilities before attackers do.
             </p>
 
             {/* Status Pill Quote */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 border border-slate-200/80 text-xs font-medium text-slate-700 shadow-2xs">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 border border-slate-200/80 text-xs font-medium text-slate-700 shadow-2xs dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>&ldquo;Your bug bounty stack, without the hassle&rdquo;</span>
+              <span>
+                &ldquo;Your bug bounty stack, without the hassle&rdquo;
+              </span>
             </div>
 
             {/* Social Icons Row */}
@@ -268,7 +272,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
-                className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-blue-600 transition-all shadow-2xs"
+                className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-600 dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-slate-800 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-2xs"
               >
                 <FacebookIcon className="w-3.5 h-3.5" />
               </a>
@@ -277,7 +281,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="YouTube"
-                className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-red-600 transition-all shadow-2xs"
+                className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-600 dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-slate-800 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-all shadow-2xs"
               >
                 <YoutubeIcon className="w-3.5 h-3.5" />
               </a>
@@ -286,7 +290,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
-                className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-blue-700 transition-all shadow-2xs"
+                className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-600 dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-slate-800 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 transition-all shadow-2xs"
               >
                 <LinkedinIcon className="w-3.5 h-3.5" />
               </a>
@@ -295,7 +299,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
-                className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-all shadow-2xs"
+                className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-600 dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-slate-800 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all shadow-2xs"
               >
                 <GithubIcon className="w-3.5 h-3.5" />
               </a>
@@ -304,7 +308,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Website"
-                className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-blue-600 transition-all shadow-2xs"
+                className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-600 dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-slate-800 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-2xs"
               >
                 <Globe className="w-3.5 h-3.5" />
               </a>
@@ -315,7 +319,7 @@ export default function Footer() {
           <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 text-left">
             {footerNavSections.map((section) => (
               <div key={section.title} className="flex flex-col gap-3">
-                <h3 className="text-xs font-bold tracking-wider text-slate-900 uppercase">
+                <h3 className="text-xs font-bold tracking-wider text-slate-900 uppercase dark:text-slate-100">
                   {section.title}
                 </h3>
                 <ul className="space-y-2.5">
@@ -323,7 +327,7 @@ export default function Footer() {
                     <li key={link.name}>
                       <Link
                         href={link.href}
-                        className="text-xs sm:text-sm text-slate-600 hover:text-blue-600 font-normal transition-colors"
+                        className="text-xs sm:text-sm text-slate-600 hover:text-blue-600 font-normal transition-colors dark:text-slate-400 dark:hover:text-blue-400"
                       >
                         {link.name}
                       </Link>
@@ -336,15 +340,18 @@ export default function Footer() {
         </motion.div>
 
         {/* Bottom Copyright & Back To Top */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-slate-500">
-          <p>© Copyright {new Date().getFullYear()}, All rights reserved. DevSolve - Built for Security Engineers &amp; Ethical Hackers</p>
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-slate-500 dark:text-slate-500">
+          <p>
+            © Copyright {new Date().getFullYear()}, All rights reserved.
+            DevSolve - Built for Security Engineers &amp; Ethical Hackers
+          </p>
 
           <motion.button
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.95 }}
             onClick={scrollToTop}
             aria-label="Back to top"
-            className="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 shadow-2xs flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 shadow-2xs flex items-center justify-center transition-colors cursor-pointer dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             <ArrowUp className="w-4 h-4" />
           </motion.button>

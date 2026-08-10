@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useNotification } from "@/components/notifications/NotificationContext";
 import { NotificationTrigger } from "@/components/notifications/NotificationTrigger";
+import { useGetBookmarksQuery } from "@/lib/redux/services/bookmarksApi";
 import { cn } from "@/lib/utils";
 
 function getInitials(text: string): string {
@@ -35,6 +36,7 @@ function getInitials(text: string): string {
 
 /** Does this path sit under that nav href? */
 function matches(pathname: string, href: string): boolean {
+  if (href === "/") return pathname === "/";
   if (href === "/dashboard") return pathname === "/dashboard";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -60,6 +62,11 @@ function SidebarContent({
   collapsed = false,
 }: SidebarContentProps) {
   const { openNotification } = useNotification();
+  const { data: bookmarksResponse } = useGetBookmarksQuery(undefined, {
+    skip: !user,
+  });
+  const bookmarkCount = bookmarksResponse?.totalCount;
+
   const userRoles = (
     user?.roles || (user?.role ? user.role.split(",") : ["USER"])
   ).map((r) => r.trim().toUpperCase());
@@ -175,6 +182,8 @@ function SidebarContent({
               {categoryItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.href === activeHref;
+                const badgeCount =
+                  item.name === "Bookmarks" ? bookmarkCount : item.badge;
 
                 return (
                   <Link
@@ -224,9 +233,9 @@ function SidebarContent({
                       {!collapsed && <span className="truncate">{item.name}</span>}
                     </span>
 
-                    {item.badge && !collapsed && (
+                    {badgeCount !== undefined && badgeCount > 0 && !collapsed && (
                       <Badge className="flex size-5 items-center justify-center rounded-full bg-blue-600 p-0 text-xs text-white hover:bg-blue-700">
-                        {item.badge}
+                        {badgeCount}
                       </Badge>
                     )}
                   </Link>

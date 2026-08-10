@@ -2,39 +2,31 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
+import Link from "next/link";
 import { motion } from "motion/react";
-import { AlertCircle, Plus, Search } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { AlertCircle, ArrowLeft, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CategoryStatCards } from "@/components/admin/categories/CategoryStatCards";
+import {
+  CategoryFiltersBar,
+  type CategoryScopeFilter,
+  type CategoryStateFilter,
+} from "@/components/admin/categories/CategoryFiltersBar";
 import { CategoryTable } from "@/components/admin/categories/CategoryTable";
 import { CategoryFormDialog } from "@/components/admin/categories/CategoryFormDialog";
 import {
   useGetCategoriesQuery,
   type CategoryResponse,
 } from "@/lib/redux/services/categoriesApi";
-import { CATEGORY_SCOPES } from "@/lib/validations/category";
-
-type ScopeFilter = "ALL" | (typeof CATEGORY_SCOPES)[number];
-type StateFilter = "ALL" | "ACTIVE" | "INACTIVE";
 
 export default function AdminCategoriesPage() {
-  const {
-    data: categories = [],
-    isLoading,
-    isError,
-  } = useGetCategoriesQuery();
+  const { data: categories = [], isLoading, isError } = useGetCategoriesQuery();
 
-  const [scope, setScope] = useState<ScopeFilter>("ALL");
-  const [state, setState] = useState<StateFilter>("ALL");
-  const [search, setSearch] = useState("");
+  const [stateFilter, setStateFilter] = useState<CategoryStateFilter>("ALL");
+  const [scopeFilter, setScopeFilter] = useState<CategoryScopeFilter>("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
   const [editing, setEditing] = useState<CategoryResponse | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   /* Keys the dialog body so each open mounts fresh state. Bumped from the
@@ -42,13 +34,14 @@ export default function AdminCategoriesPage() {
   const [session, setSession] = useState(0);
 
   const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase();
+    const query = searchQuery.trim().toLowerCase();
 
     return categories.filter((category) => {
-      const matchesScope = scope === "ALL" || category.scope === scope;
+      const matchesScope =
+        scopeFilter === "ALL" || category.scope === scopeFilter;
       const matchesState =
-        state === "ALL" ||
-        (state === "ACTIVE" ? category.isActive : !category.isActive);
+        stateFilter === "ALL" ||
+        (stateFilter === "ACTIVE" ? category.isActive : !category.isActive);
       const matchesSearch =
         !query ||
         category.name.toLowerCase().includes(query) ||
@@ -56,21 +49,30 @@ export default function AdminCategoriesPage() {
 
       return matchesScope && matchesState && matchesSearch;
     });
-  }, [categories, scope, state, search]);
+  }, [categories, scopeFilter, stateFilter, searchQuery]);
 
-  const activeCount = categories.filter((c) => c.isActive).length;
+  /* Counts describe the whole set, not the filtered view, so the tab badges
+     stay put as the filters move. */
+  const counts = useMemo(() => {
+    const active = categories.filter((c) => c.isActive).length;
+    return {
+      all: categories.length,
+      active,
+      inactive: categories.length - active,
+    };
+  }, [categories]);
 
-  const openCreate = () => {
+  const openCreate = useCallback(() => {
     setEditing(null);
     setSession((n) => n + 1);
     setDialogOpen(true);
-  };
+  }, []);
 
-  const openEdit = (category: CategoryResponse) => {
+  const openEdit = useCallback((category: CategoryResponse) => {
     setEditing(category);
     setSession((n) => n + 1);
     setDialogOpen(true);
-  };
+  }, []);
 
   return (
     <motion.div
@@ -79,112 +81,101 @@ export default function AdminCategoriesPage() {
       transition={{ duration: 0.3, ease: "easeOut" }}
       className="space-y-6 w-full pb-12"
     >
+      {/* PAGE HEADER */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-1 transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+            >
+              <ArrowLeft className="size-3.5" />
+              Dashboard
+            </Link>
+            <span>/</span>
+            <span className="font-semibold text-slate-700 dark:text-slate-300">
+              Categories
+            </span>
+          </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             Categories
           </h1>
-          <p className="text-base text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             The buckets problems and showcases are filed under, and the order
             they appear in.
           </p>
         </div>
 
-        <Button
-          onClick={openCreate}
-          className="h-11 shrink-0 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white shadow-xs hover:bg-blue-700"
-        >
-          <Plus className="size-4" />
-          New category
-        </Button>
+        <div className="flex shrink-0 items-center gap-3">
+          {counts.inactive > 0 && (
+            <Badge
+              variant="outline"
+              className="h-9 gap-2 rounded-xl border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            >
+              <span className="size-2 rounded-full bg-slate-400" />
+              <span>
+                {counts.inactive} inactive
+              </span>
+            </Badge>
+          )}
+          <Button
+            onClick={openCreate}
+            className="h-9 cursor-pointer rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-2xs hover:bg-blue-700"
+          >
+            <Plus data-icon="inline-start" />
+            New category
+          </Button>
+        </div>
       </header>
 
-      {/* ── Filters ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-          <Input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search by name or slug…"
-            className="h-11 rounded-xl border-slate-300 bg-white pl-10 text-base dark:border-slate-700"
-          />
-        </div>
-
-        <Select
-          value={scope}
-          onValueChange={(value) => value && setScope(value as ScopeFilter)}
-        >
-          <SelectTrigger className="h-11 w-full rounded-xl border-slate-300 bg-white text-base sm:w-44 dark:border-slate-700">
-            <SelectValue placeholder="Scope" />
-          </SelectTrigger>
-          <SelectContent className="rounded-xl border-slate-200 bg-white p-1">
-            <SelectItem value="ALL" className="rounded-lg py-2 text-base">
-              All scopes
-            </SelectItem>
-            {CATEGORY_SCOPES.map((option) => (
-              <SelectItem
-                key={option}
-                value={option}
-                className="rounded-lg py-2 text-base capitalize"
-              >
-                {option.toLowerCase()}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={state}
-          onValueChange={(value) => value && setState(value as StateFilter)}
-        >
-          <SelectTrigger className="h-11 w-full rounded-xl border-slate-300 bg-white text-base sm:w-40 dark:border-slate-700">
-            <SelectValue placeholder="State" />
-          </SelectTrigger>
-          <SelectContent className="rounded-xl border-slate-200 bg-white p-1">
-            <SelectItem value="ALL" className="rounded-lg py-2 text-base">
-              All
-            </SelectItem>
-            <SelectItem value="ACTIVE" className="rounded-lg py-2 text-base">
-              Active
-            </SelectItem>
-            <SelectItem value="INACTIVE" className="rounded-lg py-2 text-base">
-              Inactive
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* ── Content ── */}
-      {isLoading ? (
-        <div className="space-y-3">
-          <div className="h-12 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
-          {[0, 1, 2, 3, 4].map((row) => (
+      {/* STAT CARDS */}
+      {!isLoading && !isError && <CategoryStatCards categories={categories} />}
+      {isLoading && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+          {[0, 1, 2, 3].map((i) => (
             <div
-              key={row}
-              className="h-16 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-900"
+              key={i}
+              className="h-24 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800"
             />
           ))}
         </div>
-      ) : isError ? (
-        <div className="flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-base font-medium text-rose-700">
-          <AlertCircle className="mt-0.5 size-5 shrink-0" />
-          <span>
-            Categories could not be loaded. Check that you are signed in as an
-            admin, then try again.
-          </span>
-        </div>
-      ) : (
-        <>
-          <p className="text-sm font-medium text-slate-500">
-            {filtered.length} of {categories.length}{" "}
-            {categories.length === 1 ? "category" : "categories"} · {activeCount}{" "}
-            active
-          </p>
-
-          <CategoryTable categories={filtered} onEdit={openEdit} />
-        </>
       )}
+
+      {/* FILTER BAR */}
+      {!isError && (
+        <CategoryFiltersBar
+          stateFilter={stateFilter}
+          onStateFilterChange={setStateFilter}
+          scopeFilter={scopeFilter}
+          onScopeFilterChange={setScopeFilter}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
+          counts={counts}
+        />
+      )}
+
+      {/* DATA TABLE */}
+      <main className="flex flex-col gap-3">
+        {isError ? (
+          <div className="flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+            <AlertCircle className="mt-0.5 size-5 shrink-0" />
+            <span>
+              Categories could not be loaded. Check that you are signed in as an
+              admin, then try again.
+            </span>
+          </div>
+        ) : isLoading ? (
+          <div className="space-y-3 animate-pulse">
+            <div className="h-64 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
+          </div>
+        ) : (
+          <CategoryTable
+            categories={filtered}
+            totalCount={categories.length}
+            onEdit={openEdit}
+          />
+        )}
+      </main>
 
       <CategoryFormDialog
         open={dialogOpen}

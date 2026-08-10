@@ -107,34 +107,60 @@ src/
 
 ---
 
-## 🛣️ Dashboard Routes (`/dashboard/*`)
+-----
 
-| Route | Purpose |
-|-------|---------|
-| `/dashboard` | Home overview |
-| `/dashboard/programs` | Bug bounty program listings |
-| `/dashboard/submit-report` | New vulnerability report |
-| `/dashboard/my-reports` | Researcher's own reports |
-| `/dashboard/report-management` | Company/admin report review |
-| `/dashboard/discussions` | Community discussions |
-| `/dashboard/bookmarks` | Saved items |
-| `/dashboard/notifications` | Notification center |
-| `/dashboard/profile` | User profile |
-| `/dashboard/leaderboard` | Researcher rankings |
-| `/dashboard/analytics` | Analytics overview |
-| `/dashboard/users` | Admin: user management |
-| `/dashboard/organizations` | Organization management |
-| `/dashboard/team-management` | Team management |
-| `/dashboard/create-program` | Create a new program |
-| `/dashboard/ogreward` | Reward management |
-| `/dashboard/company-verification` | Admin: company KYC |
-| `/dashboard/content-moderation` | Admin: content review |
-| `/dashboard/content-reports` | Admin: reported content |
-| `/dashboard/rewards` | Reward payouts |
-| `/dashboard/saved-draft` | Draft reports |
-| `/dashboard/report-confirmation` | Confirmation screen |
+## Production Deployment URL
 
----
+https://devsolve.app/
+
+-----
+
+## Quick Navigation Links
+
+-----
+
+### Public & Community Pages
+
+- Landing Page: https://devsolve.app/ [Mock Data]
+- Hacktivity Feed: https://devsolve.app/hacktivity [Mock Data]
+- Leaderboard: https://devsolve.app/leaderboard [Mock Data]
+- Discussions Hub: https://devsolve.app/discussions [Mock Data]
+- Create Discussion: https://devsolve.app/discussions/create [Mock Data]
+- Submit Problem: https://devsolve.app/discussions/create/problem [Mock Data]
+- Submit Showcase: https://devsolve.app/discussions/create/showcase [Mock Data]
+
+-----
+
+### Authentication & Onboarding
+
+- Account Type Selection: https://devsolve.app/account-type [Real API]
+- User Registration: https://devsolve.app/register/user [Real API]
+- Company Registration: https://devsolve.app/register/company [Real API]
+
+-----
+
+### User & Researcher Dashboard
+
+- Dashboard Overview: https://devsolve.app/dashboard [Mock Data]
+- Bounty Programs: https://devsolve.app/dashboard/programs [Real API]
+- Program Details: https://devsolve.app/dashboard/programs/[id] [Real API]
+- Submit Vulnerability Report: https://devsolve.app/dashboard/submit-report?program-id=[id] [Real API]
+- My Reports: https://devsolve.app/dashboard/my-reports [Real API]
+- My Bookmarks: https://devsolve.app/dashboard/bookmarks [Real API]
+- Notifications: https://devsolve.app/dashboard/notifications [Mock Data]
+- Profile View: https://devsolve.app/dashboard/profile/[username] [Real API]
+- Account Settings: https://devsolve.app/dashboard/profile/settings [Real API]
+
+-----
+
+### Admin & Moderation Dashboard
+
+- User Management: https://devsolve.app/dashboard/users [Real API]
+- Company Verification: https://devsolve.app/dashboard/company-verification [Real API]
+- Content Reports & Moderation: https://devsolve.app/dashboard/content-reports [Real API]
+- Report Confirmation: https://devsolve.app/dashboard/report-confirmation [Mock Data]
+
+-----
 
 ## ⚙️ Critical Rules (from AGENTS.md)
 

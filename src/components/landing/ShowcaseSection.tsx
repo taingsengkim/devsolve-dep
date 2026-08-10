@@ -5,16 +5,36 @@ import Link from "next/link";
 import { motion, useInView } from "motion/react";
 import { ArrowUpRight, Award, Flame, ShieldCheck, Trophy, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import SectionBackdrop, { PRIMARY, SECONDARY } from "./SectionBackdrop";
+import SectionBackdrop, {
+  INK_DARK,
+  PRIMARY,
+  SECONDARY,
+  useInk,
+  useIsDark,
+} from "./SectionBackdrop";
 
 /* Severity is an ordered scale, so the breakdown rides an ink-weight ramp
    rather than unrelated hues. Each tier is labelled with its count, so the
-   ordering never depends on colour alone. */
-const TIERS = [
-  { key: "critical", label: "Critical", color: SECONDARY },
-  { key: "high", label: "High", color: "#94A3B8" },
-  { key: "medium", label: "Medium", color: "#E2E8F0" },
+   ordering never depends on colour alone.
+
+   The ramp runs heaviest-first on light and lightest-first on dark: what
+   carries the ordering is distance from the surface, not the direction of
+   travel, so it has to flip with the surface. */
+const TIER_RAMP = {
+  light: [SECONDARY, "#94A3B8", "#E2E8F0"],
+  dark: [INK_DARK, "#64748B", "#334155"],
+} as const;
+
+const TIER_LABELS = [
+  { key: "critical", label: "Critical" },
+  { key: "high", label: "High" },
+  { key: "medium", label: "Medium" },
 ] as const;
+
+const tiersFor = (dark: boolean) => {
+  const ramp = dark ? TIER_RAMP.dark : TIER_RAMP.light;
+  return TIER_LABELS.map((t, i) => ({ ...t, color: ramp[i] }));
+};
 
 type Researcher = {
   handle: string;
@@ -84,11 +104,12 @@ function SeverityBar({
   inView: boolean;
   delay?: number;
 }) {
+  const tiers = tiersFor(useIsDark());
   const total = data.critical + data.high + data.medium;
   const segments = [
-    { ...TIERS[0], value: data.critical },
-    { ...TIERS[1], value: data.high },
-    { ...TIERS[2], value: data.medium },
+    { ...tiers[0], value: data.critical },
+    { ...tiers[1], value: data.high },
+    { ...tiers[2], value: data.medium },
   ];
 
   return (
@@ -111,9 +132,15 @@ function SeverityBar({
 export function ShowcaseSection() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+  const isDark = useIsDark();
+  const ink = useInk();
+  const tiers = tiersFor(isDark);
 
   return (
-    <section ref={ref} className="relative overflow-hidden bg-slate-50 py-20 sm:py-24">
+    <section
+      ref={ref}
+      className="relative overflow-hidden bg-slate-50 py-20 sm:py-24 dark:bg-slate-950"
+    >
       <SectionBackdrop seed={5} gridSize={88} />
 
       <div className="relative mx-auto w-full max-w-7xl px-6 sm:px-12">
@@ -122,28 +149,28 @@ export function ShowcaseSection() {
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : undefined}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="flex flex-col justify-between gap-6 border-b border-slate-200 pb-8 sm:flex-row sm:items-end"
+          className="flex flex-col justify-between gap-6 border-b border-slate-200 pb-8 sm:flex-row sm:items-end dark:border-slate-800"
         >
           <div>
             <div className="mb-4 flex items-center gap-2.5">
-              <span className="h-px w-8" style={{ backgroundColor: SECONDARY }} />
+              <span className="h-px w-8" style={{ backgroundColor: ink }} />
               <span
                 className="text-xs font-bold uppercase tracking-[0.22em]"
-                style={{ color: SECONDARY }}
+                style={{ color: ink }}
               >
                 Showcase
               </span>
             </div>
             <h2
               className="text-3xl font-bold tracking-[-0.04em] sm:text-4xl lg:text-5xl"
-              style={{ color: SECONDARY }}
+              style={{ color: ink }}
             >
               Proof, not claims
-              <span style={{ color: PRIMARY }}>.</span>
+              <span className="text-[#2563EB] dark:text-blue-400">.</span>
             </h2>
           </div>
 
-          <p className="max-w-sm text-sm leading-relaxed text-slate-500">
+          <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-slate-400">
             Accepted reports and marked solutions compound into a public profile.
             One link that shows what you found, fixed and answered.
           </p>
@@ -156,11 +183,14 @@ export function ShowcaseSection() {
           transition={{ duration: 0.4, delay: 0.15 }}
           className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2"
         >
-          <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+          <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
             Findings by severity
           </span>
-          {TIERS.map((t) => (
-            <span key={t.key} className="flex items-center gap-2 text-xs font-medium text-slate-500">
+          {tiers.map((t) => (
+            <span
+              key={t.key}
+              className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400"
+            >
               <span
                 className="h-2 w-2 rounded-full"
                 style={{ backgroundColor: t.color }}
@@ -179,36 +209,50 @@ export function ShowcaseSection() {
               initial={{ opacity: 0, y: 24 }}
               animate={inView ? { opacity: 1, y: 0 } : undefined}
               transition={{ duration: 0.55, delay: 0.2 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-              className="group flex flex-col rounded-2xl bg-white p-6 shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_2px_10px_rgba(30,41,59,0.05)] transition-shadow hover:shadow-[0_0_0_1px_rgba(37,99,235,0.35),0_10px_28px_-14px_rgba(30,41,59,0.35)]"
+              className="group flex flex-col rounded-2xl bg-white p-6 shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_2px_10px_rgba(30,41,59,0.05)] transition-shadow hover:shadow-[0_0_0_1px_rgba(37,99,235,0.35),0_10px_28px_-14px_rgba(30,41,59,0.35)] dark:bg-slate-900 dark:shadow-[0_0_0_1px_rgba(148,163,184,0.14),0_2px_10px_rgba(2,6,23,0.5)] dark:hover:shadow-[0_0_0_1px_rgba(96,165,250,0.45),0_10px_28px_-14px_rgba(2,6,23,0.7)]"
             >
               {/* identity */}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
+                  {/* The rank-1 tile keeps its blue fill in both themes, so it
+                      keeps white type. The rest invert with the surface, and
+                      their type has to invert with them. */}
                   <span
-                    className="flex h-11 w-11 items-center justify-center rounded-xl text-base font-bold text-white"
-                    style={{ backgroundColor: i === 0 ? PRIMARY : SECONDARY }}
+                    className="flex h-11 w-11 items-center justify-center rounded-xl text-base font-bold"
+                    style={{
+                      backgroundColor:
+                        i === 0 ? PRIMARY : isDark ? INK_DARK : SECONDARY,
+                      color: i !== 0 && isDark ? "#0F172A" : "#FFFFFF",
+                    }}
                   >
                     {r.handle.replace(/^0x/, "").slice(0, 1).toUpperCase()}
                   </span>
                   <div className="min-w-0">
-                    <h3 className="truncate text-base font-bold tracking-tight" style={{ color: SECONDARY }}>
+                    <h3
+                      className="truncate text-base font-bold tracking-tight"
+                      style={{ color: ink }}
+                    >
                       {r.handle}
                     </h3>
-                    <p className="mt-0.5 truncate text-xs text-slate-400">{r.title}</p>
+                    <p className="mt-0.5 truncate text-xs text-slate-400 dark:text-slate-500">
+                      {r.title}
+                    </p>
                   </div>
                 </div>
 
-                <span className="shrink-0 rounded-lg bg-slate-100 px-2 py-1 text-xs font-bold text-slate-500">
+                <span className="shrink-0 rounded-lg bg-slate-100 px-2 py-1 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
                   #{r.rank}
                 </span>
               </div>
 
               {/* reputation */}
               <div className="mt-6">
-                <p className="text-xs uppercase tracking-[0.14em] text-slate-400">Reputation</p>
+                <p className="text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+                  Reputation
+                </p>
                 <p
                   className="mt-1 text-3xl font-bold leading-none tracking-tight"
-                  style={{ color: SECONDARY }}
+                  style={{ color: ink }}
                 >
                   {r.points.toLocaleString()}
                 </p>
@@ -224,8 +268,10 @@ export function ShowcaseSection() {
                     { label: "Medium", value: r.medium },
                   ].map((s) => (
                     <div key={s.label} className="flex items-baseline gap-1.5">
-                      <dt className="text-slate-400">{s.label}</dt>
-                      <dd className="font-bold" style={{ color: SECONDARY }}>
+                      <dt className="text-slate-400 dark:text-slate-500">
+                        {s.label}
+                      </dt>
+                      <dd className="font-bold" style={{ color: ink }}>
                         {s.value}
                       </dd>
                     </div>
@@ -234,13 +280,19 @@ export function ShowcaseSection() {
               </div>
 
               {/* badges */}
-              <ul className="mt-6 space-y-2 border-t border-slate-200 pt-5">
+              <ul className="mt-6 space-y-2 border-t border-slate-200 pt-5 dark:border-slate-800">
                 {r.badges.map((b) => {
                   const Icon = b.icon;
                   return (
-                    <li key={b.label} className="flex items-center gap-2.5 text-sm text-slate-500">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-slate-100">
-                        <Icon className="h-3.5 w-3.5 text-slate-500" aria-hidden />
+                    <li
+                      key={b.label}
+                      className="flex items-center gap-2.5 text-sm text-slate-500 dark:text-slate-400"
+                    >
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
+                        <Icon
+                          className="h-3.5 w-3.5 text-slate-500 dark:text-slate-300"
+                          aria-hidden
+                        />
                       </span>
                       {b.label}
                     </li>
@@ -248,8 +300,8 @@ export function ShowcaseSection() {
                 })}
               </ul>
 
-              <p className="mt-5 border-t border-slate-200 pt-5 text-sm text-slate-400">
-                <span className="font-bold" style={{ color: SECONDARY }}>
+              <p className="mt-5 border-t border-slate-200 pt-5 text-sm text-slate-400 dark:border-slate-800 dark:text-slate-500">
+                <span className="font-bold" style={{ color: ink }}>
                   {r.solved}
                 </span>{" "}
                 accepted solutions
@@ -263,16 +315,15 @@ export function ShowcaseSection() {
           initial={{ opacity: 0, y: 18 }}
           animate={inView ? { opacity: 1, y: 0 } : undefined}
           transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-10 flex flex-col items-start justify-between gap-5 border-t border-slate-200 pt-8 sm:flex-row sm:items-center"
+          className="mt-10 flex flex-col items-start justify-between gap-5 border-t border-slate-200 pt-8 sm:flex-row sm:items-center dark:border-slate-800"
         >
-          <p className="max-w-md text-sm text-slate-500">
+          <p className="max-w-md text-sm text-slate-500 dark:text-slate-400">
             Rankings are weighted by severity and by how often an answer gets reused
             — not by how much you post.
           </p>
           <Link
             href="/leaderboard"
-            className="group inline-flex shrink-0 items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:brightness-110"
-            style={{ backgroundColor: SECONDARY }}
+            className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-[#1E293B] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:brightness-110 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
           >
             See the full leaderboard
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

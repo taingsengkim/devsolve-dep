@@ -234,7 +234,7 @@ export function UserTableRow({
                 {isSuspended ? (
                   <>
                     <UserCheck className="w-4 h-4 mr-2" />
-                    Activate Account
+                    Reinstate Account
                   </>
                 ) : (
                   <>

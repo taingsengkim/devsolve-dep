@@ -44,14 +44,14 @@ const RESTING_SHADOW =
 export interface AccountTypeCardProps {
   eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
   /** Illustration for the media panel — see AccountTypeArt. */
   art: ReactNode;
   features: FeatureItem[];
   ctaLabel: string;
   href: string;
   /** What happens after this choice — sets expectations before the form. */
-  note: string;
+  note?: string;
   accent: Accent;
   variants: Variants;
 }
@@ -59,7 +59,6 @@ export interface AccountTypeCardProps {
 export function AccountTypeCard({
   eyebrow,
   title,
-  description,
   art,
   features,
   ctaLabel,
@@ -102,9 +101,7 @@ export function AccountTypeCard({
           <h2 className="mt-6 text-xl font-bold tracking-tight text-[#1E293B] sm:text-2xl">
             {title}
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-slate-500">
-            {description}
-          </p>
+
 
           <ul className="mt-6 space-y-3 border-t border-slate-100 pt-6">
             {features.map((item) => (
@@ -133,9 +130,11 @@ export function AccountTypeCard({
               />
             </span>
 
-            <p className="mt-3 text-center text-xs leading-relaxed text-slate-400">
-              {note}
-            </p>
+            {note && (
+              <p className="mt-3 text-center text-xs leading-relaxed text-slate-400">
+                {note}
+              </p>
+            )}
           </div>
         </Link>
       </motion.div>

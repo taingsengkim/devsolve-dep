@@ -246,6 +246,14 @@ export interface AdminUserSummaryItem {
   recognitionCount?: number;
   lastLoginAt?: string;
   createdAt: string;
+  roles?: string[];
+  role?: string;
+  realm_access?: {
+    roles?: string[];
+  };
+  realmAccess?: {
+    roles?: string[];
+  };
 }
 
 export type PageAdminUserSummaryResponse = PaginatedResponse<AdminUserSummaryItem>;
@@ -254,7 +262,7 @@ export interface AdminUserItem {
   id: string;
   name: string;
   email: string;
-  role: "USER" | "COMPANY" | "ADMIN" | "MODERATOR";
+  role: "USER" | "COMPANY" | "ADMIN";
   status: "ACTIVE" | "SUSPENDED" | "PENDING" | "REMOVED";
   joinedDate: string;
   reportsSubmitted?: number;
@@ -319,3 +327,56 @@ export interface AdminDashboardOverviewResponse {
   };
   recentActivity: AdminActivityFeedItem[];
 }
+
+// ─── Real API: Moderation Actions & Admin Users ─────────────────────────────
+
+export type ModerationActionTargetType =
+  | "PROGRAM"
+  | "PROBLEM"
+  | "SOLUTION"
+  | "COMMENT"
+  | "USER"
+  | "REPORT"
+  | "SHOWCASE";
+
+export type ModerationActionType = "WARN" | "SUSPEND" | "REMOVE" | "BAN" | "REINSTATE";
+
+export interface CreateModerationActionRequest {
+  targetType?: ModerationActionTargetType;
+  targetId?: string;
+  action: ModerationActionType;
+  reason: string;
+  expiresAt?: string;
+}
+
+export interface ModerationActionResponse {
+  id: string;
+  adminId: string;
+  adminName: string;
+  targetType: ModerationActionTargetType;
+  targetId: string;
+  action: ModerationActionType;
+  reason: string;
+  expiresAt?: string | null;
+  createdAt: string;
+}
+
+export type PageModerationActionResponse = PaginatedResponse<ModerationActionResponse>;
+
+export interface GetModerationHistoryParams {
+  targetType?: ModerationActionTargetType;
+  targetId?: string;
+  action?: ModerationActionType;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+export interface GetAdminUsersParams {
+  query?: string;
+  status?: "ACTIVE" | "SUSPENDED" | "REMOVED" | string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+export * from "./programAdminTypes";
+export * from "./problemAdminTypes";
+export * from "./solutionAdminTypes";
