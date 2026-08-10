@@ -6,7 +6,6 @@ import { motion } from "motion/react";
 import { SavedDraftEmptyState } from "@/components/saved-draft/SavedDraftEmptyState";
 import { SavedDraftGrid } from "@/components/saved-draft/SavedDraftGrid";
 import { SavedDraftHeader } from "@/components/saved-draft/SavedDraftHeader";
-import { SAVED_DRAFT_TAB_ORDER } from "@/components/saved-draft/mock-data";
 import { SavedDraftPagination } from "@/components/saved-draft/SavedDraftPagination";
 import { SavedDraftSearch } from "@/components/saved-draft/SavedDraftSearch";
 import { SavedDraftTabs } from "@/components/saved-draft/SavedDraftTabs";
@@ -17,16 +16,15 @@ import {
 import type { DraftCategory, SavedDraftItem } from "@/components/saved-draft/types";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { useGetMyCompanyProgramsQuery, useDeleteProgramMutation } from "@/lib/redux/services/program/programsApi";
-import { useGetMyPostsQuery } from "@/lib/redux/services/myCommunityApi";
 import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 6;
 
 const SEARCH_PLACEHOLDERS: Record<DraftCategory, string> = {
-  problem: "Search saved drafts...",
-  solution: "Search saved drafts...",
-  program: "Search saved drafts...",
-  report: "Search saved drafts...",
+  all: "Search all saved drafts...",
+  program: "Search program drafts...",
+  response: "Search response drafts...",
+  report: "Search report drafts...",
 };
 
 function getUpdatedRank(updatedAt: string) {
@@ -56,27 +54,21 @@ export function SavedDraftPage() {
   const isCompany = userRoles.includes("COMPANY");
   const isUser = userRoles.includes("USER");
 
-  const ALL_TABS: DraftCategory[] = ["problem", "solution", "program", "report"];
+  const ALL_TABS: DraftCategory[] = ["all", "program", "response", "report"];
   const visibleTabs: DraftCategory[] = ALL_TABS.filter((tab) => {
-    if (tab === "program" && isUser && !isCompany) return false;
+    if ((tab === "program" || tab === "response") && isUser && !isCompany) return false;
     if (tab === "report" && isCompany && !isUser) return false;
     return true;
   });
 
-  const [activeTab, setActiveTab] = useState<DraftCategory>(visibleTabs[0] ?? "problem");
+  const [activeTab, setActiveTab] = useState<DraftCategory>(visibleTabs[0] ?? "all");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "title">("recent");
 
   // Fetch real company programs (filter by state: DRAFT)
-  const { data: companyProgramsData, isLoading: isProgramsLoading } =
+  const { data: companyProgramsData, isLoading } =
     useGetMyCompanyProgramsQuery({ size: 100 }, { skip: !isCompany });
-
-  // Fetch real community posts (filter drafts)
-  const { data: myPostsData, isLoading: isPostsLoading } = useGetMyPostsQuery(
-    undefined,
-    { skip: !isUser }
-  );
 
   const [deleteProgram] = useDeleteProgramMutation();
 
@@ -84,17 +76,26 @@ export function SavedDraftPage() {
   const draftItems = useMemo<SavedDraftItem[]>(() => {
     const items: SavedDraftItem[] = [];
 
-    // 1. Program Drafts (state === "DRAFT")
     if (companyProgramsData?.content) {
       companyProgramsData.content
         .filter((p) => p.state === "DRAFT")
         .forEach((p) => {
+          const isResponse = p.engagementType === "RESPONSE";
+          const inScopeTags = p.assets
+            ? p.assets
+                .filter((a) => a.isInScope === true)
+                .map((a) => a.identifier || "")
+                .filter(Boolean)
+            : p.inScopeAssets
+                ?.map((a: { identifier?: string; target?: string }) => a.identifier || a.target || "")
+                .filter(Boolean) ?? [];
+
           items.push({
             id: p.id,
             title: p.name || "Untitled Program Draft",
             description: p.description || "No description provided for this draft.",
-            category: "program",
-            programDraftKind: p.engagementType === "RESPONSE" ? "response" : "bounty",
+            category: isResponse ? "response" : "program",
+            programDraftKind: isResponse ? "response" : "bounty",
             updatedAt: p.updatedAt
               ? new Date(p.updatedAt).toLocaleDateString("en-US", {
                   month: "short",
@@ -102,7 +103,7 @@ export function SavedDraftPage() {
                   year: "numeric",
                 })
               : "Recently",
-            tags: p.inScopeAssets?.map((a: { identifier?: string; target?: string }) => a.identifier || a.target || "").filter(Boolean) ?? [],
+            tags: inScopeTags,
             initials: (p.name || "PR").slice(0, 2).toUpperCase(),
             logoSrc: "https://media.wired.com/photos/5926ffe47034dc5f91bed4e8/3:2/w_2560%2Cc_limit/google-logo.jpg",
             logoAlt: p.name || "Program Logo",
@@ -110,65 +111,28 @@ export function SavedDraftPage() {
         });
     }
 
-    // 2. Problem & Solution Drafts
-    if (myPostsData) {
-      myPostsData
-        .filter((post) => post.state?.tone === "draft")
-        .forEach((post) => {
-          const category: DraftCategory =
-            post.kind === "Problem"
-              ? "problem"
-              : post.kind === "Solution"
-                ? "solution"
-                : "problem";
-          items.push({
-            id: post.id,
-            title: post.title || "Untitled Draft",
-            description: post.excerpt || "No description provided.",
-            category,
-            updatedAt: post.createdAt
-              ? new Date(post.createdAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })
-              : "Recently",
-            tags: [post.kind],
-            initials: (post.title || "DR").slice(0, 2).toUpperCase(),
-            logoSrc: "",
-            logoAlt: post.title || "Draft Logo",
-          });
-        });
-    }
-
     return items;
-  }, [companyProgramsData, myPostsData]);
+  }, [companyProgramsData]);
 
-  const isLoading = (isCompany && isProgramsLoading) || (isUser && isPostsLoading);
-
-  // Reset activeTab if it is no longer visible (e.g. role change)
+  // Reset activeTab if it is no longer visible
   useEffect(() => {
     if (!visibleTabs.includes(activeTab)) {
-      setActiveTab(visibleTabs[0] ?? "problem");
+      setActiveTab(visibleTabs[0] ?? "all");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCompany, isUser]);
 
   const counts = useMemo(() => {
-    return SAVED_DRAFT_TAB_ORDER.reduce(
-      (accumulator, category) => {
-        accumulator[category] = draftItems.filter(
-          (item) => item.category === category
-        ).length;
-        return accumulator;
-      },
-      {
-        problem: 0,
-        solution: 0,
-        program: 0,
-        report: 0,
-      } as Record<DraftCategory, number>
-    );
+    return {
+      all: draftItems.length,
+      program: draftItems.filter(
+        (item) => item.category === "program" || item.programDraftKind === "bounty"
+      ).length,
+      response: draftItems.filter(
+        (item) => item.category === "response" || item.programDraftKind === "response"
+      ).length,
+      report: draftItems.filter((item) => item.category === "report").length,
+    };
   }, [draftItems]);
 
   const filteredItems = useMemo(() => {
@@ -176,10 +140,15 @@ export function SavedDraftPage() {
 
     return draftItems
       .filter((item) => {
-        if (item.category !== activeTab) {
-          return false;
-        }
-
+        if (activeTab === "all") return true;
+        if (activeTab === "program")
+          return item.category === "program" || item.programDraftKind === "bounty";
+        if (activeTab === "response")
+          return item.category === "response" || item.programDraftKind === "response";
+        if (activeTab === "report") return item.category === "report";
+        return true;
+      })
+      .filter((item) => {
         if (!normalizedSearch) {
           return true;
         }
@@ -209,10 +178,8 @@ export function SavedDraftPage() {
 
   const handleDeleteItem = async (itemId: string) => {
     try {
-      if (activeTab === "program") {
-        await deleteProgram(itemId).unwrap();
-        toast.success("Draft deleted successfully");
-      }
+      await deleteProgram(itemId).unwrap();
+      toast.success("Draft deleted successfully");
     } catch {
       toast.error("Failed to delete draft");
     }

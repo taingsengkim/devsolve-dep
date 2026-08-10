@@ -12,15 +12,10 @@ type SavedDraftEmptyStateProps = {
 };
 
 function getCreateHref(category: DraftCategory) {
-  if (category === "program") {
-    return "/dashboard/programs";
-  }
-
   if (category === "report") {
-    return "/dashboard/report-management";
+    return "/dashboard/submit-report";
   }
-
-  return "/dashboard/my-reports";
+  return "/dashboard/create-program";
 }
 
 export function SavedDraftEmptyState({

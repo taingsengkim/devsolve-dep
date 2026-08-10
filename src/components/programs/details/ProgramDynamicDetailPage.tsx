@@ -4,7 +4,10 @@ import React, { useState, use } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { AlertCircle, ArrowLeft } from "lucide-react";
-import { useGetProgramByIdQuery } from "@/lib/redux/services/program/programsApi";
+import {
+  useGetProgramByIdQuery,
+  useGetMyCompanyProgramByIdQuery,
+} from "@/lib/redux/services/program/programsApi";
 import { ProgramDetailHero } from "@/components/programs/ProgramDetailHero";
 import { ProgramDetailSidebar } from "@/components/programs/ProgramDetailSidebar";
 import {
@@ -16,27 +19,50 @@ import { ProgramScopeTab } from "@/components/programs/details/ProgramScopeTab";
 import { ProgramBountyMatrixTab } from "@/components/programs/details/ProgramBountyMatrixTab";
 import { ProgramRulesTab } from "@/components/programs/details/ProgramRulesTab";
 import { Button } from "@/components/ui/button";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export default function ProgramDetailPage({
   params,
+  programId: directProgramId,
+  showBack = true,
 }: {
-  params: Promise<{ id: string }>;
+  params?: Promise<{ id: string }>;
+  programId?: string;
+  showBack?: boolean;
 }) {
-  const resolvedParams = use(params);
-  const programId = resolvedParams.id;
+  const resolvedParams = params ? use(params) : null;
+  const programId = directProgramId || resolvedParams?.id || "";
   const [activeTab, setActiveTab] = useState<ProgramDetailTabId>("overview");
 
   const {
-    data: program,
-    isLoading,
-    isError,
-  } = useGetProgramByIdQuery(programId);
+    data: publicProgram,
+    isLoading: isPublicLoading,
+  } = useGetProgramByIdQuery(programId, { skip: !programId });
+
+  const {
+    data: companyProgram,
+    isLoading: isCompanyLoading,
+  } = useGetMyCompanyProgramByIdQuery(programId, { skip: !programId });
+
+  const program = publicProgram || companyProgram;
+  const isLoading = (isPublicLoading && isCompanyLoading) || (!program && (isPublicLoading || isCompanyLoading));
+  const isError = !isLoading && !program;
 
   const pathname = usePathname();
-  // Determine the base path: if pathname starts with /dashboard/programs, go to /dashboard/programs, else go to /programs
+  const searchParams = useSearchParams();
+  const fromSavedDraft = searchParams.get("from") === "saved-draft";
+
+  // Determine the base path and back label
   const isDashboard = pathname.startsWith("/dashboard/programs");
-  const backHref = isDashboard ? "/dashboard/programs" : "/programs";
+  const backHref = fromSavedDraft
+    ? "/dashboard/saved-draft"
+    : isDashboard
+      ? "/dashboard/programs"
+      : "/programs";
+
+  const backLabel = fromSavedDraft
+    ? "Back to Saved Drafts"
+    : "Back to Marketplace";
 
   if (isLoading) {
     return (
@@ -71,23 +97,25 @@ export default function ProgramDetailPage({
               removed.
             </p>
           </div>
-          <Link href={backHref}>
-            <Button
-              variant="outline"
-              className="rounded-xl font-semibold gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Marketplace
-            </Button>
-          </Link>
+          {showBack && (
+            <Link href={backHref}>
+              <Button
+                variant="outline"
+                className="rounded-xl font-semibold gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                {backLabel}
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen   text-foreground font-sans">
-      <main className="w-full  py-8 ">
+    <div className="min-h-screen text-foreground font-sans">
+      <main className="w-full py-8 ">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -95,15 +123,17 @@ export default function ProgramDetailPage({
           className="space-y-8 w-full pb-16"
         >
           {/* TOP ACTION BAR: BACK BUTTON & BOOKMARK BUTTON */}
-          <div className="flex items-center justify-between">
-            <Link
-              href={backHref}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
-            >
-              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-              Back to Marketplace
-            </Link>
-          </div>
+          {showBack && (
+            <div className="flex items-center justify-between">
+              <Link
+                href={backHref}
+                className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
+              >
+                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                {backLabel}
+              </Link>
+            </div>
+          )}
 
           {/* Hero / Header Section */}
           <ProgramDetailHero program={program} />

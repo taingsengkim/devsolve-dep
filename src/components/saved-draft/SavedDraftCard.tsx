@@ -12,6 +12,7 @@ import {
   Copy,
   FolderInput,
   Trash2,
+  Eye,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
@@ -34,34 +35,20 @@ const STATIC_CARD_LOGO =
   "https://media.wired.com/photos/5926ffe47034dc5f91bed4e8/3:2/w_2560%2Cc_limit/google-logo.jpg";
 
 function getDraftMeta(item: SavedDraftItem) {
-  if (item.category === "problem") {
-    return { label: "Problem draft" };
-  }
-  if (item.category === "solution") {
-    return { label: "Solution draft" };
-  }
   if (item.category === "report") {
     return { label: "Report draft" };
   }
-  return {
-    label: item.programDraftKind === "response" ? "Response draft" : "Program draft",
-  };
+  if (item.category === "response" || item.programDraftKind === "response") {
+    return { label: "Response draft" };
+  }
+  return { label: "Program draft" };
 }
 
 function getDraftHref(item: SavedDraftItem) {
-  if (item.category === "program") {
-    return `/dashboard/create-program?id=${encodeURIComponent(item.id)}`;
-  }
-  if (item.category === "problem") {
-    return `/dashboard/discussions/new?id=${encodeURIComponent(item.id)}`;
-  }
-  if (item.category === "solution") {
-    return `/dashboard/discussions/${encodeURIComponent(item.id)}`;
-  }
   if (item.category === "report") {
     return `/dashboard/submit-report?id=${encodeURIComponent(item.id)}`;
   }
-  return "/dashboard/my-reports";
+  return `/dashboard/create-program?id=${encodeURIComponent(item.id)}`;
 }
 
 export function SavedDraftCard({ item, onDelete }: SavedDraftCardProps) {
@@ -96,6 +83,13 @@ export function SavedDraftCard({ item, onDelete }: SavedDraftCardProps) {
               >
                 <ChevronRight className="w-4 h-4 mr-2" />
                 Continue editing
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push(`/dashboard/programs/${encodeURIComponent(item.id)}?from=saved-draft`)}
+                className="rounded-[10px] px-3 py-2 text-foreground focus:bg-blue-50 dark:focus:bg-blue-500/10 focus:text-blue-600 dark:focus:text-blue-400 cursor-pointer"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                View in card
               </DropdownMenuItem>
               <DropdownMenuItem className="rounded-[10px] px-3 py-2 text-foreground focus:bg-blue-50 dark:focus:bg-blue-500/10 focus:text-blue-600 dark:focus:text-blue-400 cursor-pointer">
                 <PencilLine className="w-4 h-4 mr-2" />
