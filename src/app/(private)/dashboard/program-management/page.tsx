@@ -51,74 +51,77 @@ function ProgramManagementPageContent() {
     setPageIndex(0);
   }, [debouncedSearch]);
 
-  // ADMIN queries
-  const { data: adminOverallResponse } = useGetAdminProgramsQuery(
-    { size: 100 },
-    { skip: !isAdminScope }
-  );
-
-  // PRIMARY ADMIN DATA QUERY — Sends query parameters (submissionState, state, search, page, size, sort) directly to backend API
-  const {
-    data: adminResponse,
-    isLoading: isAdminLoading,
-    isFetching: isAdminFetching,
-  } = useGetAdminProgramsQuery(
-    {
-      submissionState:
-        submissionStateFilter === "ALL" ? undefined : submissionStateFilter,
-      state: stateFilter === "ALL" ? undefined : stateFilter,
-      search: debouncedSearch || undefined,
-      page: pageIndex,
-      size: pageSize,
-      sort,
-    },
-    { skip: !isAdminScope }
-  );
+  // ADMIN queries — fetch all 3 queues (PENDING_REVIEW, APPROVED, REJECTED) to build complete admin dataset and accurate counts
+  const { data: adminPendingResponse, isLoading: isAdminPendingLoading } =
+    useGetAdminProgramsQuery(
+      { submissionState: "PENDING_REVIEW", size: 100 },
+      { skip: !isAdminScope }
+    );
+  const { data: adminApprovedResponse, isLoading: isAdminApprovedLoading } =
+    useGetAdminProgramsQuery(
+      { submissionState: "APPROVED", size: 100 },
+      { skip: !isAdminScope }
+    );
+  const { data: adminRejectedResponse, isLoading: isAdminRejectedLoading } =
+    useGetAdminProgramsQuery(
+      { submissionState: "REJECTED", size: 100 },
+      { skip: !isAdminScope }
+    );
 
   // COMPANY DATA QUERY (for non-admin users)
-  const { data: companyOverallResponse } = useGetMyCompanyProgramsQuery(
-    { size: 100 },
-    { skip: isAdminScope }
-  );
-  const {
-    data: companyResponse,
-    isLoading: isCompanyLoading,
-    isFetching: isCompanyFetching,
-  } = useGetMyCompanyProgramsQuery(
-    {
-      submissionState:
-        submissionStateFilter === "ALL" ? undefined : submissionStateFilter,
-      state: stateFilter === "ALL" ? undefined : stateFilter,
-      search: debouncedSearch || undefined,
-      page: pageIndex,
-      size: pageSize,
-      sort,
-    },
-    { skip: isAdminScope }
-  );
+  const { data: companyOverallResponse, isLoading: isCompanyLoading } =
+    useGetMyCompanyProgramsQuery({ size: 100 }, { skip: isAdminScope });
 
-  const activeResponse = isAdminScope ? adminResponse : companyResponse;
-  const overallResponse = isAdminScope
-    ? adminOverallResponse
-    : companyOverallResponse;
-  const isLoading = isAdminScope ? isAdminLoading : isCompanyLoading;
-  const isFetching = isAdminScope ? isAdminFetching : isCompanyFetching;
+  const isLoading = isAdminScope
+    ? isAdminPendingLoading || isAdminApprovedLoading || isAdminRejectedLoading
+    : isCompanyLoading;
 
-  // Raw items from overall response or active response
-  const rawPrograms: ProgramManagementSummaryItem[] = useMemo(
-    () => overallResponse?.content ?? activeResponse?.content ?? [],
-    [overallResponse, activeResponse]
-  );
+  // Combine items for Admin or Company
+  const rawPrograms: ProgramManagementSummaryItem[] = useMemo(() => {
+    if (isAdminScope) {
+      const pending = adminPendingResponse?.content ?? [];
+      const approved = adminApprovedResponse?.content ?? [];
+      const rejected = adminRejectedResponse?.content ?? [];
+      // Deduplicate by id if needed
+      const map = new Map<string, ProgramManagementSummaryItem>();
+      [...pending, ...approved, ...rejected].forEach((p) => map.set(p.id, p));
+      return Array.from(map.values());
+    }
+    return companyOverallResponse?.content ?? [];
+  }, [
+    isAdminScope,
+    adminPendingResponse,
+    adminApprovedResponse,
+    adminRejectedResponse,
+    companyOverallResponse,
+  ]);
 
-  // Calculate stat cards & tab counts directly from raw programs
+  // Calculate stat cards & tab counts
   const counts = useMemo(() => {
+    if (isAdminScope) {
+      const pendingCount = adminPendingResponse?.totalElements ?? 0;
+      const approvedCount = adminApprovedResponse?.totalElements ?? 0;
+      const rejectedCount = adminRejectedResponse?.totalElements ?? 0;
+      return {
+        all: pendingCount + approvedCount + rejectedCount,
+        pendingReview: pendingCount,
+        approved: approvedCount,
+        rejected: rejectedCount,
+      };
+    }
     return {
       all: rawPrograms.length,
       pendingReview: rawPrograms.filter((p) => p.submissionState === "PENDING_REVIEW").length,
       approved: rawPrograms.filter((p) => p.submissionState === "APPROVED").length,
       rejected: rawPrograms.filter((p) => p.submissionState === "REJECTED").length,
     };
-  }, [rawPrograms]);
+  }, [
+    isAdminScope,
+    adminPendingResponse,
+    adminApprovedResponse,
+    adminRejectedResponse,
+    rawPrograms,
+  ]);
 
   // Filter programs by submissionStateFilter, stateFilter, and searchQuery
   const filteredPrograms = useMemo(() => {
@@ -181,6 +184,7 @@ function ProgramManagementPageContent() {
     return sortedAndFilteredPrograms.slice(start, start + pageSize);
   }, [sortedAndFilteredPrograms, pageIndex, pageSize]);
 
+
   const handleSubmissionStateChange = useCallback(
     (state: ProgramSubmissionState | "ALL") => {
       setSubmissionStateFilter(state);
@@ -196,6 +200,7 @@ function ProgramManagementPageContent() {
 
   const handleSearchQueryChange = useCallback((query: string) => {
     setSearchQuery(query);
+    setPageIndex(0);
   }, []);
 
   const handleSortChange = useCallback((newSort: string) => {
@@ -303,7 +308,7 @@ function ProgramManagementPageContent() {
 
       {/* DATA TABLE */}
       <main className="flex flex-col gap-3">
-        {isLoading || isFetching ? (
+        {isLoading ? (
           <div className="space-y-3 animate-pulse">
             <div className="h-64 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
           </div>

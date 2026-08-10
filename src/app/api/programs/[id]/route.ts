@@ -64,7 +64,7 @@ export async function GET(
       cache: "no-store",
     });
 
-    if (upstream.status === 404) {
+    if (!upstream.ok) {
       const fallbackUpstream = await fetch(secondaryUrl, {
         method: "GET",
         headers,
@@ -72,6 +72,54 @@ export async function GET(
       });
       if (fallbackUpstream.ok) {
         upstream = fallbackUpstream;
+      } else if (token) {
+        if (idIsUuid) {
+          const adminUpstream = await fetch(
+            `${BACKEND_API_URL}/admin/programs/${id}`,
+            {
+              method: "GET",
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              cache: "no-store",
+            }
+          );
+          if (adminUpstream.ok) {
+            upstream = adminUpstream;
+          }
+        }
+
+        if (!upstream.ok) {
+          const orgProgramsUpstream = await fetch(
+            `${BACKEND_API_URL}/organizations/me/programs?size=100`,
+            {
+              method: "GET",
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              cache: "no-store",
+            }
+          );
+          if (orgProgramsUpstream.ok) {
+            const rawOrg = await orgProgramsUpstream.text();
+            if (rawOrg) {
+              try {
+                const parsed = JSON.parse(rawOrg);
+                const items: any[] = parsed.content ?? parsed ?? [];
+                const found = items.find(
+                  (item: any) => item.id === id || item.handle === id
+                );
+                if (found) {
+                  return NextResponse.json(found, { status: 200 });
+                }
+              } catch {
+                // Ignore JSON parse error
+              }
+            }
+          }
+        }
       } else if (token && idIsUuid) {
         // Fall back to company organization programs endpoint if public program lookup returns 404
         const orgMeUpstream = await fetch(
@@ -160,6 +208,92 @@ export async function DELETE(
     }
 
     return new NextResponse(null, { status: 204 });
+  } catch {
+    return unreachable();
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const token = await bearerTokenFor(request);
+  if (!token) return unauthorized();
+
+  const { id } = await params;
+  let payload: unknown;
+  try {
+    payload = await request.json();
+  } catch {
+    return NextResponse.json(
+      { message: "Request body must be valid JSON" },
+      { status: 400 }
+    );
+  }
+
+  const jsonHeaders = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+
+  const bodyStr = JSON.stringify(payload);
+
+  const candidates: Array<{ url: string; method: string }> = [
+    { url: `${BACKEND_API_URL}/organizations/me/programs/${id}`, method: "PUT" },
+    { url: `${BACKEND_API_URL}/programs/${id}`, method: "PUT" },
+    { url: `${BACKEND_API_URL}/programs/${id}`, method: "PATCH" },
+    { url: `${BACKEND_API_URL}/programs/${id}/state`, method: "PATCH" },
+    { url: `${BACKEND_API_URL}/programs/${id}/activate`, method: "POST" },
+    { url: `${BACKEND_API_URL}/organizations/me/programs/${id}/activate`, method: "POST" },
+    { url: `${BACKEND_API_URL}/organizations/me/programs/${id}`, method: "PATCH" },
+  ];
+
+  try {
+    let upstream: Response | null = null;
+
+    for (const candidate of candidates) {
+      const res = await fetch(candidate.url, {
+        method: candidate.method,
+        headers: jsonHeaders,
+        body: bodyStr,
+        cache: "no-store",
+      });
+
+      upstream = res;
+      if (res.ok) {
+        break;
+      }
+    }
+
+    if (!upstream) {
+      return NextResponse.json(
+        { message: "Failed to update program state." },
+        { status: 500 }
+      );
+    }
+
+    const raw = await upstream.text();
+    let body: unknown = null;
+    if (raw) {
+      try {
+        body = JSON.parse(raw);
+      } catch {
+        body = { message: raw };
+      }
+    }
+
+    if (!upstream.ok) {
+      const message =
+        (body as { message?: string } | null)?.message ??
+        "Failed to update program state.";
+      return NextResponse.json(
+        { message, details: body },
+        { status: upstream.status }
+      );
+    }
+
+    return NextResponse.json(body, { status: upstream.status });
   } catch {
     return unreachable();
   }

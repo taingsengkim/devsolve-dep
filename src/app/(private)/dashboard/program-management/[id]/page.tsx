@@ -17,7 +17,9 @@ import {
   Layers,
   AlertOctagon,
   Check,
+  LoaderCircle,
   X,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +43,7 @@ import {
 import {
   useGetMyCompanyProgramByIdQuery,
   useGetProgramByIdQuery,
+  useUpdateProgramStateMutation,
 } from "@/lib/redux/services/program/programsApi";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { ProgramRejectDialog } from "@/components/admin/programs/ProgramRejectDialog";
@@ -65,49 +68,35 @@ function ProgramDetailPageContent({
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
-  // Admin uses /api/admin/programs/${id} which bypasses public visibility
-  // filters so PENDING_REVIEW / PRIVATE programs are always accessible.
+  // Admin uses /api/admin/programs/${id} which bypasses public visibility filters
   const {
     data: adminDetail,
     isLoading: isAdminDetailLoading,
     refetch: refetchAdmin,
   } = useGetProgramDetailQuery(id, { skip: !isAdminScope });
 
-  // Company users use /api/organizations/me/programs/${id} to view their own programs in all states
-  const {
-    data: companyDetail,
-    isLoading: isCompanyLoading,
-    refetch: refetchCompany,
-  } = useGetMyCompanyProgramByIdQuery(id, { skip: !isCompanyScope });
-
-  // Public / general users fall back to the public programs endpoint.
+  // Company / public users query /api/programs/${id} which automatically falls back
+  // to backend /admin/programs/${id} for authenticated dashboard users.
   const {
     data: publicDetail,
     isLoading: isPublicLoading,
     refetch: refetchPublic,
-  } = useGetProgramByIdQuery(id, { skip: isAdminScope || isCompanyScope });
+  } = useGetProgramByIdQuery(id);
 
   const refetch = () => {
     if (isAdminScope) refetchAdmin();
-    else if (isCompanyScope) refetchCompany();
-    else refetchPublic();
+    refetchPublic();
   };
 
-  const program = isAdminScope
-    ? adminDetail
-    : isCompanyScope
-      ? companyDetail
-      : publicDetail;
+  const program = adminDetail ?? publicDetail;
 
-  const isLoading = isAdminScope
-    ? isAdminDetailLoading
-    : isCompanyScope
-      ? isCompanyLoading
-      : isPublicLoading;
+  const isLoading = isAdminScope ? isAdminDetailLoading : (isPublicLoading && !program);
   const isError = !isLoading && !program;
 
   const [approveProgram] = useApproveProgramMutation();
   const [rejectProgram] = useRejectProgramMutation();
+  const [updateProgramState, { isLoading: isActivating }] =
+    useUpdateProgramStateMutation();
 
   const handleApprove = async () => {
     try {
@@ -127,6 +116,23 @@ function ProgramDetailPageContent({
   const handleRejectConfirm = async (reason: string) => {
     await rejectProgram({ id, reason }).unwrap();
     refetch();
+  };
+
+  const handleActivateProgram = async () => {
+    try {
+      setIsActionLoading(true);
+      await updateProgramState({ id, state: "ACTIVE" }).unwrap();
+      toast.success(`Program "${program?.name || ""}" activated!`, {
+        description:
+          "Your security program is now ACTIVE and visible to researchers.",
+      });
+      refetch();
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message;
+      toast.error(message || "Failed to activate program.");
+    } finally {
+      setIsActionLoading(false);
+    }
   };
 
   if (isLoading) {
@@ -246,6 +252,51 @@ function ProgramDetailPageContent({
             >
               {program.visibility || "PUBLIC"}
             </Badge>
+
+            {/* Company Activate Program Button */}
+            {!isAdminScope && (
+              <div className="ml-0 sm:ml-2">
+                {isApproved && program.state === "DRAFT" ? (
+                  <Button
+                    type="button"
+                    disabled={isActivating || isActionLoading}
+                    onClick={handleActivateProgram}
+                    className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm h-9 px-4 gap-2 shadow-xs cursor-pointer"
+                  >
+                    {isActivating ? (
+                      <LoaderCircle className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Zap className="w-4 h-4 fill-current" />
+                    )}
+                    Activate Program
+                  </Button>
+                ) : program.state === "ACTIVE" ? (
+                  <Button
+                    type="button"
+                    disabled
+                    variant="outline"
+                    className="rounded-xl border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400 font-semibold text-xs sm:text-sm h-9 px-3.5 gap-1.5 opacity-100 cursor-not-allowed"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    Program Active
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    disabled
+                    variant="outline"
+                    className="rounded-xl border-slate-200 bg-slate-100 text-slate-400 dark:border-slate-800 dark:bg-slate-900 font-semibold text-xs sm:text-sm h-9 px-3.5 gap-1.5 cursor-not-allowed opacity-70"
+                  >
+                    <Zap className="w-4 h-4" />
+                    {isPending
+                      ? "Awaiting Platform Approval"
+                      : isRejected
+                      ? "Program Rejected"
+                      : "Activate Program"}
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
