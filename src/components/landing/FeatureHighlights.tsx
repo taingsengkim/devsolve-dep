@@ -27,21 +27,22 @@ const TONES = {
     tabActiveText: "#FFFFFF",
     muted: "#CBD5E1",
   },
+  /* Neutral scale, matching --card / --muted / --foreground. */
   dark: {
-    tabBg: "#0F172A",
-    tabText: "#64748B",
-    tabBorder: "#1E293B",
-    tabActiveBg: "#E2E8F0",
-    tabActiveText: "#0F172A",
-    muted: "#475569",
+    tabBg: "#171717",
+    tabText: "#737373",
+    tabBorder: "#262626",
+    tabActiveBg: "#E5E5E5",
+    tabActiveText: "#171717",
+    muted: "#525252",
   },
 } as const;
 
 /* The Showcase act's accent is the near-black brand secondary, which vanishes
-   against a dark surface. It flips to the light slate there; the blue and
+   against a dark surface. It flips to a light neutral there; the blue and
    green accents carry on unchanged, since both read on either surface. */
 const accentFor = (act: Act, dark: boolean) =>
-  dark && act.accent === SECONDARY ? "#E2E8F0" : act.accent;
+  dark && act.accent === SECONDARY ? "#E5E5E5" : act.accent;
 
 /* Fixed row height keeps the scroll maths deterministic across breakpoints. */
 const STEP_H = 320;
@@ -382,9 +383,9 @@ export function FeatureHighlights() {
   );
 
   return (
-    <section ref={containerRef} className="relative bg-white dark:bg-slate-950">
+    <section ref={containerRef} className="relative bg-white dark:bg-neutral-950">
       {/* Scroll progress rail */}
-      <div className="pointer-events-none fixed left-0 right-0 top-0 z-50 h-0.5 bg-slate-200/70 dark:bg-slate-800/70">
+      <div className="pointer-events-none fixed left-0 right-0 top-0 z-50 h-0.5 bg-slate-200/70 dark:bg-neutral-800/70">
         <div
           className="gsap-progress-bar h-full origin-left"
           style={{
@@ -403,18 +404,18 @@ export function FeatureHighlights() {
 
         {/* ── Masthead ── */}
         <header className="relative z-20 mx-auto w-full max-w-7xl px-6 pt-8 sm:px-12">
-          <div className="flex items-start justify-between gap-6 border-b border-slate-200 pb-6 dark:border-slate-800">
+          <div className="flex items-start justify-between gap-6 border-b border-slate-200 pb-6 dark:border-neutral-800">
             <div>
-              <p className="text-xl font-bold tracking-tight text-[#1E293B] sm:text-2xl dark:text-slate-100">
+              <p className="text-xl font-bold tracking-tight text-[#1E293B] sm:text-2xl dark:text-neutral-100">
                 DevSolve
               </p>
-              <p className="mt-1.5 text-sm font-medium tracking-[0.28em] text-slate-400 dark:text-slate-500">
+              <p className="mt-1.5 text-sm font-medium tracking-[0.28em] text-slate-400 dark:text-neutral-500">
                 [ PLATFORM ]
               </p>
             </div>
 
             {/* Act tabs — the active one fills dark (and inverts in dark mode) */}
-            <nav className="grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200 dark:border-slate-800 dark:bg-slate-800">
+            <nav className="grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200 dark:border-neutral-800 dark:bg-neutral-800">
               {ACTS.map((act, ai) => (
                 <div
                   key={act.id}
@@ -477,7 +478,7 @@ export function FeatureHighlights() {
                       /* No inline fill: GSAP writes the real one on mount,
                          and the class keeps the pre-hydration paint right in
                          both themes. */
-                      className={`dot-${ai}-${si} absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-300 dark:bg-slate-600`}
+                      className={`dot-${ai}-${si} absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-300 dark:bg-neutral-600`}
                       style={{
                         left: `${((p.x / ARC.w) * 100).toFixed(4)}%`,
                         top: `${((p.y / ARC.h) * 100).toFixed(4)}%`,
@@ -504,7 +505,7 @@ export function FeatureHighlights() {
                   </div>
 
                   <h2
-                    className={`act-title-${ai} font-bold leading-[1.02] tracking-[-0.045em] text-[#1E293B] dark:text-slate-100`}
+                    className={`act-title-${ai} font-bold leading-[1.02] tracking-[-0.045em] text-[#1E293B] dark:text-neutral-100`}
                     style={{
                       fontSize: "clamp(34px, 4.2vw, 60px)",
                     }}
@@ -536,9 +537,9 @@ export function FeatureHighlights() {
                   </h2>
 
                   <div className={`act-meta-${ai} mt-7 space-y-5`}>
-                    <div className="flex items-baseline gap-2 font-mono text-sm text-slate-400 dark:text-slate-500">
+                    <div className="flex items-baseline gap-2 font-mono text-sm text-slate-400 dark:text-neutral-500">
                       <span
-                        className={`counter-${ai} text-2xl font-bold tabular-nums text-[#1E293B] dark:text-slate-100`}
+                        className={`counter-${ai} text-2xl font-bold tabular-nums text-[#1E293B] dark:text-neutral-100`}
                       >
                         1
                       </span>
@@ -582,7 +583,7 @@ export function FeatureHighlights() {
                         <span
                           /* Resting colour as a class; GSAP takes it over
                              from mount onwards. */
-                          className={`num-${ai}-${si} block pt-1 text-right font-bold tabular-nums leading-none tracking-[-0.06em] text-slate-300 dark:text-slate-600`}
+                          className={`num-${ai}-${si} block pt-1 text-right font-bold tabular-nums leading-none tracking-[-0.06em] text-slate-300 dark:text-neutral-600`}
                           style={{
                             fontSize: "clamp(52px, 7.5vw, 108px)",
                             width: "clamp(80px, 11vw, 160px)",
@@ -593,15 +594,15 @@ export function FeatureHighlights() {
 
                         <div className="pt-2">
                           <div className="mb-2 flex items-baseline gap-3">
-                            <h3 className="text-2xl font-bold tracking-tight text-[#1E293B] sm:text-3xl dark:text-slate-100">
+                            <h3 className="text-2xl font-bold tracking-tight text-[#1E293B] sm:text-3xl dark:text-neutral-100">
                               {step.title}
                               <span style={{ color: accentFor(act, isDark) }}>.</span>
                             </h3>
-                            <span className="rounded-full border border-slate-200 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:border-slate-700 dark:text-slate-500">
+                            <span className="rounded-full border border-slate-200 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:border-neutral-700 dark:text-neutral-500">
                               {step.role}
                             </span>
                           </div>
-                          <p className="max-w-xl text-sm leading-[1.8] text-slate-500 sm:text-[15px] dark:text-slate-400">
+                          <p className="max-w-xl text-sm leading-[1.8] text-slate-500 sm:text-[15px] dark:text-neutral-400">
                             {step.body}
                           </p>
                         </div>
@@ -615,12 +616,12 @@ export function FeatureHighlights() {
         </div>
 
         {/* ── Footer hint ── */}
-        <footer className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 border-t border-slate-200 px-6 py-5 sm:px-12 dark:border-slate-800">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+        <footer className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 border-t border-slate-200 px-6 py-5 sm:px-12 dark:border-neutral-800">
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-neutral-500">
             Scroll to advance
           </span>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium tracking-[0.2em] text-slate-300 dark:text-slate-600">
+            <span className="text-xs font-medium tracking-[0.2em] text-slate-300 dark:text-neutral-600">
               01 — {String(ACTS.length).padStart(2, "0")}
             </span>
             <span

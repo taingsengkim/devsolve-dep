@@ -9,8 +9,24 @@ export const PRIMARY = "#2563EB";
 export const SECONDARY = "#1E293B";
 export const ACCENT = "#10B981";
 
-/** Near-white counterpart to SECONDARY, for headings on a dark surface. */
-export const INK_DARK = "#F1F5F9";
+/** Near-white counterpart to SECONDARY, for headings on a dark surface.
+    neutral-50, matching the `--foreground` the rest of the app resolves to
+    in dark — the dark surfaces here are the neutral scale, not the slate
+    one, so the ink on them is neutral too. */
+export const INK_DARK = "#FAFAFA";
+
+/* ─── Dark surfaces ──────────────────────────────────────────────────────
+   The dark theme runs on the neutral scale, the same one `--background`,
+   `--card` and `--muted` resolve to elsewhere in the app (the programs
+   browser is the reference). Cool slate greys are a light-mode concern
+   only; on a near-black field they read as a blue cast.
+
+     page   neutral-950  #0A0A0A   = --background   oklch(0.145 0 0)
+     card   neutral-900  #171717   = --card         oklch(0.205 0 0)
+     muted  neutral-800  #262626   = --muted        oklch(0.269 0 0)
+     hair   white / 10%            = --border       oklch(1 0 0 / 10%)
+     ink    neutral-50   #FAFAFA   = --foreground   oklch(0.985 0 0)   */
+export const SURFACE_DARK = "#0A0A0A";
 
 /**
  * Heading ink for the current theme.

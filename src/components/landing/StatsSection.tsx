@@ -4,7 +4,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { useTheme } from "next-themes";
 import { ArrowUpRight } from "lucide-react";
-import SectionBackdrop, { PRIMARY, SECONDARY } from "./SectionBackdrop";
+import SectionBackdrop, {
+  INK_DARK,
+  PRIMARY,
+  SECONDARY,
+  SURFACE_DARK,
+} from "./SectionBackdrop";
 
 /* ─── Palette ───────────────────────────────────────────────────────────
    Mark colours were checked with the palette validator against a white
@@ -17,11 +22,11 @@ import SectionBackdrop, { PRIMARY, SECONDARY } from "./SectionBackdrop";
 
    Every one of those was measured against white, so none of them carries
    over to the near-black surface — each is restated below against
-   slate-950, keeping the same roles and the same 4.5:1 floor for anything
-   set as text:
-     · #60A5FA (blue-400)    — 6.9:1. The trend mark and the kicker.
-     · #34D399 (emerald-400) — 8.3:1. The delta, which is text.
-     · #475569 (slate-600)   — the de-emphasised baseline, a mark only.
+   neutral-950 (#0A0A0A, the `--background` this app resolves to in dark),
+   keeping the same roles and the same 4.5:1 floor for anything set as text:
+     · #60A5FA (blue-400)    — 7.8:1. The trend mark and the kicker.
+     · #34D399 (emerald-400) — 10.3:1. The delta, which is text.
+     · #525252 (neutral-600) — the de-emphasised baseline, a mark only.
    ──────────────────────────────────────────────────────────────────── */
 const TONES = {
   light: {
@@ -33,11 +38,12 @@ const TONES = {
     ink: SECONDARY,
   },
   dark: {
-    deemphasis: "#475569",
+    deemphasis: "#525252",
     deltaInk: "#34D399",
     trend: "#60A5FA",
-    dotRing: "#020617",
-    ink: "#F1F5F9",
+    /* Has to be the page surface, or the dot gets a halo. */
+    dotRing: SURFACE_DARK,
+    ink: INK_DARK,
   },
 } as const;
 
@@ -241,7 +247,7 @@ function Delta({ value }: { value: number }) {
     >
       <ArrowUpRight className="h-3.5 w-3.5 self-center" aria-hidden />
       {`+${value.toFixed(1)}%`}
-      <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+      <span className="text-xs font-medium text-slate-400 dark:text-neutral-500">
         vs. 3 months ago
       </span>
     </span>
@@ -260,7 +266,7 @@ export function StatsSection() {
   return (
     <section
       ref={ref}
-      className="relative overflow-hidden border-y border-slate-200 bg-white py-20 sm:py-24 dark:border-slate-800 dark:bg-slate-950"
+      className="relative overflow-hidden border-y border-slate-200 bg-white py-20 sm:py-24 dark:border-neutral-800 dark:bg-neutral-950"
     >
       <SectionBackdrop seed={2} gridSize={88} />
 
@@ -270,7 +276,7 @@ export function StatsSection() {
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : undefined}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="flex flex-col justify-between gap-6 border-b border-slate-200 pb-8 sm:flex-row sm:items-end dark:border-slate-800"
+          className="flex flex-col justify-between gap-6 border-b border-slate-200 pb-8 sm:flex-row sm:items-end dark:border-neutral-800"
         >
           <div>
             <div className="mb-4 flex items-center gap-2.5">
@@ -294,7 +300,7 @@ export function StatsSection() {
             </h2>
           </div>
 
-          <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+          <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
             Twelve months of activity across programs, reports and community
             solutions. Every figure below is a monthly reading, not a lifetime total.
           </p>
@@ -307,9 +313,9 @@ export function StatsSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : undefined}
             transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col justify-center border-b border-slate-200 py-10 lg:col-span-5 lg:border-b-0 lg:border-r lg:pr-12 dark:border-slate-800"
+            className="flex flex-col justify-center border-b border-slate-200 py-10 lg:col-span-5 lg:border-b-0 lg:border-r lg:pr-12 dark:border-neutral-800"
           >
-            <p className="text-base font-medium text-slate-500 dark:text-slate-400">
+            <p className="text-base font-medium text-slate-500 dark:text-neutral-400">
               {HERO.label}
             </p>
 
@@ -330,7 +336,7 @@ export function StatsSection() {
                 height={52}
                 inView={inView}
               />
-              <span className="text-xs font-medium uppercase leading-relaxed tracking-[0.16em] text-slate-400 dark:text-slate-500">
+              <span className="text-xs font-medium uppercase leading-relaxed tracking-[0.16em] text-slate-400 dark:text-neutral-500">
                 Last 12
                 <br />
                 months
@@ -356,15 +362,15 @@ export function StatsSection() {
                   transition={{ duration: 0.5, delay: 0.2 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                   className={`flex items-center justify-between gap-6 py-7 ${
                     i < STATS.length - 1
-                      ? "border-b border-slate-200 dark:border-slate-800"
+                      ? "border-b border-slate-200 dark:border-neutral-800"
                       : ""
                   }`}
                 >
                   <div className="min-w-0">
-                    <p className="text-base font-medium text-slate-500 dark:text-slate-400">
+                    <p className="text-base font-medium text-slate-500 dark:text-neutral-400">
                       {stat.label}
                     </p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">
+                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400 dark:text-neutral-500">
                       {stat.unit}
                     </p>
                     <div className="mt-3">

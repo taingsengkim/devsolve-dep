@@ -22,7 +22,9 @@ import SectionBackdrop, {
    travel, so it has to flip with the surface. */
 const TIER_RAMP = {
   light: [SECONDARY, "#94A3B8", "#E2E8F0"],
-  dark: [INK_DARK, "#64748B", "#334155"],
+  /* neutral-500 / neutral-700 — the dark surfaces are the neutral scale, so
+     a ramp built on slate greys would drift blue against them. */
+  dark: [INK_DARK, "#737373", "#404040"],
 } as const;
 
 const TIER_LABELS = [
@@ -139,7 +141,7 @@ export function ShowcaseSection() {
   return (
     <section
       ref={ref}
-      className="relative overflow-hidden bg-slate-50 py-20 sm:py-24 dark:bg-slate-950"
+      className="relative overflow-hidden bg-slate-50 py-20 sm:py-24 dark:bg-neutral-950"
     >
       <SectionBackdrop seed={5} gridSize={88} />
 
@@ -149,7 +151,7 @@ export function ShowcaseSection() {
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : undefined}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="flex flex-col justify-between gap-6 border-b border-slate-200 pb-8 sm:flex-row sm:items-end dark:border-slate-800"
+          className="flex flex-col justify-between gap-6 border-b border-slate-200 pb-8 sm:flex-row sm:items-end dark:border-neutral-800"
         >
           <div>
             <div className="mb-4 flex items-center gap-2.5">
@@ -170,7 +172,7 @@ export function ShowcaseSection() {
             </h2>
           </div>
 
-          <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+          <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
             Accepted reports and marked solutions compound into a public profile.
             One link that shows what you found, fixed and answered.
           </p>
@@ -183,13 +185,13 @@ export function ShowcaseSection() {
           transition={{ duration: 0.4, delay: 0.15 }}
           className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2"
         >
-          <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
+          <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-neutral-500">
             Findings by severity
           </span>
           {tiers.map((t) => (
             <span
               key={t.key}
-              className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400"
+              className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-neutral-400"
             >
               <span
                 className="h-2 w-2 rounded-full"
@@ -209,7 +211,7 @@ export function ShowcaseSection() {
               initial={{ opacity: 0, y: 24 }}
               animate={inView ? { opacity: 1, y: 0 } : undefined}
               transition={{ duration: 0.55, delay: 0.2 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-              className="group flex flex-col rounded-2xl bg-white p-6 shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_2px_10px_rgba(30,41,59,0.05)] transition-shadow hover:shadow-[0_0_0_1px_rgba(37,99,235,0.35),0_10px_28px_-14px_rgba(30,41,59,0.35)] dark:bg-slate-900 dark:shadow-[0_0_0_1px_rgba(148,163,184,0.14),0_2px_10px_rgba(2,6,23,0.5)] dark:hover:shadow-[0_0_0_1px_rgba(96,165,250,0.45),0_10px_28px_-14px_rgba(2,6,23,0.7)]"
+              className="group flex flex-col rounded-2xl bg-white p-6 shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_2px_10px_rgba(30,41,59,0.05)] transition-shadow hover:shadow-[0_0_0_1px_rgba(37,99,235,0.35),0_10px_28px_-14px_rgba(30,41,59,0.35)] dark:bg-neutral-900 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.10),0_2px_10px_rgba(0,0,0,0.5)] dark:hover:shadow-[0_0_0_1px_rgba(96,165,250,0.45),0_10px_28px_-14px_rgba(0,0,0,0.7)]"
             >
               {/* identity */}
               <div className="flex items-start justify-between gap-3">
@@ -222,7 +224,7 @@ export function ShowcaseSection() {
                     style={{
                       backgroundColor:
                         i === 0 ? PRIMARY : isDark ? INK_DARK : SECONDARY,
-                      color: i !== 0 && isDark ? "#0F172A" : "#FFFFFF",
+                      color: i !== 0 && isDark ? "#171717" : "#FFFFFF",
                     }}
                   >
                     {r.handle.replace(/^0x/, "").slice(0, 1).toUpperCase()}
@@ -234,20 +236,20 @@ export function ShowcaseSection() {
                     >
                       {r.handle}
                     </h3>
-                    <p className="mt-0.5 truncate text-xs text-slate-400 dark:text-slate-500">
+                    <p className="mt-0.5 truncate text-xs text-slate-400 dark:text-neutral-500">
                       {r.title}
                     </p>
                   </div>
                 </div>
 
-                <span className="shrink-0 rounded-lg bg-slate-100 px-2 py-1 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                <span className="shrink-0 rounded-lg bg-slate-100 px-2 py-1 text-xs font-bold text-slate-500 dark:bg-neutral-800 dark:text-neutral-300">
                   #{r.rank}
                 </span>
               </div>
 
               {/* reputation */}
               <div className="mt-6">
-                <p className="text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+                <p className="text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-neutral-500">
                   Reputation
                 </p>
                 <p
@@ -268,7 +270,7 @@ export function ShowcaseSection() {
                     { label: "Medium", value: r.medium },
                   ].map((s) => (
                     <div key={s.label} className="flex items-baseline gap-1.5">
-                      <dt className="text-slate-400 dark:text-slate-500">
+                      <dt className="text-slate-400 dark:text-neutral-500">
                         {s.label}
                       </dt>
                       <dd className="font-bold" style={{ color: ink }}>
@@ -280,17 +282,17 @@ export function ShowcaseSection() {
               </div>
 
               {/* badges */}
-              <ul className="mt-6 space-y-2 border-t border-slate-200 pt-5 dark:border-slate-800">
+              <ul className="mt-6 space-y-2 border-t border-slate-200 pt-5 dark:border-neutral-800">
                 {r.badges.map((b) => {
                   const Icon = b.icon;
                   return (
                     <li
                       key={b.label}
-                      className="flex items-center gap-2.5 text-sm text-slate-500 dark:text-slate-400"
+                      className="flex items-center gap-2.5 text-sm text-slate-500 dark:text-neutral-400"
                     >
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-neutral-800">
                         <Icon
-                          className="h-3.5 w-3.5 text-slate-500 dark:text-slate-300"
+                          className="h-3.5 w-3.5 text-slate-500 dark:text-neutral-300"
                           aria-hidden
                         />
                       </span>
@@ -300,7 +302,7 @@ export function ShowcaseSection() {
                 })}
               </ul>
 
-              <p className="mt-5 border-t border-slate-200 pt-5 text-sm text-slate-400 dark:border-slate-800 dark:text-slate-500">
+              <p className="mt-5 border-t border-slate-200 pt-5 text-sm text-slate-400 dark:border-neutral-800 dark:text-neutral-500">
                 <span className="font-bold" style={{ color: ink }}>
                   {r.solved}
                 </span>{" "}
@@ -315,15 +317,15 @@ export function ShowcaseSection() {
           initial={{ opacity: 0, y: 18 }}
           animate={inView ? { opacity: 1, y: 0 } : undefined}
           transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-10 flex flex-col items-start justify-between gap-5 border-t border-slate-200 pt-8 sm:flex-row sm:items-center dark:border-slate-800"
+          className="mt-10 flex flex-col items-start justify-between gap-5 border-t border-slate-200 pt-8 sm:flex-row sm:items-center dark:border-neutral-800"
         >
-          <p className="max-w-md text-sm text-slate-500 dark:text-slate-400">
+          <p className="max-w-md text-sm text-slate-500 dark:text-neutral-400">
             Rankings are weighted by severity and by how often an answer gets reused
             — not by how much you post.
           </p>
           <Link
             href="/leaderboard"
-            className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-[#1E293B] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:brightness-110 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
+            className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-[#1E293B] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:brightness-110 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
           >
             See the full leaderboard
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

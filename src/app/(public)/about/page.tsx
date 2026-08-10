@@ -53,14 +53,27 @@ import type { TeamMember, Technology } from "@/lib/types/about/type";
    plus a shallow ambient layer, swapping to the brand ring on hover. Kept
    in one place here so every card on the page reads as the same material. */
 const CARD =
-  "rounded-2xl bg-white shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_2px_10px_rgba(30,41,59,0.05)] dark:bg-slate-900 dark:shadow-[0_0_0_1px_rgba(148,163,184,0.14),0_2px_10px_rgba(2,6,23,0.5)]";
+  "rounded-2xl bg-white shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_2px_10px_rgba(30,41,59,0.05)] dark:bg-neutral-900 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.10),0_2px_10px_rgba(0,0,0,0.5)]";
 
 const CARD_HOVER =
-  "transition-shadow hover:shadow-[0_0_0_1px_rgba(37,99,235,0.35),0_10px_28px_-14px_rgba(30,41,59,0.35)] dark:hover:shadow-[0_0_0_1px_rgba(96,165,250,0.45),0_10px_28px_-14px_rgba(2,6,23,0.7)]";
+  "transition-shadow hover:shadow-[0_0_0_1px_rgba(37,99,235,0.35),0_10px_28px_-14px_rgba(30,41,59,0.35)] dark:hover:shadow-[0_0_0_1px_rgba(96,165,250,0.45),0_10px_28px_-14px_rgba(0,0,0,0.7)]";
 
-/* #2563EB clears 4.5:1 on white but not on slate-950, and blue-400 is the
+/* #2563EB clears 4.5:1 on white but not on neutral-950, and blue-400 is the
    reverse — so the brand ink is a class pair rather than a single value. */
 const BRAND_INK = "text-[#2563EB] dark:text-blue-400";
+
+/* ─── Section surfaces ───────────────────────────────────────────────────
+   Light alternates white against slate-50, which is most of what separates
+   one section from the next. Dark has no such alternation to make — every
+   surface is neutral-950, the way the landing states it — so there the
+   hairline is the only thing carrying the structure, and every section past
+   the hero has to draw one. `border-t` rather than `border-y`: adjacent
+   sections would otherwise stack two rules into a 2px seam. */
+const SECTION_LIFTED =
+  "border-t border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-950";
+
+const SECTION_RECESSED =
+  "border-t border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950";
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
@@ -86,7 +99,7 @@ function SectionHeading({
       initial={{ opacity: 0, y: 16 }}
       animate={inView ? { opacity: 1, y: 0 } : undefined}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="flex flex-col justify-between gap-6 border-b border-slate-200 pb-8 sm:flex-row sm:items-end dark:border-slate-800"
+      className="flex flex-col justify-between gap-6 border-b border-slate-200 pb-8 sm:flex-row sm:items-end dark:border-neutral-800"
     >
       <div>
         <div className="mb-4 flex items-center gap-2.5">
@@ -107,7 +120,7 @@ function SectionHeading({
         </h2>
       </div>
 
-      <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+      <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
         {lede}
       </p>
     </motion.div>
@@ -139,7 +152,7 @@ function AboutHero() {
     // The negative margin cancels the layout's navbar padding so the backdrop
     // runs to the very top and the nav island floats over it — same trick the
     // landing hero uses.
-    <section className="relative -mt-(--navbar-height) overflow-hidden bg-[#F7F8FB] pt-(--navbar-height) dark:bg-slate-950">
+    <section className="relative -mt-(--navbar-height) overflow-hidden bg-[#F7F8FB] pt-(--navbar-height) dark:bg-neutral-950">
       <SectionBackdrop seed={1} gridSize={88} />
 
       <div className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-6 py-16 sm:px-12 sm:py-20 lg:grid-cols-12 lg:gap-10">
@@ -156,7 +169,7 @@ function AboutHero() {
             >
               About DevSolve
             </span>
-            <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+            <span className="text-xs font-medium text-slate-400 dark:text-neutral-500">
               Est. 2026
             </span>
           </div>
@@ -171,7 +184,7 @@ function AboutHero() {
             <span className={BRAND_INK}>.</span>
           </h1>
 
-          <p className="mt-5 max-w-xl text-base leading-relaxed text-slate-500 dark:text-slate-400">
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-slate-500 dark:text-neutral-400">
             DevSolve connects organizations with security researchers and
             developers to solve real technical problems, close vulnerabilities
             responsibly, and build software that holds up in production.
@@ -190,7 +203,7 @@ function AboutHero() {
             <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0, scale: 0.98 }}>
               <Link
                 href="#team"
-                className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-[0_6px_18px_-10px_rgba(15,23,42,0.4)] transition-colors hover:bg-slate-50 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-[0_6px_18px_-10px_rgba(15,23,42,0.4)] transition-colors hover:bg-slate-50 dark:border-neutral-700/80 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800"
               >
                 Meet the team
                 <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
@@ -211,11 +224,11 @@ function AboutHero() {
                 key={stat.label}
                 className={`flex flex-col-reverse gap-2 ${
                   i > 0
-                    ? "border-l border-slate-200 pl-4 dark:border-slate-800 sm:pl-6"
+                    ? "border-l border-slate-200 pl-4 dark:border-neutral-800 sm:pl-6"
                     : ""
                 } ${i < HERO_STATS.length - 1 ? "pr-4 sm:pr-6" : ""}`}
               >
-                <dt className="text-xs font-medium uppercase leading-normal tracking-[0.14em] text-slate-400 dark:text-slate-500">
+                <dt className="text-xs font-medium uppercase leading-normal tracking-[0.14em] text-slate-400 dark:text-neutral-500">
                   {stat.label}
                 </dt>
                 <dd
@@ -235,7 +248,7 @@ function AboutHero() {
           transition={{ duration: 0.7, delay: 0.15, ease: EASE_OUT }}
           className="relative lg:col-span-6"
         >
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100 shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_24px_60px_-30px_rgba(15,23,42,0.55)] sm:aspect-[3/2] dark:bg-slate-800 dark:shadow-[0_0_0_1px_rgba(148,163,184,0.14),0_24px_60px_-30px_rgba(2,6,23,0.9)]">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100 shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_24px_60px_-30px_rgba(15,23,42,0.55)] sm:aspect-[3/2] dark:bg-neutral-800 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.10),0_24px_60px_-30px_rgba(0,0,0,0.9)]">
             <Image
               src="/teams/team.jpg"
               alt="The DevSolve engineering and security team"
@@ -265,7 +278,7 @@ function AboutHero() {
               >
                 One team, one platform
               </p>
-              <p className="text-xs text-slate-400 dark:text-slate-500">
+              <p className="text-xs text-slate-400 dark:text-neutral-500">
                 Bounties, challenges and community in one place
               </p>
             </div>
@@ -332,7 +345,7 @@ function MissionVision() {
   return (
     <section
       ref={ref}
-      className="relative overflow-hidden border-y border-slate-200 bg-white py-20 sm:py-24 dark:border-slate-800 dark:bg-slate-950"
+      className={`relative overflow-hidden py-20 sm:py-24 ${SECTION_LIFTED}`}
     >
       <SectionBackdrop seed={2} gridSize={88} />
 
@@ -380,15 +393,15 @@ function MissionVision() {
                   {pillar.title}
                 </h3>
 
-                <p className="mt-3 text-base leading-relaxed text-slate-500 dark:text-slate-400">
+                <p className="mt-3 text-base leading-relaxed text-slate-500 dark:text-neutral-400">
                   {pillar.body}
                 </p>
 
-                <ul className="mt-7 space-y-3 border-t border-slate-200 pt-6 dark:border-slate-800">
+                <ul className="mt-7 space-y-3 border-t border-slate-200 pt-6 dark:border-neutral-800">
                   {pillar.points.map((point) => (
                     <li
                       key={point}
-                      className="flex items-start gap-3 text-sm text-slate-500 dark:text-slate-400"
+                      className="flex items-start gap-3 text-sm text-slate-500 dark:text-neutral-400"
                     >
                       <CheckCircle2
                         className={`mt-0.5 size-4 shrink-0 ${pillar.inkClass}`}
@@ -415,10 +428,10 @@ function MissionVision() {
    than three unrelated hues — the same treatment the landing gives it, and
    the same one the role chips further down the page use. */
 const SEVERITY_CHIP: Record<string, string> = {
-  Critical: "bg-[#1E293B] text-white dark:bg-slate-100 dark:text-slate-900",
-  High: "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-100",
+  Critical: "bg-[#1E293B] text-white dark:bg-neutral-100 dark:text-neutral-900",
+  High: "bg-slate-200 text-slate-700 dark:bg-neutral-700 dark:text-neutral-100",
   Medium:
-    "border border-slate-200 text-slate-500 dark:border-slate-700 dark:text-slate-400",
+    "border border-slate-200 text-slate-500 dark:border-neutral-700 dark:text-neutral-400",
 };
 
 const QUEUE_ROWS = [
@@ -432,7 +445,7 @@ function ReportQueue({ inView }: { inView: boolean }) {
   const ink = useInk();
 
   return (
-    <div className="space-y-2.5 rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+    <div className="space-y-2.5 rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-neutral-800 dark:bg-neutral-950/60">
       {QUEUE_ROWS.map((row, i) => (
         <div key={row.severity} className="flex items-center gap-3">
           <span
@@ -441,7 +454,7 @@ function ReportQueue({ inView }: { inView: boolean }) {
             {row.severity}
           </span>
 
-          <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+          <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-neutral-800">
             <motion.span
               className="block h-full rounded-full bg-[#2563EB] dark:bg-blue-400"
               initial={{ width: 0 }}
@@ -477,7 +490,7 @@ function MiniBoard({ inView }: { inView: boolean }) {
   const ink = useInk();
 
   return (
-    <div className="divide-y divide-slate-200 rounded-xl border border-slate-200 bg-slate-50/80 px-4 dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-950/60">
+    <div className="divide-y divide-slate-200 rounded-xl border border-slate-200 bg-slate-50/80 px-4 dark:divide-neutral-800 dark:border-neutral-800 dark:bg-neutral-950/60">
       {BOARD_ROWS.map((row, i) => (
         <motion.div
           key={row.handle}
@@ -490,7 +503,7 @@ function MiniBoard({ inView }: { inView: boolean }) {
             className={`flex size-6 shrink-0 items-center justify-center rounded-lg text-xs font-bold tabular-nums ${
               i === 0
                 ? "bg-[#2563EB] text-white"
-                : "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                : "bg-slate-200 text-slate-600 dark:bg-neutral-800 dark:text-neutral-300"
             }`}
           >
             {i + 1}
@@ -579,7 +592,7 @@ function Capabilities() {
   return (
     <section
       ref={ref}
-      className="relative overflow-hidden bg-slate-50 py-20 sm:py-24 dark:bg-slate-950"
+      className={`relative overflow-hidden py-20 sm:py-24 ${SECTION_RECESSED}`}
     >
       <SectionBackdrop seed={3} gridSize={88} />
 
@@ -608,14 +621,17 @@ function Capabilities() {
                 className={`group flex flex-col p-6 sm:p-7 ${item.span} ${CARD} ${CARD_HOVER}`}
               >
                 <div className="flex items-start justify-between gap-4">
-                  <span className="flex size-11 items-center justify-center rounded-xl bg-slate-100 transition-colors group-hover:bg-blue-50 dark:bg-slate-800 dark:group-hover:bg-blue-500/15">
+                  <span className="flex size-11 items-center justify-center rounded-xl bg-slate-100 transition-colors group-hover:bg-blue-50 dark:bg-neutral-800 dark:group-hover:bg-blue-500/15">
                     <Icon className="size-5 text-[#2563EB] dark:text-blue-400" />
                   </span>
 
                   {/* The index is part of the composition rather than a
                       footnote — it is the only thing that moves on hover. */}
                   <span
-                    className="text-2xl font-bold leading-none tracking-[-0.04em] tabular-nums text-slate-200 transition-colors group-hover:text-[#2563EB] dark:text-slate-800 dark:group-hover:text-blue-400"
+                    /* neutral-800 on a neutral-900 card is not a de-emphasised
+                       number, it is an invisible one — dark needs a step
+                       further from its surface than light does. */
+                    className="text-2xl font-bold leading-none tracking-[-0.04em] tabular-nums text-slate-200 transition-colors group-hover:text-[#2563EB] dark:text-neutral-700 dark:group-hover:text-blue-400"
                     aria-hidden
                   >
                     {pad2(i + 1)}
@@ -629,7 +645,7 @@ function Capabilities() {
                   {item.title}
                 </h3>
 
-                <p className="mt-2 max-w-prose text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                <p className="mt-2 max-w-prose text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
                   {item.body}
                 </p>
 
@@ -644,7 +660,7 @@ function Capabilities() {
                       {item.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                          className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:bg-neutral-800 dark:text-neutral-400"
                         >
                           {tag}
                         </span>
@@ -700,7 +716,7 @@ function TechCard({ tech }: { tech: Technology }) {
         >
           {tech.name}
         </h3>
-        <p className="mt-0.5 text-xs leading-snug text-slate-500 dark:text-slate-400">
+        <p className="mt-0.5 text-xs leading-snug text-slate-500 dark:text-neutral-400">
           {tech.description}
         </p>
       </div>
@@ -757,7 +773,9 @@ function TechConstellation({
       {RINGS.map((size, i) => (
         <motion.div
           key={size}
-          className="absolute rounded-[28%] border border-slate-200/80 dark:border-slate-800/80"
+          /* Full opacity on dark: neutral-800 at 80% over neutral-950 is below
+             the point where a 1px rule still reads as a ring. */
+          className="absolute rounded-[28%] border border-slate-200/80 dark:border-neutral-800"
           style={{
             left: HUB.x - size / 2,
             top: HUB.y - size / 2,
@@ -875,7 +893,7 @@ function TechStack({
   return (
     <section
       ref={ref}
-      className="relative overflow-hidden border-y border-slate-200 bg-white py-20 sm:py-24 dark:border-slate-800 dark:bg-slate-950"
+      className={`relative overflow-hidden py-20 sm:py-24 ${SECTION_LIFTED}`}
     >
       <SectionBackdrop seed={4} gridSize={88} />
 
@@ -923,12 +941,12 @@ function TechStack({
    The ramp inverts on dark: what carries the ordering is distance from
    the surface, not the direction of travel. */
 const ROLE_CHIP: Record<string, string> = {
-  Mentor: "bg-[#1E293B] text-white dark:bg-slate-100 dark:text-slate-900",
-  Leader: "bg-[#1E293B] text-white dark:bg-slate-100 dark:text-slate-900",
+  Mentor: "bg-[#1E293B] text-white dark:bg-neutral-100 dark:text-neutral-900",
+  Leader: "bg-[#1E293B] text-white dark:bg-neutral-100 dark:text-neutral-900",
   "Sub Leader":
-    "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-100",
+    "bg-slate-200 text-slate-700 dark:bg-neutral-700 dark:text-neutral-100",
   Member:
-    "border border-slate-200 text-slate-500 dark:border-slate-700 dark:text-slate-400",
+    "border border-slate-200 text-slate-500 dark:border-neutral-700 dark:text-neutral-400",
 };
 
 type SocialLink = { href: string; icon: IconType | LucideIcon; label: string };
@@ -988,7 +1006,7 @@ function MemberCard({
       transition={{ duration: 0.5, delay, ease: EASE_OUT }}
       className={`group flex h-full w-full flex-col overflow-hidden ${CARD} ${CARD_HOVER}`}
     >
-      <div className="relative aspect-4/5 overflow-hidden bg-slate-100 dark:bg-slate-800">
+      <div className="relative aspect-4/5 overflow-hidden bg-slate-100 dark:bg-neutral-800">
         <Image
           src={member.image}
           alt={member.name}
@@ -1001,7 +1019,7 @@ function MemberCard({
             not for decoration — so it only covers the strip that carries it. */}
         <div className="absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-slate-950/70 to-transparent" />
 
-        <span className="absolute bottom-3 left-3 rounded-lg bg-white/95 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-700 backdrop-blur-sm dark:bg-slate-900/90 dark:text-slate-200">
+        <span className="absolute bottom-3 left-3 rounded-lg bg-white/95 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-700 backdrop-blur-sm dark:bg-neutral-900/90 dark:text-neutral-200">
           {member.subRole ?? "Full Stack"}
         </span>
       </div>
@@ -1023,13 +1041,13 @@ function MemberCard({
         </div>
 
         {member.quote && (
-          <p className="mt-2 line-clamp-2 text-sm italic leading-relaxed text-slate-500 dark:text-slate-400">
+          <p className="mt-2 line-clamp-2 text-sm italic leading-relaxed text-slate-500 dark:text-neutral-400">
             &ldquo;{member.quote.replace(/^["'“”]+|["'“”]+$/g, "")}&rdquo;
           </p>
         )}
 
         {socials.length > 0 && (
-          <div className="mt-auto flex items-center gap-1.5 border-t border-slate-200 pt-4 dark:border-slate-800">
+          <div className="mt-auto flex items-center gap-1.5 border-t border-slate-200 pt-4 dark:border-neutral-800">
             {socials.map((social) => {
               const Icon = social.icon;
               const isMail = social.href.startsWith("mailto:");
@@ -1041,7 +1059,7 @@ function MemberCard({
                   target={isMail ? undefined : "_blank"}
                   rel={isMail ? undefined : "noopener noreferrer"}
                   aria-label={social.label}
-                  className="flex size-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors hover:bg-[#2563EB] hover:text-white dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-blue-500 dark:hover:text-white"
+                  className="flex size-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors hover:bg-[#2563EB] hover:text-white dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-blue-500 dark:hover:text-white"
                 >
                   <Icon className="size-3.5" aria-hidden />
                 </a>
@@ -1059,17 +1077,17 @@ function GroupLabel({ label, count }: { label: string; count: number }) {
 
   return (
     <div className="flex items-center justify-center gap-4">
-      <span className="h-px w-10 bg-slate-200 dark:bg-slate-800 sm:w-16" />
+      <span className="h-px w-10 bg-slate-200 dark:bg-neutral-800 sm:w-16" />
       <span
         className="text-xs font-bold uppercase tracking-[0.22em]"
         style={{ color: ink }}
       >
         {label}
       </span>
-      <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-bold tabular-nums text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+      <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-bold tabular-nums text-slate-500 dark:bg-neutral-800 dark:text-neutral-400">
         {String(count).padStart(2, "0")}
       </span>
-      <span className="h-px w-10 bg-slate-200 dark:bg-slate-800 sm:w-16" />
+      <span className="h-px w-10 bg-slate-200 dark:bg-neutral-800 sm:w-16" />
     </div>
   );
 }
@@ -1082,7 +1100,7 @@ function TeamSection() {
     <section
       id="team"
       ref={ref}
-      className="relative overflow-hidden bg-slate-50 py-20 sm:py-24 dark:bg-slate-950"
+      className={`relative overflow-hidden py-20 sm:py-24 ${SECTION_RECESSED}`}
     >
       <SectionBackdrop seed={5} gridSize={88} />
 
@@ -1175,7 +1193,7 @@ const SOCIAL_ACCOUNTS = [
 ];
 
 const FIELD =
-  "w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#2563EB] focus:ring-4 focus:ring-blue-500/15 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-400";
+  "w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#2563EB] focus:ring-4 focus:ring-blue-500/15 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:border-blue-400";
 
 const EMPTY_FORM = { name: "", email: "", subject: "", message: "" };
 
@@ -1204,7 +1222,7 @@ function ContactSection() {
     <section
       id="contact"
       ref={ref}
-      className="relative overflow-hidden border-t border-slate-200 bg-white py-20 sm:py-24 dark:border-slate-800 dark:bg-slate-950"
+      className={`relative overflow-hidden py-20 sm:py-24 ${SECTION_LIFTED}`}
     >
       <SectionBackdrop seed={6} gridSize={88} />
 
@@ -1235,7 +1253,7 @@ function ContactSection() {
                 <div>
                   <label
                     htmlFor="contact-name"
-                    className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300"
+                    className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-neutral-300"
                   >
                     Full name
                   </label>
@@ -1256,7 +1274,7 @@ function ContactSection() {
                 <div>
                   <label
                     htmlFor="contact-email"
-                    className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300"
+                    className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-neutral-300"
                   >
                     Email address
                   </label>
@@ -1278,7 +1296,7 @@ function ContactSection() {
               <div>
                 <label
                   htmlFor="contact-subject"
-                  className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300"
+                  className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-neutral-300"
                 >
                   Subject
                 </label>
@@ -1298,7 +1316,7 @@ function ContactSection() {
               <div>
                 <label
                   htmlFor="contact-message"
-                  className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300"
+                  className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-neutral-300"
                 >
                   Message
                 </label>
@@ -1368,7 +1386,7 @@ function ContactSection() {
                   }}
                   className={`flex items-start gap-4 p-5 ${CARD}`}
                 >
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-neutral-800">
                     <Icon
                       className="size-4.5 text-[#2563EB] dark:text-blue-400"
                       aria-hidden
@@ -1383,7 +1401,7 @@ function ContactSection() {
                       {detail.title}
                     </h4>
 
-                    <div className="mt-1 flex flex-col gap-0.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                    <div className="mt-1 flex flex-col gap-0.5 text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
                       {detail.lines.map((line) => {
                         const href =
                           "href" in detail && detail.href
@@ -1434,7 +1452,7 @@ function ContactSection() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={account.label}
-                      className="flex size-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors hover:bg-[#2563EB] hover:text-white dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-blue-500 dark:hover:text-white"
+                      className="flex size-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors hover:bg-[#2563EB] hover:text-white dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-blue-500 dark:hover:text-white"
                     >
                       <Icon className="size-4" aria-hidden />
                     </a>
@@ -1455,7 +1473,7 @@ function ContactSection() {
 
 export default function AboutPage() {
   return (
-    <div className="text-slate-900 selection:bg-blue-100 selection:text-blue-900 dark:text-slate-100">
+    <div className="text-slate-900 selection:bg-blue-100 selection:text-blue-900 dark:text-neutral-100 dark:selection:bg-blue-500/30 dark:selection:text-blue-50">
       <AboutHero />
       <MissionVision />
       <Capabilities />

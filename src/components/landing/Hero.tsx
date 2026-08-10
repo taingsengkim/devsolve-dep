@@ -398,7 +398,7 @@ function SourceTile({
         }
       >
         <motion.div
-          className="flex size-13 items-center justify-center rounded-2xl border border-slate-200/90 bg-white dark:border-slate-700/80 dark:bg-slate-900"
+          className="flex size-13 items-center justify-center rounded-2xl border border-slate-200/90 bg-white dark:border-neutral-700/80 dark:bg-neutral-900"
           animate={{
             scale: isLit ? 1.14 : 1,
             boxShadow: isLit
@@ -552,7 +552,7 @@ function OutputPanel({
       >
         {/* 2D skew only — a real 3D rotation would rasterise the subtree */}
         <motion.div
-          className="relative rounded-xl border border-slate-200/90 bg-white p-3.5 dark:border-slate-700/80 dark:bg-slate-900"
+          className="relative rounded-xl border border-slate-200/90 bg-white p-3.5 dark:border-neutral-700/80 dark:bg-neutral-900"
           style={{ transform: "skewY(-9deg)" }}
           animate={{
             boxShadow: isLit
@@ -561,7 +561,7 @@ function OutputPanel({
           }}
           transition={{ duration: 0.3 }}
         >
-          <p className="text-sm font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+          <p className="text-sm font-semibold tracking-tight text-slate-900 dark:text-neutral-100">
             {panel.label}
           </p>
 
@@ -569,7 +569,7 @@ function OutputPanel({
             {panel.rows.map((w, i) => (
               <motion.span
                 key={i}
-                className="block h-1.5 rounded-full bg-slate-100 dark:bg-slate-700/70"
+                className="block h-1.5 rounded-full bg-slate-100 dark:bg-neutral-700/70"
                 initial={{ width: 0 }}
                 animate={{ width: `${w}%` }}
                 transition={{
@@ -1081,7 +1081,7 @@ function LifecycleStrip() {
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, delay: 1.5, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full shrink-0 border-t border-slate-200/80 pt-2 dark:border-slate-800/80"
+      className="w-full shrink-0 border-t border-slate-200/80 pt-2 dark:border-neutral-800/80"
     >
       {/* Narrow screens scroll the rail rather than shrink the labels past
           readability. `overflow-x-auto` also computes overflow-y to auto, so
@@ -1091,7 +1091,7 @@ function LifecycleStrip() {
         <div className="relative mx-auto min-w-155 max-w-4xl px-6">
           {/* Track spans first node centre to last — 1.5rem of padding plus
               half of a 5rem stage column. */}
-          <div className="absolute inset-x-16 top-5 h-0.5 rounded-full bg-slate-200/90 dark:bg-slate-700/70" />
+          <div className="absolute inset-x-16 top-5 h-0.5 rounded-full bg-slate-200/90 dark:bg-neutral-700/70" />
 
           <motion.div
             className="absolute left-16 top-5 h-0.5 rounded-full"
@@ -1156,7 +1156,7 @@ function LifecycleStrip() {
                           ? ""
                           : isDone
                             ? "bg-emerald-50 text-emerald-500 dark:bg-emerald-500/15 dark:text-emerald-400"
-                            : "bg-white text-slate-300 dark:bg-slate-800 dark:text-slate-600"
+                            : "bg-white text-slate-300 dark:bg-neutral-800 dark:text-neutral-600"
                       }`}
                       animate={{ scale: isActive ? 1.12 : 1 }}
                       transition={{
@@ -1181,10 +1181,10 @@ function LifecycleStrip() {
                   <span
                     className={`text-sm font-semibold transition-colors duration-300 ${
                       isActive
-                        ? "text-slate-900 dark:text-slate-100"
+                        ? "text-slate-900 dark:text-neutral-100"
                         : isDone
                           ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-slate-400 dark:text-slate-600"
+                          : "text-slate-400 dark:text-neutral-600"
                     }`}
                   >
                     {stage.name}
@@ -1202,7 +1202,7 @@ function LifecycleStrip() {
         <motion.span
           animate={reduce ? undefined : { rotate: 360 }}
           transition={{ duration: 9, repeat: Infinity, ease: "linear" }}
-          className="inline-flex shrink-0 text-slate-400 dark:text-slate-600"
+          className="inline-flex shrink-0 text-slate-400 dark:text-neutral-600"
         >
           <RotateCw className="size-3.5" />
         </motion.span>
@@ -1214,7 +1214,7 @@ function LifecycleStrip() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -7 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="truncate text-center text-sm text-slate-500 dark:text-slate-400"
+            className="truncate text-center text-sm text-slate-500 dark:text-neutral-400"
           >
             {STAGES[active].caption}
           </motion.p>
@@ -1285,7 +1285,7 @@ const PULSES = (() => {
    the cursor, not as tiles jumping. Eased out both ways, and slower on the
    way back so the trail settles rather than snaps. */
 const GRID_TILE =
-  "relative border-b border-r border-slate-900/[0.045] transition-all duration-[650ms] ease-[cubic-bezier(0.33,1,0.68,1)] hover:z-10 hover:scale-[1.035] hover:rounded-lg hover:border-transparent hover:bg-white hover:shadow-[0_5px_16px_-9px_rgba(37,99,235,0.3),0_0_0_1px_rgba(37,99,235,0.07)] hover:duration-[340ms] dark:border-white/[0.045] dark:hover:bg-slate-800/70 dark:hover:shadow-[0_5px_16px_-9px_rgba(37,99,235,0.55),0_0_0_1px_rgba(96,165,250,0.14)]";
+  "relative border-b border-r border-slate-900/[0.045] transition-all duration-[650ms] ease-[cubic-bezier(0.33,1,0.68,1)] hover:z-10 hover:scale-[1.035] hover:rounded-lg hover:border-transparent hover:bg-white hover:shadow-[0_5px_16px_-9px_rgba(37,99,235,0.3),0_0_0_1px_rgba(37,99,235,0.07)] hover:duration-[340ms] dark:border-white/[0.045] dark:hover:bg-neutral-800/70 dark:hover:shadow-[0_5px_16px_-9px_rgba(37,99,235,0.55),0_0_0_1px_rgba(96,165,250,0.14)]";
 
 function HeroBackdrop() {
   const reduce = useReducedMotion();
@@ -1421,7 +1421,7 @@ export function Hero() {
   return (
     // The negative margin cancels the layout's navbar padding so the
     // backdrop runs to the very top and the nav island floats over it.
-    <section className="relative -mt-(--navbar-height) h-dvh overflow-hidden bg-[#F7F8FB] dark:bg-slate-950">
+    <section className="relative -mt-(--navbar-height) h-dvh overflow-hidden bg-[#F7F8FB] dark:bg-neutral-950">
       <HeroBackdrop />
 
       {/* Deliberately not max-w-7xl: capping the column at 1280 capped the
@@ -1437,7 +1437,7 @@ export function Hero() {
         <h1
           /* Colour is a class, not an inline style, so the dark variant can
              reach it. #1E293B is the brand secondary. */
-          className="mt-[1.5vh] max-w-3xl shrink-0 text-center font-semibold leading-[1.05] tracking-[-0.035em] text-[#1E293B] sm:mt-[2.2vh] dark:text-slate-50"
+          className="mt-[1.5vh] max-w-3xl shrink-0 text-center font-semibold leading-[1.05] tracking-[-0.035em] text-[#1E293B] sm:mt-[2.2vh] dark:text-neutral-50"
           /* vh in the clamp as well as vw: on a short window the headline has
              to give height back to the scene, not just on a narrow one. */
           style={{
@@ -1456,7 +1456,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.68, ease: "easeOut" }}
-          className="mt-3 max-w-xl shrink-0 text-center text-sm leading-[1.6] text-slate-500 sm:text-[15px] dark:text-slate-400"
+          className="mt-3 max-w-xl shrink-0 text-center text-sm leading-[1.6] text-slate-500 sm:text-[15px] dark:text-neutral-400"
         >
           Bounty programs, real vulnerability triage, and a community that
           solves problems in the open — wired into every stage of how your team
@@ -1485,7 +1485,7 @@ export function Hero() {
           <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0, scale: 0.98 }}>
             <Link
               href="/programs"
-              className="inline-flex items-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-[0_6px_18px_-10px_rgba(15,23,42,0.4)] transition-colors hover:bg-slate-50 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-100 dark:shadow-[0_6px_18px_-10px_rgba(2,6,23,0.8)] dark:hover:bg-slate-800"
+              className="inline-flex items-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-[0_6px_18px_-10px_rgba(15,23,42,0.4)] transition-colors hover:bg-slate-50 dark:border-neutral-700/80 dark:bg-neutral-900 dark:text-neutral-100 dark:shadow-[0_6px_18px_-10px_rgba(0,0,0,0.8)] dark:hover:bg-neutral-800"
             >
               Browse programs
             </Link>

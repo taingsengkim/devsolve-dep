@@ -373,10 +373,10 @@ const Navbar = () => {
           <div
             className={cn(
               "pointer-events-auto flex min-h-16 items-center rounded-2xl border px-4 backdrop-blur-xl transition-shadow duration-300 sm:px-6",
-              "border-slate-200/80 bg-white/90 dark:border-slate-800/80 dark:bg-slate-950/85",
+              "border-slate-200/80 bg-white/90 dark:border-neutral-800/80 dark:bg-neutral-950/85",
               scrolled
-                ? "shadow-[0_0_0_1px_rgba(30,41,59,0.05),0_14px_34px_-12px_rgba(15,23,42,0.45)] dark:shadow-[0_16px_38px_rgba(2,6,23,0.5)]"
-                : "shadow-[0_0_0_1px_rgba(30,41,59,0.04),0_8px_24px_-14px_rgba(15,23,42,0.35)] dark:shadow-[0_10px_30px_rgba(2,6,23,0.28)]",
+                ? "shadow-[0_0_0_1px_rgba(30,41,59,0.05),0_14px_34px_-12px_rgba(15,23,42,0.45)] dark:shadow-[0_16px_38px_rgba(0,0,0,0.5)]"
+                : "shadow-[0_0_0_1px_rgba(30,41,59,0.04),0_8px_24px_-14px_rgba(15,23,42,0.35)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.28)]",
             )}
           >
             {/* Gaps tighten where the bar is tightest. `min-w-0` on the middle
@@ -439,7 +439,7 @@ const Navbar = () => {
                               "group relative inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold transition-all duration-200",
                               isActive || communityMenuOpen
                                 ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
-                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900/80 dark:hover:text-white",
+                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-neutral-300 dark:hover:bg-neutral-900/80 dark:hover:text-white",
                             )}
                           >
                             {/* The label navigates straight to /community;
@@ -519,16 +519,16 @@ const Navbar = () => {
                                 {/* Notch, tying the island back to its trigger */}
                                 <span
                                   aria-hidden="true"
-                                  className="absolute left-1/2 top-1.75 size-3 -translate-x-1/2 rotate-45 rounded-[3px] border-l border-t border-slate-200/90 bg-white dark:border-slate-800 dark:bg-slate-950"
+                                  className="absolute left-1/2 top-1.75 size-3 -translate-x-1/2 rotate-45 rounded-[3px] border-l border-t border-slate-200/90 bg-white dark:border-neutral-800 dark:bg-neutral-950"
                                 />
 
-                                <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-2 shadow-[0_18px_44px_-14px_rgba(15,23,42,0.3)] dark:border-slate-800 dark:bg-slate-950 dark:shadow-[0_22px_50px_-16px_rgba(2,6,23,0.6)]">
+                                <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-2 shadow-[0_18px_44px_-14px_rgba(15,23,42,0.3)] dark:border-neutral-800 dark:bg-neutral-950 dark:shadow-[0_22px_50px_-16px_rgba(0,0,0,0.6)]">
                                   <div
                                     aria-hidden="true"
                                     className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-linear-to-b from-blue-50/80 to-transparent dark:from-blue-500/10"
                                   />
 
-                                  <p className="relative z-10 px-3 pb-1 pt-1.5 text-xs font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">
+                                  <p className="relative z-10 px-3 pb-1 pt-1.5 text-xs font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-neutral-500">
                                     Start a discussion
                                   </p>
 
@@ -555,7 +555,7 @@ const Navbar = () => {
                                             "group/item flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 dark:focus-visible:ring-blue-500/40",
                                             isItemActive
                                               ? "bg-blue-50 dark:bg-blue-500/15"
-                                              : "hover:bg-slate-50 dark:hover:bg-slate-900/80",
+                                              : "hover:bg-slate-50 dark:hover:bg-neutral-900/80",
                                           )}
                                         >
                                           <span
@@ -563,7 +563,7 @@ const Navbar = () => {
                                               "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset transition-colors duration-200",
                                               isItemActive
                                                 ? "bg-blue-600 text-white ring-blue-600"
-                                                : "bg-blue-50 text-blue-600 ring-blue-100 group-hover/item:bg-blue-600 group-hover/item:text-white group-hover/item:ring-blue-600 dark:bg-slate-900 dark:text-blue-300 dark:ring-slate-800 dark:group-hover/item:bg-blue-500 dark:group-hover/item:text-white dark:group-hover/item:ring-blue-500",
+                                                : "bg-blue-50 text-blue-600 ring-blue-100 group-hover/item:bg-blue-600 group-hover/item:text-white group-hover/item:ring-blue-600 dark:bg-neutral-900 dark:text-blue-300 dark:ring-neutral-800 dark:group-hover/item:bg-blue-500 dark:group-hover/item:text-white dark:group-hover/item:ring-blue-500",
                                             )}
                                           >
                                             <CommunityMenuIcon
@@ -577,13 +577,13 @@ const Navbar = () => {
                                                 "flex items-center gap-1.5 text-sm font-semibold",
                                                 isItemActive
                                                   ? "text-blue-700 dark:text-blue-300"
-                                                  : "text-slate-900 dark:text-slate-100",
+                                                  : "text-slate-900 dark:text-neutral-100",
                                               )}
                                             >
                                               {item.name}
                                               <ArrowRight className="size-3.5 -translate-x-1 opacity-0 transition-all duration-200 group-hover/item:translate-x-0 group-hover/item:opacity-100" />
                                             </span>
-                                            <span className="mt-0.5 block text-sm leading-5 text-slate-500 dark:text-slate-400">
+                                            <span className="mt-0.5 block text-sm leading-5 text-slate-500 dark:text-neutral-400">
                                               {item.description}
                                             </span>
                                           </span>
@@ -615,7 +615,7 @@ const Navbar = () => {
                           "group relative inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg px-3 text-sm font-semibold transition-all duration-200 xl:px-4",
                           isActive
                             ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
-                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900/80 dark:hover:text-white",
+                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-neutral-300 dark:hover:bg-neutral-900/80 dark:hover:text-white",
                         )}
                       >
                         <span>{link.name}</span>
@@ -649,7 +649,7 @@ const Navbar = () => {
                       ? "Switch to light mode"
                       : "Switch to dark mode"
                   }
-                  className="hidden size-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-[0_2px_10px_rgba(15,23,42,0.05)] transition-all duration-200 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-blue-500/40 dark:hover:bg-slate-800 dark:hover:text-blue-300 dark:focus-visible:ring-blue-500/30 xl:inline-flex"
+                  className="hidden size-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-[0_2px_10px_rgba(15,23,42,0.05)] transition-all duration-200 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 dark:border-neutral-800 dark:bg-neutral-900/80 dark:text-neutral-100 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800 dark:hover:text-blue-300 dark:focus-visible:ring-blue-500/30 xl:inline-flex"
                   iconClassName="size-[18px]"
                 />
 
@@ -672,7 +672,7 @@ const Navbar = () => {
                       ? "Close navigation menu"
                       : "Open navigation menu"
                   }
-                  className="size-10 rounded-lg border-slate-300 bg-white text-slate-700 shadow-xs hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-blue-500/40 dark:hover:bg-slate-800 dark:hover:text-blue-200 lg:hidden"
+                  className="size-10 rounded-lg border-slate-300 bg-white text-slate-700 shadow-xs hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:border-neutral-700/80 dark:bg-neutral-900/80 dark:text-neutral-100 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800 dark:hover:text-blue-200 lg:hidden"
                 >
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.span
@@ -712,7 +712,7 @@ const Navbar = () => {
               }}
               className="pointer-events-auto overflow-hidden px-4 pb-4 sm:px-6 lg:hidden"
             >
-              <div className="mx-auto w-full max-w-7xl rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_8px_24px_rgba(15,23,42,0.08)] dark:border-slate-800/80 dark:bg-slate-950/95 dark:shadow-[0_12px_32px_rgba(2,6,23,0.3)]">
+              <div className="mx-auto w-full max-w-7xl rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_8px_24px_rgba(15,23,42,0.08)] dark:border-neutral-800/80 dark:bg-neutral-950/95 dark:shadow-[0_12px_32px_rgba(0,0,0,0.3)]">
                 <nav
                   aria-label="Mobile navigation"
                   className="flex flex-col gap-1"
@@ -728,7 +728,7 @@ const Navbar = () => {
                               "flex min-h-10 w-full items-center justify-between rounded-lg text-sm font-semibold transition-colors",
                               isActive || mobileCommunityOpen
                                 ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
-                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900/80 dark:hover:text-white",
+                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-neutral-300 dark:hover:bg-neutral-900/80 dark:hover:text-white",
                             )}
                           >
                             {/* Same split as desktop: label navigates, the
@@ -790,20 +790,20 @@ const Navbar = () => {
                                           isItemActive ? "page" : undefined
                                         }
                                         className={cn(
-                                          "grid min-h-[104px] grid-cols-[40px_1fr_18px] items-start gap-3 rounded-xl bg-white px-3.5 py-3 transition-colors dark:bg-slate-900/70",
+                                          "grid min-h-[104px] grid-cols-[40px_1fr_18px] items-start gap-3 rounded-xl bg-white px-3.5 py-3 transition-colors dark:bg-neutral-900/70",
                                           isItemActive
-                                            ? "bg-slate-100 text-blue-700 dark:bg-slate-800/90 dark:text-blue-300"
-                                            : "text-slate-600 hover:bg-slate-100/90 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800/90 dark:hover:text-white",
+                                            ? "bg-slate-100 text-blue-700 dark:bg-neutral-800/90 dark:text-blue-300"
+                                            : "text-slate-600 hover:bg-slate-100/90 hover:text-slate-950 dark:text-neutral-300 dark:hover:bg-neutral-800/90 dark:hover:text-white",
                                         )}
                                       >
-                                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-slate-800 dark:text-blue-300">
+                                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-neutral-800 dark:text-blue-300">
                                           <CommunityMenuIcon icon={item.icon} />
                                         </span>
                                         <span className="min-w-0">
-                                          <span className="block text-base font-semibold text-slate-900 dark:text-slate-100">
+                                          <span className="block text-base font-semibold text-slate-900 dark:text-neutral-100">
                                             {item.name}
                                           </span>
-                                          <span className="mt-1 block text-sm leading-5 text-slate-500 dark:text-slate-400">
+                                          <span className="mt-1 block text-sm leading-5 text-slate-500 dark:text-neutral-400">
                                             {item.description}
                                           </span>
                                         </span>
@@ -832,7 +832,7 @@ const Navbar = () => {
                           "flex min-h-10 items-center rounded-lg px-4 text-sm font-semibold transition-colors",
                           isActive
                             ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
-                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900/80 dark:hover:text-white",
+                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-neutral-300 dark:hover:bg-neutral-900/80 dark:hover:text-white",
                         )}
                       >
                         {link.name}
@@ -840,7 +840,7 @@ const Navbar = () => {
                     );
                   })}
 
-                  <div className="mt-3 grid gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
+                  <div className="mt-3 grid gap-2 border-t border-slate-200 pt-4 dark:border-neutral-800">
                     {sessionUser ? (
                       <>
                         {/* The same account actions the desktop dropdown has,
@@ -849,7 +849,7 @@ const Navbar = () => {
                         <Link
                           href="/dashboard/profile"
                           onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900"
+                          className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900"
                         >
                           <Avatar className="size-9 shrink-0">
                             {sessionUser.image && (
@@ -860,10 +860,10 @@ const Navbar = () => {
                             </AvatarFallback>
                           </Avatar>
                           <span className="min-w-0">
-                            <span className="block truncate text-sm font-bold text-slate-900 dark:text-slate-100">
+                            <span className="block truncate text-sm font-bold text-slate-900 dark:text-neutral-100">
                               {displayName}
                             </span>
-                            <span className="block truncate text-sm text-slate-500 dark:text-slate-400">
+                            <span className="block truncate text-sm text-slate-500 dark:text-neutral-400">
                               View profile
                             </span>
                           </span>
@@ -887,7 +887,7 @@ const Navbar = () => {
                           type="button"
                           variant="outline"
                           onClick={handleSignOut}
-                          className="h-10 rounded-lg border-slate-300 bg-white text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:border-slate-700/80 dark:bg-slate-900/80 dark:hover:bg-rose-950/40"
+                          className="h-10 rounded-lg border-slate-300 bg-white text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:border-neutral-700/80 dark:bg-neutral-900/80 dark:hover:bg-rose-950/40"
                         >
                           <LogOut className="size-4" />
                           Log out
@@ -914,7 +914,7 @@ const Navbar = () => {
                           variant="outline"
                           onClick={handleLogin}
                           disabled={isLoggingIn}
-                          className="h-10 rounded-lg border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-blue-500/40 dark:hover:bg-slate-800 dark:hover:text-blue-200"
+                          className="h-10 rounded-lg border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-700/80 dark:bg-neutral-900/80 dark:text-neutral-100 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800 dark:hover:text-blue-200"
                         >
                           {isLoggingIn ? (
                             <>
@@ -932,7 +932,7 @@ const Navbar = () => {
                       type="button"
                       variant="outline"
                       onClick={toggle}
-                      className="h-10 rounded-lg border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-blue-500/40 dark:hover:bg-slate-800 dark:hover:text-blue-200"
+                      className="h-10 rounded-lg border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-700/80 dark:bg-neutral-900/80 dark:text-neutral-100 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800 dark:hover:text-blue-200"
                     >
                       {mounted && isDark ? (
                         <>

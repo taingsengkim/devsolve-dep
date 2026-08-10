@@ -138,12 +138,14 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 
-  /* Same pool, inverted: a cool lift out of the near-black field instead of
-     a white one, or the headline sits in a bright hole. */
+  /* Same pool, inverted: a lift out of the near-black field instead of a
+     white one, or the headline sits in a bright hole. Neutral greys, not
+     slate — the dark surfaces under it are the neutral scale, and a cool
+     pool on a neutral field reads as a blue stain. */
   --hero-glow: radial-gradient(
     60rem 34rem at 50% 14%,
-    rgba(51, 65, 85, 0.55) 0%,
-    rgba(30, 41, 59, 0.35) 45%,
+    rgba(64, 64, 64, 0.55) 0%,
+    rgba(38, 38, 38, 0.35) 45%,
     transparent 78%
   );
 }
