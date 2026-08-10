@@ -11,6 +11,7 @@ import {
   LoaderCircle,
   Trash2,
   X,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,7 +34,10 @@ import {
   ProgramStateBadge,
 } from "@/components/admin/programs/ProgramStatusBadge";
 import { ProgramManagementSummaryItem } from "@/lib/types/admin/programAdminTypes";
-import { useDeleteProgramMutation } from "@/lib/redux/services/program/programsApi";
+import {
+  useDeleteProgramMutation,
+  useUpdateProgramStateMutation,
+} from "@/lib/redux/services/program/programsApi";
 import {
   useApproveProgramMutation,
   useRejectProgramMutation,
@@ -89,6 +93,22 @@ function OwnerProgramActions({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [deleteProgram, { isLoading }] = useDeleteProgramMutation();
+  const [updateProgramState, { isLoading: isActivating }] =
+    useUpdateProgramStateMutation();
+
+  const handleActivate = async () => {
+    try {
+      await updateProgramState({ id: program.id, state: "ACTIVE" }).unwrap();
+      toast.success("Program activated", {
+        description: `"${program.name}" is now active and published.`,
+      });
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message;
+      toast.error("Activation failed", {
+        description: message || "Failed to activate program.",
+      });
+    }
+  };
 
   const handleDelete = async () => {
     try {
@@ -102,14 +122,34 @@ function OwnerProgramActions({
     }
   };
 
+  const canActivate =
+    program.submissionState === "APPROVED" && program.state === "DRAFT";
+
   return (
     <>
       <div className="flex items-center justify-end gap-2">
+        {canActivate && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={isActivating || isLoading}
+            onClick={handleActivate}
+            className="h-8 rounded-xl border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400 dark:hover:bg-emerald-900/80 px-2.5 text-xs font-bold gap-1 cursor-pointer"
+          >
+            {isActivating ? (
+              <LoaderCircle className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Zap className="w-3.5 h-3.5 fill-current" />
+            )}
+            Activate
+          </Button>
+        )}
         <Link
           href={`/dashboard/program-management/${program.id}`}
           className={cn(
             buttonVariants({ variant: "outline", size: "sm" }),
-            "h-8 rounded-xl border-slate-200 px-3 text-sm font-semibold shadow-2xs dark:border-slate-800"
+            "h-8 rounded-xl border-slate-200 px-3 text-xs font-semibold shadow-2xs dark:border-slate-800"
           )}
         >
           View

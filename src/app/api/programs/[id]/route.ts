@@ -199,3 +199,75 @@ export async function DELETE(
     return unreachable();
   }
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const token = await bearerTokenFor(request);
+  if (!token) return unauthorized();
+
+  const { id } = await params;
+  let payload: unknown;
+  try {
+    payload = await request.json();
+  } catch {
+    return NextResponse.json(
+      { message: "Request body must be valid JSON" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    let upstream = await fetch(`${BACKEND_API_URL}/organizations/me/programs/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+      cache: "no-store",
+    });
+
+    if (!upstream.ok) {
+      const fallbackUpstream = await fetch(`${BACKEND_API_URL}/programs/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+        cache: "no-store",
+      });
+      if (fallbackUpstream.ok) {
+        upstream = fallbackUpstream;
+      }
+    }
+
+    const raw = await upstream.text();
+    let body: unknown = null;
+    if (raw) {
+      try {
+        body = JSON.parse(raw);
+      } catch {
+        body = { message: raw };
+      }
+    }
+
+    if (!upstream.ok) {
+      const message =
+        (body as { message?: string } | null)?.message ??
+        "Failed to update program state.";
+      return NextResponse.json(
+        { message, details: body },
+        { status: upstream.status }
+      );
+    }
+
+    return NextResponse.json(body, { status: upstream.status });
+  } catch {
+    return unreachable();
+  }
+}

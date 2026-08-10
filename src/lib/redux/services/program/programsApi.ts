@@ -94,6 +94,22 @@ export const programsApi = proxyApi.injectEndpoints({
         { type: "Program", id },
       ],
     }),
+
+    // PATCH /programs/{id} (update state: DRAFT -> ACTIVE)
+    updateProgramState: builder.mutation<
+      Program,
+      { id: string; state: "ACTIVE" | "PAUSED" | "CLOSED" | "DRAFT" }
+    >({
+      query: ({ id, state }) => ({
+        url: `/programs/${id}`,
+        method: "PATCH",
+        body: { state },
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        "Program",
+        { type: "Program", id },
+      ],
+    }),
   }),
 
   overrideExisting: true,
@@ -105,4 +121,5 @@ export const {
   useGetProgramByIdQuery,
   useCreateProgramMutation,
   useDeleteProgramMutation,
+  useUpdateProgramStateMutation,
 } = programsApi;
