@@ -24,10 +24,14 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import darkModeLogo from "@/app/devsolve_dark_mode-removebg-preview.png";
 import { ThemeToggle, useThemeToggle } from "@/components/motion/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { NavbarUserMenu } from "@/components/navbar/NavbarUserMenu";
+import {
+  NavbarUserMenu,
+  type NavbarIdentity,
+} from "@/components/navbar/NavbarUserMenu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { authClient } from "@/lib/auth/auth-client";
+import { useGetMyOrganizationQuery } from "@/lib/redux/services/organizationsApi";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
@@ -78,6 +82,30 @@ const navLinks: NavLink[] = [
 // the page, so a short flick near the top never makes the nav flicker away.
 const HIDE_AFTER = 160;
 
+function getInitials(text: string): string {
+  return text
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function organizationStatusLabel(status?: string): string {
+  switch (status) {
+    case "ACTIVE":
+      return "Verified company";
+    case "PENDING":
+      return "Under review";
+    case "REJECTED":
+      return "Verification rejected";
+    case "SUSPENDED":
+      return "Company suspended";
+    default:
+      return "Company workspace";
+  }
+}
+
 function isHrefActive(pathname: string, href: string) {
   if (href === "/") {
     return pathname === "/";
@@ -116,7 +144,52 @@ const Navbar = () => {
   const reduce = useReducedMotion();
   // Read here as well as in the menu so the mobile panel's footer can swap
   // between account actions and the signed-out calls to action.
-  const { user: sessionUser, displayName, handleSignOut } = useSidebarAuth();
+  const {
+    user: sessionUser,
+    isPending: isSessionPending,
+    areRolesResolved,
+    displayName,
+    handleSignOut,
+  } = useSidebarAuth();
+  const isCompany = sessionUser?.roles?.includes("COMPANY") ?? false;
+  const {
+    data: organization,
+    isLoading: isOrganizationLoading,
+    isFetching: isOrganizationFetching,
+  } = useGetMyOrganizationQuery(undefined, {
+    skip: !sessionUser || !areRolesResolved || !isCompany,
+  });
+  const organizationStatus = isCompany
+    ? organizationStatusLabel(organization?.status)
+    : undefined;
+  const navbarIdentity: NavbarIdentity = isCompany
+    ? {
+        isCompany: true,
+        name: organization?.name || "Company workspace",
+        detail: organization?.slug
+          ? `@${organization.slug}`
+          : organization?.domain || organizationStatus,
+        status: organizationStatus,
+        image: organization?.logoUrl,
+        profileHref: "/dashboard/profile",
+        profileLabel: "Organization profile",
+        settingsHref: "/dashboard/organizations",
+        settingsLabel: "Organization settings",
+      }
+    : {
+        isCompany: false,
+        name: displayName,
+        detail: sessionUser?.email || undefined,
+        image: sessionUser?.image,
+        profileHref: "/dashboard/profile",
+        profileLabel: "My profile",
+        settingsHref: "/dashboard/profile/settings",
+        settingsLabel: "Settings",
+      };
+  const isNavbarIdentityPending =
+    isSessionPending ||
+    (Boolean(sessionUser) && !areRolesResolved) ||
+    (isCompany && (isOrganizationLoading || isOrganizationFetching));
   // Anything inside this is "the menu"; a press anywhere else dismisses it.
   const headerRef = useRef<HTMLElement>(null);
 
@@ -659,6 +732,10 @@ const Navbar = () => {
                 <NavbarUserMenu
                   onLogin={handleLogin}
                   isLoggingIn={isLoggingIn}
+                  user={sessionUser}
+                  identity={navbarIdentity}
+                  isIdentityPending={isNavbarIdentityPending}
+                  onSignOut={handleSignOut}
                 />
 
                 <Button
@@ -847,28 +924,70 @@ const Navbar = () => {
                         {/* The same account actions the desktop dropdown has,
                             flattened — a dropdown inside a drawer is a menu
                             inside a menu. */}
-                        <Link
-                          href="/dashboard/profile"
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900"
-                        >
-                          <Avatar className="size-9 shrink-0">
-                            {sessionUser.image && (
-                              <AvatarImage src={sessionUser.image} alt="" />
-                            )}
-                            <AvatarFallback className="bg-blue-600 text-xs font-bold text-white">
-                              {displayName.slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm font-bold text-slate-900 dark:text-neutral-100">
-                              {displayName}
+                        {isNavbarIdentityPending ? (
+                          <div
+                            aria-hidden="true"
+                            className="flex animate-pulse items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900"
+                          >
+                            <div className="size-9 shrink-0 rounded-lg bg-slate-200 dark:bg-neutral-800" />
+                            <div className="flex min-w-0 flex-1 flex-col gap-2">
+                              <div className="h-3.5 w-28 rounded bg-slate-200 dark:bg-neutral-800" />
+                              <div className="h-3 w-20 rounded bg-slate-200 dark:bg-neutral-800" />
+                            </div>
+                          </div>
+                        ) : (
+                          <Link
+                            href={navbarIdentity.profileHref}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900"
+                          >
+                            <Avatar
+                              className={cn(
+                                "size-9 shrink-0",
+                                navbarIdentity.isCompany &&
+                                  "rounded-lg after:rounded-lg",
+                              )}
+                            >
+                              {navbarIdentity.image && (
+                                <AvatarImage
+                                  src={navbarIdentity.image}
+                                  alt={
+                                    navbarIdentity.isCompany
+                                      ? `${navbarIdentity.name} logo`
+                                      : ""
+                                  }
+                                  className={cn(
+                                    navbarIdentity.isCompany && "rounded-lg",
+                                  )}
+                                />
+                              )}
+                              <AvatarFallback
+                                className={cn(
+                                  "bg-blue-600 text-xs font-bold text-white",
+                                  navbarIdentity.isCompany && "rounded-lg",
+                                )}
+                              >
+                                {getInitials(navbarIdentity.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="min-w-0">
+                              <span className="block truncate text-sm font-bold text-slate-900 dark:text-neutral-100">
+                                {navbarIdentity.name}
+                              </span>
+                              <span className="block truncate text-sm text-slate-500 dark:text-neutral-400">
+                                {navbarIdentity.detail ||
+                                  navbarIdentity.profileLabel}
+                              </span>
+                              {navbarIdentity.status &&
+                                navbarIdentity.status !==
+                                  navbarIdentity.detail && (
+                                  <span className="mt-0.5 block truncate text-sm font-medium text-slate-500 dark:text-neutral-400">
+                                    {navbarIdentity.status}
+                                  </span>
+                                )}
                             </span>
-                            <span className="block truncate text-sm text-slate-500 dark:text-neutral-400">
-                              View profile
-                            </span>
-                          </span>
-                        </Link>
+                          </Link>
+                        )}
 
                         <Button
                           nativeButton={false}

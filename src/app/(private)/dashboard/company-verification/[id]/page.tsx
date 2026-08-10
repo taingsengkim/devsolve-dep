@@ -88,7 +88,9 @@ function InfoField({
   );
 }
 
-export default function OrganizationVerificationDetailPage({ params }: DetailPageProps) {
+export default function OrganizationVerificationDetailPage({
+  params,
+}: DetailPageProps) {
   const router = useRouter();
   const resolvedParams = use(params);
   const companyId = resolvedParams.id;
@@ -101,12 +103,17 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
     isError,
   } = useGetOrganizationByIdQuery(companyId, { skip: !companyId });
 
-  const { data: reviewHistory } = useGetOrganizationReviewHistoryQuery(companyId, {
-    skip: !companyId || isError,
-  });
+  const { data: reviewHistory } = useGetOrganizationReviewHistoryQuery(
+    companyId,
+    {
+      skip: !companyId || isError,
+    },
+  );
 
-  const [approveOrganization, { isLoading: isApproving }] = useApproveOrganizationMutation();
-  const [rejectOrganization, { isLoading: isRejecting }] = useRejectOrganizationMutation();
+  const [approveOrganization, { isLoading: isApproving }] =
+    useApproveOrganizationMutation();
+  const [rejectOrganization, { isLoading: isRejecting }] =
+    useRejectOrganizationMutation();
 
   const isUpdating = isApproving || isRejecting;
 
@@ -189,7 +196,8 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
     } catch (err: unknown) {
       const errorData = err as { data?: { message?: string } };
       const message =
-        errorData?.data?.message ?? "Failed to approve organization. Please try again.";
+        errorData?.data?.message ??
+        "Failed to approve organization. Please try again.";
       toast.error("Approval Failed", { description: message });
     }
   };
@@ -200,7 +208,9 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
     const trimmedReason = rejectionReason.trim();
 
     if (!trimmedReason) {
-      setRejectionError("Please provide a reason for rejecting the application.");
+      setRejectionError(
+        "Please provide a reason for rejecting the application.",
+      );
       return;
     }
 
@@ -212,7 +222,10 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
     setRejectionError(null);
 
     try {
-      await rejectOrganization({ id: company.id, reason: trimmedReason }).unwrap();
+      await rejectOrganization({
+        id: company.id,
+        reason: trimmedReason,
+      }).unwrap();
 
       setIsRejectModalOpen(false);
       setRejectionReason("");
@@ -224,7 +237,8 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
     } catch (err: unknown) {
       const errorData = err as { data?: { message?: string } };
       const message =
-        errorData?.data?.message ?? "Failed to reject organization. Please try again.";
+        errorData?.data?.message ??
+        "Failed to reject organization. Please try again.";
       toast.error("Rejection Failed", { description: message });
     }
   };
@@ -278,9 +292,12 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
         </nav>
         <Card className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 text-center space-y-4 max-w-md mx-auto my-12 shadow-2xs">
           <AlertCircle className="w-12 h-12 text-rose-500 mx-auto" />
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Organization Not Found</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+            Organization Not Found
+          </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            The requested organization details could not be retrieved from the server.
+            The requested organization details could not be retrieved from the
+            server.
           </p>
           <Button
             onClick={() => router.push("/dashboard/company-verification")}
@@ -293,7 +310,8 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
     );
   }
 
-  const isFinalized = company.status === "APPROVED" || company.status === "REJECTED";
+  const isFinalized =
+    company.status === "APPROVED" || company.status === "REJECTED";
 
   return (
     <motion.div
@@ -362,7 +380,10 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
               )}
 
               {company.submissionVersion && company.submissionVersion > 1 && (
-                <Badge variant="secondary" className="text-xs px-2.5 py-0.5 rounded-full font-semibold">
+                <Badge
+                  variant="secondary"
+                  className="text-xs px-2.5 py-0.5 rounded-full font-semibold"
+                >
                   Version {company.submissionVersion}
                 </Badge>
               )}
@@ -372,7 +393,9 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
 
         {/* Submission date & status indicator */}
         <div className="text-left md:text-right shrink-0 bg-slate-50 dark:bg-slate-800/40 p-3 sm:p-0 rounded-xl sm:bg-transparent border border-slate-100 sm:border-none dark:border-slate-800">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium block">Submitted Date</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium block">
+            Submitted Date
+          </span>
           <span className="text-sm font-bold text-slate-800 dark:text-slate-200 block mt-0.5">
             {company.submittedAt ?? company.registrationDate ?? "—"}
           </span>
@@ -388,11 +411,18 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
         >
           <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
           <div className="space-y-0.5 flex-1">
-            <h4 className="text-sm font-bold">Organization Approved & Active</h4>
+            <h4 className="text-sm font-bold">
+              Organization Approved & Active
+            </h4>
             <p className="text-xs text-emerald-700 dark:text-emerald-300/90 leading-relaxed">
-              This organization has passed verification review and has full access to managing bounty programs.
+              This organization has passed verification review and has full
+              access to managing bounty programs.
               {company.verifiedAt && (
-                <span> Verified on {new Date(company.verifiedAt).toLocaleDateString()}.</span>
+                <span>
+                  {" "}
+                  Verified on{" "}
+                  {new Date(company.verifiedAt).toLocaleDateString()}.
+                </span>
               )}
             </p>
           </div>
@@ -407,7 +437,9 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
         >
           <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
           <div className="space-y-1 flex-1">
-            <h4 className="text-sm font-bold">Verification Application Rejected</h4>
+            <h4 className="text-sm font-bold">
+              Verification Application Rejected
+            </h4>
             {company.rejectionReason && (
               <div className="p-3 bg-white/80 dark:bg-slate-900/80 rounded-xl text-xs font-medium text-rose-800 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/60">
                 <span className="font-bold block text-[11px] uppercase tracking-wider text-rose-600 dark:text-rose-400 mb-0.5">
@@ -445,7 +477,10 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
 
               <div className="flex flex-wrap items-center gap-3">
                 {isFinalized ? (
-                  <Badge variant="outline" className="px-3 py-1 text-xs font-semibold text-slate-500 border-slate-200 dark:border-slate-800">
+                  <Badge
+                    variant="outline"
+                    className="px-3 py-1 text-xs font-semibold text-slate-500 border-slate-200 dark:border-slate-800"
+                  >
                     Decision Finalized
                   </Badge>
                 ) : (
@@ -587,7 +622,6 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
               </div>
             )}
           </Card>
-
         </div>
 
         {/* ══ SIDEBAR COLUMN (1/3) ══════════════════════════════════ */}
@@ -644,7 +678,9 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
                   Submitted Date
                 </dt>
                 <dd className="font-semibold text-slate-900 dark:text-slate-100 text-right">
-                  {displayValue(company.submittedAt ?? company.registrationDate)}
+                  {displayValue(
+                    company.submittedAt ?? company.registrationDate,
+                  )}
                 </dd>
               </div>
 
@@ -676,9 +712,11 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
                     <div className="flex items-center justify-between font-semibold">
                       <span
                         className={
-                          item.decision === "APPROVED" || item.action === "APPROVED"
+                          item.decision === "APPROVED" ||
+                          item.action === "APPROVED"
                             ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                            : item.decision === "REJECTED" || item.action === "REJECTED"
+                            : item.decision === "REJECTED" ||
+                                item.action === "REJECTED"
                               ? "text-rose-600 dark:text-rose-400 font-bold"
                               : "text-slate-800 dark:text-slate-200"
                         }
@@ -687,14 +725,17 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
                       </span>
                       <span className="text-slate-400 text-[11px]">
                         {item.reviewedAt || item.createdAt
-                          ? new Date(item.reviewedAt || item.createdAt!).toLocaleDateString()
+                          ? new Date(
+                              item.reviewedAt || item.createdAt!,
+                            ).toLocaleDateString()
                           : "—"}
                       </span>
                     </div>
 
                     {(item.reviewerName || item.reviewerId) && (
                       <p className="text-slate-500 dark:text-slate-400 text-[11px]">
-                        Reviewer: {item.reviewerName ?? item.reviewerId?.slice(0, 8)}
+                        Reviewer:{" "}
+                        {item.reviewerName ?? item.reviewerId?.slice(0, 8)}
                       </p>
                     )}
 
@@ -765,8 +806,12 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
               Approve Organization Application?
             </DialogTitle>
             <DialogDescription className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              Are you sure you want to approve <strong className="text-slate-900 dark:text-slate-100 font-semibold">{company.companyName}</strong>?
-              This will grant them verified organization status and enable program publishing capabilities.
+              Are you sure you want to approve{" "}
+              <strong className="text-slate-900 dark:text-slate-100 font-semibold">
+                {company.companyName}
+              </strong>
+              ? This will grant them verified organization status and enable
+              program publishing capabilities.
             </DialogDescription>
           </DialogHeader>
 
@@ -810,8 +855,12 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
               Reject Organization Application
             </DialogTitle>
             <DialogDescription className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              Please provide a clear reason for rejecting <strong className="text-slate-900 dark:text-slate-100 font-semibold">{company.companyName}</strong>.
-              This reason will be recorded in the audit history and sent to the applicant.
+              Please provide a clear reason for rejecting{" "}
+              <strong className="text-slate-900 dark:text-slate-100 font-semibold">
+                {company.companyName}
+              </strong>
+              . This reason will be recorded in the audit history and sent to
+              the applicant.
             </DialogDescription>
           </DialogHeader>
 
@@ -840,7 +889,10 @@ export default function OrganizationVerificationDetailPage({ params }: DetailPag
           {/* Reason Input Area */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label htmlFor="rejection-reason-input" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <label
+                htmlFor="rejection-reason-input"
+                className="text-xs font-semibold text-slate-700 dark:text-slate-300"
+              >
                 Rejection Reason <span className="text-rose-500">*</span>
               </label>
               <span className="text-[11px] text-slate-400">

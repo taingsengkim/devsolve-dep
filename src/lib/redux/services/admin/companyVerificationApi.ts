@@ -59,7 +59,7 @@ export const companyVerificationApi = proxyApi.injectEndpoints({
       ],
     }),
 
-    getOrganizationById: builder.query<OrganizationResponse, string>({
+    getAdminOrganizationById: builder.query<OrganizationResponse, string>({
       query: (id) => ({
         url: `/admin/organizations/${id}`,
       }),
@@ -109,7 +109,7 @@ export const companyVerificationApi = proxyApi.injectEndpoints({
 export const {
   useGetOrganizationsQuery,
   useGetPendingOrganizationsQuery,
-  useGetOrganizationByIdQuery,
+  useGetAdminOrganizationByIdQuery,
   useApproveOrganizationMutation,
   useRejectOrganizationMutation,
   useGetOrganizationReviewHistoryQuery,

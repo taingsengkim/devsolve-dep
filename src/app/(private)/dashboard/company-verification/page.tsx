@@ -2,12 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import React, {
-  useCallback,
-  useDeferredValue,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useDeferredValue, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { AlertCircle, ArrowLeft, RefreshCw } from "lucide-react";
@@ -98,17 +93,29 @@ export default function OrganizationVerificationPage() {
     data: pendingSummary,
     isLoading: isPendingSummaryLoading,
     refetch: refetchPendingSummary,
-  } = useGetOrganizationsQuery({ status: "PENDING", pageNumber: 0, pageSize: 1 });
+  } = useGetOrganizationsQuery({
+    status: "PENDING",
+    pageNumber: 0,
+    pageSize: 1,
+  });
   const {
     data: activeSummary,
     isLoading: isActiveSummaryLoading,
     refetch: refetchActiveSummary,
-  } = useGetOrganizationsQuery({ status: "ACTIVE", pageNumber: 0, pageSize: 1 });
+  } = useGetOrganizationsQuery({
+    status: "ACTIVE",
+    pageNumber: 0,
+    pageSize: 1,
+  });
   const {
     data: rejectedSummary,
     isLoading: isRejectedSummaryLoading,
     refetch: refetchRejectedSummary,
-  } = useGetOrganizationsQuery({ status: "REJECTED", pageNumber: 0, pageSize: 1 });
+  } = useGetOrganizationsQuery({
+    status: "REJECTED",
+    pageNumber: 0,
+    pageSize: 1,
+  });
 
   const [approveOrg] = useApproveOrganizationMutation();
   const [rejectOrg] = useRejectOrganizationMutation();
@@ -138,9 +145,7 @@ export default function OrganizationVerificationPage() {
         registrationDate: formatDate(organization.createdAt),
         submittedAt: formatDate(organization.createdAt),
         status:
-          organization.status === "ACTIVE"
-            ? "APPROVED"
-            : organization.status,
+          organization.status === "ACTIVE" ? "APPROVED" : organization.status,
         contactName: organization.ownerFullName || "—",
         country: organization.country,
         industry: organization.industry,
@@ -172,7 +177,8 @@ export default function OrganizationVerificationPage() {
 
       await rejectOrg({
         id,
-        reason: notes?.trim() || "Rejected during organization verification audit.",
+        reason:
+          notes?.trim() || "Rejected during organization verification audit.",
       }).unwrap();
     },
     [approveOrg, rejectOrg],
@@ -226,7 +232,8 @@ export default function OrganizationVerificationPage() {
             Organization Verification
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Review pending applications and inspect approved or rejected organizations.
+            Review pending applications and inspect approved or rejected
+            organizations.
           </p>
         </div>
 
@@ -236,7 +243,10 @@ export default function OrganizationVerificationPage() {
               variant="outline"
               className="h-9 gap-2 rounded-xl border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
             >
-              <span aria-hidden="true" className="size-2 rounded-full bg-amber-500" />
+              <span
+                aria-hidden="true"
+                className="size-2 rounded-full bg-amber-500"
+              />
               {counts.pending} pending review{counts.pending === 1 ? "" : "s"}
             </Badge>
           )}
@@ -288,13 +298,19 @@ export default function OrganizationVerificationPage() {
               <div className="flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                 <AlertCircle className="size-6" />
               </div>
-              <CardTitle className="text-xl">Unable to load organizations</CardTitle>
+              <CardTitle className="text-xl">
+                Unable to load organizations
+              </CardTitle>
               <CardDescription className="max-w-lg text-sm">
                 {requestErrorMessage(error)}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center">
-              <Button type="button" onClick={() => void refetch()} className="rounded-xl">
+              <Button
+                type="button"
+                onClick={() => void refetch()}
+                className="rounded-xl"
+              >
                 <RefreshCw data-icon="inline-start" />
                 Try again
               </Button>
