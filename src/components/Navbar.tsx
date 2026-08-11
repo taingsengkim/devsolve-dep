@@ -252,6 +252,18 @@ const Navbar = () => {
   // extra render on something the render already knows.
   const isRetracted = hidden && !mobileMenuOpen && !communityMenuOpen;
 
+  // Prevent background scrolling when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
   useEffect(() => {
     const handleResetLoading = () => {
       setIsLoggingIn(false);
@@ -435,7 +447,7 @@ const Navbar = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: reduce ? 0 : 0.2 }}
               onClick={closeAllMenus}
-              className="pointer-events-auto fixed inset-0 cursor-default bg-slate-950/25 backdrop-blur-[2px] lg:hidden"
+              className="pointer-events-auto fixed inset-0 -z-10 cursor-default bg-slate-950/60 dark:bg-black/75 lg:hidden"
             />
           ) : null}
         </AnimatePresence>
@@ -446,7 +458,7 @@ const Navbar = () => {
           <div
             className={cn(
               "pointer-events-auto flex min-h-16 items-center rounded-2xl border px-4 backdrop-blur-xl transition-shadow duration-300 sm:px-6",
-              "border-slate-200/80 bg-white/90 dark:border-neutral-800/80 dark:bg-neutral-950/85",
+              "border-slate-200/80 bg-white dark:border-neutral-800/80 dark:bg-neutral-950/85",
               scrolled
                 ? "shadow-[0_0_0_1px_rgba(30,41,59,0.05),0_14px_34px_-12px_rgba(15,23,42,0.45)] dark:shadow-[0_16px_38px_rgba(0,0,0,0.5)]"
                 : "shadow-[0_0_0_1px_rgba(30,41,59,0.04),0_8px_24px_-14px_rgba(15,23,42,0.35)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.28)]",
@@ -484,6 +496,7 @@ const Navbar = () => {
                       sizes="(min-width: 1280px) 154px, 132px"
                       className={cn(
                         "origin-left object-contain object-left transition-transform scale-[1.15]",
+                        !isDarkLogo && "mix-blend-multiply",
                         isDarkLogo && "translate-x-[2px]",
                       )}
                     />
@@ -510,7 +523,7 @@ const Navbar = () => {
                           <div
                             className={cn(
                               "group relative inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold transition-all duration-200",
-                              isActive || communityMenuOpen
+                              isActive
                                 ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
                                 : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-neutral-300 dark:hover:bg-neutral-900/80 dark:hover:text-white",
                             )}
@@ -778,19 +791,29 @@ const Navbar = () => {
           {mobileMenuOpen ? (
             <motion.div
               id="mobile-navigation"
-              initial={{ opacity: 0, height: 0, y: -8 }}
-              animate={{ opacity: 1, height: "auto", y: 0 }}
-              exit={{ opacity: 0, height: 0, y: -8 }}
-              /* Opacity leads on the way in and trails on the way out, so the
-                 panel reads as revealed rather than as a box being resized. */
-              transition={{
-                duration: reduce ? 0 : 0.28,
-                ease: [0.22, 1, 0.36, 1],
-                opacity: { duration: reduce ? 0 : 0.18 },
+              initial={{ opacity: 0, height: 0, y: -10, scale: 0.98 }}
+              animate={{ opacity: 1, height: "auto", y: 0, scale: 1 }}
+              exit={{
+                opacity: 0,
+                height: 0,
+                y: -8,
+                scale: 0.98,
+                transition: { duration: 0.2, ease: "easeInOut" },
               }}
-              className="pointer-events-auto overflow-hidden px-4 pb-4 sm:px-6 lg:hidden"
+              transition={
+                reduce
+                  ? { duration: 0 }
+                  : {
+                      type: "spring",
+                      stiffness: 350,
+                      damping: 28,
+                      mass: 0.8,
+                    }
+              }
+              style={{ transformOrigin: "top center" }}
+              className="pointer-events-auto px-4 pb-4 sm:px-6 lg:hidden"
             >
-              <div className="mx-auto w-full max-w-7xl rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_8px_24px_rgba(15,23,42,0.08)] dark:border-neutral-800/80 dark:bg-neutral-950/95 dark:shadow-[0_12px_32px_rgba(0,0,0,0.3)]">
+              <div className="mx-auto max-h-[calc(100dvh-5.5rem)] w-full max-w-7xl overflow-y-auto rounded-2xl border border-slate-200/80 bg-white/90 p-3.5 backdrop-blur-xl shadow-2xl dark:border-neutral-800/80 dark:bg-neutral-950/85 dark:shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
                 <nav
                   aria-label="Mobile navigation"
                   className="flex flex-col gap-1"
@@ -804,7 +827,7 @@ const Navbar = () => {
                           <div
                             className={cn(
                               "flex min-h-10 w-full items-center justify-between rounded-lg text-sm font-semibold transition-colors",
-                              isActive || mobileCommunityOpen
+                              isActive
                                 ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
                                 : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-neutral-300 dark:hover:bg-neutral-900/80 dark:hover:text-white",
                             )}
@@ -828,64 +851,97 @@ const Navbar = () => {
                               }
                               className="flex min-h-10 items-center pl-3 pr-4"
                             >
-                              <ChevronDown
-                                className={cn(
-                                  "size-4 transition-transform duration-200",
-                                  mobileCommunityOpen && "rotate-180",
-                                )}
-                              />
+                              <motion.span
+                                animate={{ rotate: mobileCommunityOpen ? 180 : 0 }}
+                                transition={{
+                                  type: "spring",
+                                  stiffness: 320,
+                                  damping: 24,
+                                }}
+                                className="inline-flex items-center justify-center"
+                              >
+                                <ChevronDown className="size-4" />
+                              </motion.span>
                             </button>
                           </div>
 
                           <AnimatePresence initial={false}>
                             {mobileCommunityOpen ? (
                               <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
+                                initial={{ opacity: 0, height: 0, y: -6 }}
+                                animate={{ opacity: 1, height: "auto", y: 0 }}
+                                exit={{
+                                  opacity: 0,
+                                  height: 0,
+                                  y: -6,
+                                  transition: { duration: 0.2, ease: [0.32, 0.72, 0, 1] },
+                                }}
                                 transition={{
-                                  duration: reduce ? 0 : 0.24,
-                                  ease: [0.22, 1, 0.36, 1],
+                                  duration: reduce ? 0 : 0.32,
+                                  ease: [0.16, 1, 0.3, 1],
                                 }}
                                 className="overflow-hidden"
                               >
-                                <div className="grid grid-cols-1 gap-2 pl-3 pt-1 sm:grid-cols-2">
-                                  {link.items.map((item) => {
+                                <div className="flex flex-col gap-1.5 pl-3 pt-1.5 pb-1">
+                                  {link.items.map((item, idx) => {
                                     const isItemActive = isHrefActive(
                                       pathname,
                                       item.href,
                                     );
 
                                     return (
-                                      <Link
+                                      <motion.div
                                         key={`${item.href}-mobile`}
-                                        href={item.href}
-                                        onClick={() => {
-                                          setMobileCommunityOpen(false);
-                                          setMobileMenuOpen(false);
-                                        }}
-                                        aria-current={
-                                          isItemActive ? "page" : undefined
+                                        initial={{ opacity: 0, y: -6, x: -6 }}
+                                        animate={{ opacity: 1, y: 0, x: 0 }}
+                                        exit={{ opacity: 0, y: -4, x: -4 }}
+                                        transition={
+                                          reduce
+                                            ? { duration: 0 }
+                                            : {
+                                                type: "spring",
+                                                stiffness: 420,
+                                                damping: 28,
+                                                delay: idx * 0.035,
+                                              }
                                         }
-                                        className={cn(
-                                          "grid min-h-[104px] grid-cols-[40px_1fr_18px] items-start gap-3 rounded-xl bg-white px-3.5 py-3 transition-colors dark:bg-neutral-900/70",
-                                          isItemActive
-                                            ? "bg-slate-100 text-blue-700 dark:bg-neutral-800/90 dark:text-blue-300"
-                                            : "text-slate-600 hover:bg-slate-100/90 hover:text-slate-950 dark:text-neutral-300 dark:hover:bg-neutral-800/90 dark:hover:text-white",
-                                        )}
                                       >
-                                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-neutral-800 dark:text-blue-300">
-                                          <CommunityMenuIcon icon={item.icon} />
-                                        </span>
-                                        <span className="min-w-0">
-                                          <span className="block text-base font-semibold text-slate-900 dark:text-neutral-100">
-                                            {item.name}
-                                          </span>
-                                          <span className="mt-1 block text-sm leading-5 text-slate-500 dark:text-neutral-400">
-                                            {item.description}
-                                          </span>
-                                        </span>
-                                      </Link>
+                                        <Link
+                                          href={item.href}
+                                          onClick={() => {
+                                            setMobileCommunityOpen(false);
+                                            setMobileMenuOpen(false);
+                                          }}
+                                          aria-current={
+                                            isItemActive ? "page" : undefined
+                                          }
+                                          className={cn(
+                                            "group flex min-h-11 items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition-all duration-200",
+                                            isItemActive
+                                              ? "bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
+                                              : "text-slate-700 hover:bg-slate-100/80 hover:text-slate-950 dark:text-neutral-300 dark:hover:bg-neutral-900/80 dark:hover:text-white",
+                                          )}
+                                        >
+                                          <div className="flex min-w-0 items-center gap-3">
+                                            <span
+                                              className={cn(
+                                                "flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors duration-200",
+                                                isItemActive
+                                                  ? "bg-blue-600 text-white dark:bg-blue-500"
+                                                  : "bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white dark:bg-neutral-800 dark:text-neutral-300 dark:group-hover:bg-blue-500 dark:group-hover:text-white",
+                                              )}
+                                            >
+                                              <CommunityMenuIcon
+                                                icon={item.icon}
+                                              />
+                                            </span>
+                                            <span className="truncate text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                                              {item.name}
+                                            </span>
+                                          </div>
+                                          <ArrowRight className="size-4 text-slate-400 opacity-0 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:opacity-100 dark:text-neutral-400" />
+                                        </Link>
+                                      </motion.div>
                                     );
                                   })}
                                 </div>
