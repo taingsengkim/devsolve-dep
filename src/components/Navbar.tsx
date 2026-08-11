@@ -315,6 +315,32 @@ const Navbar = () => {
     setMobileCommunityOpen(false);
   }
 
+  // An open panel covers the page, so the page must not scroll underneath it —
+  // otherwise the reader drags the content they were about to navigate to out
+  // from behind the menu. Padding replaces the scrollbar's width so locking
+  // does not shift the layout sideways.
+  useEffect(() => {
+    if (!mobileMenuOpen) {
+      return;
+    }
+
+    const { body, documentElement } = document;
+    const previousOverflow = body.style.overflow;
+    const previousPaddingRight = body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - documentElement.clientWidth;
+
+    body.style.overflow = "hidden";
+
+    if (scrollbarWidth > 0) {
+      body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    return () => {
+      body.style.overflow = previousOverflow;
+      body.style.paddingRight = previousPaddingRight;
+    };
+  }, [mobileMenuOpen]);
+
   // Crossing into the desktop layout hides the panel via `lg:hidden` but leaves
   // it open in state, so narrowing again would flash it back. Closing on the
   // breakpoint change keeps the two in step.
@@ -420,11 +446,19 @@ const Navbar = () => {
       ref={headerRef}
       className="fixed inset-x-0 top-0 z-[100] w-full"
     >
-      <div className="pointer-events-none">
-        {/* Scrim under the open mobile panel. First child, so the island and
-            the panel paint over it. It makes "tap anywhere to close" visible
-            rather than something you have to guess at, and it stops taps
-            landing on the page behind. */}
+      {/* `isolate` keeps the z-indexes below scoped to the header. */}
+      <div className="pointer-events-none isolate">
+        {/* Scrim under the open mobile panel. It makes "tap anywhere to close"
+            visible rather than something you have to guess at, and it stops
+            taps landing on the page behind.
+
+            Being first in the tree is not enough to put it underneath: it is
+            positioned, so it paints in the positioned pass, above any static
+            sibling no matter what the tree order is. The island escaped that
+            only by accident — `backdrop-blur-xl` makes it a stacking context,
+            which promotes it into the same pass — while the panel, which has
+            neither, was left painting below the scrim and swallowing every
+            tap. The layering is spelled out with z-index instead. */}
         <AnimatePresence>
           {mobileMenuOpen ? (
             <motion.button
@@ -435,12 +469,19 @@ const Navbar = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: reduce ? 0 : 0.2 }}
               onClick={closeAllMenus}
-              className="pointer-events-auto fixed inset-0 cursor-default bg-slate-950/25 backdrop-blur-[2px] lg:hidden"
+              /* Sized from the top-left of the header rather than with
+                 `inset-0`: the header carries a transform while it animates,
+                 which makes it the containing block for `fixed` children, and
+                 `inset-0` would then shrink the scrim to the header's own box
+                 instead of the viewport. The header already sits at the top
+                 edge and spans the full width, so this covers the screen
+                 whether or not that transform is present. */
+              className="pointer-events-auto fixed left-0 top-0 z-0 h-dvh w-full cursor-default bg-slate-950/25 backdrop-blur-[2px] lg:hidden"
             />
           ) : null}
         </AnimatePresence>
 
-        <div className="mx-auto w-full max-w-7xl px-4 py-3 sm:px-6">
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-3 sm:px-6">
           {/* Translucent + blurred, because page content now passes directly
               behind it rather than under an opaque band. */}
           <div
@@ -713,7 +754,6 @@ const Navbar = () => {
               {/* Staged so each width carries only what fits: hamburger alone,
                   then Get Started, then Log in, and the theme toggle last —
                   it is the one control the mobile panel also offers. */}
-                  
               <div className="flex shrink-0 items-center justify-end gap-1.5 xl:gap-2.5">
                 <ThemeToggle
                   variant="rectangle"
@@ -723,7 +763,11 @@ const Navbar = () => {
                       ? "Switch to light mode"
                       : "Switch to dark mode"
                   }
-                  className="hidden size-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-[0_2px_10px_rgba(15,23,42,0.05)] transition-all duration-200 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 dark:border-neutral-800 dark:bg-neutral-900/80 dark:text-neutral-100 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800 dark:hover:text-blue-300 dark:focus-visible:ring-blue-500/30 xl:inline-flex"
+                  /* Appears at `lg`, the same width the hamburger disappears
+                     at. Deferring it to `xl` left the 1024–1279px band with
+                     the mobile panel already gone and the toggle not yet
+                     arrived, so there was no way to change the theme at all. */
+                  className="hidden size-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-[0_2px_10px_rgba(15,23,42,0.05)] transition-all duration-200 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 dark:border-neutral-800 dark:bg-neutral-900/80 dark:text-neutral-100 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800 dark:hover:text-blue-300 dark:focus-visible:ring-blue-500/30 lg:inline-flex"
                   iconClassName="size-[18px]"
                 />
 
@@ -788,9 +832,17 @@ const Navbar = () => {
                 ease: [0.22, 1, 0.36, 1],
                 opacity: { duration: reduce ? 0 : 0.18 },
               }}
-              className="pointer-events-auto overflow-hidden px-4 pb-4 sm:px-6 lg:hidden"
+              className="pointer-events-auto relative z-10 overflow-hidden px-4 pb-4 sm:px-6 lg:hidden"
             >
-              <div className="mx-auto w-full max-w-7xl rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_8px_24px_rgba(15,23,42,0.08)] dark:border-neutral-800/80 dark:bg-neutral-950/95 dark:shadow-[0_12px_32px_rgba(0,0,0,0.3)]">
+              {/* The panel is as tall as its contents, which on a short screen
+                  — a landscape phone, or a signed-in reader with the Community
+                  submenu expanded — runs past the bottom of the viewport. It
+                  is capped to the room left under the island and scrolls
+                  inside itself; `overscroll-contain` keeps that scroll from
+                  chaining to the page behind once it bottoms out. */}
+              {/* Fully opaque: this is a reading surface stacked over a busy
+                  hero, and the scrim behind it already supplies the dimming. */}
+              <div className="mx-auto max-h-[calc(100dvh-var(--navbar-height)-1rem)] w-full max-w-7xl overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_8px_24px_rgba(15,23,42,0.08)] dark:border-neutral-800/80 dark:bg-neutral-950 dark:shadow-[0_12px_32px_rgba(0,0,0,0.3)]">
                 <nav
                   aria-label="Mobile navigation"
                   className="flex flex-col gap-1"
@@ -868,7 +920,11 @@ const Navbar = () => {
                                           isItemActive ? "page" : undefined
                                         }
                                         className={cn(
-                                          "grid min-h-[104px] grid-cols-[40px_1fr_18px] items-start gap-3 rounded-xl bg-white px-3.5 py-3 transition-colors dark:bg-neutral-900/70",
+                                          // Two columns, not three: the old
+                                          // trailing 18px track held nothing
+                                          // and cost the description ~30px of
+                                          // width on a narrow phone.
+                                          "grid min-h-[104px] grid-cols-[40px_1fr] items-start gap-3 rounded-xl bg-white px-3.5 py-3 transition-colors dark:bg-neutral-900/70",
                                           isItemActive
                                             ? "bg-slate-100 text-blue-700 dark:bg-neutral-800/90 dark:text-blue-300"
                                             : "text-slate-600 hover:bg-slate-100/90 hover:text-slate-950 dark:text-neutral-300 dark:hover:bg-neutral-800/90 dark:hover:text-white",

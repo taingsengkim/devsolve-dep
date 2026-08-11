@@ -196,6 +196,18 @@ const ARC_PATH = (() => {
 export function FeatureHighlights() {
   const containerRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
+  /* Pinning normally makes ScrollTrigger build its own `.pin-spacer`, insert
+     it where the pinned element sat, and move that element inside it. React
+     is never told, so its tree still has the pinned div as a direct child of
+     the section — and the next time React removes or inserts around it,
+     `section.removeChild(pinDiv)` throws NotFoundError, because the div now
+     lives in the spacer. Handing ScrollTrigger a spacer we render ourselves,
+     already wrapping the pinned div, makes it adopt that node instead of
+     restructuring anything: `_swapPinIn` skips the move when the pin's
+     parent is already the spacer, and `_swapPinOut` skips the unwrap for a
+     spacer it did not create. The DOM then always matches what React
+     expects. */
+  const spacerRef = useRef<HTMLDivElement>(null);
   /* GSAP tweens these colours numerically, so they cannot be `var()` tokens
      the way the rest of the landing palette is — this section keeps a JS
      branch. `useIsDark` is gated on mount, so the server render and the
@@ -211,7 +223,8 @@ export function FeatureHighlights() {
 
   useGSAP(
     () => {
-      if (!pinRef.current || !containerRef.current) return;
+      if (!pinRef.current || !containerRef.current || !spacerRef.current)
+        return;
 
       /* Initial states */
       ACTS.forEach((act, ai) => {
@@ -239,6 +252,7 @@ export function FeatureHighlights() {
         scrollTrigger: {
           trigger: containerRef.current,
           pin: pinRef.current,
+          pinSpacer: spacerRef.current,
           start: "top top",
           end: `+=${Math.round(totalUnits * 62)}%`,
           scrub: 0.9,
@@ -403,241 +417,246 @@ export function FeatureHighlights() {
         />
       </div>
 
-      <div
-        ref={pinRef}
-        className="relative flex h-dvh w-full flex-col overflow-hidden"
-      >
-        {/* Editorial grid paper, drifting aurora and rising motes */}
-        <SectionBackdrop seed={1} gridSize={88} />
+      {/* ScrollTrigger's pin spacer, rendered by React rather than injected
+          by GSAP. It sizes and pads this element exactly as it would its own;
+          the only difference is that React knows the node exists. */}
+      <div ref={spacerRef}>
+        <div
+          ref={pinRef}
+          className="relative flex h-dvh w-full flex-col overflow-hidden"
+        >
+          {/* Editorial grid paper, drifting aurora and rising motes */}
+          <SectionBackdrop seed={1} gridSize={88} />
 
-        {/* ── Masthead ── */}
-        <header className="relative z-20 mx-auto w-full max-w-7xl px-6 pt-8 sm:px-12">
-          <div className="flex items-start justify-between gap-6 border-b border-slate-200 pb-6 dark:border-neutral-800">
-            <div>
-              <p className="text-xl font-bold tracking-tight text-[#1E293B] sm:text-2xl dark:text-neutral-100">
-                DevSolve
-              </p>
-              <p className="mt-1.5 text-sm font-medium tracking-[0.28em] text-slate-400 dark:text-neutral-500">
-                [ PLATFORM ]
-              </p>
-            </div>
-
-            {/* Act tabs — the active one fills dark (and inverts in dark mode) */}
-            <nav className="grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200 dark:border-neutral-800 dark:bg-neutral-800">
-              {ACTS.map((act, ai) => (
-                <div
-                  key={act.id}
-                  className={`tab-${ai} flex min-w-26 flex-col justify-center mt-8 px-3 py-2.5 text-center sm:min-w-37.5 sm:px-4`}
-                >
-                  <span className="text-sm font-semibold tracking-tight">
-                    {act.tab}
-                  </span>
-                  <span className="mt-0.5 hidden text-[11px] font-medium opacity-70 sm:block">
-                    {act.tabSub}
-                  </span>
-                </div>
-              ))}
-            </nav>
-          </div>
-        </header>
-
-        {/* ── Stage ── */}
-        <div className="relative z-10 mx-auto w-full max-w-7xl flex-1 px-6 sm:px-12">
-          {ACTS.map((act, ai) => (
-            <div
-              key={act.id}
-              className={`act-${ai} absolute inset-x-6 inset-y-0 sm:inset-x-12`}
-              style={{ maxWidth: "80rem" }}
-            >
-              {/* Sweeping arc with a dot per step */}
-              <div className="pointer-events-none absolute inset-y-0 left-[2%] hidden w-[36%] lg:block">
-                <svg
-                  className="absolute inset-0 h-full w-full"
-                  viewBox={`0 0 ${ARC.w} ${ARC.h}`}
-                  preserveAspectRatio="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d={ARC_PATH}
-                    fill="none"
-                    stroke={isDark ? "#FFFFFF" : SECONDARY}
-                    strokeOpacity="0.14"
-                    strokeWidth="1"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                  <path
-                    className={`arcline-${ai}`}
-                    d={ARC_PATH}
-                    fill="none"
-                    stroke={accentFor(act, isDark)}
-                    strokeWidth="1.5"
-                    pathLength={1}
-                    strokeDasharray={1}
-                    strokeDashoffset={1}
-                    vectorEffect="non-scaling-stroke"
-                  />
-                </svg>
-
-                {act.steps.map((step, si) => {
-                  const p = arcPoint(dotFraction(si, act.steps.length));
-                  return (
-                    <div
-                      key={step.n}
-                      /* No inline fill: GSAP writes the real one on mount,
-                         and the class keeps the pre-hydration paint right in
-                         both themes. */
-                      className={`dot-${ai}-${si} absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-300 dark:bg-neutral-600`}
-                      style={{
-                        left: `${((p.x / ARC.w) * 100).toFixed(4)}%`,
-                        top: `${((p.y / ARC.h) * 100).toFixed(4)}%`,
-                      }}
-                    />
-                  );
-                })}
+          {/* ── Masthead ── */}
+          <header className="relative z-20 mx-auto w-full max-w-7xl px-6 pt-8 sm:px-12">
+            <div className="flex items-start justify-between gap-6 border-b border-slate-200 pb-6 dark:border-neutral-800">
+              <div>
+                <p className="text-xl font-bold tracking-tight text-[#1E293B] sm:text-2xl dark:text-neutral-100">
+                  DevSolve
+                </p>
+                <p className="mt-1.5 text-sm font-medium tracking-[0.28em] text-slate-400 dark:text-neutral-500">
+                  [ PLATFORM ]
+                </p>
               </div>
 
-              <div className="grid h-full grid-cols-1 items-center gap-8 lg:grid-cols-[0.85fr_1.65fr] lg:gap-12">
-                {/* LEFT — act title */}
-                <div className="relative flex flex-col justify-center pt-4 lg:pt-0">
-                  <div className="mb-4 flex items-center gap-2.5">
-                    <span
-                      className="h-px w-8"
-                      style={{ backgroundColor: accentFor(act, isDark) }}
-                    />
-                    <span
-                      className="text-xs font-bold uppercase tracking-[0.22em]"
-                      style={{ color: accentFor(act, isDark) }}
-                    >
-                      {act.kicker}
+              {/* Act tabs — the active one fills dark (and inverts in dark mode) */}
+              <nav className="grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200 dark:border-neutral-800 dark:bg-neutral-800">
+                {ACTS.map((act, ai) => (
+                  <div
+                    key={act.id}
+                    className={`tab-${ai} flex min-w-26 flex-col justify-center mt-8 px-3 py-2.5 text-center sm:min-w-37.5 sm:px-4`}
+                  >
+                    <span className="text-sm font-semibold tracking-tight">
+                      {act.tab}
+                    </span>
+                    <span className="mt-0.5 hidden text-[11px] font-medium opacity-70 sm:block">
+                      {act.tabSub}
                     </span>
                   </div>
+                ))}
+              </nav>
+            </div>
+          </header>
 
-                  <h2
-                    className={`act-title-${ai} font-bold leading-[1.02] tracking-[-0.045em] text-[#1E293B] dark:text-neutral-100`}
-                    style={{
-                      fontSize: "clamp(34px, 4.2vw, 60px)",
-                    }}
+          {/* ── Stage ── */}
+          <div className="relative z-10 mx-auto w-full max-w-7xl flex-1 px-6 sm:px-12">
+            {ACTS.map((act, ai) => (
+              <div
+                key={act.id}
+                className={`act-${ai} absolute inset-x-6 inset-y-0 sm:inset-x-12`}
+                style={{ maxWidth: "80rem" }}
+              >
+                {/* Sweeping arc with a dot per step */}
+                <div className="pointer-events-none absolute inset-y-0 left-[2%] hidden w-[36%] lg:block">
+                  <svg
+                    className="absolute inset-0 h-full w-full"
+                    viewBox={`0 0 ${ARC.w} ${ARC.h}`}
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
                   >
-                    {act.title.map((line, li) => (
-                      <span key={li} className="block">
-                        {Array.from(line).map((char, ci) => (
-                          <span
-                            key={ci}
-                            className="t-char inline-block"
-                            style={{ willChange: "transform, opacity, filter" }}
-                          >
-                            {char === " " ? " " : char}
-                          </span>
-                        ))}
-                        {li === act.title.length - 1 && (
-                          <span
-                            className="t-char inline-block"
-                            style={{
-                              color: accentFor(act, isDark),
-                              willChange: "transform, opacity",
-                            }}
-                          >
-                            .
-                          </span>
-                        )}
-                      </span>
-                    ))}
-                  </h2>
+                    <path
+                      d={ARC_PATH}
+                      fill="none"
+                      stroke={isDark ? "#FFFFFF" : SECONDARY}
+                      strokeOpacity="0.14"
+                      strokeWidth="1"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                    <path
+                      className={`arcline-${ai}`}
+                      d={ARC_PATH}
+                      fill="none"
+                      stroke={accentFor(act, isDark)}
+                      strokeWidth="1.5"
+                      pathLength={1}
+                      strokeDasharray={1}
+                      strokeDashoffset={1}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  </svg>
 
-                  <div className={`act-meta-${ai} mt-7 space-y-5`}>
-                    <div className="flex items-baseline gap-2 font-mono text-sm text-slate-400 dark:text-neutral-500">
+                  {act.steps.map((step, si) => {
+                    const p = arcPoint(dotFraction(si, act.steps.length));
+                    return (
+                      <div
+                        key={step.n}
+                        /* No inline fill: GSAP writes the real one on mount,
+                           and the class keeps the pre-hydration paint right in
+                           both themes. */
+                        className={`dot-${ai}-${si} absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-300 dark:bg-neutral-600`}
+                        style={{
+                          left: `${((p.x / ARC.w) * 100).toFixed(4)}%`,
+                          top: `${((p.y / ARC.h) * 100).toFixed(4)}%`,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+
+                <div className="grid h-full grid-cols-1 items-center gap-8 lg:grid-cols-[0.85fr_1.65fr] lg:gap-12">
+                  {/* LEFT — act title */}
+                  <div className="relative flex flex-col justify-center pt-4 lg:pt-0">
+                    <div className="mb-4 flex items-center gap-2.5">
                       <span
-                        className={`counter-${ai} text-2xl font-bold tabular-nums text-[#1E293B] dark:text-neutral-100`}
+                        className="h-px w-8"
+                        style={{ backgroundColor: accentFor(act, isDark) }}
+                      />
+                      <span
+                        className="text-xs font-bold uppercase tracking-[0.22em]"
+                        style={{ color: accentFor(act, isDark) }}
                       >
-                        1
-                      </span>
-                      <span className="text-lg">/</span>
-                      <span className="text-lg tabular-nums">
-                        {act.steps.length}
-                      </span>
-                      <span className="ml-1 text-xs uppercase tracking-[0.2em]">
-                        steps
+                        {act.kicker}
                       </span>
                     </div>
 
-                    <Link
-                      href={act.href}
-                      className="group inline-flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-70"
-                      style={{ color: accentFor(act, isDark) }}
+                    <h2
+                      className={`act-title-${ai} font-bold leading-[1.02] tracking-[-0.045em] text-[#1E293B] dark:text-neutral-100`}
+                      style={{
+                        fontSize: "clamp(34px, 4.2vw, 60px)",
+                      }}
                     >
-                      {act.hrefLabel}
-                      <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                    </Link>
-                  </div>
-                </div>
-
-                {/* RIGHT — numbered steps scrolling through a masked window */}
-                <div
-                  className="relative h-95 overflow-hidden lg:h-115"
-                  style={{
-                    maskImage:
-                      "linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent)",
-                    WebkitMaskImage:
-                      "linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent)",
-                  }}
-                >
-                  <div className={`stack-${ai} absolute inset-x-0 top-1/2`}>
-                    {act.steps.map((step, si) => (
-                      <div
-                        key={step.n}
-                        className={`step-${ai}-${si} grid grid-cols-[auto_1fr] items-start gap-5 overflow-hidden sm:gap-8`}
-                        style={{ height: STEP_H }}
-                      >
-                        <span
-                          /* Resting colour as a class; GSAP takes it over
-                             from mount onwards. */
-                          className={`num-${ai}-${si} block pt-1 text-right font-bold tabular-nums leading-none tracking-[-0.06em] text-slate-300 dark:text-neutral-600`}
-                          style={{
-                            fontSize: "clamp(52px, 7.5vw, 108px)",
-                            width: "clamp(80px, 11vw, 160px)",
-                          }}
-                        >
-                          {step.n}
-                        </span>
-
-                        <div className="pt-2">
-                          <div className="mb-2 flex items-baseline gap-3">
-                            <h3 className="text-2xl font-bold tracking-tight text-[#1E293B] sm:text-3xl dark:text-neutral-100">
-                              {step.title}
-                              <span style={{ color: accentFor(act, isDark) }}>.</span>
-                            </h3>
-                            <span className="rounded-full border border-slate-200 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:border-neutral-700 dark:text-neutral-500">
-                              {step.role}
+                      {act.title.map((line, li) => (
+                        <span key={li} className="block">
+                          {Array.from(line).map((char, ci) => (
+                            <span
+                              key={ci}
+                              className="t-char inline-block"
+                              style={{ willChange: "transform, opacity, filter" }}
+                            >
+                              {char === " " ? " " : char}
                             </span>
-                          </div>
-                          <p className="max-w-xl text-sm leading-[1.8] text-slate-500 sm:text-[15px] dark:text-neutral-400">
-                            {step.body}
-                          </p>
-                        </div>
+                          ))}
+                          {li === act.title.length - 1 && (
+                            <span
+                              className="t-char inline-block"
+                              style={{
+                                color: accentFor(act, isDark),
+                                willChange: "transform, opacity",
+                              }}
+                            >
+                              .
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                    </h2>
+
+                    <div className={`act-meta-${ai} mt-7 space-y-5`}>
+                      <div className="flex items-baseline gap-2 font-mono text-sm text-slate-400 dark:text-neutral-500">
+                        <span
+                          className={`counter-${ai} text-2xl font-bold tabular-nums text-[#1E293B] dark:text-neutral-100`}
+                        >
+                          1
+                        </span>
+                        <span className="text-lg">/</span>
+                        <span className="text-lg tabular-nums">
+                          {act.steps.length}
+                        </span>
+                        <span className="ml-1 text-xs uppercase tracking-[0.2em]">
+                          steps
+                        </span>
                       </div>
-                    ))}
+
+                      <Link
+                        href={act.href}
+                        className="group inline-flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-70"
+                        style={{ color: accentFor(act, isDark) }}
+                      >
+                        {act.hrefLabel}
+                        <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* RIGHT — numbered steps scrolling through a masked window */}
+                  <div
+                    className="relative h-95 overflow-hidden lg:h-115"
+                    style={{
+                      maskImage:
+                        "linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent)",
+                      WebkitMaskImage:
+                        "linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent)",
+                    }}
+                  >
+                    <div className={`stack-${ai} absolute inset-x-0 top-1/2`}>
+                      {act.steps.map((step, si) => (
+                        <div
+                          key={step.n}
+                          className={`step-${ai}-${si} grid grid-cols-[auto_1fr] items-start gap-5 overflow-hidden sm:gap-8`}
+                          style={{ height: STEP_H }}
+                        >
+                          <span
+                            /* Resting colour as a class; GSAP takes it over
+                               from mount onwards. */
+                            className={`num-${ai}-${si} block pt-1 text-right font-bold tabular-nums leading-none tracking-[-0.06em] text-slate-300 dark:text-neutral-600`}
+                            style={{
+                              fontSize: "clamp(52px, 7.5vw, 108px)",
+                              width: "clamp(80px, 11vw, 160px)",
+                            }}
+                          >
+                            {step.n}
+                          </span>
+
+                          <div className="pt-2">
+                            <div className="mb-2 flex items-baseline gap-3">
+                              <h3 className="text-2xl font-bold tracking-tight text-[#1E293B] sm:text-3xl dark:text-neutral-100">
+                                {step.title}
+                                <span style={{ color: accentFor(act, isDark) }}>.</span>
+                              </h3>
+                              <span className="rounded-full border border-slate-200 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:border-neutral-700 dark:text-neutral-500">
+                                {step.role}
+                              </span>
+                            </div>
+                            <p className="max-w-xl text-sm leading-[1.8] text-slate-500 sm:text-[15px] dark:text-neutral-400">
+                              {step.body}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Footer hint ── */}
-        <footer className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 border-t border-slate-200 px-6 py-5 sm:px-12 dark:border-neutral-800">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-neutral-500">
-            Scroll to advance
-          </span>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium tracking-[0.2em] text-slate-300 dark:text-neutral-600">
-              01 — {String(ACTS.length).padStart(2, "0")}
-            </span>
-            <span
-              className="h-1.5 w-1.5 animate-pulse rounded-full"
-              style={{ backgroundColor: PRIMARY }}
-            />
+            ))}
           </div>
-        </footer>
+
+          {/* ── Footer hint ── */}
+          <footer className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 border-t border-slate-200 px-6 py-5 sm:px-12 dark:border-neutral-800">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-neutral-500">
+              Scroll to advance
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium tracking-[0.2em] text-slate-300 dark:text-neutral-600">
+                01 — {String(ACTS.length).padStart(2, "0")}
+              </span>
+              <span
+                className="h-1.5 w-1.5 animate-pulse rounded-full"
+                style={{ backgroundColor: PRIMARY }}
+              />
+            </div>
+          </footer>
+        </div>
       </div>
     </section>
   );
