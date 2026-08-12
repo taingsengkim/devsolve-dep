@@ -29,7 +29,7 @@ export function ReportDetailSidebar({
           Moderation Actions
         </h2>
 
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+        <p className="mt-2 text-base leading-relaxed text-muted-foreground">
           Review the submission and choose the appropriate moderation action.
         </p>
 

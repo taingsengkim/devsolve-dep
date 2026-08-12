@@ -313,13 +313,13 @@ export function InviteMemberForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <Card className="order-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_32px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-slate-950 xl:col-start-1">
-          <CardHeader className="border-b border-slate-200 px-6 py-5 dark:border-slate-800 sm:px-7">
-            <CardTitle className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+        <Card className="order-1 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-xs ring-1 ring-foreground/5 dark:ring-foreground/10 xl:col-start-1">
+          <CardHeader className="border-b border-border px-6 py-5 sm:px-7">
+            <CardTitle className="text-xl font-semibold tracking-tight text-foreground">
               Member information
             </CardTitle>
 
-            <p className="max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+            <p className="max-w-2xl text-base sm:text-lg leading-relaxed text-muted-foreground">
               Enter the member&apos;s email address and
               configure their organization access.
             </p>
@@ -334,13 +334,13 @@ export function InviteMemberForm() {
                 <FieldContent className="gap-3">
                   <FieldLabel
                     htmlFor="member-email"
-                    className="text-sm font-semibold text-slate-900 dark:text-slate-100"
+                    className="text-sm font-semibold text-foreground"
                   >
                     Work email
                   </FieldLabel>
 
                   <div className="relative">
-                    <Mail className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" />
+                    <Mail className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
 
                     <Input
                       id="member-email"
@@ -352,16 +352,15 @@ export function InviteMemberForm() {
                       )}
                       {...register("email")}
                       className={cn(
-                        "h-12 rounded-xl border-slate-300 bg-white pl-12 text-base text-slate-900 shadow-none placeholder:text-slate-400",
-                        "focus-visible:border-[#2563EB] focus-visible:ring-[#2563EB]/15",
-                        "dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100",
+                        "h-12 rounded-xl border border-border bg-card pl-12 text-base text-foreground shadow-none placeholder:text-muted-foreground",
+                        "focus-visible:border-blue-600 focus-visible:ring-blue-600/15",
                         errors.email &&
-                          "border-red-400 focus-visible:border-red-400 focus-visible:ring-red-500/15",
+                          "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/15",
                       )}
                     />
                   </div>
 
-                  <FieldDescription className="text-sm leading-6 text-slate-500 dark:text-slate-400">
+                  <FieldDescription className="text-sm leading-relaxed text-muted-foreground">
                     The invitation will be sent directly to
                     this email address.
                   </FieldDescription>
@@ -377,13 +376,13 @@ export function InviteMemberForm() {
 
         <div className="order-2 space-y-4 xl:sticky xl:top-24 xl:col-start-2 xl:row-span-2">
           {/* Role selection */}
-          <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_32px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-slate-950">
-            <CardHeader className="border-b border-slate-200 px-5 py-5 dark:border-slate-800">
-              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+          <Card className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-xs ring-1 ring-foreground/5 dark:ring-foreground/10">
+            <CardHeader className="border-b border-border px-5 py-5">
+              <CardTitle className="text-lg font-semibold text-foreground">
                 Organization role
               </CardTitle>
 
-              <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 Choose the access level for this member.
               </p>
             </CardHeader>
@@ -422,19 +421,19 @@ export function InviteMemberForm() {
             </Card>
 
           {/* Summary */}
-          <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_32px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-slate-950">
-            <CardHeader className="border-b border-slate-200 px-5 py-5 dark:border-slate-800">
+          <Card className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-xs ring-1 ring-foreground/5 dark:ring-foreground/10">
+            <CardHeader className="border-b border-border px-5 py-5">
               <div className="flex items-center gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB] ring-1 ring-blue-100 dark:bg-blue-950/50 dark:text-blue-400 dark:ring-blue-900">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/20">
                   <ShieldCheck className="size-5" />
                 </div>
 
                 <div className="min-w-0">
-                  <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  <CardTitle className="text-lg font-semibold text-foreground">
                     Invitation summary
                   </CardTitle>
 
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Review before sending
                   </p>
                 </div>
@@ -461,7 +460,7 @@ export function InviteMemberForm() {
               </div>
 
               <div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                <p className="text-sm font-medium text-muted-foreground">
                   Permissions
                 </p>
 
@@ -472,7 +471,7 @@ export function InviteMemberForm() {
                         <Badge
                           key={permission}
                           variant="outline"
-                          className="rounded-lg border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300"
+                          className="rounded-lg border-blue-500/20 bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400"
                         >
                           {formatPermission(
                             permission,
@@ -481,25 +480,25 @@ export function InviteMemberForm() {
                       ),
                     )
                   ) : (
-                    <span className="text-sm text-slate-400">
+                    <span className="text-sm text-muted-foreground">
                       No permission selected
                     </span>
                   )}
                 </div>
               </div>
 
-              <Separator className="dark:bg-slate-800" />
+              <Separator className="bg-border" />
 
-              <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-900/60 dark:bg-blue-950/30">
+              <div className="rounded-xl border border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/10 p-4">
                 <div className="flex items-start gap-3">
-                  <ShieldCheck className="mt-0.5 size-5 shrink-0 text-[#2563EB] dark:text-blue-400" />
+                  <ShieldCheck className="mt-0.5 size-5 shrink-0 text-blue-600 dark:text-blue-400" />
 
                   <div>
-                    <p className="text-sm font-semibold text-blue-950 dark:text-blue-200">
+                    <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
                       Trusted members only
                     </p>
 
-                    <p className="mt-1 text-sm leading-6 text-blue-800 dark:text-blue-300">
+                    <p className="mt-1 text-sm leading-relaxed text-blue-700 dark:text-blue-300">
                       Review the member&apos;s email, role,
                       and permissions before sending.
                     </p>
@@ -510,22 +509,22 @@ export function InviteMemberForm() {
             </Card>
         </div>
 
-        <Card className="order-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_32px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-slate-950 xl:col-start-1">
-          <CardHeader className="border-b border-slate-200 px-6 py-5 dark:border-slate-800 sm:px-7">
+        <Card className="order-3 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-xs ring-1 ring-foreground/5 dark:ring-foreground/10 xl:col-start-1">
+          <CardHeader className="border-b border-border px-6 py-5 sm:px-7">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <CardTitle className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                <CardTitle className="text-xl font-semibold tracking-tight text-foreground">
                   Access queue
                 </CardTitle>
 
-                <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                   Assign the permissions this teammate should have from day one.
                 </p>
               </div>
 
               <Badge
                 variant="outline"
-                className="w-fit rounded-full border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300"
+                className="w-fit rounded-full border-blue-500/20 bg-blue-50 dark:bg-blue-500/10 px-2.5 py-0.5 text-xs font-semibold text-blue-600 dark:text-blue-400"
               >
                 {selectedPermissions.length} selected
               </Badge>
@@ -541,16 +540,16 @@ export function InviteMemberForm() {
               >
                 <FieldContent className="gap-4">
                   <div>
-                    <FieldLabel className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    <FieldLabel className="text-sm font-semibold text-foreground">
                       Permissions
                     </FieldLabel>
 
-                    <FieldDescription className="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                    <FieldDescription className="mt-1 text-sm leading-relaxed text-muted-foreground">
                       Select what this member can access inside the organization.
                     </FieldDescription>
                   </div>
 
-                  <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+                  <div className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground">
                     <div className="p-3">
                       <ToggleGroup
                         multiple
@@ -594,7 +593,7 @@ export function InviteMemberForm() {
                     opacity: 1,
                     y: 0,
                   }}
-                  className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
+                  className="flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm leading-relaxed text-red-600 dark:text-red-400"
                 >
                   <AlertCircle className="mt-0.5 size-5 shrink-0" />
 
@@ -602,12 +601,12 @@ export function InviteMemberForm() {
                 </motion.div>
               ) : null}
 
-              <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 dark:border-slate-800 sm:flex-row sm:justify-end">
+              <div className="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-end">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleCancel}
-                  className="h-11 rounded-xl border-slate-300 bg-white px-5 text-sm font-medium text-slate-700 shadow-none hover:border-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-900"
+                  className="h-11 rounded-xl border-border bg-card px-5 text-sm font-medium text-foreground shadow-none hover:bg-muted cursor-pointer"
                 >
                   Cancel
                 </Button>
@@ -615,7 +614,7 @@ export function InviteMemberForm() {
                 <Button
                   type="submit"
                   disabled={!isValid || isLoading}
-                  className="h-11 rounded-xl bg-[#2563EB] px-5 text-sm font-semibold text-white shadow-[0_10px_22px_rgba(37,99,235,0.20)] hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="h-11 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
                 >
                   {isLoading ? (
                     <>
@@ -634,8 +633,8 @@ export function InviteMemberForm() {
           </CardContent>
         </Card>
 
-        <div className="order-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-slate-900/50 xl:col-start-2">
-          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+        <div className="order-4 rounded-2xl border border-border bg-muted/40 p-5 xl:col-start-2">
+          <p className="text-sm font-semibold text-foreground">
             What happens next?
           </p>
 

@@ -24,28 +24,28 @@ function buildTeamStatCards(counts: TeamCounts): TeamStatCard[] {
       value: counts.total,
       meta: `${counts.active} active`,
       icon: Users,
-      iconClassName: "bg-slate-100 text-slate-800",
+      iconClassName: "bg-muted text-foreground",
     },
     {
       title: "Managers",
       value: counts.managers,
       meta: "Super admin",
       icon: ShieldCheck,
-      iconClassName: "bg-blue-50 text-blue-600",
+      iconClassName: "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400",
     },
     {
       title: "Members",
       value: counts.members,
       meta: `${counts.members - counts.pending} working staff / ${counts.pending} pending`,
       icon: UserCheck,
-      iconClassName: "bg-emerald-50 text-emerald-600",
+      iconClassName: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
     },
     {
       title: "Viewers",
       value: counts.viewers,
       meta: "Read-only",
       icon: Eye,
-      iconClassName: "bg-amber-50 text-amber-600",
+      iconClassName: "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400",
     },
   ];
 }
@@ -66,7 +66,7 @@ export function TeamsStatsGrid({ counts }: TeamsStatsGridProps) {
           <div
             key={item.title}
             className={cn(
-              "rounded-[26px] border border-slate-200 bg-white px-5 py-5 shadow-[0_10px_24px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(15,23,42,0.06)]"
+              "rounded-[26px] bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 border-none px-5 py-5 shadow-xs transition-all duration-300 hover:-translate-y-0.5"
             )}
           >
             <div className="flex items-center gap-3">
@@ -80,14 +80,14 @@ export function TeamsStatsGrid({ counts }: TeamsStatsGridProps) {
               </div>
 
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {item.title}
                 </p>
-                <p className="mt-1 text-sm text-slate-500">{item.meta}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{item.meta}</p>
               </div>
             </div>
 
-            <p className="mt-4 text-[2rem] font-semibold leading-none tracking-[-0.05em] text-[#0F172A]">
+            <p className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-none">
               {item.value}
             </p>
           </div>

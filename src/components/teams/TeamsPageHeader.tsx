@@ -11,15 +11,15 @@ type TeamsPageHeaderProps = {
 
 export function TeamsPageHeader({ counts }: TeamsPageHeaderProps) {
   return (
-    <header className="flex flex-col gap-4 border-b border-slate-200/80 pb-4 sm:flex-row sm:items-center sm:justify-between">
+    <header className="flex flex-col gap-4 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
           Team Management
         </h1>
-        <p className="text-base font-medium text-slate-500">
+        <p className="text-base sm:text-lg font-medium text-muted-foreground leading-relaxed">
           {counts.active} active members across {counts.managers} managers and {counts.members} collaborators
         </p>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-muted-foreground/80">
           {counts.total} total members in this workspace
         </p>
       </div>
@@ -29,7 +29,7 @@ export function TeamsPageHeader({ counts }: TeamsPageHeaderProps) {
           href="/dashboard/team-management/invite"
           className={cn(
             buttonVariants({ variant: "outline" }),
-            "h-11 rounded-xl border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900"
+            "h-11 rounded-xl border-border bg-card px-4 text-sm font-semibold text-foreground shadow-xs hover:bg-muted cursor-pointer"
           )}
         >
           <Plus data-icon="inline-start" />

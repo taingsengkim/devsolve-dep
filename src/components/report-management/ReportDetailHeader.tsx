@@ -159,7 +159,7 @@ export function ReportDetailHeader({ detail }: ReportDetailHeaderProps) {
                     </div>
                   </div>
 
-                  <p className="text-sm leading-7 text-muted-foreground">
+                  <p className="text-base sm:text-lg leading-relaxed text-muted-foreground">
                     {detail.summary}
                   </p>
                 </div>

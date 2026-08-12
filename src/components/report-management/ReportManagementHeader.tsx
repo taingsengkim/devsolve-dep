@@ -11,7 +11,7 @@ export function ReportManagementHeader() {
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
           Report Management
         </h1>
-        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+        <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
           Review, triage, track, and manage all security reports submitted to your organization.
         </p>
       </div>

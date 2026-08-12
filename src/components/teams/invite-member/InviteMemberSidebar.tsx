@@ -18,36 +18,36 @@ import { Separator } from "@/components/ui/separator";
 export function InviteMemberSidebar() {
   return (
     <div className="flex flex-col gap-4">
-      <Card className="border border-slate-200/80 bg-white shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
+      <Card className="border border-border bg-card text-card-foreground shadow-xs ring-1 ring-foreground/5 dark:ring-foreground/10">
         <CardHeader className="gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB] ring-1 ring-blue-100">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/20">
             <ShieldCheck className="size-5" />
           </div>
 
           <div className="flex flex-col gap-1">
-            <CardTitle className="text-lg font-semibold text-slate-950">
+            <CardTitle className="text-lg font-semibold text-foreground">
               Request Contract
             </CardTitle>
-            <CardDescription className="text-sm leading-6 text-slate-500">
+            <CardDescription className="text-sm leading-relaxed text-muted-foreground">
               Keep the page aligned with the backend request and response contract.
             </CardDescription>
           </div>
         </CardHeader>
 
         <CardContent className="flex flex-col gap-4 pt-0">
-          <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+          <div className="rounded-3xl border border-border bg-muted/50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Endpoint
             </p>
-            <p className="mt-2 break-all rounded-2xl bg-white px-3 py-2 font-mono text-sm text-slate-700 ring-1 ring-slate-200">
+            <p className="mt-2 break-all rounded-2xl bg-card px-3 py-2 font-mono text-sm text-foreground ring-1 ring-border">
               {INVITE_MEMBER_ENDPOINT}
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-            <div className="rounded-3xl border border-slate-200 bg-white p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <KeyRound className="size-4 text-blue-600" />
+            <div className="rounded-3xl border border-border bg-card p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <KeyRound className="size-4 text-blue-600 dark:text-blue-400" />
                 Required payload
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -63,12 +63,12 @@ export function InviteMemberSidebar() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <CheckCircle2 className="size-4 text-emerald-600" />
+            <div className="rounded-3xl border border-border bg-card p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" />
                 Current permission
               </div>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                 {INVITE_PERMISSION_OPTIONS[0]?.title}:{" "}
                 {INVITE_PERMISSION_OPTIONS[0]?.description}
               </p>
@@ -78,18 +78,18 @@ export function InviteMemberSidebar() {
           <Separator />
 
           <div className="flex flex-col gap-3">
-            <p className="text-sm font-semibold text-slate-900">Role reference</p>
+            <p className="text-sm font-semibold text-foreground">Role reference</p>
             {INVITE_ROLE_OPTIONS.map((option) => (
               <div
                 key={option.role}
-                className="rounded-3xl border border-slate-200 bg-slate-50/60 p-4"
+                className="rounded-3xl border border-border bg-muted/40 p-4"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">
+                    <p className="text-sm font-semibold text-foreground">
                       {option.title}
                     </p>
-                    <p className="text-xs uppercase tracking-[0.14em] text-slate-400">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       {option.eyebrow}
                     </p>
                   </div>
@@ -97,14 +97,14 @@ export function InviteMemberSidebar() {
                     {option.role}
                   </Badge>
                 </div>
-                <p className="mt-3 text-sm leading-6 text-slate-600">
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                   {option.access}
                 </p>
               </div>
             ))}
           </div>
 
-          <div className="rounded-3xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-800">
+          <div className="rounded-3xl border border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/10 px-4 py-3 text-sm leading-relaxed text-blue-700 dark:text-blue-300">
             Invitations should only be sent to trusted company email addresses.
           </div>
         </CardContent>

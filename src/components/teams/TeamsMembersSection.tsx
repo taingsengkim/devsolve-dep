@@ -74,14 +74,14 @@ function getRoleBadgeVariant(role: MemberRole) {
 
 function getRoleBadgeClass(role: MemberRole) {
   if (role === "Manager") {
-    return "border-slate-900 bg-slate-900 text-white hover:bg-slate-900";
+    return "border-foreground bg-muted text-foreground hover:bg-muted";
   }
 
   if (role === "Member") {
-    return "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-50";
+    return "border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20";
   }
 
-  return "border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-100";
+  return "border-border bg-muted text-muted-foreground";
 }
 
 function getMemberPermissions(member: TeamMember) {
@@ -179,31 +179,31 @@ export function TeamsMembersSection({
 
   return (
     <>
-      <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-xs sm:p-4">
+      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card text-card-foreground p-3.5 shadow-xs sm:p-4 ring-1 ring-foreground/5 dark:ring-foreground/10">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative min-w-0 flex-1">
-            <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search by member name or email..."
-              className="h-10.5 w-full rounded-xl border-slate-200 bg-slate-50/50 pl-10 text-base focus-visible:ring-2 focus-visible:ring-blue-600/30"
+              className="h-10.5 w-full rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-blue-600/30"
             />
           </div>
 
           <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center lg:w-auto">
-            <div className="flex items-center gap-1 rounded-xl border border-slate-200/50 bg-slate-100/80 p-1">
+            <div className="flex items-center gap-1 rounded-xl border border-border bg-muted/60 p-1">
               {ROLE_FILTERS.map((filter) => (
                 <button
                   key={filter}
                   type="button"
                   onClick={() => setRoleFilter(filter)}
                   className={cn(
-                    "flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition-all sm:flex-initial",
+                    "flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition-all sm:flex-initial cursor-pointer",
                     roleFilter === filter
-                      ? "bg-white text-blue-600 shadow-xs"
-                      : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900"
+                      ? "bg-card text-blue-600 dark:text-blue-400 shadow-xs"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                 >
                   {filter}
@@ -219,11 +219,11 @@ export function TeamsMembersSection({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-xs ring-1 ring-foreground/5 dark:ring-foreground/10">
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse text-left">
             <thead>
-              <tr className="border-b border-slate-200/80 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-600">
+              <tr className="border-b border-border bg-muted/60 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <th className="px-4 py-3.5 sm:px-6">Member</th>
                 <th className="px-4 py-3.5 sm:px-6">Email</th>
                 <th className="px-4 py-3.5 sm:px-6">Role</th>
@@ -336,14 +336,14 @@ export function TeamsMembersSection({
 
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="truncate text-sm font-semibold tracking-[-0.03em] text-slate-900 sm:text-base">
+                              <span className="truncate text-sm font-semibold tracking-[-0.03em] text-foreground sm:text-base">
                                 {member.name}
                               </span>
                               {member.role === "Manager" ? (
-                                <Crown className="size-4 text-blue-600" />
+                                <Crown className="size-4 text-blue-600 dark:text-blue-400" />
                               ) : null}
                             </div>
-                            <p className="truncate text-xs text-slate-500 sm:text-sm">
+                            <p className="truncate text-xs text-muted-foreground sm:text-sm">
                               Workspace collaborator
                             </p>
                           </div>
@@ -351,7 +351,7 @@ export function TeamsMembersSection({
                       </td>
 
                       <td className="px-4 py-4 whitespace-nowrap sm:px-6">
-                        <span className="text-sm font-medium text-slate-600">
+                        <span className="text-sm font-medium text-muted-foreground">
                           {member.email}
                         </span>
                       </td>
@@ -381,8 +381,8 @@ export function TeamsMembersSection({
                           className={cn(
                             "rounded-full px-3 py-1 text-sm font-semibold",
                             member.status === "Active"
-                              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                              : "border-amber-200 bg-amber-50 text-amber-600"
+                              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
+                              : "border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
                           )}
                         >
                           <span
@@ -398,8 +398,8 @@ export function TeamsMembersSection({
                       </td>
 
                       <td className="px-4 py-4 whitespace-nowrap sm:px-6">
-                        <div className="inline-flex items-center gap-2 text-sm text-slate-500 sm:text-base">
-                          <CalendarDays className="size-4 text-slate-300" />
+                        <div className="inline-flex items-center gap-2 text-sm text-muted-foreground sm:text-base">
+                          <CalendarDays className="size-4 text-muted-foreground" />
                           {member.joined}
                         </div>
                       </td>
@@ -411,7 +411,7 @@ export function TeamsMembersSection({
                         >
                           <DropdownMenuTrigger
                             aria-label={`Open actions for ${member.name}`}
-                            className="inline-flex size-9 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20"
+                            className="inline-flex size-9 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 cursor-pointer"
                           >
                             <MoreHorizontal className="size-4.5" />
                           </DropdownMenuTrigger>
@@ -420,12 +420,12 @@ export function TeamsMembersSection({
                             align="end"
                             side="bottom"
                             sideOffset={8}
-                            className="w-56 min-w-0 max-w-[calc(100vw-1.5rem)] rounded-xl border border-[#E2E8F0] bg-white p-1 shadow-[0_16px_40px_rgba(15,23,42,0.12)]"
+                            className="w-56 min-w-0 max-w-[calc(100vw-1.5rem)] rounded-xl border border-border bg-card text-card-foreground p-1 shadow-md"
                           >
                             {permissions.canViewProfile ? (
                               <DropdownMenuItem
                                 onClick={() => handleMenuAction("view-profile", member)}
-                                className="rounded-[10px] px-3 py-2.5 text-slate-700 focus:bg-slate-100 focus:text-slate-900"
+                                className="rounded-[10px] px-3 py-2.5 text-foreground focus:bg-muted focus:text-foreground cursor-pointer"
                               >
                                 <Eye className="size-4" />
                                 View profile
@@ -435,7 +435,7 @@ export function TeamsMembersSection({
                             {permissions.canEditRole ? (
                               <DropdownMenuItem
                                 onClick={() => handleMenuAction("edit-role", member)}
-                                className="rounded-[10px] px-3 py-2.5 text-slate-700 focus:bg-slate-100 focus:text-slate-900"
+                                className="rounded-[10px] px-3 py-2.5 text-foreground focus:bg-muted focus:text-foreground cursor-pointer"
                               >
                                 <PencilLine className="size-4" />
                                 Edit role
@@ -454,7 +454,7 @@ export function TeamsMembersSection({
                                       member.status === "Active" ? "Pending" : "Active",
                                   })
                                 }
-                                className="rounded-[10px] px-3 py-2.5 text-slate-700 focus:bg-slate-100 focus:text-slate-900 data-disabled:text-slate-300"
+                                className="rounded-[10px] px-3 py-2.5 text-foreground focus:bg-muted focus:text-foreground data-disabled:text-muted-foreground cursor-pointer"
                               >
                                 <RefreshCcw className="size-4" />
                                 Change status
@@ -463,7 +463,7 @@ export function TeamsMembersSection({
 
                             {(permissions.canRemove || permissions.disableSelfRemoval) && (
                               <>
-                                <DropdownMenuSeparator className="my-1 bg-slate-200" />
+                                <DropdownMenuSeparator className="my-1 bg-border" />
                                 <DropdownMenuItem
                                   variant="destructive"
                                   disabled={permissions.disableSelfRemoval}
@@ -473,7 +473,7 @@ export function TeamsMembersSection({
                                       member,
                                     })
                                   }
-                                  className="rounded-[10px] px-3 py-2.5 text-red-600 focus:bg-red-50 focus:text-red-600 data-disabled:text-red-300"
+                                  className="rounded-[10px] px-3 py-2.5 text-red-600 dark:text-red-400 focus:bg-red-500/10 focus:text-red-600 cursor-pointer"
                                 >
                                   <Trash2 className="size-4" />
                                   Remove member
@@ -491,11 +491,11 @@ export function TeamsMembersSection({
           </table>
         </div>
 
-        <footer className="flex flex-col items-center justify-between gap-4 border-t border-slate-200/80 bg-slate-50/50 p-4 text-sm text-slate-500 sm:flex-row">
+        <footer className="flex flex-col items-center justify-between gap-4 border-t border-border bg-muted/40 p-4 text-sm text-muted-foreground sm:flex-row">
           <span className="font-medium">
             Showing {filteredMembers.length} of {counts.total} members
           </span>
-          <span className="text-slate-400">
+          <span className="text-muted-foreground/80">
             Filter by role or status to narrow the roster
           </span>
         </footer>
@@ -524,26 +524,26 @@ function StatusFilterSelect({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="inline-flex h-10.5 min-w-[160px] items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-3.5 text-sm font-semibold text-slate-800 shadow-2xs outline-none transition-all hover:border-slate-400 focus-visible:ring-2 focus-visible:ring-blue-600/20"
+        className="inline-flex h-10.5 min-w-[160px] items-center justify-between gap-3 rounded-xl border border-border bg-card px-3.5 text-sm font-semibold text-foreground shadow-2xs outline-none transition-all hover:bg-muted focus-visible:ring-2 focus-visible:ring-blue-600/20 cursor-pointer"
       >
         <span className="flex min-w-0 items-center gap-2">
-          <span className="text-slate-500">Status:</span>
+          <span className="text-muted-foreground">Status:</span>
           <span className="truncate">{value}</span>
         </span>
-        <ChevronDown className="size-4 shrink-0 text-slate-400" />
+        <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="w-[180px] rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-xl"
+        className="w-[180px] rounded-2xl border border-border bg-card text-card-foreground p-1.5 shadow-md"
       >
         <DropdownMenuRadioGroup value={value} onValueChange={(nextValue) => onChange(nextValue as StatusFilter)}>
           {STATUS_FILTERS.map((filter) => (
             <DropdownMenuRadioItem
               key={filter}
               value={filter}
-              className="rounded-xl px-3 py-2 text-sm text-slate-700 data-[checked]:bg-blue-50 data-[checked]:font-semibold data-[checked]:text-blue-700 focus:bg-slate-50 focus:text-slate-900"
+              className="rounded-xl px-3 py-2 text-sm text-foreground data-[checked]:bg-blue-500/10 data-[checked]:font-semibold data-[checked]:text-blue-600 dark:data-[checked]:text-blue-400 focus:bg-muted cursor-pointer"
             >
               <span>{filter}</span>
             </DropdownMenuRadioItem>
@@ -574,7 +574,7 @@ function TeamMemberConfirmationDialog({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 px-4 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-[2px]"
       onClick={onCancel}
     >
       <motion.div
@@ -582,7 +582,7 @@ function TeamMemberConfirmationDialog({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 6, scale: 0.98 }}
         transition={{ duration: 0.18, ease: "easeOut" }}
-        className="w-full max-w-md rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.18)]"
+        className="w-full max-w-md rounded-2xl border border-border bg-card text-card-foreground p-5 shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="team-member-confirm-title"
@@ -592,7 +592,7 @@ function TeamMemberConfirmationDialog({
           <div
             className={cn(
               "flex size-10 shrink-0 items-center justify-center rounded-full",
-              isRemoval ? "bg-red-50 text-red-600" : "bg-slate-100 text-slate-700"
+              isRemoval ? "bg-red-500/10 text-red-600 dark:text-red-400" : "bg-muted text-foreground"
             )}
           >
             <AlertTriangle className="size-5" />
@@ -601,11 +601,11 @@ function TeamMemberConfirmationDialog({
           <div className="space-y-2">
             <h3
               id="team-member-confirm-title"
-              className="text-lg font-semibold text-slate-950"
+              className="text-lg font-semibold text-foreground"
             >
               {title}
             </h3>
-            <p className="text-sm leading-6 text-slate-500">{description}</p>
+            <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
           </div>
         </div>
 
@@ -614,7 +614,7 @@ function TeamMemberConfirmationDialog({
             type="button"
             variant="outline"
             onClick={onCancel}
-            className="h-10 rounded-full border-slate-200 px-4 text-slate-700 hover:bg-slate-50"
+            className="h-10 rounded-full border-border bg-card px-4 text-foreground hover:bg-muted cursor-pointer"
           >
             Cancel
           </Button>
@@ -623,8 +623,8 @@ function TeamMemberConfirmationDialog({
             variant={isRemoval ? "destructive" : "default"}
             onClick={onConfirm}
             className={cn(
-              "h-10 rounded-full px-4",
-              !isRemoval && "bg-slate-900 text-white hover:bg-slate-800"
+              "h-10 rounded-full px-4 cursor-pointer",
+              !isRemoval && "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:text-white"
             )}
           >
             {isRemoval ? "Confirm removal" : "Confirm change"}

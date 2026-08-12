@@ -103,7 +103,7 @@ export function ManagedReportCard({
                   </p>
                 </div>
 
-                <p className="line-clamp-1 text-sm leading-relaxed text-muted-foreground">
+                <p className="line-clamp-2 text-base leading-relaxed text-muted-foreground">
                   {report.summary}
                 </p>
               </div>

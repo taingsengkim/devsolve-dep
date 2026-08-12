@@ -24,7 +24,7 @@ export function CreateProgramHeader() {
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
           Create New Program
         </h1>
-        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+        <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
           Configure and launch a new security bug bounty or vulnerability disclosure program for your organization.
         </p>
       </div>
