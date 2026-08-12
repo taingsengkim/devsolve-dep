@@ -35,10 +35,8 @@ export default function AccountSettingsPage() {
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-100">
             Account Settings
           </h1>
-          {/* Points people at the right place for the other half — profile
-              content is edited on the profile itself now. */}
           <p className="text-base text-slate-500 dark:text-slate-400">
-            Security, notifications, and appearance. To change your name, photo
+            Security and authentication settings. To change your name, photo
             or bio,{" "}
             <Link
               href="/dashboard/profile"
@@ -54,14 +52,9 @@ export default function AccountSettingsPage() {
       {isLoading || !data ? (
         <div className="grid animate-pulse grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="h-96 rounded-2xl bg-slate-200 dark:bg-slate-800" />
-          <div className="space-y-6">
-            <div className="h-72 rounded-2xl bg-slate-200 dark:bg-slate-800" />
-            <div className="h-40 rounded-2xl bg-slate-200 dark:bg-slate-800" />
-          </div>
         </div>
       ) : (
         <AccountSettingsPanel
-          initialNotifications={data.notifications}
           initialTwoFactorEnabled={data.twoFactorEnabled}
         />
       )}

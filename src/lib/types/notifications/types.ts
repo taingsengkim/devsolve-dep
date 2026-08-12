@@ -1,107 +1,47 @@
-export interface NotificationActor {
-  name: string;
-  avatar?: string;
-}
+export type NotificationType =
+  | "COMMENT"
+  | "REPORT"
+  | "PROGRAM"
+  | "SOLUTION"
+  | "PROBLEM"
+  | "KYC"
+  | "ORGANIZATION"
+  | "INVITATION"
+  | "DISPUTE"
+  | "RECOGNITION"
+  | "SHOWCASE";
 
-export interface NotificationBadge {
-  label: string;
-  variant?: "default" | "secondary" | "destructive" | "outline";
-  iconType?: "incident" | "question" | "bug";
-}
-
-export interface NotificationTarget {
-  id?: string;
+export interface Notification {
+  id: string | null; // UUID — null only on bulk follower SSE push events
   title: string;
-  href?: string;
-  type?: "ticket" | "knowledgebase" | "discussion" | "report";
-  badge?: NotificationBadge;
+  content: string;
+  notifiableType: NotificationType;
+  notifiableId: string; // UUID of related entity
+  read: boolean;
+  readAt: string | null; // ISO-8601 LocalDateTime, e.g. "2025-08-13T10:30:00"
+  createdAt: string; // ISO-8601 LocalDateTime
 }
 
-export interface QuickReply {
-  id: string;
-  author: string;
-  avatar?: string;
-  message: string;
-  timestamp: string;
+export interface Page<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number; // 0-based page index
+  size: number;
+  numberOfElements: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
 }
 
-export interface NotificationItem {
-  id: string;
-  actor: NotificationActor;
-  action: string;
-  target?: NotificationTarget;
-  contentSnippet?: string;
-  timestamp: string;
-  dateGroup: string; // e.g. "7 March 2023", "6 March 2023"
-  isUnread: boolean;
-  hasActiveBorder?: boolean;
-  canReply?: boolean;
-  replies?: QuickReply[];
-}
+export type NotificationPage = Page<Notification>;
 
-export interface NotificationFilter {
-  dateAdded?: string;
-  unreadOnly?: boolean;
-}
-
-export interface MarkAsReadRequest {
-  notificationId?: string; // If omitted, mark all as read
-}
-
-export interface ReplyNotificationRequest {
-  notificationId: string;
-  message: string;
-}
-
-export interface NotificationsResponse {
-  items: NotificationItem[];
+export interface UnreadCountResponse {
   unreadCount: number;
 }
 
-export type NotificationChannel = "inApp" | "email" | "push";
-
-export interface NotificationChannelOptions {
-  inApp: boolean;
-  email: boolean;
-  push: boolean;
+export interface GetNotificationsParams {
+  pageNumber?: number;
+  pageSize?: number;
+  unreadOnly?: boolean;
 }
-
-export type NotificationCategoryKey =
-  | "reportStatusChanges"
-  | "retestInvites"
-  | "bountyPayouts"
-  | "newPrograms"
-  | "scopeUpdates"
-  | "privateInvites"
-  | "discussionReplies"
-  | "solutionApprovals"
-  | "followerActivity"
-  | "securityAlerts"
-  | "passwordChanges";
-
-export type NotificationFrequency =
-  | "IMMEDIATE"
-  | "DAILY_DIGEST"
-  | "WEEKLY_SUMMARY"
-  | "OFF";
-
-export interface NotificationCategoryConfig {
-  key: NotificationCategoryKey;
-  label: string;
-  description: string;
-  section: "security" | "reports" | "programs" | "community";
-}
-
-export interface NotificationSettingsPreferences {
-  masterEnabled: boolean;
-  digestFrequency: NotificationFrequency;
-  categories: Record<NotificationCategoryKey, NotificationChannelOptions>;
-}
-
-export interface UpdateNotificationSettingsRequest {
-  masterEnabled?: boolean;
-  digestFrequency?: NotificationFrequency;
-  categories?: Partial<Record<NotificationCategoryKey, Partial<NotificationChannelOptions>>>;
-}
-
-
