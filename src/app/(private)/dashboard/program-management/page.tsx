@@ -287,7 +287,7 @@ function ProgramManagementPageContent() {
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-24 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800"
+              className="h-24 bg-slate-100 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800"
             />
           ))}
         </div>
@@ -310,7 +310,7 @@ function ProgramManagementPageContent() {
       <main className="flex flex-col gap-3">
         {isLoading ? (
           <div className="space-y-3 animate-pulse">
-            <div className="h-64 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
+            <div className="h-64 bg-slate-100 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800" />
           </div>
         ) : (
           <ProgramDataTable
@@ -335,16 +335,16 @@ function ProgramManagementPageContent() {
 function ProgramManagementPageFallback() {
   return (
     <div className="space-y-6 w-full pb-12 animate-pulse">
-      <div className="h-24 rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/60" />
+      <div className="h-24 rounded-2xl border border-slate-200/80 bg-slate-100 dark:border-slate-800 dark:bg-slate-900/60" />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[0, 1, 2, 3].map((item) => (
           <div
             key={item}
-            className="h-24 rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/60"
+            className="h-24 rounded-2xl border border-slate-200/80 bg-slate-100 dark:border-slate-800 dark:bg-slate-900/60"
           />
         ))}
       </div>
-      <div className="h-72 rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800/60" />
+      <div className="h-72 rounded-2xl border border-slate-200/80 bg-slate-100 dark:border-slate-800 dark:bg-slate-900/60" />
     </div>
   );
 }

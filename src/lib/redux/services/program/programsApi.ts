@@ -170,6 +170,22 @@ export const programsApi = proxyApi.injectEndpoints({
         { type: "Program", id },
       ],
     }),
+
+    // PATCH /programs/{id} (update visibility: PUBLIC, PRIVATE, INVITE_ONLY)
+    updateProgramVisibility: builder.mutation<
+      Program,
+      { id: string; visibility: "PUBLIC" | "PRIVATE" | "INVITE_ONLY" }
+    >({
+      query: ({ id, visibility }) => ({
+        url: `/programs/${id}`,
+        method: "PATCH",
+        body: { visibility },
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        "Program",
+        { type: "Program", id },
+      ],
+    }),
   }),
 
   overrideExisting: true,
@@ -186,5 +202,6 @@ export const {
   useUpdateProgramStateMutation,
   usePublishProgramMutation,
   useCloseProgramMutation,
+  useUpdateProgramVisibilityMutation,
 } = programsApi;
 

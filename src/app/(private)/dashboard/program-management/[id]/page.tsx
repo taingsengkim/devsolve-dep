@@ -21,6 +21,9 @@ import {
   X,
   Zap,
   ChevronDown,
+  Globe,
+  Lock,
+  UserCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +56,7 @@ import {
   useUpdateProgramStateMutation,
   usePublishProgramMutation,
   useCloseProgramMutation,
+  useUpdateProgramVisibilityMutation,
 } from "@/lib/redux/services/program/programsApi";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { ProgramRejectDialog } from "@/components/admin/programs/ProgramRejectDialog";
@@ -110,6 +114,25 @@ function ProgramDetailPageContent({
     usePublishProgramMutation();
   const [closeProgram, { isLoading: isClosing }] =
     useCloseProgramMutation();
+  const [updateProgramVisibility, { isLoading: isUpdatingVisibility }] =
+    useUpdateProgramVisibilityMutation();
+
+  const handleUpdateVisibility = async (
+    visibility: "PUBLIC" | "PRIVATE" | "INVITE_ONLY"
+  ) => {
+    if (program?.visibility === visibility) return;
+    try {
+      setIsActionLoading(true);
+      await updateProgramVisibility({ id, visibility }).unwrap();
+      toast.success(`Program visibility updated to "${visibility}"!`);
+      refetch();
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message;
+      toast.error(message || "Failed to update program visibility.");
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
 
   const handleApprove = async () => {
     try {
@@ -292,12 +315,73 @@ function ProgramDetailPageContent({
               {program.engagementType === "BOUNTY" ? "Bounty Program" : "VDP Response"}
             </Badge>
 
-            <Badge
-              variant="outline"
-              className="rounded-xl px-3 py-1.5 text-xs font-semibold border-slate-200 dark:border-slate-800 uppercase"
-            >
-              {program.visibility || "PUBLIC"}
-            </Badge>
+            {/* Visibility Badge / Interactive Dropdown for Company */}
+            {!isAdminScope ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isUpdatingVisibility || isActionLoading}
+                      className="rounded-xl px-3 py-1.5 h-8 text-xs font-semibold border-slate-200 dark:border-slate-800 uppercase gap-1.5 cursor-pointer bg-white dark:bg-slate-900"
+                    >
+                      {isUpdatingVisibility ? (
+                        <LoaderCircle className="w-3.5 h-3.5 animate-spin" />
+                      ) : program.visibility === "PRIVATE" ? (
+                        <Lock className="w-3.5 h-3.5 text-amber-500" />
+                      ) : program.visibility === "INVITE_ONLY" ? (
+                        <UserCheck className="w-3.5 h-3.5 text-purple-500" />
+                      ) : (
+                        <Globe className="w-3.5 h-3.5 text-blue-500" />
+                      )}
+                      <span>{program.visibility || "PUBLIC"}</span>
+                      <ChevronDown className="w-3 h-3 text-slate-400" />
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent
+                  align="end"
+                  className="w-40 rounded-2xl p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg"
+                >
+                  <DropdownMenuItem
+                    onClick={() => handleUpdateVisibility("PUBLIC")}
+                    className="cursor-pointer font-semibold gap-2 rounded-xl text-xs"
+                  >
+                    <Globe className="w-4 h-4 text-blue-500" />
+                    PUBLIC
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleUpdateVisibility("PRIVATE")}
+                    className="cursor-pointer font-semibold gap-2 rounded-xl text-xs"
+                  >
+                    <Lock className="w-4 h-4 text-amber-500" />
+                    PRIVATE
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleUpdateVisibility("INVITE_ONLY")}
+                    className="cursor-pointer font-semibold gap-2 rounded-xl text-xs"
+                  >
+                    <UserCheck className="w-4 h-4 text-purple-500" />
+                    INVITE_ONLY
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Badge
+                variant="outline"
+                className="rounded-xl px-3 py-1.5 text-xs font-semibold border-slate-200 dark:border-slate-800 uppercase gap-1.5"
+              >
+                {program.visibility === "PRIVATE" ? (
+                  <Lock className="w-3.5 h-3.5 text-amber-500" />
+                ) : program.visibility === "INVITE_ONLY" ? (
+                  <UserCheck className="w-3.5 h-3.5 text-purple-500" />
+                ) : (
+                  <Globe className="w-3.5 h-3.5 text-blue-500" />
+                )}
+                {program.visibility || "PUBLIC"}
+              </Badge>
+            )}
 
             {/* Company Activate / Lifecycle Status Button */}
             {!isAdminScope && (

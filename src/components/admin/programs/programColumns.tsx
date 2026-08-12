@@ -256,121 +256,131 @@ function AdminProgramActions({
 }
 
 export const getProgramColumns =
-  ({ scope = "owner" }: { scope?: "owner" | "admin" } = {}): ColumnDef<ProgramManagementSummaryItem>[] => [
-    {
-      accessorKey: "name",
-      header: ({ column }) => (
-        <SortableHeader label="Program" column={column} />
-      ),
-      cell: ({ row }) => {
-        const item = row.original;
-        return (
-          <div className="flex items-center gap-3 py-0.5">
-            <Avatar className="size-9 shrink-0 rounded-xl border border-slate-200 dark:border-slate-700">
-              <AvatarFallback className="rounded-xl bg-slate-100 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                {initialsOf(item.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <Link
-                href={`/dashboard/program-management/${item.id}${
-                  scope === "admin" ? "?scope=admin" : ""
-                }`}
-                className="block truncate text-sm font-semibold text-slate-900 transition-colors hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-400"
-              >
-                {item.name}
-              </Link>
-              <div className="truncate text-sm text-slate-500 dark:text-slate-400">
-                @{item.handle}
+  ({ scope = "owner" }: { scope?: "owner" | "admin" } = {}): ColumnDef<ProgramManagementSummaryItem>[] => {
+    const cols: ColumnDef<ProgramManagementSummaryItem>[] = [
+      {
+        accessorKey: "name",
+        header: ({ column }) => (
+          <SortableHeader label="Program" column={column} />
+        ),
+        cell: ({ row }) => {
+          const item = row.original;
+          return (
+            <div className="flex items-center gap-3 py-0.5 min-w-[200px]">
+              <Avatar className="size-9 shrink-0 rounded-xl border border-slate-200 dark:border-slate-700">
+                <AvatarFallback className="rounded-xl bg-slate-100 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                  {initialsOf(item.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <Link
+                  href={`/dashboard/program-management/${item.id}${
+                    scope === "admin" ? "?scope=admin" : ""
+                  }`}
+                  className="block truncate text-sm font-semibold text-slate-900 transition-colors hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-400"
+                >
+                  {item.name}
+                </Link>
+                <div className="truncate text-sm text-slate-500 dark:text-slate-400">
+                  @{item.handle}
+                </div>
               </div>
             </div>
-          </div>
-        );
+          );
+        },
       },
-    },
-    {
-      accessorKey: "organizationName",
-      header: ({ column }) => (
-        <SortableHeader label="Organization" column={column} />
-      ),
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-          <Building2 aria-hidden="true" className="size-3.5 shrink-0" />
-          <span className="truncate">{row.original.organizationName || "—"}</span>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "engagementType",
-      header: ({ column }) => <SortableHeader label="Type" column={column} />,
-      cell: ({ row }) => (
-        <Badge variant="secondary" className="rounded-lg">
-          {row.original.engagementType === "BOUNTY" ? "BOUNTY" : "RESPONSE"}
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: "visibility",
-      header: ({ column }) => (
-        <SortableHeader label="Visibility" column={column} />
-      ),
-      cell: ({ row }) => (
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-          {row.original.visibility}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "state",
-      header: ({ column }) => (
-        <SortableHeader label="Lifecycle" column={column} />
-      ),
-      cell: ({ row }) => <ProgramStateBadge state={row.original.state} />,
-    },
-    {
-      accessorKey: "submissionState",
-      header: ({ column }) => (
-        <SortableHeader label="Review Status" column={column} />
-      ),
-      cell: ({ row }) => (
-        <ProgramReviewBadge status={row.original.submissionState} />
-      ),
-    },
-    {
-      accessorKey: "createdAt",
-      header: ({ column }) => (
-        <SortableHeader label="Submitted" column={column} />
-      ),
-      cell: ({ row }) => {
-        const raw = row.original.createdAt;
-        const formatted =
-          raw && !Number.isNaN(Date.parse(raw))
-            ? new Date(raw).toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })
-            : "—";
-        return (
-          <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-            {formatted}
-          </span>
-        );
-      },
-    },
-    {
-      id: "actions",
-      header: () => (
-        <div className="text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-          Actions
-        </div>
-      ),
-      cell: ({ row }) => {
-        if (scope === "owner") {
-          return <OwnerProgramActions program={row.original} />;
-        }
+    ];
 
-        return <AdminProgramActions program={row.original} />;
+    if (scope === "admin") {
+      cols.push({
+        accessorKey: "organizationName",
+        header: ({ column }) => (
+          <SortableHeader label="Organization" column={column} />
+        ),
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2 text-sm text-slate-600 min-w-[140px] dark:text-slate-400">
+            <Building2 aria-hidden="true" className="size-3.5 shrink-0" />
+            <span className="truncate">{row.original.organizationName || "—"}</span>
+          </div>
+        ),
+      });
+    }
+
+    cols.push(
+      {
+        accessorKey: "engagementType",
+        header: ({ column }) => <SortableHeader label="Type" column={column} />,
+        cell: ({ row }) => (
+          <Badge variant="secondary" className="rounded-lg font-semibold text-xs dark:bg-slate-800 dark:text-slate-300">
+            {row.original.engagementType === "BOUNTY" ? "BOUNTY" : "RESPONSE"}
+          </Badge>
+        ),
       },
-    },
-  ];
+      {
+        accessorKey: "visibility",
+        header: ({ column }) => (
+          <SortableHeader label="Visibility" column={column} />
+        ),
+        cell: ({ row }) => (
+          <span className="text-sm font-medium uppercase text-slate-600 dark:text-slate-400">
+            {row.original.visibility}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "state",
+        header: ({ column }) => (
+          <SortableHeader label="Lifecycle" column={column} />
+        ),
+        cell: ({ row }) => <ProgramStateBadge state={row.original.state} />,
+      },
+      {
+        accessorKey: "submissionState",
+        header: ({ column }) => (
+          <SortableHeader label="Review Status" column={column} />
+        ),
+        cell: ({ row }) => (
+          <ProgramReviewBadge status={row.original.submissionState} />
+        ),
+      },
+      {
+        accessorKey: "createdAt",
+        header: ({ column }) => (
+          <SortableHeader label="Submitted" column={column} />
+        ),
+        cell: ({ row }) => {
+          const raw = row.original.createdAt;
+          const formatted =
+            raw && !Number.isNaN(Date.parse(raw))
+              ? new Date(raw).toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })
+              : "—";
+          return (
+            <span className="text-sm font-medium whitespace-nowrap text-slate-600 dark:text-slate-400">
+              {formatted}
+            </span>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: () => (
+          <div className="text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 min-w-[100px]">
+            Actions
+          </div>
+        ),
+        cell: ({ row }) => {
+          if (scope === "owner") {
+            return <OwnerProgramActions program={row.original} />;
+          }
+
+          return <AdminProgramActions program={row.original} />;
+        },
+      }
+    );
+
+    return cols;
+  };
