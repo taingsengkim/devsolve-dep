@@ -6,11 +6,14 @@ import { cn } from "@/lib/utils";
 
 export function ReportManagementHeader() {
   return (
-    <header className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <h1 className="text-[32px] font-semibold tracking-[-0.04em] text-[#0F172A] sm:text-[38px]">
+    <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
           Report Management
         </h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          Review, triage, track, and manage all security reports submitted to your organization.
+        </p>
       </div>
 
       <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:justify-end">
@@ -18,25 +21,21 @@ export function ReportManagementHeader() {
           href="/dashboard/report-management/review-queue"
           className={cn(
             buttonVariants({ variant: "outline", size: "lg" }),
-            "h-11 items-center justify-center gap-2.5 rounded-xl border-slate-200 bg-white px-5 font-semibold text-slate-700 shadow-none hover:bg-slate-50 hover:text-slate-900"
+            "h-11 items-center justify-center gap-2.5 rounded-xl border-border bg-card px-5 font-semibold text-foreground shadow-none hover:bg-muted cursor-pointer"
           )}
         >
-          <span className="flex size-4 items-center justify-center">
-            <ListChecks className="size-4" />
-          </span>
-          Review queue
+          <ListChecks className="size-4" />
+          Review Queue
         </Link>
 
         <Link
           href="/dashboard/report-management/export"
           className={cn(
             buttonVariants({ variant: "outline", size: "lg" }),
-            "h-11 items-center justify-center gap-2.5 rounded-xl border-slate-200 bg-white px-5 font-semibold text-slate-700 shadow-none hover:bg-slate-50 hover:text-slate-900"
+            "h-11 items-center justify-center gap-2.5 rounded-xl border-border bg-card px-5 font-semibold text-foreground shadow-none hover:bg-muted cursor-pointer"
           )}
         >
-          <span className="flex size-4 items-center justify-center">
-            <Download className="size-4" />
-          </span>
+          <Download className="size-4" />
           Export
         </Link>
       </div>

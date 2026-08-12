@@ -7,50 +7,53 @@ import { cn } from "@/lib/utils";
 
 export function ExportHeader() {
   return (
-    <header className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between pb-6 border-b border-slate-200/80">
-      <div className="space-y-3">
-        {/* Breadcrumb */}
-        <nav
-          aria-label="Breadcrumb"
-          className="flex items-center gap-2 text-xs font-medium text-slate-500"
-        >
-          <span className="hover:text-slate-800 transition-colors cursor-pointer">Report Management</span>
-          <ChevronRight className="size-3.5 text-slate-400" />
-          <span className="font-semibold text-slate-900">Export Center</span>
-        </nav>
+    <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <Link
+            href="/dashboard/report-management"
+            className="flex items-center gap-1.5 transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" />
+            <span>Report Management</span>
+          </Link>
+          <span className="text-muted-foreground/60">/</span>
+          <span className="font-semibold text-foreground">
+            Export Center
+          </span>
+        </div>
 
-        {/* Title & Description */}
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
               Export Center
             </h1>
             <Badge
-              variant="secondary"
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-blue-50/80 text-blue-700 border border-blue-200/60 px-3 py-0.5 text-xs font-medium"
+              variant="outline"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-0.5 text-xs font-semibold"
             >
-              <Download className="size-3" /> 4 recent downloads
+              <Download className="size-3" />
+              4 Recent Downloads
             </Badge>
           </div>
-          <p className="max-w-2xl text-sm leading-relaxed text-slate-500">
+          <p className="max-w-2xl text-sm sm:text-base text-muted-foreground leading-relaxed">
             Build structured report exports for moderation review, audits, and secure team handoffs.
           </p>
         </div>
       </div>
 
-      {/* Back Button */}
-      <Link
-        href="/dashboard/report-management"
-        className={cn(
-          buttonVariants({ variant: "outline", size: "sm" }),
-          "h-10 items-center justify-center gap-2.5 rounded-full border-slate-300 bg-white px-4 font-semibold text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.03)] transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:text-slate-700 hover:shadow-[0_8px_18px_rgba(15,23,42,0.06)]"
-        )}
-      >
-        <span className="flex size-4 items-center justify-center">
+      <div className="flex items-center gap-2 self-start sm:self-auto">
+        <Link
+          href="/dashboard/report-management"
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "h-10 items-center justify-center gap-2 rounded-xl border-border bg-card px-4 font-semibold text-foreground shadow-none hover:bg-muted cursor-pointer"
+          )}
+        >
           <ArrowLeft className="size-4" />
-        </span>
-        Back
-      </Link>
+          Back
+        </Link>
+      </div>
     </header>
   );
 }

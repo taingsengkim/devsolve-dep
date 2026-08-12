@@ -1,6 +1,5 @@
-import { BarChart3, CheckCheck, Clock3, ShieldAlert, TrendingUp, type LucideIcon } from "lucide-react";
+import { BarChart3, CheckCheck, Clock3, ShieldAlert, type LucideIcon } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +42,7 @@ export function ReportMetricsGrid({
             size="sm"
             key={metric.title}
             className={cn(
-              "rounded-[26px] border border-slate-200 bg-white py-0 shadow-[0_10px_24px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(15,23,42,0.06)]",
+              "rounded-[26px] bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 border-none py-0 shadow-xs transition-all duration-300 hover:-translate-y-0.5",
               "[--card-spacing:--spacing(0)]"
             )}
           >
@@ -53,42 +52,30 @@ export function ReportMetricsGrid({
                   <div
                     className={cn(
                       "flex size-11 items-center justify-center rounded-2xl",
-                      index === 0 && "bg-slate-100 text-slate-800",
-                      index === 1 && "bg-amber-50 text-amber-600",
-                      index === 2 && "bg-blue-50 text-blue-600",
-                      index === 3 && "bg-emerald-50 text-emerald-600"
+                      index === 0 && "bg-muted text-foreground",
+                      index === 1 && "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400",
+                      index === 2 && "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400",
+                      index === 3 && "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                     )}
                   >
                     <Icon className="size-5" />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       {metric.title}
                     </span>
-                    <span className="text-xs text-slate-500">{METRIC_HELPERS[index]}</span>
+                    <span className="text-xs text-muted-foreground">{METRIC_HELPERS[index]}</span>
                   </div>
                 </div>
 
                 <div className="flex items-end gap-3">
                   {isLoading ? (
-                    <div className="h-10 w-20 animate-pulse rounded-xl bg-slate-100" />
+                    <div className="h-10 w-20 animate-pulse rounded-xl bg-muted" />
                   ) : (
-                    <p className="text-[2rem] font-semibold leading-none tracking-[-0.05em] text-[#0F172A]">
+                    <p className="text-[2rem] font-semibold leading-none tracking-[-0.05em] text-foreground">
                       {metric.value}
                     </p>
                   )}
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "h-7 rounded-full px-2.5 text-xs font-semibold",
-                      index === 1
-                        ? "border-amber-200 bg-amber-50 text-amber-700"
-                        : "border-emerald-200 bg-emerald-50 text-emerald-700"
-                    )}
-                  >
-                    <TrendingUp />
-                    Live
-                  </Badge>
                 </div>
               </div>
             </CardContent>

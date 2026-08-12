@@ -131,19 +131,19 @@ export function ReportFiltersBar({
   ];
 
   return (
-    <section className="rounded-[20px] border border-slate-200/80 bg-white px-4 py-4 shadow-[0_6px_18px_rgba(15,23,42,0.04)] sm:px-5 sm:py-5">
+    <section className="rounded-[20px] bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 p-4 sm:p-5 shadow-xs">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
           <div className="relative min-w-0 flex-1">
-            <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
               value={searchTerm}
               onChange={(event) => onSearchTermChange(event.target.value)}
               placeholder="Search by title, submitter, report ID, or asset..."
-              className="h-11 rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-12 text-sm text-slate-700 shadow-none placeholder:text-slate-400 focus-visible:border-blue-500 focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-blue-500/10"
+              className="h-11 rounded-xl border border-border bg-card pl-11 pr-12 text-sm text-foreground shadow-none placeholder:text-muted-foreground focus-visible:border-blue-500 focus-visible:ring-4 focus-visible:ring-blue-500/10"
             />
-            <span className="pointer-events-none absolute top-1/2 right-3 inline-flex h-7 min-w-7 -translate-y-1/2 items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-400">
+            <span className="pointer-events-none absolute top-1/2 right-3 inline-flex h-7 min-w-7 -translate-y-1/2 items-center justify-center rounded-lg border border-border bg-muted px-2 text-[11px] font-semibold text-muted-foreground">
               /
             </span>
           </div>
@@ -198,7 +198,7 @@ export function ReportFiltersBar({
               minWidthClassName="min-w-[144px]"
             />
 
-            <div className="hidden h-8 w-px bg-slate-200 xl:block" />
+            <div className="hidden h-8 w-px bg-border xl:block" />
 
             <Button
               type="button"
@@ -206,14 +206,14 @@ export function ReportFiltersBar({
               onClick={onToggleMoreFilters}
               aria-pressed={showMoreFilters}
               className={cn(
-                "h-11 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-none hover:border-blue-200 hover:bg-blue-50/60 hover:text-[#2563EB]",
-                showMoreFilters && "border-blue-200 bg-blue-50 text-[#2563EB]"
+                "h-11 rounded-xl border-border bg-card px-4 text-sm font-medium text-foreground shadow-none hover:bg-muted cursor-pointer",
+                showMoreFilters && "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400"
               )}
             >
               <SlidersHorizontal data-icon="inline-start" />
               Filters
               {activeFiltersCount > 0 ? (
-                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#2563EB] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-[11px] font-semibold text-white">
                   {activeFiltersCount}
                 </span>
               ) : null}
@@ -221,66 +221,52 @@ export function ReportFiltersBar({
           </div>
         </div>
 
-        {hasActiveFilters ? (
-          <div className="flex flex-wrap items-center gap-2">
-            {activeChips.map((chip) => (
-              <button
-                key={chip.key}
-                type="button"
-                onClick={chip.onRemove}
-                className="inline-flex h-8 items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 text-sm font-medium text-[#2563EB] transition-colors hover:border-blue-200 hover:bg-blue-100"
-              >
-                <span>{chip.label}</span>
-                <X className="size-3.5" />
-              </button>
-            ))}
-
-            <button
-              type="button"
-              onClick={onClearFilters}
-              className="inline-flex h-8 items-center gap-2 rounded-full px-2 text-sm font-medium text-slate-500 transition-colors hover:text-slate-800"
-            >
-              <X className="size-3.5" />
-              Clear all
-            </button>
-          </div>
-        ) : null}
-
-        <AnimatePresence initial={false}>
+        <AnimatePresence>
           {showMoreFilters ? (
             <motion.div
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-              className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-3 md:grid-cols-3"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden pt-3 border-t border-border"
             >
-              {[
-                {
-                  title: "Type",
-                  value: typeFilter === "All Types" ? "All" : typeFilter,
-                },
-                {
-                  title: "Severity",
-                  value: severityFilter === "All" ? "All" : severityFilter,
-                },
-                {
-                  title: "Status",
-                  value: statusFilter === "All Statuses" ? "All" : statusFilter,
-                },
-              ].map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-3"
-                >
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                    {item.title}
-                  </div>
-                  <div className="mt-1.5 text-sm font-medium text-slate-700">
-                    {item.value}
-                  </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">
+                  Active Filter Summary
+                </span>
+                {hasActiveFilters ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={onClearFilters}
+                    className="h-8 text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    Clear all filters
+                  </Button>
+                ) : null}
+              </div>
+
+              {activeChips.length > 0 ? (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {activeChips.map((chip) => (
+                    <span
+                      key={chip.key}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-foreground"
+                    >
+                      {chip.label}
+                      <button
+                        type="button"
+                        onClick={chip.onRemove}
+                        className="rounded-full p-0.5 hover:bg-foreground/10 cursor-pointer"
+                        aria-label={`Remove ${chip.label} filter`}
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </span>
+                  ))}
                 </div>
-              ))}
+              ) : null}
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -308,28 +294,28 @@ function FilterDropdown({
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          "inline-flex h-11 items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 text-left text-sm text-slate-700 shadow-none outline-none transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:border-blue-500 focus-visible:ring-4 focus-visible:ring-blue-500/10",
+          "inline-flex h-11 items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 text-left text-sm text-foreground shadow-none outline-none transition-colors hover:bg-muted focus-visible:border-blue-500 focus-visible:ring-4 focus-visible:ring-blue-500/10 cursor-pointer",
           minWidthClassName
         )}
       >
         <span className="flex min-w-0 items-center gap-1.5">
-          <span className="text-slate-400">{label}:</span>
-          <span className="truncate font-medium text-slate-700">{displayValue}</span>
+          <span className="text-muted-foreground">{label}:</span>
+          <span className="truncate font-medium text-foreground">{displayValue}</span>
         </span>
-        <ChevronDown className="size-4 text-slate-400" />
+        <ChevronDown className="size-4 text-muted-foreground" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="start"
         sideOffset={8}
-        className="rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_18px_40px_rgba(15,23,42,0.12)]"
+        className="rounded-2xl border border-border bg-card text-card-foreground p-1.5 shadow-md"
       >
         <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
           {options.map((option) => (
             <DropdownMenuRadioItem
               key={option.value}
               value={option.value}
-              className="rounded-xl px-3 py-2.5 text-slate-700 data-[checked]:bg-blue-50 data-[checked]:text-[#2563EB] focus:bg-blue-50 focus:text-[#2563EB]"
+              className="rounded-xl px-3 py-2.5 text-foreground data-[checked]:bg-blue-500/10 data-[checked]:text-blue-600 dark:data-[checked]:text-blue-400 focus:bg-muted"
             >
               {option.label}
             </DropdownMenuRadioItem>

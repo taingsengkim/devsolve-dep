@@ -10,21 +10,21 @@ import { cn } from "@/lib/utils";
 
 function getTypeBadgeClass(type: ManagedReport["type"]) {
   return type === "Bounty"
-    ? "border-blue-200 bg-blue-50 text-blue-700"
-    : "border-violet-200 bg-violet-50 text-violet-700";
+    ? "border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20"
+    : "border-violet-200 bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20";
 }
 
 function getStatusBadgeClass(status: ManagedReport["status"]) {
   return status === "Open"
-    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-    : "border-slate-200 bg-slate-100 text-slate-600";
+    ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
+    : "border-border bg-muted text-muted-foreground";
 }
 
 function getSeverityBadgeClass(severity: ManagedReport["severity"]) {
-  if (severity === "Critical") return "border-red-200 bg-red-50 text-red-700";
-  if (severity === "High") return "border-orange-200 bg-orange-50 text-orange-700";
-  if (severity === "Medium") return "border-amber-200 bg-amber-50 text-amber-700";
-  return "border-blue-200 bg-blue-50 text-blue-700";
+  if (severity === "Critical") return "border-red-200 bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20";
+  if (severity === "High") return "border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20";
+  if (severity === "Medium") return "border-sky-200 bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400 dark:border-sky-500/20";
+  return "border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20";
 }
 
 const badgeBaseClass =
@@ -60,7 +60,7 @@ export function ManagedReportCard({
       aria-label={`Open report ${report.title}`}
       className={cn(
         "group block cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500/30",
-        !isLast && "border-b border-slate-200"
+        !isLast && "border-b border-border"
       )}
       onKeyDown={(event) => {
         if (event.key === " ") {
@@ -69,11 +69,11 @@ export function ManagedReportCard({
         }
       }}
     >
-      <div className="px-6 py-5 transition-colors duration-200 group-hover:bg-blue-50/35">
+      <div className="px-6 py-5 transition-colors duration-200 group-hover:bg-muted/50">
         <div className={cn(reportListGridClass, "hidden lg:grid")}>
           <div className="min-w-0">
             <div className="flex items-start gap-4">
-              <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
+              <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted border border-border">
                 {report.programLogo ? (
                   <Image
                     src={report.programLogo}
@@ -83,7 +83,7 @@ export function ManagedReportCard({
                     className="size-11 object-contain"
                   />
                 ) : (
-                  <span className="text-sm font-semibold text-slate-700">
+                  <span className="text-sm font-semibold text-foreground">
                     {report.authorInitials}
                   </span>
                 )}
@@ -91,19 +91,19 @@ export function ManagedReportCard({
 
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="space-y-1.5">
-                  <h3 className="truncate text-[17px] font-semibold leading-6 text-[#0F172A]">
+                  <h3 className="truncate text-[17px] font-semibold leading-6 text-foreground">
                     {report.title}
                   </h3>
-                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-slate-500">
+                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted-foreground">
                     <span>{reportId}</span>
-                    <span className="text-slate-300">&bull;</span>
+                    <span className="text-muted-foreground/60">&bull;</span>
                     <span className="truncate">{report.author}</span>
-                    <span className="text-slate-300">&bull;</span>
+                    <span className="text-muted-foreground/60">&bull;</span>
                     <span>{report.submittedAt}</span>
                   </p>
                 </div>
 
-                <p className="line-clamp-1 text-[14px] leading-6 text-slate-500">
+                <p className="line-clamp-1 text-[14px] leading-6 text-muted-foreground">
                   {report.summary}
                 </p>
               </div>
@@ -114,14 +114,14 @@ export function ManagedReportCard({
             {visibleAssets.map((asset) => (
               <span
                 key={asset}
-                className="inline-flex max-w-[165px] truncate rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-600"
+                className="inline-flex max-w-[165px] truncate rounded-full border border-border bg-muted px-3 py-1 text-[12px] font-medium text-foreground"
                 title={asset}
               >
                 {asset}
               </span>
             ))}
             {hiddenAssetsCount > 0 ? (
-              <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-500">
+              <span className="inline-flex rounded-full border border-border bg-muted px-3 py-1 text-[12px] font-medium text-muted-foreground">
                 +{hiddenAssetsCount} more
               </span>
             ) : null}
@@ -157,7 +157,7 @@ export function ManagedReportCard({
 
         <div className="space-y-3 lg:hidden">
           <div className="flex items-start gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
+            <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted border border-border">
               {report.programLogo ? (
                 <Image
                   src={report.programLogo}
@@ -167,7 +167,7 @@ export function ManagedReportCard({
                   className="size-10 object-contain"
                 />
               ) : (
-                <span className="text-sm font-semibold text-slate-700">
+                <span className="text-sm font-semibold text-foreground">
                   {report.authorInitials}
                 </span>
               )}
@@ -175,19 +175,19 @@ export function ManagedReportCard({
 
             <div className="min-w-0 flex-1 space-y-3">
               <div className="space-y-1.5">
-                <h3 className="truncate text-[16px] font-semibold leading-6 text-[#0F172A]">
+                <h3 className="truncate text-[16px] font-semibold leading-6 text-foreground">
                   {report.title}
                 </h3>
-                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-slate-500">
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-muted-foreground">
                   <span>{reportId}</span>
-                  <span className="text-slate-300">&bull;</span>
+                  <span className="text-muted-foreground/60">&bull;</span>
                   <span className="truncate">{report.author}</span>
-                  <span className="text-slate-300">&bull;</span>
+                  <span className="text-muted-foreground/60">&bull;</span>
                   <span>{report.submittedAt}</span>
                 </p>
               </div>
 
-              <p className="line-clamp-1 text-[13px] leading-6 text-slate-500">
+              <p className="line-clamp-1 text-[13px] leading-6 text-muted-foreground">
                 {report.summary}
               </p>
 
@@ -216,14 +216,14 @@ export function ManagedReportCard({
                 {visibleAssets.map((asset) => (
                   <span
                     key={asset}
-                    className="inline-flex max-w-[165px] truncate rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-600"
+                    className="inline-flex max-w-[165px] truncate rounded-full border border-border bg-muted px-3 py-1 text-[12px] font-medium text-foreground"
                     title={asset}
                   >
                     {asset}
                   </span>
                 ))}
                 {hiddenAssetsCount > 0 ? (
-                  <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-500">
+                  <span className="inline-flex rounded-full border border-border bg-muted px-3 py-1 text-[12px] font-medium text-muted-foreground">
                     +{hiddenAssetsCount} more
                   </span>
                 ) : null}

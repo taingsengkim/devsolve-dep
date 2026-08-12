@@ -44,7 +44,7 @@ export function ReportManagementPagination({
 
   return (
     <footer className="flex flex-col gap-4 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-muted-foreground">
         {start}-{end} of {filteredCount} reports
       </p>
 
@@ -54,7 +54,7 @@ export function ReportManagementPagination({
           size="icon-sm"
           disabled={currentPage === 1}
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-          className="rounded-xl border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+          className="rounded-xl border-border bg-card text-foreground hover:bg-muted cursor-pointer"
           aria-label="Previous page"
         >
           <ChevronLeft />
@@ -68,17 +68,17 @@ export function ReportManagementPagination({
           return (
             <div key={pageNumber} className="flex items-center gap-2">
               {shouldRenderEllipsis ? (
-                <span className="px-1 text-sm font-medium text-slate-400">...</span>
+                <span className="px-1 text-sm font-medium text-muted-foreground">...</span>
               ) : null}
               <Button
                 variant={currentPage === pageNumber ? "default" : "outline"}
                 size="icon-sm"
                 onClick={() => onPageChange(pageNumber)}
                 className={cn(
-                  "rounded-xl text-sm font-semibold",
+                  "rounded-xl text-sm font-semibold cursor-pointer",
                   currentPage === pageNumber
-                    ? "bg-[#2563EB] text-white hover:bg-[#1d4ed8]"
-                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                    ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:text-white"
+                    : "border-border bg-card text-foreground hover:bg-muted"
                 )}
                 aria-current={currentPage === pageNumber ? "page" : undefined}
               >
@@ -93,7 +93,7 @@ export function ReportManagementPagination({
           size="icon-sm"
           disabled={currentPage === totalPages}
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-          className="rounded-xl border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+          className="rounded-xl border-border bg-card text-foreground hover:bg-muted cursor-pointer"
           aria-label="Next page"
         >
           <ChevronRight />

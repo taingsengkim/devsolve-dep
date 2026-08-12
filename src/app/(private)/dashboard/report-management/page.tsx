@@ -95,8 +95,8 @@ export default function ReportManagementPage() {
       </motion.div>
 
       <motion.section variants={pageEnterItem} className="space-y-3">
-        <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 shadow-[0_2px_8px_rgba(15,23,42,0.03)] sm:px-6">
-          <p className="text-sm font-medium text-[#0F172A]">
+        <div className="flex items-center justify-between gap-3 rounded-2xl bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 p-4 sm:px-6 py-3.5 shadow-xs">
+          <p className="text-sm font-medium text-foreground">
             Showing {filteredCount} reports
           </p>
 
@@ -108,7 +108,7 @@ export default function ReportManagementPage() {
               setCurrentPage(1);
               void refetch();
             }}
-            className="rounded-xl border-slate-200 bg-white text-slate-600 shadow-none hover:bg-slate-50 hover:text-slate-900"
+            className="rounded-xl border-border bg-card text-muted-foreground shadow-none hover:bg-muted hover:text-foreground cursor-pointer"
             aria-label="Refresh report list"
           >
             <RefreshCw className={isFetching ? "animate-spin" : undefined} />
@@ -116,8 +116,8 @@ export default function ReportManagementPage() {
         </div>
 
         {isLoading ? (
-          <div className="overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.03)]">
-            <div className="hidden border-b border-slate-200 px-6 py-4 lg:block">
+          <div className="overflow-hidden rounded-[14px] bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs">
+            <div className="hidden border-b border-border px-6 py-4 lg:block">
               <div className={reportListGridClass}>
                 {[
                   { label: "Report", align: "text-left" },
@@ -128,7 +128,7 @@ export default function ReportManagementPage() {
                 ].map(({ label, align }) => (
                   <span
                     key={label}
-                    className={`text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400 ${align}`}
+                    className={`text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground ${align}`}
                   >
                     {label}
                   </span>
@@ -136,71 +136,71 @@ export default function ReportManagementPage() {
               </div>
             </div>
 
-            <div className="divide-y divide-slate-200 bg-white">
+            <div className="divide-y divide-border bg-card">
               {Array.from({ length: 5 }).map((_, index) => (
                 <div
                   key={`report-skeleton-${index}`}
                   className="grid gap-4 px-6 py-5 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1.4fr)_0.8fr_0.8fr_0.8fr]"
                 >
                   <div className="space-y-3">
-                    <div className="h-5 w-2/3 animate-pulse rounded bg-slate-100" />
-                    <div className="h-4 w-1/2 animate-pulse rounded bg-slate-100" />
-                    <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
+                    <div className="h-5 w-2/3 animate-pulse rounded bg-muted" />
+                    <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+                    <div className="h-4 w-full animate-pulse rounded bg-muted" />
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <div className="h-7 w-24 animate-pulse rounded-full bg-slate-100" />
-                    <div className="h-7 w-20 animate-pulse rounded-full bg-slate-100" />
+                    <div className="h-7 w-24 animate-pulse rounded-full bg-muted" />
+                    <div className="h-7 w-20 animate-pulse rounded-full bg-muted" />
                   </div>
                   <div className="flex items-center justify-center">
-                    <div className="h-7 w-20 animate-pulse rounded-full bg-slate-100" />
+                    <div className="h-7 w-20 animate-pulse rounded-full bg-muted" />
                   </div>
                   <div className="flex items-center justify-center">
-                    <div className="h-7 w-20 animate-pulse rounded-full bg-slate-100" />
+                    <div className="h-7 w-20 animate-pulse rounded-full bg-muted" />
                   </div>
                   <div className="flex items-center justify-center">
-                    <div className="h-7 w-20 animate-pulse rounded-full bg-slate-100" />
+                    <div className="h-7 w-20 animate-pulse rounded-full bg-muted" />
                   </div>
                 </div>
               ))}
             </div>
           </div>
         ) : isError ? (
-          <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
-            <h3 className="text-xl font-semibold text-slate-900">
+          <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card p-10 text-center shadow-xs">
+            <h3 className="text-xl font-semibold text-foreground">
               We couldn&apos;t load organization reports
             </h3>
-            <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
+            <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
               Check your organization access and try fetching the report queue again.
             </p>
             <button
               type="button"
               onClick={() => void refetch()}
-              className="mt-5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 hover:text-slate-900"
+              className="mt-5 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted cursor-pointer"
             >
               Retry
             </button>
           </div>
         ) : paginatedReports.length === 0 ? (
-          <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
-            <h3 className="text-xl font-semibold text-slate-900">
+          <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card p-10 text-center shadow-xs">
+            <h3 className="text-xl font-semibold text-foreground">
               No reports match the current filters
             </h3>
-            <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
+            <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
               Try changing the search query or clear the selected filters to see more reports.
             </p>
             {hasActiveFilters ? (
               <button
                 type="button"
                 onClick={clearFilters}
-                className="mt-5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 hover:text-slate-900"
+                className="mt-5 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted cursor-pointer"
               >
                 Clear filters
               </button>
             ) : null}
           </div>
         ) : (
-          <div className="overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.03)]">
-            <div className="hidden border-b border-slate-200 px-6 py-4 lg:block">
+          <div className="overflow-hidden rounded-[14px] bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs">
+            <div className="hidden border-b border-border px-6 py-4 lg:block">
               <div className={reportListGridClass}>
                 {[
                   { label: "Report", align: "text-left" },
@@ -211,7 +211,7 @@ export default function ReportManagementPage() {
                 ].map(({ label, align }) => (
                   <span
                     key={label}
-                    className={`text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400 ${align}`}
+                    className={`text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground ${align}`}
                   >
                     {label}
                   </span>
@@ -219,7 +219,7 @@ export default function ReportManagementPage() {
               </div>
             </div>
 
-            <div className="bg-white">
+            <div className="bg-card">
               {paginatedReports.map((report, index) => (
                 <motion.div
                   key={report.id}
@@ -235,7 +235,7 @@ export default function ReportManagementPage() {
               ))}
             </div>
 
-            <div className="border-t border-slate-200">
+            <div className="border-t border-border">
               <ReportManagementPagination
                 rowsPerPage={rowsPerPage}
                 currentPage={currentPage}

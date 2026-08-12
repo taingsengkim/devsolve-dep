@@ -20,27 +20,27 @@ import { cn } from "@/lib/utils";
 
 function getTypeBadgeClass(type: "Bounty" | "Response") {
   return type === "Bounty"
-    ? "border-blue-200 bg-blue-50 text-blue-700"
-    : "border-violet-200 bg-violet-50 text-violet-700";
+    ? "border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20"
+    : "border-violet-200 bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20";
 }
 
 function getQueueBadgeClass(queue: Exclude<ReviewQueueLaneFilter, "All">) {
   if (queue === "Pending Intake") {
-    return "border-amber-200 bg-amber-50 text-amber-700";
+    return "border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20";
   }
 
   if (queue === "Under Review") {
-    return "border-blue-200 bg-blue-50 text-blue-700";
+    return "border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20";
   }
 
-  return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  return "border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20";
 }
 
 function getSeverityBadgeClass(severity: ReviewSeverity) {
-  if (severity === "Critical") return "border-red-200 bg-red-50 text-red-700";
-  if (severity === "High") return "border-orange-200 bg-orange-50 text-orange-700";
-  if (severity === "Medium") return "border-amber-200 bg-amber-50 text-amber-700";
-  return "border-blue-200 bg-blue-50 text-blue-700";
+  if (severity === "Critical") return "border-red-200 bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20";
+  if (severity === "High") return "border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20";
+  if (severity === "Medium") return "border-sky-200 bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400 dark:border-sky-500/20";
+  return "border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20";
 }
 
 const badgeBaseClass =
@@ -77,14 +77,14 @@ export function ReviewQueuePriorityList({
       <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-xl font-semibold tracking-[-0.02em] text-[#0F172A]">
-              Priority submissions
+            <h2 className="text-xl font-semibold tracking-[-0.02em] text-foreground">
+              Priority Submissions
             </h2>
-            <span className="inline-flex h-6 items-center rounded-full border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-500">
+            <span className="inline-flex h-6 items-center rounded-full border border-border bg-card px-2.5 text-xs font-medium text-muted-foreground">
               {items.length} reports
             </span>
           </div>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted-foreground">
             Focus analyst attention on reports waiting for the next moderation step.
           </p>
         </div>
@@ -116,7 +116,7 @@ export function ReviewQueuePriorityList({
             onChange={(value) =>
               onSeverityFilterChange(value as "All" | ReviewSeverity)
             }
-            icon={<SlidersHorizontal className="size-4 text-slate-400" />}
+            icon={<SlidersHorizontal className="size-4 text-muted-foreground" />}
             minWidthClassName="min-w-[184px]"
           />
         </div>
@@ -149,7 +149,7 @@ export function ReviewQueuePriorityList({
         />
       </div>
 
-      <div className="overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.03)]">
+      <div className="overflow-hidden rounded-[14px] bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs">
         {items.map((item) => {
           return (
             <ReviewQueueReportRow
@@ -180,7 +180,7 @@ function ReviewQueueReportRow({
       aria-label={`Open queue item ${item.title}`}
       className={cn(
         "group block cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500/30",
-        !isLast && "border-b border-slate-200"
+        !isLast && "border-b border-border"
       )}
       onKeyDown={(event) => {
         if (event.key === " ") {
@@ -189,11 +189,11 @@ function ReviewQueueReportRow({
         }
       }}
     >
-      <div className="px-6 py-5 transition-colors duration-200 group-hover:bg-blue-50/35">
+      <div className="px-6 py-5 transition-colors duration-200 group-hover:bg-muted/50">
         <div className={cn(reportListGridClass, "hidden lg:grid")}>
           <div className="min-w-0">
             <div className="flex items-start gap-4">
-              <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
+              <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted border border-border">
                 {item.logoSrc ? (
                   <Image
                     src={item.logoSrc}
@@ -203,7 +203,7 @@ function ReviewQueueReportRow({
                     className="size-11 object-contain"
                   />
                 ) : (
-                  <span className="text-sm font-semibold text-slate-700">
+                  <span className="text-sm font-semibold text-foreground">
                     {item.authorInitials}
                   </span>
                 )}
@@ -211,19 +211,19 @@ function ReviewQueueReportRow({
 
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="space-y-1.5">
-                  <h3 className="truncate text-[17px] font-semibold leading-6 text-[#0F172A]">
+                  <h3 className="truncate text-[17px] font-semibold leading-6 text-foreground">
                     {item.title}
                   </h3>
-                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-slate-500">
+                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted-foreground">
                     <span>{item.reportId}</span>
-                    <span className="text-slate-300">&bull;</span>
+                    <span className="text-muted-foreground/60">&bull;</span>
                     <span className="truncate">{item.reporter}</span>
-                    <span className="text-slate-300">&bull;</span>
+                    <span className="text-muted-foreground/60">&bull;</span>
                     <span>{item.submittedAt}</span>
                   </p>
                 </div>
 
-                <p className="line-clamp-1 text-[14px] leading-6 text-slate-500">
+                <p className="line-clamp-1 text-[14px] leading-6 text-muted-foreground">
                   {item.status}
                 </p>
               </div>
@@ -234,14 +234,14 @@ function ReviewQueueReportRow({
             {visibleAssets.map((asset) => (
               <span
                 key={asset}
-                className="inline-flex max-w-[165px] truncate rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-600"
+                className="inline-flex max-w-[165px] truncate rounded-full border border-border bg-muted px-3 py-1 text-[12px] font-medium text-foreground"
                 title={asset}
               >
                 {asset}
               </span>
             ))}
             {hiddenAssetsCount > 0 ? (
-              <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-500">
+              <span className="inline-flex rounded-full border border-border bg-muted px-3 py-1 text-[12px] font-medium text-muted-foreground">
                 +{hiddenAssetsCount} more
               </span>
             ) : null}
@@ -283,7 +283,7 @@ function ReviewQueueReportRow({
 
         <div className="space-y-3 lg:hidden">
           <div className="flex items-start gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
+            <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted border border-border">
               {item.logoSrc ? (
                 <Image
                   src={item.logoSrc}
@@ -293,7 +293,7 @@ function ReviewQueueReportRow({
                   className="size-10 object-contain"
                 />
               ) : (
-                <span className="text-sm font-semibold text-slate-700">
+                <span className="text-sm font-semibold text-foreground">
                   {item.authorInitials}
                 </span>
               )}
@@ -301,19 +301,19 @@ function ReviewQueueReportRow({
 
             <div className="min-w-0 flex-1 space-y-3">
               <div className="space-y-1.5">
-                <h3 className="truncate text-[16px] font-semibold leading-6 text-[#0F172A]">
+                <h3 className="truncate text-[16px] font-semibold leading-6 text-foreground">
                   {item.title}
                 </h3>
-                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-slate-500">
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-muted-foreground">
                   <span>{item.reportId}</span>
-                  <span className="text-slate-300">&bull;</span>
+                  <span className="text-muted-foreground/60">&bull;</span>
                   <span className="truncate">{item.reporter}</span>
-                  <span className="text-slate-300">&bull;</span>
+                  <span className="text-muted-foreground/60">&bull;</span>
                   <span>{item.submittedAt}</span>
                 </p>
               </div>
 
-              <p className="line-clamp-1 text-[13px] leading-6 text-slate-500">
+              <p className="line-clamp-1 text-[13px] leading-6 text-muted-foreground">
                 {item.status}
               </p>
 
@@ -342,14 +342,14 @@ function ReviewQueueReportRow({
                 {visibleAssets.map((asset) => (
                   <span
                     key={asset}
-                    className="inline-flex max-w-[165px] truncate rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-600"
+                    className="inline-flex max-w-[165px] truncate rounded-full border border-border bg-muted px-3 py-1 text-[12px] font-medium text-foreground"
                     title={asset}
                   >
                     {asset}
                   </span>
                 ))}
                 {hiddenAssetsCount > 0 ? (
-                  <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-500">
+                  <span className="inline-flex rounded-full border border-border bg-muted px-3 py-1 text-[12px] font-medium text-muted-foreground">
                     +{hiddenAssetsCount} more
                   </span>
                 ) : null}
@@ -383,31 +383,31 @@ function QueueSelect({
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          "inline-flex h-10 items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 text-left text-sm text-slate-700 shadow-none outline-none transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:border-blue-500 focus-visible:ring-4 focus-visible:ring-blue-500/10",
+          "inline-flex h-10 items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 text-left text-sm text-foreground shadow-none outline-none transition-colors hover:bg-muted cursor-pointer",
           minWidthClassName
         )}
       >
         <span className="flex min-w-0 items-center gap-2">
           {icon}
           <span className="flex min-w-0 items-center gap-1.5">
-            <span className="text-slate-400">{label}:</span>
-            <span className="truncate font-medium text-slate-700">{displayValue}</span>
+            <span className="text-muted-foreground">{label}:</span>
+            <span className="truncate font-medium text-foreground">{displayValue}</span>
           </span>
         </span>
-        <ChevronDown className="size-4 text-slate-400" />
+        <ChevronDown className="size-4 text-muted-foreground" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_18px_40px_rgba(15,23,42,0.12)]"
+        className="rounded-2xl border border-border bg-card text-card-foreground p-1.5 shadow-md"
       >
         <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
           {options.map((option) => (
             <DropdownMenuRadioItem
               key={option.value}
               value={option.value}
-              className="rounded-xl px-3 py-2.5 text-slate-700 data-[checked]:bg-blue-50 data-[checked]:text-[#2563EB] focus:bg-blue-50 focus:text-[#2563EB]"
+              className="rounded-xl px-3 py-2.5 text-foreground data-[checked]:bg-blue-500/10 data-[checked]:text-blue-600 dark:data-[checked]:text-blue-400 focus:bg-muted"
             >
               {option.label}
             </DropdownMenuRadioItem>
@@ -434,17 +434,17 @@ function QueueTab({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex h-8 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-all duration-200",
+        "inline-flex h-8 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-all duration-200 cursor-pointer",
         active
-          ? "border-blue-600 bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.18)]"
-          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+          ? "border-blue-600 bg-blue-600 text-white dark:bg-blue-600 dark:text-white"
+          : "border-border bg-card text-foreground hover:bg-muted"
       )}
     >
       <span>{label}</span>
       <span
         className={cn(
           "inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
-          active ? "bg-white/15 text-white" : "bg-slate-100 text-slate-500"
+          active ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
         )}
       >
         {count}

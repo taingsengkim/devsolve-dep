@@ -7,54 +7,46 @@ import { cn } from "@/lib/utils";
 
 export function ReviewQueueHeader() {
   return (
-    <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge
-            variant="outline"
-            className="h-8 rounded-full border-slate-200 bg-white px-3 text-slate-600"
+    <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <Link
+            href="/dashboard/report-management"
+            className="flex items-center gap-1.5 transition-colors hover:text-foreground"
           >
-            <ShieldCheck />
-            Moderation flow
-          </Badge>
-          <Badge
-            variant="outline"
-            className="h-8 rounded-full border-blue-200 bg-blue-50 px-3 text-blue-700"
-          >
-            3 active lanes
-          </Badge>
+            <ArrowLeft className="size-4" />
+            <span>Report Management</span>
+          </Link>
+          <span className="text-muted-foreground/60">/</span>
+          <span className="font-semibold text-foreground">
+            Review Queue
+          </span>
         </div>
 
-        <div className="space-y-1.5">
-          <h1 className="text-[32px] font-semibold tracking-[-0.03em] text-[#0F172A] sm:text-[36px]">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Review Queue
           </h1>
-          <p className="max-w-2xl text-[15px] leading-6 text-slate-500">
+          <p className="max-w-2xl text-sm sm:text-base text-muted-foreground leading-relaxed">
             Triage incoming reports, validate evidence, and move submissions toward final approval.
           </p>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 self-start">
-        <Link
-          href="/dashboard/report-management"
-          className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
-            "h-10 items-center justify-center gap-2.5 rounded-full border-slate-300 bg-white px-4 font-semibold text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.03)] transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:text-slate-700 hover:shadow-[0_8px_18px_rgba(15,23,42,0.06)]"
-          )}
+      <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+        <Badge
+          variant="outline"
+          className="h-9 rounded-xl border-border bg-card px-3 text-muted-foreground font-semibold"
         >
-          <span className="flex size-4 items-center justify-center">
-            <ArrowLeft className="size-4" />
-          </span>
-          Back
-        </Link>
-
-        <div className="inline-flex h-10 items-center gap-2.5 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 shadow-[0_2px_10px_rgba(15,23,42,0.03)]">
-          <span className="flex size-4 items-center justify-center">
-            <LayoutList className="size-4 text-slate-500" />
-          </span>
-          Queue overview
-        </div>
+          <ShieldCheck className="size-4 mr-1 text-emerald-500" />
+          Moderation Flow
+        </Badge>
+        <Badge
+          variant="outline"
+          className="h-9 rounded-xl border-blue-500/20 bg-blue-500/10 px-3 text-blue-600 dark:text-blue-400 font-semibold"
+        >
+          3 Active Lanes
+        </Badge>
       </div>
     </header>
   );
