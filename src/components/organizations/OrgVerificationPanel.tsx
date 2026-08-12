@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   useGetOrganizationVerificationQuery,
   useSendVerificationEmailMutation,
@@ -42,14 +41,14 @@ export function OrgVerificationPanel() {
 
   if (isLoading) {
     return (
-      <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 animate-pulse">
+      <Card className="border-border bg-card animate-pulse">
         <CardHeader>
-          <div className="h-6 w-48 bg-slate-200 dark:bg-slate-800 rounded"></div>
-          <div className="h-4 w-72 bg-slate-200 dark:bg-slate-800 rounded mt-2"></div>
+          <div className="h-6 w-48 bg-muted rounded"></div>
+          <div className="h-4 w-72 bg-muted rounded mt-2"></div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded"></div>
-          <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded"></div>
+          <div className="h-10 bg-muted rounded"></div>
+          <div className="h-10 bg-muted rounded"></div>
         </CardContent>
       </Card>
     );
@@ -57,13 +56,13 @@ export function OrgVerificationPanel() {
 
   if (isError || !verification) {
     return (
-      <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+      <Card className="border-border bg-card">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-slate-900 dark:text-slate-100">
-            <ShieldCheck className="w-5 h-5 text-indigo-500" />
+          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+            <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             Organization Verification Status
           </CardTitle>
-          <CardDescription className="text-sm text-slate-500 dark:text-slate-400">
+          <CardDescription className="text-sm text-muted-foreground">
             Verification status details could not be loaded.
           </CardDescription>
         </CardHeader>
@@ -78,28 +77,28 @@ export function OrgVerificationPanel() {
   }
 
   return (
-    <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-      <CardHeader className="pb-4 border-b border-slate-100 dark:border-slate-800">
-        <CardTitle className="text-lg font-semibold flex items-center justify-between text-slate-900 dark:text-slate-100">
+    <Card className="border-border bg-card shadow-sm">
+      <CardHeader className="pb-4 border-b border-border">
+        <CardTitle className="text-lg font-semibold flex items-center justify-between text-foreground">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             Verification Status
           </div>
-          <Button variant="ghost" size="sm" onClick={() => refetch()} className="h-8 w-8 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">
+          <Button variant="ghost" size="sm" onClick={() => refetch()} className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground">
             <RefreshCw className="w-4 h-4" />
           </Button>
         </CardTitle>
-        <CardDescription className="text-sm text-slate-500 dark:text-slate-400">
+        <CardDescription className="text-sm text-muted-foreground">
           Review email and domain verification requirements for your organization.
         </CardDescription>
       </CardHeader>
 
       <CardContent className="pt-6 space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 space-y-2">
+          <div className="p-4 rounded-xl border border-border bg-muted/40 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                <Mail className="w-4 h-4 text-slate-500" />
+              <span className="text-sm font-medium text-foreground flex items-center gap-2">
+                <Mail className="w-4 h-4 text-muted-foreground" />
                 Email Verification
               </span>
               {verification.emailVerified ? (
@@ -112,15 +111,15 @@ export function OrgVerificationPanel() {
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {verification.email ?? "Owner work email"}
             </p>
           </div>
 
-          <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 space-y-2">
+          <div className="p-4 rounded-xl border border-border bg-muted/40 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-slate-500" />
+              <span className="text-sm font-medium text-foreground flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-muted-foreground" />
                 Domain Verification
               </span>
               {verification.domainVerified ? (
@@ -133,7 +132,7 @@ export function OrgVerificationPanel() {
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {verification.domain ?? "Company domain"}
             </p>
           </div>
@@ -147,9 +146,9 @@ export function OrgVerificationPanel() {
         )}
 
         {verification.nextAction && (
-          <div className="p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/40 bg-indigo-50/50 dark:bg-indigo-950/20 space-y-1">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-indigo-900 dark:text-indigo-300">Recommended Action</h4>
-            <p className="text-sm text-indigo-800 dark:text-indigo-300">{verification.nextAction}</p>
+          <div className="p-4 rounded-xl border border-blue-500/25 bg-blue-500/10 space-y-1">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-300">Recommended Action</h4>
+            <p className="text-sm text-blue-700 dark:text-blue-300">{verification.nextAction}</p>
           </div>
         )}
 
@@ -158,7 +157,7 @@ export function OrgVerificationPanel() {
             <Button
               onClick={handleSendEmail}
               disabled={isSendingEmail}
-              className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Send className="w-4 h-4" />
               {isSendingEmail ? "Sending..." : "Resend Verification Email"}
@@ -170,7 +169,7 @@ export function OrgVerificationPanel() {
               onClick={handleResubmit}
               disabled={isResubmitting}
               variant="outline"
-              className="gap-2 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/50"
+              className="gap-2 border-blue-500/25 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10"
             >
               <RefreshCw className={`w-4 h-4 ${isResubmitting ? "animate-spin" : ""}`} />
               {isResubmitting ? "Resubmitting..." : "Resubmit Application"}

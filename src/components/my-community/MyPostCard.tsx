@@ -12,6 +12,7 @@ import {
   ImageOff,
   LoaderCircle,
   Pencil,
+  SendHorizontal,
   SquareArrowOutUpRight,
   Trash2,
 } from "lucide-react";
@@ -27,7 +28,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useDeleteProblemMutation } from "@/lib/redux/services/problemsApi";
+import {
+  useDeleteProblemMutation,
+  useSubmitProblemMutation,
+} from "@/lib/redux/services/problemsApi";
 import { useDeleteSolutionMutation } from "@/lib/redux/services/solutionsApi";
 import { useDeleteShowcaseMutation } from "@/lib/redux/services/showcasesApi";
 import type { MyPost } from "@/lib/redux/services/myCommunityApi";
@@ -85,7 +89,22 @@ export function MyPostCard({ post }: { post: MyPost }) {
   const [deleteShowcase, { isLoading: deletingShowcase }] =
     useDeleteShowcaseMutation();
 
+  const [submitProblem, { isLoading: submitting }] = useSubmitProblemMutation();
+
   const deleting = deletingProblem || deletingSolution || deletingShowcase;
+
+  const onSubmitForReview = async () => {
+    try {
+      await submitProblem(post.id).unwrap();
+      toast.success("Sent for review.", {
+        description: "A moderator will look at it before it goes live.",
+      });
+    } catch (caught) {
+      toast.error(
+        messageOf(caught, "This problem could not be sent for review."),
+      );
+    }
+  };
 
   const onDelete = async () => {
     try {
@@ -215,18 +234,41 @@ export function MyPostCard({ post }: { post: MyPost }) {
                 Edit
               </Link>
             ) : (
-              /* Problems and solutions have no edit screen in this app yet, so
-                 the affordance says so rather than going nowhere. */
+              /* What is left here is an answer that names no problem: the edit
+                 route is nested under one, so there is nowhere to send it. */
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 disabled
-                title="Editing this kind of post isn't available yet"
+                title="This answer is not attached to a problem, so it has no edit page"
                 className="rounded-xl"
               >
                 <Pencil data-icon="inline-start" aria-hidden="true" />
                 Edit
+              </Button>
+            )}
+
+            {/* A draft is private until it is submitted, so this is the step
+                that turns one into a post. */}
+            {post.canSubmit && (
+              <Button
+                type="button"
+                size="sm"
+                disabled={submitting}
+                onClick={() => void onSubmitForReview()}
+                className="cursor-pointer rounded-xl bg-blue-600 font-semibold text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+              >
+                {submitting ? (
+                  <LoaderCircle
+                    data-icon="inline-start"
+                    aria-hidden="true"
+                    className="animate-spin motion-reduce:animate-none"
+                  />
+                ) : (
+                  <SendHorizontal data-icon="inline-start" aria-hidden="true" />
+                )}
+                Submit for review
               </Button>
             )}
 
