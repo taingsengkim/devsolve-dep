@@ -71,7 +71,7 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
   counts,
 }) => {
   return (
-    <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs xl:flex-row xl:items-center dark:border-slate-800 dark:bg-slate-900/90">
+    <div className="flex flex-col justify-between gap-4 rounded-2xl border border-border bg-card p-4 shadow-2xs xl:flex-row xl:items-center">
       {/* REVIEW STATE TABS */}
       <ToggleGroup
         multiple={false}
@@ -83,7 +83,7 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
           }
         }}
         spacing={1}
-        className="min-w-0 max-w-full overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-50 p-1 dark:border-slate-800 dark:bg-slate-950/80"
+        className="min-w-0 max-w-full overflow-x-auto rounded-xl border border-border bg-muted p-1"
       >
         {REVIEW_TABS.map((tab) => {
           const isActive = submissionStateFilter === tab.key;
@@ -91,7 +91,7 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
             <ToggleGroupItem
               key={tab.key}
               value={tab.key}
-              className="h-9 shrink-0 cursor-pointer rounded-lg px-3 text-sm font-semibold text-slate-600 data-[state=on]:bg-white data-[state=on]:text-slate-900 data-[state=on]:shadow-2xs dark:text-slate-400 dark:hover:text-slate-200 dark:data-[state=on]:bg-slate-800 dark:data-[state=on]:text-slate-100"
+              className="h-9 shrink-0 cursor-pointer rounded-lg px-3 text-sm font-semibold text-muted-foreground data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-2xs"
             >
               <span>{tab.label}</span>
               <Badge
@@ -116,19 +116,19 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
           >
             <SelectTrigger
               aria-label="Filter by lifecycle state"
-              className="h-10 cursor-pointer rounded-xl border-slate-300 bg-white text-sm font-medium shadow-2xs transition-colors hover:border-slate-400 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700 dark:text-slate-200"
+              className="h-10 cursor-pointer rounded-xl border-border bg-card text-sm font-medium shadow-2xs transition-colors hover:border-blue-400"
             >
               <div className="flex items-center gap-2">
-                <Filter className="size-3.5 text-slate-400" />
+                <Filter className="size-3.5 text-muted-foreground" />
                 <SelectValue placeholder="All Lifecycle States" />
               </div>
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-slate-200 dark:border-slate-800 dark:bg-slate-900">
+            <SelectContent className="rounded-xl border-border bg-card">
               {LIFECYCLE_STATES.map((option) => (
                 <SelectItem
                   key={option.value}
                   value={option.value}
-                  className="cursor-pointer rounded-lg text-sm dark:focus:bg-slate-800 dark:focus:text-slate-100"
+                  className="cursor-pointer rounded-lg text-sm"
                 >
                   {option.label}
                 </SelectItem>
@@ -147,19 +147,19 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
           >
             <SelectTrigger
               aria-label="Sort order"
-              className="h-10 cursor-pointer rounded-xl border-slate-300 bg-white text-sm font-medium shadow-2xs transition-colors hover:border-slate-400 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700 dark:text-slate-200"
+              className="h-10 cursor-pointer rounded-xl border-border bg-card text-sm font-medium shadow-2xs transition-colors hover:border-blue-400"
             >
               <div className="flex items-center gap-2 truncate">
-                <ArrowUpDown className="size-3.5 text-slate-400 shrink-0" />
+                <ArrowUpDown className="size-3.5 text-muted-foreground shrink-0" />
                 <SelectValue placeholder="Sort order" />
               </div>
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-slate-200 dark:border-slate-800 dark:bg-slate-900">
+            <SelectContent className="rounded-xl border-border bg-card">
               {SORT_OPTIONS.map((option) => (
                 <SelectItem
                   key={option.value}
                   value={option.value}
-                  className="cursor-pointer rounded-lg text-sm dark:focus:bg-slate-800 dark:focus:text-slate-100"
+                  className="cursor-pointer rounded-lg text-sm"
                 >
                   {option.label}
                 </SelectItem>
@@ -170,12 +170,12 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
 
         {/* SEARCH */}
         <div className="relative w-full min-w-0 flex-1 sm:max-w-xs">
-          <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={searchQuery}
             onChange={(e) => onSearchQueryChange(e.target.value)}
             placeholder="Search program, handle, or organization..."
-            className="h-10 rounded-xl border-slate-300 bg-white pl-9 pr-10 text-sm shadow-2xs transition-colors hover:border-slate-400 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700 dark:text-slate-100"
+            className="h-10 rounded-xl border-border bg-card pl-9 pr-10 text-sm shadow-2xs transition-colors hover:border-blue-400"
           />
           {searchQuery && (
             <Button
@@ -184,7 +184,7 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
               variant="ghost"
               aria-label="Clear program search"
               onClick={() => onSearchQueryChange("")}
-              className="absolute right-1 top-1/2 size-8 -translate-y-1/2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              className="absolute right-1 top-1/2 size-8 -translate-y-1/2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               <X />
             </Button>

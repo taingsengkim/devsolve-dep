@@ -13,7 +13,7 @@ export default function DashboardLayout({
 }) {
   return (
     <NotificationProvider>
-      <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50/60 dark:bg-neutral-950">
+      <div className="flex flex-col lg:flex-row min-h-screen bg-background">
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0 w-full">
           {/* Dashboard Top Navigation Bar with Notification Bell Icon & Dark/Light Theme Toggle in top-right.

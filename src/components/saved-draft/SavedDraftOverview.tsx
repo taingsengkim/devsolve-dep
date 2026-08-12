@@ -15,23 +15,23 @@ export function SavedDraftOverview({
   categoryCount,
 }: SavedDraftOverviewProps) {
   return (
-    <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
+    <section className="overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
       <div className="grid gap-0 lg:grid-cols-[minmax(0,1.2fr)_0.9fr]">
         <div className="relative overflow-hidden px-6 py-6 sm:px-7">
           <div className="absolute inset-y-0 left-0 w-full bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.10),transparent_45%),linear-gradient(135deg,rgba(248,250,252,0.95),rgba(255,255,255,1))]" />
 
           <div className="relative flex h-full flex-col gap-6 lg:flex-row lg:items-center">
-            <div className="relative flex h-[170px] w-full max-w-[280px] items-center justify-center overflow-hidden rounded-[22px] border border-blue-100 bg-[linear-gradient(180deg,#F8FBFF_0%,#EFF6FF_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
-              <div className="absolute left-8 top-7 flex size-14 items-center justify-center rounded-2xl border border-slate-200/80 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
-                <FileStack className="size-6 text-[#2563EB]" />
+            <div className="relative flex h-[170px] w-full max-w-[280px] items-center justify-center overflow-hidden rounded-[22px] border border-blue-500/20 bg-blue-50/60 dark:bg-blue-500/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+              <div className="absolute left-8 top-7 flex size-14 items-center justify-center rounded-2xl border border-border bg-card shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+                <FileStack className="size-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <div className="absolute right-7 top-8 flex size-12 items-center justify-center rounded-2xl border border-slate-200/80 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+              <div className="absolute right-7 top-8 flex size-12 items-center justify-center rounded-2xl border border-border bg-card shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
                 <Sparkles className="size-5 text-violet-500" />
               </div>
-              <div className="absolute bottom-8 left-9 flex size-12 items-center justify-center rounded-2xl border border-slate-200/80 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+              <div className="absolute bottom-8 left-9 flex size-12 items-center justify-center rounded-2xl border border-border bg-card shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
                 <FolderKanban className="size-5 text-emerald-500" />
               </div>
-              <div className="absolute bottom-8 right-8 flex size-12 items-center justify-center rounded-2xl border border-slate-200/80 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+              <div className="absolute bottom-8 right-8 flex size-12 items-center justify-center rounded-2xl border border-border bg-card shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
                 <TimerReset className="size-5 text-amber-500" />
               </div>
 
@@ -46,14 +46,14 @@ export function SavedDraftOverview({
             </div>
 
             <div className="relative max-w-xl space-y-3">
-              <p className="inline-flex rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2563EB]">
+              <p className="inline-flex rounded-full border border-blue-500/20 bg-blue-50 dark:bg-blue-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-400">
                 Draft Workspace
               </p>
               <div className="space-y-2">
-                <h2 className="text-[28px] font-semibold tracking-[-0.03em] text-[#0F172A]">
+                <h2 className="text-[28px] font-semibold tracking-[-0.03em] text-foreground">
                   Keep unfinished work organized and ready to resume.
                 </h2>
-                <p className="max-w-lg text-sm leading-7 text-[#64748B] sm:text-base">
+                <p className="max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
                   Review saved ideas, reopen unfinished reports, and continue editing from one clean workspace built for fast follow-up.
                 </p>
               </div>
@@ -61,7 +61,7 @@ export function SavedDraftOverview({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 border-t border-slate-200 bg-slate-50/70 lg:border-t-0 lg:border-l">
+        <div className="grid grid-cols-2 border-t border-border bg-muted/40 lg:border-t-0 lg:border-l">
           <OverviewMetric
             icon={<FileStack className="size-4.5" />}
             label="Total drafts"
@@ -104,15 +104,15 @@ function OverviewMetric({
   helper: string;
 }) {
   return (
-    <div className="border-slate-200 p-6 odd:border-r even:border-r-0 [&:nth-child(-n+2)]:border-b">
-      <div className="flex size-10 items-center justify-center rounded-xl bg-white text-[#2563EB] shadow-[0_4px_14px_rgba(15,23,42,0.06)]">
+    <div className="border-border p-6 odd:border-r even:border-r-0 [&:nth-child(-n+2)]:border-b">
+      <div className="flex size-10 items-center justify-center rounded-xl bg-card text-blue-600 dark:text-blue-400 shadow-[0_4px_14px_rgba(15,23,42,0.06)] border border-border">
         {icon}
       </div>
-      <p className="mt-4 text-[30px] font-semibold tracking-[-0.04em] text-[#0F172A]">
+      <p className="mt-4 text-[30px] font-semibold tracking-[-0.04em] text-foreground">
         {value}
       </p>
-      <p className="mt-1 text-sm font-medium text-[#0F172A]">{label}</p>
-      <p className="mt-1 text-sm leading-6 text-[#64748B]">{helper}</p>
+      <p className="mt-1 text-sm font-medium text-foreground">{label}</p>
+      <p className="mt-1 text-sm leading-6 text-muted-foreground">{helper}</p>
     </div>
   );
 }

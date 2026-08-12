@@ -77,7 +77,7 @@ export function NavbarUserMenu({
     return (
       <div
         aria-hidden
-        className="hidden h-10 w-10 animate-pulse rounded-full bg-slate-200 sm:block dark:bg-neutral-800"
+        className="hidden h-10 w-10 animate-pulse rounded-full bg-muted sm:block"
       />
     );
   }
@@ -90,7 +90,7 @@ export function NavbarUserMenu({
           variant="outline"
           onClick={onLogin}
           disabled={isLoggingIn}
-          className="hidden h-10 rounded-lg border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 shadow-xs transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed md:inline-flex xl:px-5 dark:border-neutral-700/80 dark:bg-neutral-900/80 dark:text-neutral-100 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800 dark:hover:text-blue-200"
+          className="hidden h-10 rounded-lg border-border bg-card px-4 text-sm font-semibold text-foreground shadow-xs transition-all hover:border-blue-400 hover:bg-muted disabled:cursor-not-allowed md:inline-flex xl:px-5"
         >
           {isLoggingIn ? (
             <>
@@ -106,7 +106,7 @@ export function NavbarUserMenu({
           <Button
             nativeButton={false}
             render={<Link href="/account-type" />}
-            className="group h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-white shadow-xs transition-all hover:bg-[#1D4ED8] hover:shadow-[0_8px_18px_rgba(37,99,235,0.18)] xl:px-5 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500"
+            className="group h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-xs transition-all hover:bg-blue-700 xl:px-5"
           >
             Get Started
             <ArrowRight className="hidden size-4 transition-transform duration-200 group-hover:translate-x-1 xl:block" />
@@ -124,7 +124,7 @@ export function NavbarUserMenu({
             type="button"
             aria-label={identity.isCompany ? "Organization menu" : "Account menu"}
             className={cn(
-              "hidden cursor-pointer items-center gap-2 rounded-full border border-slate-200/80 bg-white p-1 pr-2 shadow-xs transition-colors hover:border-blue-200 hover:bg-blue-50 sm:inline-flex dark:border-neutral-800 dark:bg-neutral-900/80 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800"
+              "hidden cursor-pointer items-center gap-2 rounded-full border border-border bg-card p-1 pr-2 shadow-xs transition-colors hover:border-blue-400 hover:bg-muted sm:inline-flex"
             )}
           />
         }
@@ -141,19 +141,19 @@ export function NavbarUserMenu({
             {getInitials(identity.name)}
           </AvatarFallback>
         </Avatar>
-        <ChevronDown className="size-4 text-slate-400 dark:text-neutral-500" />
+        <ChevronDown className="size-4 text-muted-foreground" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="end"
-        className="w-60 rounded-2xl border-slate-200/90 bg-white p-1.5 dark:border-neutral-800 dark:bg-neutral-950"
+        className="w-60 rounded-2xl border-border bg-card p-1.5"
       >
         <div className="px-3 py-2.5">
-          <p className="truncate text-sm font-bold text-slate-900 dark:text-neutral-100">
+          <p className="truncate text-sm font-bold text-foreground">
             {identity.name}
           </p>
           {identity.detail && (
-            <p className="truncate text-sm text-slate-500 dark:text-neutral-400">
+            <p className="truncate text-sm text-muted-foreground">
               {identity.detail}
             </p>
           )}
@@ -164,7 +164,7 @@ export function NavbarUserMenu({
           )}
         </div>
 
-        <DropdownMenuSeparator className="bg-slate-200/70 dark:bg-neutral-800" />
+        <DropdownMenuSeparator className="bg-border" />
 
         <DropdownMenuGroup>
           <DropdownMenuItem
@@ -172,9 +172,9 @@ export function NavbarUserMenu({
             className="cursor-pointer gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium"
           >
             {identity.isCompany ? (
-              <Building2 className="size-4 text-slate-400 dark:text-neutral-500" />
+              <Building2 className="size-4 text-muted-foreground" />
             ) : (
-              <UserRound className="size-4 text-slate-400 dark:text-neutral-500" />
+              <UserRound className="size-4 text-muted-foreground" />
             )}
             {identity.profileLabel}
           </DropdownMenuItem>
@@ -183,7 +183,7 @@ export function NavbarUserMenu({
             render={<Link href="/dashboard" />}
             className="cursor-pointer gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium"
           >
-            <LayoutDashboard className="size-4 text-slate-400 dark:text-neutral-500" />
+            <LayoutDashboard className="size-4 text-muted-foreground" />
             Dashboard
           </DropdownMenuItem>
 
@@ -191,12 +191,12 @@ export function NavbarUserMenu({
             render={<Link href={identity.settingsHref} />}
             className="cursor-pointer gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium"
           >
-            <Settings className="size-4 text-slate-400 dark:text-neutral-500" />
+            <Settings className="size-4 text-muted-foreground" />
             {identity.settingsLabel}
           </DropdownMenuItem>
         </DropdownMenuGroup>
 
-        <DropdownMenuSeparator className="bg-slate-200/70 dark:bg-neutral-800" />
+        <DropdownMenuSeparator className="bg-border" />
 
         <DropdownMenuGroup>
           <DropdownMenuItem

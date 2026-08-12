@@ -3,6 +3,13 @@
 import React, { useState } from "react";
 import dynamic from "next/dynamic";
 import { Code2, Copy, Check } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -62,17 +69,18 @@ export function PocCodeEditor({
         <div className="flex items-center gap-2">
           <Code2 className="w-4 h-4 text-blue-400" />
           <span className="text-xs font-semibold text-slate-300">Payload Language:</span>
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="bg-slate-800 text-slate-200 text-xs font-medium rounded-lg px-2.5 py-1 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
-          >
-            {SUPPORTED_LANGUAGES.map((lang) => (
-              <option key={lang.id} value={lang.id}>
-                {lang.label}
-              </option>
-            ))}
-          </select>
+          <Select value={language} onValueChange={(val) => val && setLanguage(val)}>
+            <SelectTrigger className="h-7 border-slate-700 bg-slate-800 text-xs font-medium text-slate-200">
+              <SelectValue placeholder="Select language" />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
+              {SUPPORTED_LANGUAGES.map((lang) => (
+                <SelectItem key={lang.id} value={lang.id}>
+                  {lang.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <button

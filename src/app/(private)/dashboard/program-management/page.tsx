@@ -221,25 +221,25 @@ function ProgramManagementPageContent() {
       className="space-y-6 w-full pb-12"
     >
       {/* PAGE HEADER */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
             <Link
               href="/dashboard"
-              className="flex items-center gap-1 transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+              className="flex items-center gap-1 transition-colors hover:text-foreground"
             >
               <ArrowLeft className="size-3.5" />
               Dashboard
             </Link>
             <span>/</span>
-            <span className="font-semibold text-slate-700 dark:text-slate-300">
+            <span className="font-semibold text-foreground">
               Program Management
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Program Management
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-muted-foreground">
             {isAdminScope
               ? "Review, audit, approve, and oversee corporate security bug bounty programs."
               : "Manage and monitor security programs for your organization."}
@@ -251,7 +251,7 @@ function ProgramManagementPageContent() {
           {isAdminScope && counts.pendingReview > 0 && (
             <Badge
               variant="outline"
-              className="h-9 shrink-0 gap-2 rounded-xl border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              className="h-9 shrink-0 gap-2 rounded-xl border-border bg-card px-3 text-sm font-semibold text-foreground"
             >
               <span className="size-2 rounded-full bg-amber-500" />
               <span>
@@ -287,7 +287,7 @@ function ProgramManagementPageContent() {
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-24 bg-slate-100 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800"
+              className="h-24 bg-muted rounded-2xl border border-border"
             />
           ))}
         </div>
@@ -310,7 +310,7 @@ function ProgramManagementPageContent() {
       <main className="flex flex-col gap-3">
         {isLoading ? (
           <div className="space-y-3 animate-pulse">
-            <div className="h-64 bg-slate-100 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800" />
+            <div className="h-64 bg-muted rounded-2xl border border-border" />
           </div>
         ) : (
           <ProgramDataTable
@@ -335,16 +335,16 @@ function ProgramManagementPageContent() {
 function ProgramManagementPageFallback() {
   return (
     <div className="space-y-6 w-full pb-12 animate-pulse">
-      <div className="h-24 rounded-2xl border border-slate-200/80 bg-slate-100 dark:border-slate-800 dark:bg-slate-900/60" />
+      <div className="h-24 rounded-2xl border border-border bg-muted" />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[0, 1, 2, 3].map((item) => (
           <div
             key={item}
-            className="h-24 rounded-2xl border border-slate-200/80 bg-slate-100 dark:border-slate-800 dark:bg-slate-900/60"
+            className="h-24 rounded-2xl border border-border bg-muted"
           />
         ))}
       </div>
-      <div className="h-72 rounded-2xl border border-slate-200/80 bg-slate-100 dark:border-slate-800 dark:bg-slate-900/60" />
+      <div className="h-72 rounded-2xl border border-border bg-muted" />
     </div>
   );
 }

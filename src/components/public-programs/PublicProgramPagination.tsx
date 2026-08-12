@@ -3,6 +3,13 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 type PublicProgramPaginationProps = {
@@ -23,18 +30,22 @@ export function PublicProgramPagination({
   const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
 
   return (
-    <footer className="flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-6 lg:flex-row">
-      <div className="flex items-center gap-3 text-sm text-slate-500">
+    <footer className="flex flex-col items-center justify-between gap-4 border-t border-border pt-6 lg:flex-row">
+      <div className="flex items-center gap-3 text-sm text-muted-foreground">
         <span>Rows per page</span>
-        <select
-          value={rowsPerPage}
-          onChange={(event) => onRowsPerPageChange(Number(event.target.value))}
-          className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-blue-500"
+        <Select
+          value={String(rowsPerPage)}
+          onValueChange={(val) => onRowsPerPageChange(Number(val))}
         >
-          <option value={8}>8</option>
-          <option value={12}>12</option>
-          <option value={16}>16</option>
-        </select>
+          <SelectTrigger className="h-9 w-[70px] rounded-xl border-border bg-card text-foreground">
+            <SelectValue placeholder={String(rowsPerPage)} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="8">8</SelectItem>
+            <SelectItem value="12">12</SelectItem>
+            <SelectItem value="16">16</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <nav className="flex items-center gap-1.5">
@@ -44,7 +55,7 @@ export function PublicProgramPagination({
           size="sm"
           disabled={currentPage === 1}
           onClick={() => onPageChange(currentPage - 1)}
-          className="rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+          className="rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <ChevronLeft data-icon="inline-start" className="size-4" />
           Previous
@@ -58,8 +69,8 @@ export function PublicProgramPagination({
             size="icon-sm"
             onClick={() => onPageChange(page)}
             className={cn(
-              "rounded-full border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
-              currentPage === page && "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:text-white"
+              "rounded-full border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
+              currentPage === page && "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:text-white dark:border-blue-500 dark:bg-blue-600"
             )}
           >
             {page}
@@ -72,7 +83,7 @@ export function PublicProgramPagination({
           size="sm"
           disabled={currentPage === totalPages}
           onClick={() => onPageChange(currentPage + 1)}
-          className="rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+          className="rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           Next
           <ChevronRight data-icon="inline-end" className="size-4" />

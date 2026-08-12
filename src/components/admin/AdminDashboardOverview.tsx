@@ -38,11 +38,11 @@ export function AdminDashboardOverview() {
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="space-y-6 w-full pb-12 animate-pulse"
       >
-        <div className="h-16 bg-slate-200/60 dark:bg-neutral-800 rounded-xl" />
-        <div className="h-32 bg-slate-200/60 dark:bg-neutral-800 rounded-2xl" />
+        <div className="h-16 bg-muted rounded-xl" />
+        <div className="h-32 bg-muted rounded-2xl" />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 h-96 bg-slate-200/60 dark:bg-neutral-800 rounded-2xl" />
-          <div className="lg:col-span-4 h-96 bg-slate-200/60 dark:bg-neutral-800 rounded-2xl" />
+          <div className="lg:col-span-8 h-96 bg-muted rounded-2xl" />
+          <div className="lg:col-span-4 h-96 bg-muted rounded-2xl" />
         </div>
       </motion.div>
     );
@@ -88,9 +88,9 @@ export function AdminDashboardOverview() {
       className="space-y-6 w-full pb-12"
     >
       {/* Page Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-neutral-800">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Platform Operations
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -106,7 +106,7 @@ export function AdminDashboardOverview() {
             variant="outline"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="h-10 px-3.5 rounded-xl border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold cursor-pointer shadow-2xs dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
+            className="h-10 px-3.5 rounded-xl border-border bg-card hover:bg-muted text-foreground text-sm font-semibold cursor-pointer shadow-2xs"
           >
             <RefreshCw
               data-icon="inline-start"

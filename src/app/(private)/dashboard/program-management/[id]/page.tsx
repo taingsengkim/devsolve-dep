@@ -310,7 +310,7 @@ function ProgramDetailPageContent({
 
             <Badge
               variant="outline"
-              className="rounded-xl px-3 py-1.5 text-xs font-semibold border-slate-200 dark:border-slate-800"
+              className="rounded-xl px-3 py-1.5 text-xs font-semibold border-border"
             >
               {program.engagementType === "BOUNTY" ? "Bounty Program" : "VDP Response"}
             </Badge>
@@ -324,7 +324,7 @@ function ProgramDetailPageContent({
                       type="button"
                       variant="outline"
                       disabled={isUpdatingVisibility || isActionLoading}
-                      className="rounded-xl px-3 py-1.5 h-8 text-xs font-semibold border-slate-200 dark:border-slate-800 uppercase gap-1.5 cursor-pointer bg-white dark:bg-slate-900"
+                      className="rounded-xl px-3 py-1.5 h-8 text-xs font-semibold border-border uppercase gap-1.5 cursor-pointer bg-card"
                     >
                       {isUpdatingVisibility ? (
                         <LoaderCircle className="w-3.5 h-3.5 animate-spin" />
@@ -342,7 +342,7 @@ function ProgramDetailPageContent({
                 />
                 <DropdownMenuContent
                   align="end"
-                  className="w-40 rounded-2xl p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg"
+                  className="w-40 rounded-2xl p-1.5 bg-card border border-border shadow-lg"
                 >
                   <DropdownMenuItem
                     onClick={() => handleUpdateVisibility("PUBLIC")}

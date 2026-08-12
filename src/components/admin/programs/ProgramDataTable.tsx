@@ -129,10 +129,10 @@ export function ProgramDataTable<TData, TValue>({
             return (
               <div
                 key={row.id}
-                className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900/90"
+                className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-2xs"
               >
                 {/* Header: Name + Handle */}
-                <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                <div className="flex items-start justify-between gap-2 border-b border-border/60 pb-3">
                   {nameCell && flexRender(nameCell.column.columnDef.cell, nameCell.getContext())}
                 </div>
 
@@ -145,14 +145,14 @@ export function ProgramDataTable<TData, TValue>({
                 </div>
 
                 {/* Meta Information */}
-                <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-1">
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
                   {orgCell && flexRender(orgCell.column.columnDef.cell, orgCell.getContext())}
                   {dateCell && flexRender(dateCell.column.columnDef.cell, dateCell.getContext())}
                 </div>
 
                 {/* Actions */}
                 {actionsCell && (
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex justify-end">
+                  <div className="pt-2 border-t border-border/60 flex justify-end">
                     {flexRender(actionsCell.column.columnDef.cell, actionsCell.getContext())}
                   </div>
                 )}
@@ -160,15 +160,15 @@ export function ProgramDataTable<TData, TValue>({
             );
           })
         ) : (
-          <Card className="gap-3 border border-slate-200/80 bg-white py-8 shadow-2xs dark:border-slate-800 dark:bg-slate-900/90 text-center">
+          <Card className="gap-3 border border-border bg-card py-8 shadow-2xs text-center">
             <CardHeader className="grid justify-items-center gap-3 px-6 text-center">
-              <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800/80 dark:text-slate-400">
+              <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                 <Building2 className="size-6" />
               </div>
-              <CardTitle className="text-base font-semibold text-slate-800 dark:text-slate-200">
+              <CardTitle className="text-base font-semibold text-foreground">
                 No matching programs found
               </CardTitle>
-              <CardDescription className="text-sm text-slate-500 dark:text-slate-400">
+              <CardDescription className="text-sm text-muted-foreground">
                 Try another search or filter.
               </CardDescription>
             </CardHeader>
@@ -177,10 +177,10 @@ export function ProgramDataTable<TData, TValue>({
       </div>
 
       {/* Desktop Table View (visible on screens >= md) */}
-      <div className="hidden md:block overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900/90">
+      <div className="hidden md:block overflow-hidden rounded-2xl border border-border bg-card shadow-2xs">
         <div className="w-full overflow-x-auto">
           <Table>
-            <TableHeader className="border-b border-slate-200/80 bg-slate-50/90 dark:border-slate-800 dark:bg-slate-800/80">
+            <TableHeader className="border-b border-border bg-muted/60">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
                   key={headerGroup.id}
@@ -189,7 +189,7 @@ export function ProgramDataTable<TData, TValue>({
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className="h-11 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                      className="h-11 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                     >
                       {header.isPlaceholder
                         ? null
@@ -208,7 +208,7 @@ export function ProgramDataTable<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="border-b border-slate-100/80 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:hover:bg-slate-800/50"
+                    className="border-b border-border/50 transition-colors hover:bg-muted/40"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="px-4 py-3 text-sm">
@@ -225,13 +225,13 @@ export function ProgramDataTable<TData, TValue>({
                   >
                     <Card className="gap-3 border-none bg-transparent py-8 shadow-none">
                       <CardHeader className="grid justify-items-center gap-3 px-8 text-center">
-                        <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800/80 dark:text-slate-400">
+                        <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                           <Building2 className="size-6" />
                         </div>
-                        <CardTitle className="text-base font-semibold text-slate-800 dark:text-slate-200">
+                        <CardTitle className="text-base font-semibold text-foreground">
                           No matching programs found
                         </CardTitle>
-                        <CardDescription className="text-sm text-slate-500 dark:text-slate-400">
+                        <CardDescription className="text-sm text-muted-foreground">
                           Try another search or filter.
                         </CardDescription>
                       </CardHeader>
@@ -246,10 +246,10 @@ export function ProgramDataTable<TData, TValue>({
 
       {/* Pagination Footer */}
       {data.length > 0 && (
-        <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white px-4 py-3 sm:flex-row dark:border-slate-800 dark:bg-slate-900/90">
+        <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-border bg-card px-4 py-3 sm:flex-row">
           <div className="flex flex-wrap items-center justify-center gap-4 sm:justify-start">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              <span className="text-sm font-medium text-muted-foreground">
                 Rows per page
               </span>
               <Select
@@ -258,21 +258,21 @@ export function ProgramDataTable<TData, TValue>({
                   if (val) table.setPageSize(Number(val));
                 }}
               >
-                <SelectTrigger className="h-8 w-16 cursor-pointer rounded-xl border-slate-300 bg-white px-2.5 text-sm font-semibold text-slate-700 shadow-2xs transition-colors hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                <SelectTrigger className="h-8 w-16 cursor-pointer rounded-xl border-border bg-card px-2.5 text-sm font-semibold text-foreground shadow-2xs transition-colors hover:border-blue-400">
                   <SelectValue
                     placeholder={String(table.getState().pagination.pageSize)}
                   />
                 </SelectTrigger>
                 <SelectContent
                   align="start"
-                  className="min-w-20 rounded-2xl border-slate-200 shadow-lg dark:border-slate-800 dark:bg-slate-900"
+                  className="min-w-20 rounded-2xl border-border bg-card shadow-lg"
                 >
                   <SelectGroup>
                     {[10, 20, 50, 100].map((size) => (
                       <SelectItem
                         key={size}
                         value={String(size)}
-                        className="cursor-pointer text-sm font-semibold dark:focus:bg-slate-800 dark:focus:text-slate-100"
+                        className="cursor-pointer text-sm font-semibold"
                       >
                         {size}
                       </SelectItem>
@@ -282,13 +282,13 @@ export function ProgramDataTable<TData, TValue>({
               </Select>
             </div>
 
-            <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            <div className="text-sm font-medium text-muted-foreground">
               Page{" "}
-              <span className="font-bold text-slate-700 dark:text-slate-200">
+              <span className="font-bold text-foreground">
                 {table.getState().pagination.pageIndex + 1}
               </span>{" "}
               of{" "}
-              <span className="font-bold text-slate-700 dark:text-slate-200">
+              <span className="font-bold text-foreground">
                 {table.getPageCount() || 1}
               </span>{" "}
               ({totalElements ?? data.length} total)
@@ -301,7 +301,7 @@ export function ProgramDataTable<TData, TValue>({
               size="sm"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="h-8 cursor-pointer rounded-xl border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-colors disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="h-8 cursor-pointer rounded-xl border-border bg-card px-3 text-sm font-semibold text-foreground transition-colors disabled:opacity-40"
             >
               <ChevronLeft data-icon="inline-start" />
               Previous
@@ -311,7 +311,7 @@ export function ProgramDataTable<TData, TValue>({
               size="sm"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="h-8 cursor-pointer rounded-xl border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-colors disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="h-8 cursor-pointer rounded-xl border-border bg-card px-3 text-sm font-semibold text-foreground transition-colors disabled:opacity-40"
             >
               Next
               <ChevronRight data-icon="inline-end" />

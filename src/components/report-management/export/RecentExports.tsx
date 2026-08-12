@@ -26,6 +26,13 @@
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu";
   import { Input } from "@/components/ui/input";
+  import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select";
   import { cn } from "@/lib/utils";
 
   type ExportStatus = "Ready" | "Processing" | "Failed" | "Expired";
@@ -142,22 +149,26 @@
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-[#64748B]">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>{filteredExports.length} results</span>
-            <span className="text-slate-300">/</span>
-            <label className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
-              Sort by
-              <select
+            <span className="text-border">/</span>
+            <div className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground shadow-xs">
+              <span>Sort by</span>
+              <Select
                 value={sortBy}
-                onChange={(event) =>
-                  setSortBy(event.target.value as "Newest first" | "Oldest first")
+                onValueChange={(val) =>
+                  setSortBy(val as "Newest first" | "Oldest first")
                 }
-                className="bg-transparent text-sm font-medium text-slate-700 outline-none"
               >
-                <option>Newest first</option>
-                <option>Oldest first</option>
-              </select>
-            </label>
+                <SelectTrigger className="h-7 border-none bg-transparent p-0 font-medium text-foreground focus:ring-0 shadow-none">
+                  <SelectValue placeholder={sortBy} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Newest first">Newest first</SelectItem>
+                  <SelectItem value="Oldest first">Oldest first</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
@@ -351,20 +362,21 @@
     options: string[];
   }) {
     return (
-      <label className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
+      <div className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-1 text-sm text-muted-foreground shadow-xs">
         <span>{label}</span>
-        <select
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          className="bg-transparent text-sm font-medium text-slate-700 outline-none"
-        >
-          {options.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </label>
+        <Select value={value} onValueChange={(val) => val && onChange(val)}>
+          <SelectTrigger className="h-7 border-none bg-transparent p-0 font-medium text-foreground focus:ring-0 shadow-none">
+            <SelectValue placeholder={value} />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((option) => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     );
   }
 

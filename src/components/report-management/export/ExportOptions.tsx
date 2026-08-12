@@ -19,6 +19,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 type ExportTemplate = {
@@ -249,28 +256,30 @@ export function ExportOptions() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-700">Status</label>
-                      <select
-                        value={reportStatus}
-                        onChange={(e) => setReportStatus(e.target.value)}
-                        className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
-                      >
-                        {FILTER_OPTIONS.status.map((opt) => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
+                      <label className="text-xs font-semibold text-muted-foreground">Status</label>
+                      <Select value={reportStatus} onValueChange={(val) => val && setReportStatus(val)}>
+                        <SelectTrigger className="h-9 w-full rounded-lg border-border bg-card text-xs text-foreground">
+                          <SelectValue placeholder="All statuses" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FILTER_OPTIONS.status.map((opt) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-700">Severity</label>
-                      <select
-                        value={severity}
-                        onChange={(e) => setSeverity(e.target.value)}
-                        className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
-                      >
-                        {FILTER_OPTIONS.severity.map((opt) => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
+                      <label className="text-xs font-semibold text-muted-foreground">Severity</label>
+                      <Select value={severity} onValueChange={(val) => val && setSeverity(val)}>
+                        <SelectTrigger className="h-9 w-full rounded-lg border-border bg-card text-xs text-foreground">
+                          <SelectValue placeholder="All severities" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FILTER_OPTIONS.severity.map((opt) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
