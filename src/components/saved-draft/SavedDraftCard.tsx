@@ -59,7 +59,7 @@ export function SavedDraftCard({ item, onDelete }: SavedDraftCardProps) {
 
   return (
     <>
-      <div className="group relative bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 p-6 flex flex-col justify-between transition-all duration-300 ease-out hover:-translate-y-1.5 hover:ring-blue-500/40 hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-black/40">
+      <div className="group relative flex h-full flex-col justify-between rounded-2xl bg-card p-6 ring-1 ring-foreground/5 dark:ring-foreground/10 transition-all duration-300 ease-out hover:-translate-y-1 hover:ring-blue-500/40 hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-black/40">
         
         {/* DROPDOWN ACTIONS MENU (Top Right) */}
         <div className="absolute top-5 right-5 z-20">
@@ -115,56 +115,53 @@ export function SavedDraftCard({ item, onDelete }: SavedDraftCardProps) {
           </DropdownMenu>
         </div>
 
-        <div className="space-y-4">
-          {/* HEADER: STATIC LOGO, TITLE & BADGES */}
-          <div className="flex items-start gap-3.5 pr-8">
-            <div className="w-11 h-11 bg-muted rounded-xl flex items-center justify-center ring-1 ring-foreground/5 dark:ring-foreground/10 shrink-0 overflow-hidden shadow-sm group-hover:scale-105 transition-all duration-300">
-              <Image
-                src={item.logoSrc || STATIC_CARD_LOGO}
-                alt={item.logoAlt || item.title}
-                className="w-full h-full object-cover"
-                width={44}
-                height={44}
-              />
-            </div>
-            <div>
-              <h4 className="font-bold text-[17px] leading-tight text-blue-600 dark:text-blue-400 truncate">
-                {item.title}
-              </h4>
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full border transition-colors bg-blue-50 text-blue-600 border-blue-100/80 group-hover:border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20">
-                  {meta.label}
-                </span>
-                <span className="text-xs text-muted-foreground">•</span>
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full border bg-amber-50 text-amber-600 border-amber-100/80 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20">
-                  Draft
-                </span>
+        <div className="flex flex-col flex-1 justify-between space-y-4">
+          {/* HEADER: LOGO, TITLE & BADGES */}
+          <div>
+            <div className="flex items-start gap-3.5 pr-8">
+              <div className="size-11 shrink-0 overflow-hidden rounded-xl bg-muted ring-1 ring-foreground/5 shadow-sm transition-all duration-300 group-hover:scale-105 dark:ring-foreground/10 flex items-center justify-center">
+                <Image
+                  src={item.logoSrc || STATIC_CARD_LOGO}
+                  alt={item.logoAlt || item.title}
+                  className="size-full object-cover"
+                  width={44}
+                  height={44}
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h4 className="font-bold text-[17px] leading-snug text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 line-clamp-1 transition-colors" title={item.title}>
+                  {item.title}
+                </h4>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full border transition-colors bg-blue-50 text-blue-600 border-blue-100/80 group-hover:border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20">
+                    {meta.label}
+                  </span>
+                  <span className="text-xs text-muted-foreground">•</span>
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full border bg-amber-50 text-amber-600 border-amber-100/80 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20">
+                    Draft
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* DRAFT CONTENT & SUBTITLE */}
-          <div className="space-y-1.5">
-            <h3 className="font-bold text-foreground text-[17px] leading-snug line-clamp-1 transition-colors">
-              {item.title}
-            </h3>
-            <p className="text-[13px] text-muted-foreground line-clamp-2 leading-relaxed">
+            {/* DESCRIPTION */}
+            <p className="mt-3 text-[13px] text-muted-foreground line-clamp-2 leading-relaxed min-h-[2.5rem]">
               {item.description || "No description provided for this draft."}
             </p>
           </div>
 
           {/* IN-SCOPE ASSETS / TAGS SECTION */}
-          <div className="space-y-2 pt-1">
+          <div className="space-y-1.5 pt-1">
             <p className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
               In-Scope Assets
             </p>
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5 min-h-[30px]">
               {item.tags && item.tags.length > 0 ? (
                 <>
                   {item.tags.slice(0, 2).map((tag, index) => (
                     <span
                       key={tag || index}
-                      className="bg-muted text-foreground/80 text-xs font-mono font-medium px-2.5 py-1 rounded-lg ring-1 ring-foreground/5 dark:ring-foreground/10 max-w-[200px] truncate transition-colors"
+                      className="bg-muted text-foreground/80 text-xs font-mono font-medium px-2.5 py-1 rounded-lg ring-1 ring-foreground/5 dark:ring-foreground/10 max-w-[180px] truncate transition-colors"
                       title={tag}
                     >
                       {tag}
@@ -178,14 +175,14 @@ export function SavedDraftCard({ item, onDelete }: SavedDraftCardProps) {
                   )}
                 </>
               ) : (
-                <span className="text-[13px] text-muted-foreground italic">No assets listed</span>
+                <span className="text-[13px] text-muted-foreground/70 italic">No assets listed</span>
               )}
             </div>
           </div>
         </div>
 
         {/* FOOTER: UPDATED DATE & CONTINUE BUTTON */}
-        <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
+        <div className="mt-5 pt-4 border-t border-border flex items-center justify-between shrink-0">
           <div>
             <p className="text-xs text-muted-foreground font-medium">Status</p>
             <p className="text-[13px] font-semibold text-foreground">
