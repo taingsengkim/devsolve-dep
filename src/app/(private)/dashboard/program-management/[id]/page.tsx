@@ -24,6 +24,7 @@ import {
   Globe,
   Lock,
   UserCheck,
+  PauseCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +57,8 @@ import {
   useUpdateProgramStateMutation,
   usePublishProgramMutation,
   useCloseProgramMutation,
+  usePauseProgramMutation,
+  useResumeProgramMutation,
   useUpdateProgramVisibilityMutation,
 } from "@/lib/redux/services/program/programsApi";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
@@ -114,8 +117,15 @@ function ProgramDetailPageContent({
     usePublishProgramMutation();
   const [closeProgram, { isLoading: isClosing }] =
     useCloseProgramMutation();
+  const [pauseProgram, { isLoading: isPausing }] =
+    usePauseProgramMutation();
+  const [resumeProgram, { isLoading: isResuming }] =
+    useResumeProgramMutation();
   const [updateProgramVisibility, { isLoading: isUpdatingVisibility }] =
     useUpdateProgramVisibilityMutation();
+
+  const isStateChanging =
+    isPublishing || isClosing || isPausing || isResuming || isActionLoading;
 
   const handleUpdateVisibility = async (
     visibility: "PUBLIC" | "PRIVATE" | "INVITE_ONLY"
@@ -183,6 +193,38 @@ function ProgramDetailPageContent({
     } catch (err: unknown) {
       const message = (err as { data?: { message?: string } })?.data?.message;
       toast.error(message || "Failed to publish program.");
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handlePauseProgram = async () => {
+    try {
+      setIsActionLoading(true);
+      await pauseProgram(id).unwrap();
+      toast.success(`Program "${program?.name || ""}" paused!`, {
+        description: "Your security program is now PAUSED.",
+      });
+      refetch();
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message;
+      toast.error(message || "Failed to pause program.");
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleResumeProgram = async () => {
+    try {
+      setIsActionLoading(true);
+      await resumeProgram(id).unwrap();
+      toast.success(`Program "${program?.name || ""}" resumed!`, {
+        description: "Your security program is now ACTIVE and visible to researchers.",
+      });
+      refetch();
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message;
+      toast.error(message || "Failed to resume program.");
     } finally {
       setIsActionLoading(false);
     }
@@ -289,98 +331,102 @@ function ProgramDetailPageContent({
 
           {/* STATUS BADGES */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
-            {isPending && (
-              <Badge className="bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-1.5 text-xs font-semibold gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                Pending Review
-              </Badge>
-            )}
-            {isApproved && (
-              <Badge className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-xl px-3 py-1.5 text-xs font-semibold gap-1.5">
-                <CheckCircle2 className="w-4 h-4" />
-                Approved
-              </Badge>
-            )}
-            {isRejected && (
-              <Badge className="bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 rounded-xl px-3 py-1.5 text-xs font-semibold gap-1.5">
-                <XCircle className="w-4 h-4" />
-                Rejected
-              </Badge>
-            )}
-
-            <Badge
-              variant="outline"
-              className="rounded-xl px-3 py-1.5 text-xs font-semibold border-border"
-            >
-              {program.engagementType === "BOUNTY" ? "Bounty Program" : "VDP Response"}
-            </Badge>
-
-            {/* Visibility Badge / Interactive Dropdown for Company */}
-            {!isAdminScope ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={isUpdatingVisibility || isActionLoading}
-                      className="rounded-xl px-3 py-1.5 h-8 text-xs font-semibold border-border uppercase gap-1.5 cursor-pointer bg-card"
-                    >
-                      {isUpdatingVisibility ? (
-                        <LoaderCircle className="w-3.5 h-3.5 animate-spin" />
-                      ) : program.visibility === "PRIVATE" ? (
-                        <Lock className="w-3.5 h-3.5 text-amber-500" />
-                      ) : program.visibility === "INVITE_ONLY" ? (
-                        <UserCheck className="w-3.5 h-3.5 text-purple-500" />
-                      ) : (
-                        <Globe className="w-3.5 h-3.5 text-blue-500" />
-                      )}
-                      <span>{program.visibility || "PUBLIC"}</span>
-                      <ChevronDown className="w-3 h-3 text-slate-400" />
-                    </Button>
-                  }
-                />
-                <DropdownMenuContent
-                  align="end"
-                  className="w-40 rounded-2xl p-1.5 bg-card border border-border shadow-lg"
-                >
-                  <DropdownMenuItem
-                    onClick={() => handleUpdateVisibility("PUBLIC")}
-                    className="cursor-pointer font-semibold gap-2 rounded-xl text-xs"
-                  >
-                    <Globe className="w-4 h-4 text-blue-500" />
-                    PUBLIC
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleUpdateVisibility("PRIVATE")}
-                    className="cursor-pointer font-semibold gap-2 rounded-xl text-xs"
-                  >
-                    <Lock className="w-4 h-4 text-amber-500" />
-                    PRIVATE
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleUpdateVisibility("INVITE_ONLY")}
-                    className="cursor-pointer font-semibold gap-2 rounded-xl text-xs"
-                  >
-                    <UserCheck className="w-4 h-4 text-purple-500" />
-                    INVITE_ONLY
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Badge
-                variant="outline"
-                className="rounded-xl px-3 py-1.5 text-xs font-semibold border-slate-200 dark:border-slate-800 uppercase gap-1.5"
-              >
-                {program.visibility === "PRIVATE" ? (
-                  <Lock className="w-3.5 h-3.5 text-amber-500" />
-                ) : program.visibility === "INVITE_ONLY" ? (
-                  <UserCheck className="w-3.5 h-3.5 text-purple-500" />
-                ) : (
-                  <Globe className="w-3.5 h-3.5 text-blue-500" />
+            {program.state !== "CLOSED" && (
+              <>
+                {isPending && (
+                  <Badge className="bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-1.5 text-xs font-semibold gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                    Pending Review
+                  </Badge>
                 )}
-                {program.visibility || "PUBLIC"}
-              </Badge>
+                {isApproved && (
+                  <Badge className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-xl px-3 py-1.5 text-xs font-semibold gap-1.5">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Approved
+                  </Badge>
+                )}
+                {isRejected && (
+                  <Badge className="bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 rounded-xl px-3 py-1.5 text-xs font-semibold gap-1.5">
+                    <XCircle className="w-4 h-4" />
+                    Rejected
+                  </Badge>
+                )}
+
+                <Badge
+                  variant="outline"
+                  className="rounded-xl px-3 py-1.5 text-xs font-semibold border-border"
+                >
+                  {program.engagementType === "BOUNTY" ? "Bounty Program" : "VDP Response"}
+                </Badge>
+
+                {/* Visibility Badge / Interactive Dropdown for Company */}
+                {!isAdminScope ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={isUpdatingVisibility || isActionLoading}
+                          className="rounded-xl px-3 py-1.5 h-8 text-xs font-semibold border-border uppercase gap-1.5 cursor-pointer bg-card"
+                        >
+                          {isUpdatingVisibility ? (
+                            <LoaderCircle className="w-3.5 h-3.5 animate-spin" />
+                          ) : program.visibility === "PRIVATE" ? (
+                            <Lock className="w-3.5 h-3.5 text-amber-500" />
+                          ) : program.visibility === "INVITE_ONLY" ? (
+                            <UserCheck className="w-3.5 h-3.5 text-purple-500" />
+                          ) : (
+                            <Globe className="w-3.5 h-3.5 text-blue-500" />
+                          )}
+                          <span>{program.visibility || "PUBLIC"}</span>
+                          <ChevronDown className="w-3 h-3 text-slate-400" />
+                        </Button>
+                      }
+                    />
+                    <DropdownMenuContent
+                      align="end"
+                      className="w-40 rounded-2xl p-1.5 bg-card border border-border shadow-lg"
+                    >
+                      <DropdownMenuItem
+                        onClick={() => handleUpdateVisibility("PUBLIC")}
+                        className="cursor-pointer font-semibold gap-2 rounded-xl text-xs"
+                      >
+                        <Globe className="w-4 h-4 text-blue-500" />
+                        PUBLIC
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleUpdateVisibility("PRIVATE")}
+                        className="cursor-pointer font-semibold gap-2 rounded-xl text-xs"
+                      >
+                        <Lock className="w-4 h-4 text-amber-500" />
+                        PRIVATE
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleUpdateVisibility("INVITE_ONLY")}
+                        className="cursor-pointer font-semibold gap-2 rounded-xl text-xs"
+                      >
+                        <UserCheck className="w-4 h-4 text-purple-500" />
+                        INVITE_ONLY
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Badge
+                    variant="outline"
+                    className="rounded-xl px-3 py-1.5 text-xs font-semibold border-border uppercase gap-1.5"
+                  >
+                    {program.visibility === "PRIVATE" ? (
+                      <Lock className="w-3.5 h-3.5 text-amber-500" />
+                    ) : program.visibility === "INVITE_ONLY" ? (
+                      <UserCheck className="w-3.5 h-3.5 text-purple-500" />
+                    ) : (
+                      <Globe className="w-3.5 h-3.5 text-blue-500" />
+                    )}
+                    {program.visibility || "PUBLIC"}
+                  </Badge>
+                )}
+              </>
             )}
 
             {/* Company Activate / Lifecycle Status Button */}
@@ -392,10 +438,10 @@ function ProgramDetailPageContent({
                       render={
                         <Button
                           type="button"
-                          disabled={isPublishing || isClosing || isActionLoading}
+                          disabled={isStateChanging}
                           className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm h-9 px-4 gap-2 shadow-xs cursor-pointer"
                         >
-                          {isPublishing || isClosing ? (
+                          {isStateChanging ? (
                             <LoaderCircle className="w-4 h-4 animate-spin" />
                           ) : (
                             <Zap className="w-4 h-4 fill-current" />
@@ -408,14 +454,21 @@ function ProgramDetailPageContent({
                     <DropdownMenuContent align="end" className="w-44 rounded-2xl p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg">
                       <DropdownMenuItem
                         onClick={handlePublishProgram}
-                        className="cursor-pointer font-semibold text-emerald-600 dark:text-emerald-400 gap-2 rounded-xl"
+                        className="cursor-pointer font-semibold text-emerald-600 dark:text-emerald-400 gap-2 rounded-xl text-xs"
                       >
                         <CheckCircle2 className="w-4 h-4" />
                         ACTIVE
                       </DropdownMenuItem>
                       <DropdownMenuItem
+                        onClick={handlePauseProgram}
+                        className="cursor-pointer font-semibold text-amber-600 dark:text-amber-400 gap-2 rounded-xl text-xs"
+                      >
+                        <PauseCircle className="w-4 h-4" />
+                        PAUSE
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
                         onClick={handleCloseProgram}
-                        className="cursor-pointer font-semibold text-rose-600 dark:text-rose-400 gap-2 rounded-xl"
+                        className="cursor-pointer font-semibold text-rose-600 dark:text-rose-400 gap-2 rounded-xl text-xs"
                       >
                         <XCircle className="w-4 h-4" />
                         CLOSE
@@ -428,10 +481,10 @@ function ProgramDetailPageContent({
                       render={
                         <Button
                           type="button"
-                          disabled={isPublishing || isClosing || isActionLoading}
+                          disabled={isStateChanging}
                           className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm h-9 px-4 gap-2 shadow-xs cursor-pointer"
                         >
-                          {isClosing ? (
+                          {isStateChanging ? (
                             <LoaderCircle className="w-4 h-4 animate-spin" />
                           ) : (
                             <CheckCircle2 className="w-4 h-4" />
@@ -443,8 +496,51 @@ function ProgramDetailPageContent({
                     />
                     <DropdownMenuContent align="end" className="w-44 rounded-2xl p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg">
                       <DropdownMenuItem
+                        onClick={handlePauseProgram}
+                        className="cursor-pointer font-semibold text-amber-600 dark:text-amber-400 gap-2 rounded-xl text-xs"
+                      >
+                        <PauseCircle className="w-4 h-4" />
+                        PAUSE
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
                         onClick={handleCloseProgram}
-                        className="cursor-pointer font-semibold text-rose-600 dark:text-rose-400 gap-2 rounded-xl"
+                        className="cursor-pointer font-semibold text-rose-600 dark:text-rose-400 gap-2 rounded-xl text-xs"
+                      >
+                        <XCircle className="w-4 h-4" />
+                        CLOSE
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : program.state === "PAUSED" ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button
+                          type="button"
+                          disabled={isStateChanging}
+                          className="rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm h-9 px-4 gap-2 shadow-xs cursor-pointer"
+                        >
+                          {isStateChanging ? (
+                            <LoaderCircle className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <PauseCircle className="w-4 h-4" />
+                          )}
+                          <span>PAUSED</span>
+                          <ChevronDown className="w-4 h-4 ml-0.5" />
+                        </Button>
+                      }
+                    />
+                    <DropdownMenuContent align="end" className="w-44 rounded-2xl p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg">
+                      <DropdownMenuItem
+                        onClick={handleResumeProgram}
+                        className="cursor-pointer font-semibold text-emerald-600 dark:text-emerald-400 gap-2 rounded-xl text-xs"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        ACTIVE
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={handleCloseProgram}
+                        className="cursor-pointer font-semibold text-rose-600 dark:text-rose-400 gap-2 rounded-xl text-xs"
                       >
                         <XCircle className="w-4 h-4" />
                         CLOSE

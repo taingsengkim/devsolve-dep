@@ -171,6 +171,30 @@ export const programsApi = proxyApi.injectEndpoints({
       ],
     }),
 
+    // PATCH /programs/{id}/pause (pause program)
+    pauseProgram: builder.mutation<Program, string>({
+      query: (id) => ({
+        url: `/programs/${id}/pause`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        "Program",
+        { type: "Program", id },
+      ],
+    }),
+
+    // PATCH /programs/{id}/resume (resume program)
+    resumeProgram: builder.mutation<Program, string>({
+      query: (id) => ({
+        url: `/programs/${id}/resume`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        "Program",
+        { type: "Program", id },
+      ],
+    }),
+
     // PATCH /programs/{id} (update visibility: PUBLIC, PRIVATE, INVITE_ONLY)
     updateProgramVisibility: builder.mutation<
       Program,
@@ -202,6 +226,8 @@ export const {
   useUpdateProgramStateMutation,
   usePublishProgramMutation,
   useCloseProgramMutation,
+  usePauseProgramMutation,
+  useResumeProgramMutation,
   useUpdateProgramVisibilityMutation,
 } = programsApi;
 
