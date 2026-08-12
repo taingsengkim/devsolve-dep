@@ -20,6 +20,7 @@ import {
   LoaderCircle,
   X,
   Zap,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   useGetProgramDetailQuery,
   useApproveProgramMutation,
   useRejectProgramMutation,
@@ -44,6 +51,8 @@ import {
   useGetMyCompanyProgramByIdQuery,
   useGetProgramByIdQuery,
   useUpdateProgramStateMutation,
+  usePublishProgramMutation,
+  useCloseProgramMutation,
 } from "@/lib/redux/services/program/programsApi";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { ProgramRejectDialog } from "@/components/admin/programs/ProgramRejectDialog";
@@ -97,6 +106,10 @@ function ProgramDetailPageContent({
   const [rejectProgram] = useRejectProgramMutation();
   const [updateProgramState, { isLoading: isActivating }] =
     useUpdateProgramStateMutation();
+  const [publishProgram, { isLoading: isPublishing }] =
+    usePublishProgramMutation();
+  const [closeProgram, { isLoading: isClosing }] =
+    useCloseProgramMutation();
 
   const handleApprove = async () => {
     try {
@@ -130,6 +143,39 @@ function ProgramDetailPageContent({
     } catch (err: unknown) {
       const message = (err as { data?: { message?: string } })?.data?.message;
       toast.error(message || "Failed to activate program.");
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handlePublishProgram = async () => {
+    try {
+      setIsActionLoading(true);
+      await publishProgram(id).unwrap();
+      toast.success(`Program "${program?.name || ""}" published!`, {
+        description:
+          "Your security program is now ACTIVE and visible to researchers.",
+      });
+      refetch();
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message;
+      toast.error(message || "Failed to publish program.");
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleCloseProgram = async () => {
+    try {
+      setIsActionLoading(true);
+      await closeProgram(id).unwrap();
+      toast.success(`Program "${program?.name || ""}" closed!`, {
+        description: "Your security program state is now CLOSED.",
+      });
+      refetch();
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message;
+      toast.error(message || "Failed to close program.");
     } finally {
       setIsActionLoading(false);
     }
@@ -253,32 +299,83 @@ function ProgramDetailPageContent({
               {program.visibility || "PUBLIC"}
             </Badge>
 
-            {/* Company Activate Program Button */}
+            {/* Company Activate / Lifecycle Status Button */}
             {!isAdminScope && (
               <div className="ml-0 sm:ml-2">
-                {isApproved && program.state === "DRAFT" ? (
-                  <Button
-                    type="button"
-                    disabled={isActivating || isActionLoading}
-                    onClick={handleActivateProgram}
-                    className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm h-9 px-4 gap-2 shadow-xs cursor-pointer"
-                  >
-                    {isActivating ? (
-                      <LoaderCircle className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Zap className="w-4 h-4 fill-current" />
-                    )}
-                    Activate Program
-                  </Button>
+                {program.state === "DRAFT" ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button
+                          type="button"
+                          disabled={isPublishing || isClosing || isActionLoading}
+                          className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm h-9 px-4 gap-2 shadow-xs cursor-pointer"
+                        >
+                          {isPublishing || isClosing ? (
+                            <LoaderCircle className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Zap className="w-4 h-4 fill-current" />
+                          )}
+                          <span>DRAFT</span>
+                          <ChevronDown className="w-4 h-4 ml-0.5" />
+                        </Button>
+                      }
+                    />
+                    <DropdownMenuContent align="end" className="w-44 rounded-2xl p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg">
+                      <DropdownMenuItem
+                        onClick={handlePublishProgram}
+                        className="cursor-pointer font-semibold text-emerald-600 dark:text-emerald-400 gap-2 rounded-xl"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        ACTIVE
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={handleCloseProgram}
+                        className="cursor-pointer font-semibold text-rose-600 dark:text-rose-400 gap-2 rounded-xl"
+                      >
+                        <XCircle className="w-4 h-4" />
+                        CLOSE
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 ) : program.state === "ACTIVE" ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button
+                          type="button"
+                          disabled={isPublishing || isClosing || isActionLoading}
+                          className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm h-9 px-4 gap-2 shadow-xs cursor-pointer"
+                        >
+                          {isClosing ? (
+                            <LoaderCircle className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="w-4 h-4" />
+                          )}
+                          <span>ACTIVE</span>
+                          <ChevronDown className="w-4 h-4 ml-0.5" />
+                        </Button>
+                      }
+                    />
+                    <DropdownMenuContent align="end" className="w-44 rounded-2xl p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg">
+                      <DropdownMenuItem
+                        onClick={handleCloseProgram}
+                        className="cursor-pointer font-semibold text-rose-600 dark:text-rose-400 gap-2 rounded-xl"
+                      >
+                        <XCircle className="w-4 h-4" />
+                        CLOSE
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : program.state === "CLOSED" ? (
                   <Button
                     type="button"
                     disabled
                     variant="outline"
-                    className="rounded-xl border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400 font-semibold text-xs sm:text-sm h-9 px-3.5 gap-1.5 opacity-100 cursor-not-allowed"
+                    className="rounded-xl border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/60 dark:text-rose-400 font-semibold text-xs sm:text-sm h-9 px-3.5 gap-1.5 opacity-100 cursor-not-allowed"
                   >
-                    <CheckCircle2 className="w-4 h-4" />
-                    Program Active
+                    <XCircle className="w-4 h-4" />
+                    Program CLOSED
                   </Button>
                 ) : (
                   <Button

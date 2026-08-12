@@ -146,6 +146,30 @@ export const programsApi = proxyApi.injectEndpoints({
         { type: "Program", id },
       ],
     }),
+
+    // PATCH /programs/{id}/publish (publish / set to ACTIVE)
+    publishProgram: builder.mutation<Program, string>({
+      query: (id) => ({
+        url: `/programs/${id}/publish`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        "Program",
+        { type: "Program", id },
+      ],
+    }),
+
+    // PATCH /programs/{id}/close (close program)
+    closeProgram: builder.mutation<Program, string>({
+      query: (id) => ({
+        url: `/programs/${id}/close`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        "Program",
+        { type: "Program", id },
+      ],
+    }),
   }),
 
   overrideExisting: true,
@@ -160,4 +184,7 @@ export const {
   useUpdateProgramMutation,
   useDeleteProgramMutation,
   useUpdateProgramStateMutation,
+  usePublishProgramMutation,
+  useCloseProgramMutation,
 } = programsApi;
+
