@@ -39,7 +39,7 @@ export function UserFiltersBar({
   statusCounts,
 }: UserFiltersBarProps) {
   return (
-    <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs md:flex-row md:items-center dark:border-slate-800 dark:bg-slate-900">
+    <div className="flex flex-col justify-between gap-4 rounded-2xl border border-border bg-card p-4 shadow-xs md:flex-row md:items-center">
       {/* STATUS TABS */}
       <ToggleGroup
         multiple={false}
@@ -49,7 +49,7 @@ export function UserFiltersBar({
           if (nextStatus) onStatusFilterChange(nextStatus);
         }}
         spacing={1}
-        className="max-w-full shrink-0 overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800/80"
+        className="max-w-full shrink-0 overflow-x-auto rounded-xl border border-border bg-muted p-1"
       >
         {STATUS_TABS.map((tab) => {
           const isActive = statusFilter === tab.key;
@@ -57,7 +57,7 @@ export function UserFiltersBar({
             <ToggleGroupItem
               key={tab.key}
               value={tab.key}
-              className="h-9 shrink-0 cursor-pointer rounded-lg px-3 text-sm font-semibold text-slate-600 data-[state=on]:bg-white data-[state=on]:text-slate-900 data-[state=on]:shadow-2xs dark:text-slate-400 dark:data-[state=on]:bg-slate-900 dark:data-[state=on]:text-slate-100"
+              className="h-9 shrink-0 cursor-pointer rounded-lg px-3 text-sm font-semibold text-muted-foreground data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-2xs"
             >
               <span>{tab.label}</span>
               <Badge variant={isActive ? "default" : "secondary"} className="rounded-full tabular-nums">
@@ -70,12 +70,12 @@ export function UserFiltersBar({
 
       {/* SEARCH */}
       <div className="relative w-full md:w-80 shrink-0">
-        <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+        <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={searchQuery}
           onChange={(e) => onSearchQueryChange(e.target.value)}
           placeholder="Search name or email..."
-          className="h-10 rounded-xl border-slate-300 bg-white pl-9 pr-10 text-sm shadow-2xs dark:border-slate-700 dark:bg-slate-950"
+          className="h-10 rounded-xl border-border bg-card pl-9 pr-10 text-sm text-foreground placeholder:text-muted-foreground shadow-2xs"
         />
         {searchQuery && (
           <Button
@@ -84,7 +84,7 @@ export function UserFiltersBar({
             variant="ghost"
             aria-label="Clear user search"
             onClick={() => onSearchQueryChange("")}
-            className="absolute right-1 top-1/2 size-8 -translate-y-1/2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+            className="absolute right-1 top-1/2 size-8 -translate-y-1/2 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
           >
             <X />
           </Button>

@@ -265,36 +265,31 @@ function ContentManagement() {
     >
       {/* ── Header ─────────────────────────────────────────────────── */}
       <header className="space-y-1">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+        <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
           <Link
             href="/dashboard"
-            className="flex items-center gap-1 transition hover:text-slate-900 dark:hover:text-slate-100"
+            className="flex items-center gap-1 transition hover:text-foreground"
           >
             <ArrowLeft className="size-3.5" />
             Dashboard
           </Link>
           <span>/</span>
-          <span className="font-bold text-slate-700 dark:text-slate-300">
+          <span className="font-bold text-foreground">
             Content Management
           </span>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-100">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
           Content Management
         </h1>
-        {/* The subtitle follows the tab: one line about the job in front of
-            you beats one line about all four. */}
-        <p className="max-w-2xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
           {activeBlurb}
         </p>
       </header>
 
-      {/* ── Section switcher ───────────────────────────────────────────
-          Its own full-width row rather than a corner of the header: with
-          four sections the header version ran out of room, and the counts
-          are worth seeing without clicking through. */}
+      {/* ── Section switcher ─────────────────────────────────────────── */}
       <nav
         aria-label="Moderation sections"
-        className="grid grid-cols-2 gap-1.5 rounded-2xl border border-slate-200/80 bg-slate-50 p-1.5 sm:flex sm:items-stretch dark:border-slate-800 dark:bg-slate-900/60"
+        className="grid grid-cols-2 gap-1.5 rounded-2xl border border-border bg-card p-1.5 sm:flex sm:items-stretch shadow-xs"
       >
         {TABS.map((tab) => {
           const isActive = activeTab === tab.value;
@@ -310,8 +305,8 @@ function ContentManagement() {
               className={cn(
                 "flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors sm:px-4",
                 isActive
-                  ? "bg-white text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-slate-100"
-                  : "text-slate-500 hover:bg-white/70 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-100",
+                  ? "bg-primary text-primary-foreground shadow-2xs"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
               <Icon
@@ -319,8 +314,8 @@ function ContentManagement() {
                 className={cn(
                   "size-4 shrink-0",
                   isActive
-                    ? "text-slate-900 dark:text-slate-100"
-                    : "text-slate-400",
+                    ? "text-primary-foreground"
+                    : "text-muted-foreground",
                 )}
               />
               <span className="truncate">{tab.label}</span>
@@ -329,8 +324,8 @@ function ContentManagement() {
                   className={cn(
                     "min-w-5 shrink-0 rounded-full px-1.5 py-0.5 text-xs font-bold tabular-nums",
                     isActive
-                      ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                      : "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+                      ? "bg-primary-foreground/20 text-primary-foreground"
+                      : "bg-muted text-muted-foreground",
                   )}
                 >
                   {count}
@@ -344,7 +339,7 @@ function ContentManagement() {
       {activeTab === "queue" ? (
         <>
           {/* ── Filter & sort toolbar ── */}
-          <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs lg:flex-row lg:items-center dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col justify-between gap-4 rounded-2xl border border-border bg-card p-4 shadow-xs lg:flex-row lg:items-center">
             {/* Content type pills */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0">
               {contentTypeOptions.map((opt) => {
@@ -358,8 +353,8 @@ function ContentManagement() {
                     className={cn(
                       "shrink-0 cursor-pointer rounded-xl border px-4 py-1.5 text-sm font-semibold transition-colors",
                       isActive
-                        ? "border-slate-900 bg-slate-900 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-900"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
                     {opt.label}
@@ -371,13 +366,13 @@ function ContentManagement() {
             {/* Search, reason, sort */}
             <div className="flex flex-wrap items-center gap-2.5">
               <div className="relative flex-1 sm:w-48">
-                <Search className="absolute left-3 top-2.5 size-3.5 text-slate-400" />
+                <Search className="absolute left-3 top-2.5 size-3.5 text-muted-foreground" />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search reports..."
                   aria-label="Search reports"
-                  className="h-9 rounded-xl border-slate-300 bg-white pl-9 pr-3 text-sm dark:border-slate-700 dark:bg-slate-950"
+                  className="h-9 rounded-xl border-border bg-card pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground shadow-2xs"
                 />
               </div>
 
@@ -387,23 +382,23 @@ function ContentManagement() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-9 cursor-pointer rounded-xl border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                      className="h-9 cursor-pointer rounded-xl border-border bg-card px-3 text-sm font-semibold text-foreground shadow-2xs hover:bg-muted"
                     />
                   }
                 >
                   <SlidersHorizontal
                     data-icon="inline-start"
-                    className="text-slate-400"
+                    className="text-muted-foreground"
                   />
                   <span>
                     Reason: {reasonFilter === "ALL" ? "All" : reasonFilter}
                   </span>
                   <ChevronDown
                     data-icon="inline-end"
-                    className="text-slate-400"
+                    className="text-muted-foreground"
                   />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuContent align="end" className="w-44 border-border bg-card text-card-foreground">
                   <DropdownMenuLabel>Filter by Reason</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
@@ -413,8 +408,8 @@ function ContentManagement() {
                         onClick={() => setReasonFilter(opt.value)}
                         className={
                           reasonFilter === opt.value
-                            ? "font-semibold text-slate-900 dark:text-slate-100"
-                            : ""
+                            ? "font-semibold text-foreground"
+                            : "text-muted-foreground"
                         }
                       >
                         {opt.label}
@@ -430,21 +425,21 @@ function ContentManagement() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-9 cursor-pointer rounded-xl border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                      className="h-9 cursor-pointer rounded-xl border-border bg-card px-3 text-sm font-semibold text-foreground shadow-2xs hover:bg-muted"
                     />
                   }
                 >
-                  <span className="font-normal text-slate-400">Sort:</span>
+                  <span className="font-normal text-muted-foreground">Sort:</span>
                   <span>
                     {sortOptions.find((s) => s.value === sortBy)?.label ||
                       "Most Reported"}
                   </span>
                   <ChevronDown
                     data-icon="inline-end"
-                    className="text-slate-400"
+                    className="text-muted-foreground"
                   />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuContent align="end" className="w-44 border-border bg-card text-card-foreground">
                   <DropdownMenuLabel>Sort Order</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
@@ -454,8 +449,8 @@ function ContentManagement() {
                         onClick={() => setSortBy(opt.value)}
                         className={
                           sortBy === opt.value
-                            ? "font-semibold text-slate-900 dark:text-slate-100"
-                            : ""
+                            ? "font-semibold text-foreground"
+                            : "text-muted-foreground"
                         }
                       >
                         {opt.label}
@@ -471,7 +466,7 @@ function ContentManagement() {
                   variant="ghost"
                   size="sm"
                   onClick={resetFilters}
-                  className="h-9 cursor-pointer rounded-xl px-3 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                  className="h-9 cursor-pointer rounded-xl px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
                   <RotateCcw data-icon="inline-start" /> Reset
                 </Button>

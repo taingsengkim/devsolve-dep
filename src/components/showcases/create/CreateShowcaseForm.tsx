@@ -64,10 +64,10 @@ function messageOf(error: unknown, fallback: string): string {
    here the lift is on `focus-within`, so the card being typed into is the
    one that stands up. */
 const CARD =
-  "rounded-2xl bg-white shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_2px_10px_rgba(30,41,59,0.05)] transition-shadow dark:bg-slate-900 dark:shadow-[0_0_0_1px_rgba(148,163,184,0.14),0_2px_10px_rgba(2,6,23,0.5)]";
+  "rounded-2xl bg-card text-card-foreground border border-border shadow-xs transition-shadow";
 
 const CARD_ACTIVE =
-  "focus-within:shadow-[0_0_0_1px_rgba(37,99,235,0.35),0_10px_28px_-14px_rgba(30,41,59,0.35)] dark:focus-within:shadow-[0_0_0_1px_rgba(96,165,250,0.45),0_10px_28px_-14px_rgba(2,6,23,0.7)]";
+  "focus-within:border-blue-500/50";
 
 interface FormSectionProps {
   n: string;

@@ -103,15 +103,15 @@ export function UserDataTable<TData, TValue>({
   return (
     <div className="flex flex-col gap-4">
       {/* Table Container */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xs">
+      <div className="bg-card text-card-foreground rounded-2xl border border-border overflow-hidden shadow-xs">
         <Table>
-          <TableHeader className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
+          <TableHeader className="bg-muted/60 border-b border-border">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent border-none">
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="h-11 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
+                    className="h-11 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider"
                   >
                     {header.isPlaceholder
                       ? null
@@ -130,7 +130,7 @@ export function UserDataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="border-b border-slate-100 dark:border-slate-800/60 hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
+                  className="border-b border-border hover:bg-muted/60 transition-colors"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="px-4 py-3 text-sm">
@@ -150,13 +150,13 @@ export function UserDataTable<TData, TValue>({
                 >
                   <Card className="gap-3 border-none bg-transparent py-8 shadow-none">
                     <CardHeader className="grid justify-items-center gap-3 px-8 text-center">
-                      <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
+                      <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                         <Users className="size-6" />
                       </div>
-                      <CardTitle className="text-base font-semibold text-slate-800 dark:text-slate-200">
+                      <CardTitle className="text-base font-semibold text-foreground">
                         No matching users found
                       </CardTitle>
-                      <CardDescription className="text-sm text-slate-500 dark:text-slate-400">
+                      <CardDescription className="text-sm text-muted-foreground">
                         Try another search or status filter.
                       </CardDescription>
                     </CardHeader>
@@ -169,10 +169,10 @@ export function UserDataTable<TData, TValue>({
 
         {/* Pagination Footer */}
         {data.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-slate-50/60 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-muted/40 border-t border-border">
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                <span className="text-sm font-medium text-muted-foreground">
                   Rows per page
                 </span>
                 <Select
@@ -181,10 +181,10 @@ export function UserDataTable<TData, TValue>({
                     if (val) table.setPageSize(Number(val));
                   }}
                 >
-                  <SelectTrigger className="h-8 w-16 cursor-pointer rounded-xl border-slate-300 bg-white px-2.5 text-sm font-semibold text-slate-700 shadow-2xs dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                  <SelectTrigger className="h-8 w-16 cursor-pointer rounded-xl border-border bg-card px-2.5 text-sm font-semibold text-foreground shadow-2xs">
                     <SelectValue placeholder={String(table.getState().pagination.pageSize)} />
                   </SelectTrigger>
-                  <SelectContent align="start" className="min-w-20 rounded-2xl shadow-lg">
+                  <SelectContent align="start" className="min-w-20 rounded-2xl border-border bg-card text-card-foreground shadow-lg">
                     <SelectGroup>
                       {[10, 20, 50, 100].map((pageSize) => (
                         <SelectItem
@@ -200,13 +200,13 @@ export function UserDataTable<TData, TValue>({
                 </Select>
               </div>
 
-              <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              <div className="text-sm font-medium text-muted-foreground">
                 Page{" "}
-                <span className="font-bold text-slate-700 dark:text-slate-200">
+                <span className="font-bold text-foreground">
                   {table.getState().pagination.pageIndex + 1}
                 </span>{" "}
                 of{" "}
-                <span className="font-bold text-slate-700 dark:text-slate-200">
+                <span className="font-bold text-foreground">
                   {table.getPageCount() || 1}
                 </span>{" "}
                 ({totalElements ?? data.length} total)
@@ -219,7 +219,7 @@ export function UserDataTable<TData, TValue>({
                 size="sm"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
-                className="h-8 cursor-pointer rounded-xl border-slate-200 px-3 text-sm font-semibold disabled:opacity-40 dark:border-slate-800"
+                className="h-8 cursor-pointer rounded-xl border-border bg-card text-foreground px-3 text-sm font-semibold disabled:opacity-40 hover:bg-muted"
               >
                 <ChevronLeft data-icon="inline-start" />
                 Previous
@@ -229,7 +229,7 @@ export function UserDataTable<TData, TValue>({
                 size="sm"
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
-                className="h-8 cursor-pointer rounded-xl border-slate-200 px-3 text-sm font-semibold disabled:opacity-40 dark:border-slate-800"
+                className="h-8 cursor-pointer rounded-xl border-border bg-card text-foreground px-3 text-sm font-semibold disabled:opacity-40 hover:bg-muted"
               >
                 Next
                 <ChevronRight data-icon="inline-end" />

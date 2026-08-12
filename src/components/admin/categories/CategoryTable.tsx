@@ -110,26 +110,26 @@ export function CategoryTable({
 
   return (
     <>
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-xs">
         <Table>
-          <TableHeader className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-800/60">
+          <TableHeader className="border-b border-border bg-muted/60">
             <TableRow className="border-none hover:bg-transparent">
-              <TableHead className="h-11 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <TableHead className="h-11 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Category
               </TableHead>
-              <TableHead className="h-11 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <TableHead className="h-11 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Scope
               </TableHead>
-              <TableHead className="hidden h-11 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 lg:table-cell dark:text-slate-400">
+              <TableHead className="hidden h-11 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground lg:table-cell">
                 Description
               </TableHead>
-              <TableHead className="h-11 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <TableHead className="h-11 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Order
               </TableHead>
-              <TableHead className="h-11 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <TableHead className="h-11 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Active
               </TableHead>
-              <TableHead className="h-11 px-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <TableHead className="h-11 px-4 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Actions
               </TableHead>
             </TableRow>
@@ -141,15 +141,15 @@ export function CategoryTable({
                 <TableCell colSpan={6} className="h-48 p-0 text-center">
                   <Card className="gap-3 border-none bg-transparent py-8 shadow-none">
                     <CardHeader className="grid justify-items-center gap-3 px-8 text-center">
-                      <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
+                      <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                         <Tags className="size-6" />
                       </div>
-                      <CardTitle className="text-base font-semibold text-slate-800 dark:text-slate-200">
+                      <CardTitle className="text-base font-semibold text-foreground">
                         {total === 0
                           ? "No categories yet"
                           : "No matching categories found"}
                       </CardTitle>
-                      <CardDescription className="text-sm text-slate-500 dark:text-slate-400">
+                      <CardDescription className="text-sm text-muted-foreground">
                         {total === 0
                           ? "Create one to give problems and showcases somewhere to live."
                           : "Try another search, scope, or state filter."}
@@ -169,17 +169,17 @@ export function CategoryTable({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.18 }}
-                  className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50/70 dark:border-slate-800 dark:hover:bg-slate-800/40"
+                  className="border-b border-border transition-colors last:border-0 hover:bg-muted/60"
                 >
                   <TableCell className="px-4 py-3">
                     <div className="flex items-center gap-3 py-0.5">
                       <CategoryIcon url={category.iconUrl} />
 
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <p className="truncate text-sm font-semibold text-foreground">
                           {category.name}
                         </p>
-                        <p className="truncate text-sm text-slate-500 dark:text-slate-400">
+                        <p className="truncate text-sm text-muted-foreground">
                           {category.slug}
                         </p>
                       </div>
@@ -187,18 +187,18 @@ export function CategoryTable({
                   </TableCell>
 
                   <TableCell className="px-4 py-3">
-                    <Badge variant="secondary" className="rounded-lg capitalize">
+                    <Badge variant="secondary" className="rounded-lg capitalize bg-muted text-muted-foreground border-border">
                       {category.scope.toLowerCase()}
                     </Badge>
                   </TableCell>
 
                   <TableCell className="hidden max-w-md px-4 py-3 lg:table-cell">
-                    <p className="truncate text-sm text-slate-600 dark:text-slate-400">
+                    <p className="truncate text-sm text-muted-foreground">
                       {category.description || "—"}
                     </p>
                   </TableCell>
 
-                  <TableCell className="px-4 py-3 text-sm font-medium text-slate-600 tabular-nums dark:text-slate-400">
+                  <TableCell className="px-4 py-3 text-sm font-medium text-muted-foreground tabular-nums">
                     {category.sortOrder ?? "—"}
                   </TableCell>
 
@@ -216,7 +216,7 @@ export function CategoryTable({
                         type="button"
                         onClick={() => onEdit(category)}
                         aria-label={`Edit ${category.name}`}
-                        className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
+                        className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer"
                       >
                         <Pencil className="size-4" />
                       </button>
@@ -224,7 +224,7 @@ export function CategoryTable({
                         type="button"
                         onClick={() => setPendingDelete(category)}
                         aria-label={`Delete ${category.name}`}
-                        className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
+                        className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer"
                       >
                         <Trash2 className="size-4" />
                       </button>
@@ -236,17 +236,16 @@ export function CategoryTable({
           </TableBody>
         </Table>
 
-        {/* Footer. `GET /categories` returns the whole set rather than a page,
-            so there is nothing to page through — only a count to state. */}
+        {/* Footer */}
         {shown > 0 && (
-          <div className="flex items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/60 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/40">
-            <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
+          <div className="flex items-center justify-between gap-4 border-t border-border bg-muted/40 px-4 py-3">
+            <div className="text-sm font-medium text-muted-foreground">
               Showing{" "}
-              <span className="font-bold text-slate-700 dark:text-slate-200">
+              <span className="font-bold text-foreground">
                 {shown}
               </span>{" "}
               of{" "}
-              <span className="font-bold text-slate-700 dark:text-slate-200">
+              <span className="font-bold text-foreground">
                 {total}
               </span>{" "}
               {total === 1 ? "category" : "categories"}

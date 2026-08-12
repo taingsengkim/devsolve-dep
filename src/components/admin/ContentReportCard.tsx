@@ -17,25 +17,25 @@ interface ContentReportCardProps {
 
 export function ContentReportCard({ report, onAction, onViewDetail }: ContentReportCardProps) {
   return (
-    <Card className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xs hover:shadow-xs transition duration-200">
+    <Card className="rounded-2xl border border-border bg-card text-card-foreground p-6 shadow-xs transition duration-200">
       <CardContent className="p-0 space-y-4">
         {/* Top Row: Type Badge + Title + Timestamp */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-2.5 flex-wrap min-w-0">
             <Badge
               variant="outline"
-              className="rounded-lg border-slate-200 bg-slate-50 px-2.5 py-0.5 font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              className="rounded-lg border-border bg-muted px-2.5 py-0.5 font-semibold text-muted-foreground"
             >
               {report.type}
             </Badge>
             <h3
               onClick={() => onViewDetail?.(report.id)}
-              className="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-snug cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition"
+              className="text-base font-bold text-foreground tracking-tight leading-snug cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition"
             >
               {report.title}
             </h3>
           </div>
-          <span className="text-xs text-slate-400 dark:text-slate-500 font-medium shrink-0 mt-0.5">
+          <span className="text-xs text-muted-foreground font-medium shrink-0 mt-0.5">
             {report.timestamp}
           </span>
         </div>
@@ -44,36 +44,36 @@ export function ContentReportCard({ report, onAction, onViewDetail }: ContentRep
         {report.snippet && (
           <p
             onClick={() => onViewDetail?.(report.id)}
-            className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800/60 leading-relaxed font-normal cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition"
+            className="text-sm text-muted-foreground bg-muted/60 p-3 rounded-xl border border-border leading-relaxed font-normal cursor-pointer hover:bg-muted transition"
           >
             {report.snippet}
           </p>
         )}
 
         {/* Metadata Row */}
-        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-1 font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">
-            <Flag className="size-3.5 text-slate-500" />
+        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1 font-bold text-foreground bg-muted px-2.5 py-1 rounded-lg">
+            <Flag className="size-3.5 text-muted-foreground" />
             <span>{report.reportCount} reports</span>
           </div>
 
           <Badge
             variant="outline"
-            className="rounded-lg border-slate-200 bg-white px-2.5 py-0.5 font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+            className="rounded-lg border-border bg-card px-2.5 py-0.5 font-semibold text-muted-foreground"
           >
             {report.reason}
           </Badge>
 
-          <div className="flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300">
-            <User className="size-3.5 text-slate-400" />
+          <div className="flex items-center gap-1 font-medium text-muted-foreground">
+            <User className="size-3.5 text-muted-foreground" />
             <span>Author:</span>
-            <strong className="text-slate-900 dark:text-slate-100 font-semibold">
+            <strong className="text-foreground font-semibold">
               @{report.author}
             </strong>
           </div>
 
           {report.pastViolationsCount && report.pastViolationsCount > 0 ? (
-            <span className="text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/50 rounded-full px-2.5 py-0.5 font-bold flex items-center gap-1 text-xs">
+            <span className="text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-full px-2.5 py-0.5 font-bold flex items-center gap-1 text-xs">
               <AlertTriangle className="size-3 text-amber-600 dark:text-amber-400" />
               {report.pastViolationsCount} past violations
             </span>
@@ -81,13 +81,13 @@ export function ContentReportCard({ report, onAction, onViewDetail }: ContentRep
         </div>
 
         {/* Action Controls Footer */}
-        <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3.5 flex items-center justify-between text-xs">
+        <div className="border-t border-border pt-3.5 flex items-center justify-between text-xs">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={() => onAction(report.id, "DISMISS")}
-            className="h-9 cursor-pointer rounded-xl border-slate-200 px-3 font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="h-9 cursor-pointer rounded-xl border-border bg-card px-3 font-semibold text-foreground hover:bg-muted"
           >
             <Check data-icon="inline-start" />
             Dismiss
@@ -99,7 +99,7 @@ export function ContentReportCard({ report, onAction, onViewDetail }: ContentRep
               variant="outline"
               size="sm"
               onClick={() => onAction(report.id, "WARN")}
-              className="h-9 cursor-pointer rounded-xl border-slate-300 px-3.5 font-semibold text-slate-800 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="h-9 cursor-pointer rounded-xl border-border bg-card px-3.5 font-semibold text-foreground hover:bg-muted"
             >
               <AlertTriangle data-icon="inline-start" className="text-amber-500" />
               Warn author

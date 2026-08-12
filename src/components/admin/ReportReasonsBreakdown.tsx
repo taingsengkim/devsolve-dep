@@ -34,13 +34,13 @@ export function ReportReasonsBreakdown({
   const total = breakdown.total || 1;
 
   return (
-    <Card className="gap-5 rounded-2xl border border-slate-200/80 bg-white py-6 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+    <Card className="gap-5 rounded-2xl border border-border bg-card text-card-foreground py-6 shadow-xs">
       <CardHeader className="grid grid-cols-[1fr_auto] items-center gap-3 px-6">
-        <CardTitle className="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-slate-100">
-          <Filter className="size-4 text-slate-400" />
+        <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
+          <Filter className="size-4 text-muted-foreground" />
           Report reasons
         </CardTitle>
-        <Badge variant="secondary" className="rounded-full tabular-nums">
+        <Badge variant="secondary" className="rounded-full tabular-nums bg-muted text-muted-foreground border-border">
           {breakdown.total} pending
         </Badge>
       </CardHeader>
@@ -60,20 +60,20 @@ export function ReportReasonsBreakdown({
               className={cn(
                 "flex w-full cursor-pointer flex-col gap-2 rounded-xl border p-3 text-left transition-colors",
                 isSelected
-                  ? "border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-800"
-                  : "border-transparent bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800/40",
+                  ? "border-blue-500/50 bg-blue-500/10 text-foreground"
+                  : "border-transparent bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground",
               )}
             >
-              <div className="flex items-center justify-between gap-3 text-sm font-semibold text-slate-800 dark:text-slate-200">
+              <div className="flex items-center justify-between gap-3 text-sm font-semibold text-foreground">
                 <span>{label}</span>
-                <span className="font-normal text-slate-500 dark:text-slate-400">
+                <span className="font-normal text-muted-foreground">
                   {count} reports ({percentage}%)
                 </span>
               </div>
 
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-full bg-slate-700 dark:bg-slate-300"
+                  className="h-full rounded-full bg-blue-600 dark:bg-blue-400"
                   style={{
                     width: `${percentage}%`,
                   }}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ChevronLeft, ChevronRight, Crown, Medal, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Crown, Medal, Users, ShieldAlert, Award, CheckCircle2 } from "lucide-react";
 import { LeaderboardEntry } from "@/lib/types/leaderboard/types";
 import {
   Select,
@@ -13,7 +13,14 @@ import {
 } from "@/components/ui/select";
 import ResearcherAvatar from "./ResearcherAvatar";
 import RankMovement from "./RankMovement";
-import { MEDALS, SEVERITY_STYLES, formatNumber, getCountryFlagCode, isUuid, profileHref } from "./leaderboard-ui";
+import {
+  MEDALS,
+  SEVERITY_STYLES,
+  formatNumber,
+  getCountryFlagCode,
+  isUuid,
+  profileHref,
+} from "./leaderboard-ui";
 
 const PAGE_SIZES = [10, 25, 50];
 
@@ -25,14 +32,13 @@ type Props = {
   onPageSizeChange: (size: number) => void;
 };
 
-
 function RankBadge({ rank }: { rank: number }) {
   const medal = rank <= 3 ? MEDALS[rank - 1] : null;
 
   if (!medal) {
     return (
-      <span className="inline-flex h-9 w-9 items-center justify-center text-base font-bold tabular-nums text-muted-foreground">
-        {rank}
+      <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-sm font-bold tabular-nums text-slate-700 dark:bg-neutral-800 dark:text-neutral-300">
+        #{rank}
       </span>
     );
   }
@@ -41,10 +47,10 @@ function RankBadge({ rank }: { rank: number }) {
 
   return (
     <span
-      className="inline-flex h-9 w-9 items-center justify-center gap-0.5 rounded-xl text-sm font-bold tabular-nums"
+      className="inline-flex size-9 shrink-0 items-center justify-center gap-0.5 rounded-xl text-xs font-bold tabular-nums shadow-2xs"
       style={{ backgroundColor: medal.soft, color: medal.ink }}
     >
-      <Icon className="h-3.5 w-3.5" aria-hidden />
+      <Icon className="size-3.5" aria-hidden />
       {rank}
     </span>
   );
@@ -53,45 +59,149 @@ function RankBadge({ rank }: { rank: number }) {
 function ReputationPill({ value, isCurrentUser }: { value: number; isCurrentUser?: boolean }) {
   return (
     <span
-      className={`inline-flex items-center rounded-lg px-2.5 py-1 text-sm font-bold tabular-nums tracking-tight ${
-        isCurrentUser ? "bg-blue-600 text-white" : "bg-primary text-primary-foreground"
+      className={`inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-sm font-bold tabular-nums tracking-tight shadow-2xs ${
+        isCurrentUser
+          ? "bg-blue-600 text-white shadow-blue-500/20 dark:bg-blue-600"
+          : "bg-slate-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
       }`}
     >
-      {formatNumber(value)}
+      <span>{formatNumber(value)}</span>
+      <span className="text-xs font-semibold opacity-80">pts</span>
     </span>
   );
 }
 
-function Identity({ entry, size = 40 }: { entry: LeaderboardEntry; size?: number }) {
+function ResearcherCard({ entry, index }: { entry: LeaderboardEntry; index: number }) {
+  const medal = entry.rank <= 3 ? MEDALS[entry.rank - 1] : null;
+  const validRate = Math.round((entry.validReports / entry.totalReports) * 100);
+  const flagCode = getCountryFlagCode(entry.countryCode, entry.countryName);
+  const countryDisplayName =
+    entry.countryName && !entry.countryName.includes(",")
+      ? entry.countryName
+      : entry.countryCode && !entry.countryCode.includes(",")
+      ? entry.countryCode
+      : entry.countryName || null;
 
   return (
-    <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-      <ResearcherAvatar
-        username={entry.username}
-        displayName={entry.displayName}
-        avatarUrl={entry.avatarUrl}
-        initials={entry.avatarInitials}
-        size={size}
-      />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <Link
-            href={profileHref(entry.username)}
-            className="truncate text-sm sm:text-base font-semibold tracking-tight text-foreground underline-offset-4 hover:text-blue-700 dark:hover:text-blue-400 hover:underline"
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, delay: Math.min(index, 12) * 0.02, ease: "easeOut" }}
+      whileHover={{ y: -2 }}
+      className={`group relative flex flex-col gap-4 sm:flex-row sm:items-center justify-between rounded-2xl border p-4 sm:p-5 shadow-2xs transition-all duration-200 hover:shadow-md ${
+        entry.isCurrentUser
+          ? "border-blue-500/50 bg-blue-50/40 dark:border-blue-500/30 dark:bg-blue-500/10"
+          : "border-slate-200/80 bg-white hover:border-blue-500/40 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-blue-500/30"
+      }`}
+      style={medal ? { borderLeftWidth: "4px", borderLeftColor: medal.ring } : undefined}
+    >
+      {/* Left: Rank, Avatar & Researcher Profile */}
+      <div className="flex items-center gap-3.5 min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <RankBadge rank={entry.rank} />
+          <RankMovement rank={entry.rank} previousRank={entry.previousRank} />
+        </div>
+
+        <Link
+          href={profileHref(entry.username)}
+          className="flex items-center gap-3 min-w-0 flex-1 group/link"
+        >
+          <ResearcherAvatar
+            username={entry.username}
+            displayName={entry.displayName}
+            avatarUrl={entry.avatarUrl}
+            initials={entry.avatarInitials}
+            size={44}
+          />
+
+          <div className="min-w-0 flex-1 space-y-0.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="truncate text-base font-bold tracking-tight text-slate-900 group-hover/link:text-blue-600 dark:text-neutral-100 dark:group-hover/link:text-blue-400">
+                {entry.displayName}
+              </span>
+              {entry.isCurrentUser && (
+                <span className="shrink-0 rounded-md bg-blue-100 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">
+                  You
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500 dark:text-neutral-400">
+              {!isUuid(entry.username) && (
+                <span className="font-medium text-slate-600 dark:text-neutral-400">
+                  @{entry.username}
+                </span>
+              )}
+
+              {(flagCode || countryDisplayName) && (
+                <span className="inline-flex items-center gap-1 font-medium text-slate-600 dark:text-neutral-400">
+                  {!isUuid(entry.username) && <span>·</span>}
+                  {flagCode ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={`https://flagcdn.com/w40/${flagCode}.png`}
+                      alt={countryDisplayName || "Country flag"}
+                      className="h-3 w-4 shrink-0 rounded-2xs border border-slate-200/80 object-cover shadow-2xs dark:border-neutral-800"
+                    />
+                  ) : null}
+                  {countryDisplayName && <span className="truncate">{countryDisplayName}</span>}
+                </span>
+              )}
+            </div>
+          </div>
+        </Link>
+      </div>
+
+      {/* Middle & Right: Metrics, Severity Tag & Reputation */}
+      <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-neutral-800">
+        {/* Performance Tags */}
+        <div className="flex items-center gap-2">
+          {/* Top Severity Chip */}
+          <span
+            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold ring-1 ring-inset ${
+              SEVERITY_STYLES[entry.topSeverity].chip
+            }`}
           >
-            {entry.displayName}
-          </Link>
-          {entry.isCurrentUser && (
-            <span className="shrink-0 rounded-md bg-blue-50 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
-              You
+            <ShieldAlert size={12} />
+            <span>{entry.topSeverity}</span>
+          </span>
+
+          {/* Valid Rate Pill */}
+          <span className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:bg-neutral-800 dark:text-neutral-300">
+            <CheckCircle2 size={12} className="text-emerald-500" />
+            <span>{entry.validReports} valid ({validRate}%)</span>
+          </span>
+
+          {/* Critical Count */}
+          {entry.criticalReports > 0 && (
+            <span className="inline-flex items-center gap-1 rounded-lg bg-rose-50 px-2 py-1 text-xs font-bold text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">
+              <span>{entry.criticalReports} Crit</span>
+            </span>
+          )}
+
+          {/* Recognition Count */}
+          {entry.recognitionCount > 0 && (
+            <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <Award size={12} />
+              <span>{entry.recognitionCount}</span>
             </span>
           )}
         </div>
-        {!isUuid(entry.username) && (
-          <p className="truncate text-xs sm:text-sm text-muted-foreground">@{entry.username}</p>
-        )}
+
+        {/* Reputation Score & Profile Link */}
+        <div className="flex items-center gap-2.5">
+          <ReputationPill value={entry.reputation} isCurrentUser={entry.isCurrentUser} />
+
+          <Link
+            href={profileHref(entry.username)}
+            aria-label={`Open ${entry.displayName}'s profile`}
+            className="inline-flex size-9 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50 text-slate-500 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-100"
+          >
+            <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -109,227 +219,40 @@ export default function LeaderboardTable({
 
   if (entries.length === 0) {
     return (
-      <div className="rounded-2xl bg-card p-12 text-center ring-1 ring-foreground/5 dark:ring-foreground/10">
-        <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-          <Users className="h-6 w-6" aria-hidden />
+      <div className="rounded-2xl border border-dashed border-slate-200/80 bg-white p-12 text-center shadow-2xs dark:border-neutral-800 dark:bg-neutral-900">
+        <span className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-neutral-800 dark:text-neutral-500">
+          <Users className="size-6" aria-hidden />
         </span>
-        <h3 className="text-xl font-bold text-foreground">No researchers match</h3>
-        <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-          Nobody on this board fits the current country, severity and search
-          combination. Try widening one of them.
+        <h3 className="text-xl font-bold text-slate-900 dark:text-neutral-100">
+          No researchers match
+        </h3>
+        <p className="mx-auto mt-2 max-w-sm text-sm text-slate-500 dark:text-neutral-400">
+          Nobody on this board fits the current country, severity and search combination. Try widening one of them.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-card ring-1 ring-foreground/5 dark:ring-foreground/10">
-      {/* ── Desktop table ── */}
-      <div className="hidden overflow-x-auto md:block">
-        <table className="w-full min-w-225 border-collapse text-left">
-          <caption className="sr-only">
-            Researchers ranked by reputation points. Aggregate counts only — no
-            program or report details are shown.
-          </caption>
-          <thead>
-            <tr className="border-b border-border bg-muted/60 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              <th scope="col" className="py-3 pl-5 pr-3 font-bold">
-                Rank
-              </th>
-              <th scope="col" className="px-3 py-3 font-bold">
-                Researcher
-              </th>
-              <th scope="col" className="hidden px-3 py-3 font-bold xl:table-cell">
-                Country
-              </th>
-              <th scope="col" className="hidden px-3 py-3 font-bold lg:table-cell">
-                Top severity
-              </th>
-              <th scope="col" className="px-3 py-3 text-right font-bold">
-                Reports
-              </th>
-              <th scope="col" className="px-3 py-3 text-right font-bold">
-                Valid
-              </th>
-              <th scope="col" className="px-3 py-3 text-right font-bold">
-                Critical
-              </th>
-              <th scope="col" className="px-3 py-3 text-right font-bold">
-                Thanks
-              </th>
-              <th scope="col" className="px-3 py-3 text-right font-bold">
-                Reputation
-              </th>
-              <th scope="col" className="py-3 pl-3 pr-5">
-                <span className="sr-only">Open profile</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map((entry, i) => {
-              const medal = entry.rank <= 3 ? MEDALS[entry.rank - 1] : null;
-              const validRate = Math.round((entry.validReports / entry.totalReports) * 100);
-
-              return (
-                <motion.tr
-                  key={entry.id}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.22, delay: Math.min(i, 12) * 0.02, ease: "easeOut" }}
-                  className={`group border-b border-border transition-colors last:border-0 ${
-                    entry.isCurrentUser
-                      ? "bg-blue-50/60 hover:bg-blue-50 dark:bg-blue-500/10 dark:hover:bg-blue-500/15"
-                      : "hover:bg-muted/60"
-                  }`}
-                >
-                  <td className="py-3.5 pl-5 pr-3">
-                    <div className="flex items-center gap-2">
-                      {/* Medal accent doubles the rank cue for the top three */}
-                      <span
-                        aria-hidden
-                        className="h-9 w-1 rounded-full"
-                        style={{ backgroundColor: medal ? medal.ring : "transparent" }}
-                      />
-                      <RankBadge rank={entry.rank} />
-                      <RankMovement rank={entry.rank} previousRank={entry.previousRank} />
-                    </div>
-                  </td>
-
-                  <td className="px-3 py-3.5">
-                    <Identity entry={entry} />
-                  </td>
-
-                  <td className="hidden px-3 py-3.5 xl:table-cell">
-                    {(() => {
-                      const flagCode = getCountryFlagCode(entry.countryCode, entry.countryName);
-                      const displayName = entry.countryName && !entry.countryName.includes(",") ? entry.countryName : (entry.countryCode && !entry.countryCode.includes(",") ? entry.countryCode : entry.countryName || "Not specified");
-                      return (
-                        <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                          {flagCode ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={`https://flagcdn.com/w40/${flagCode}.png`}
-                              alt={displayName}
-                              className="h-3.5 w-5 shrink-0 rounded-xs border border-slate-200/80 object-cover shadow-2xs dark:border-neutral-800"
-                            />
-                          ) : (
-                            <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-bold tracking-wide text-muted-foreground">
-                              {entry.countryCode || "??"}
-                            </span>
-                          )}
-                          <span className="truncate">{displayName}</span>
-                        </span>
-                      );
-                    })()}
-                  </td>
-
-
-                  <td className="hidden px-3 py-3.5 lg:table-cell">
-                    <span
-                      className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-bold ring-1 ring-inset ${
-                        SEVERITY_STYLES[entry.topSeverity].chip
-                      }`}
-                    >
-                      {entry.topSeverity}
-                    </span>
-                  </td>
-
-                  <td className="px-3 py-3.5 text-right text-base font-medium tabular-nums text-muted-foreground">
-                    {formatNumber(entry.totalReports)}
-                  </td>
-
-                  <td className="px-3 py-3.5 text-right">
-                    <span className="text-base font-semibold tabular-nums text-foreground">
-                      {formatNumber(entry.validReports)}
-                    </span>
-                    <span className="ml-1.5 text-xs font-medium tabular-nums text-muted-foreground">
-                      {validRate}%
-                    </span>
-                  </td>
-
-                  <td className="px-3 py-3.5 text-right text-base font-bold tabular-nums text-rose-700 dark:text-rose-400">
-                    {formatNumber(entry.criticalReports)}
-                  </td>
-
-                  <td className="px-3 py-3.5 text-right text-base font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
-                    {formatNumber(entry.recognitionCount)}
-                  </td>
-
-                  <td className="px-3 py-3.5 text-right">
-                    <ReputationPill value={entry.reputation} isCurrentUser={entry.isCurrentUser} />
-                  </td>
-
-                  <td className="py-3.5 pl-3 pr-5 text-right">
-                    <Link
-                      href={profileHref(entry.username)}
-                      aria-label={`Open ${entry.displayName}'s profile`}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                    >
-                      <ChevronRight
-                        className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
-                        aria-hidden
-                      />
-                    </Link>
-                  </td>
-                </motion.tr>
-              );
-            })}
-          </tbody>
-        </table>
+    <div className="space-y-4">
+      {/* ── Card List ── */}
+      <div className="space-y-3">
+        {visible.map((entry, index) => (
+          <ResearcherCard key={entry.id} entry={entry} index={index} />
+        ))}
       </div>
 
-      {/* ── Mobile list ── */}
-      <ul className="divide-y divide-border md:hidden">
-        {visible.map((entry) => {
-          const medal = entry.rank <= 3 ? MEDALS[entry.rank - 1] : null;
-
-          return (
-            <li
-              key={entry.id}
-              className={`group flex items-center justify-between gap-2.5 p-3.5 sm:p-4 transition-colors ${
-                entry.isCurrentUser
-                  ? "bg-blue-50/60 hover:bg-blue-50 dark:bg-blue-500/10 dark:hover:bg-blue-500/15"
-                  : "hover:bg-muted/60"
-              }`}
-              style={medal ? { boxShadow: `inset 3px 0 0 0 ${medal.ring}` } : undefined}
-            >
-              <div className="flex flex-1 min-w-0 items-center gap-2 sm:gap-3">
-                <div className="flex items-center gap-1 shrink-0">
-                  <RankBadge rank={entry.rank} />
-                  <RankMovement rank={entry.rank} previousRank={entry.previousRank} />
-                </div>
-                <Identity entry={entry} size={36} />
-              </div>
-
-              <div className="flex items-center gap-1.5 shrink-0">
-                <ReputationPill value={entry.reputation} isCurrentUser={entry.isCurrentUser} />
-                <Link
-                  href={profileHref(entry.username)}
-                  aria-label={`Open ${entry.displayName}'s profile`}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                >
-                  <ChevronRight
-                    className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
-                    aria-hidden
-                  />
-                </Link>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-
-      {/* ── Pagination ── */}
-      <div className="flex flex-col items-center justify-between gap-3 border-t border-border bg-muted/40 px-5 py-3 sm:flex-row">
-        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-          <span>Rows per page</span>
+      {/* ── Pagination Bar ── */}
+      <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white px-5 py-3.5 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900 sm:flex-row">
+        <div className="flex items-center gap-2.5 text-sm font-medium text-slate-600 dark:text-neutral-400">
+          <span>Researchers per page</span>
           <Select
             value={String(pageSize)}
             onValueChange={(next) => onPageSizeChange(Number(next))}
           >
             <SelectTrigger
-              aria-label="Rows per page"
-              className="h-9 w-20 rounded-xl bg-card text-sm font-medium text-foreground"
+              aria-label="Researchers per page"
+              className="h-9 w-20 rounded-xl bg-slate-50 border-slate-200 text-sm font-semibold text-slate-900 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-100"
             >
               <SelectValue>{(selected: string) => selected}</SelectValue>
             </SelectTrigger>
@@ -343,28 +266,29 @@ export default function LeaderboardTable({
           </Select>
         </div>
 
-        <div className="flex items-center gap-3">
-          <p className="text-sm font-medium text-muted-foreground tabular-nums">
-            {start + 1}–{Math.min(start + pageSize, entries.length)} of {entries.length}
+        <div className="flex items-center gap-4">
+          <p className="text-sm font-semibold tabular-nums text-slate-600 dark:text-neutral-400">
+            Showing <span className="text-slate-900 dark:text-neutral-100">{start + 1}–{Math.min(start + pageSize, entries.length)}</span> of{" "}
+            <span className="text-slate-900 dark:text-neutral-100">{entries.length}</span>
           </p>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => onPageChange(safePage - 1)}
               disabled={safePage <= 1}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-card text-muted-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex size-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-2xs transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-neutral-100"
               aria-label="Previous page"
             >
-              <ChevronLeft className="h-4 w-4" aria-hidden />
+              <ChevronLeft className="size-4" aria-hidden />
             </button>
             <button
               type="button"
               onClick={() => onPageChange(safePage + 1)}
               disabled={safePage >= totalPages}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-card text-muted-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex size-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-2xs transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-neutral-100"
               aria-label="Next page"
             >
-              <ChevronRight className="h-4 w-4" aria-hidden />
+              <ChevronRight className="size-4" aria-hidden />
             </button>
           </div>
         </div>
@@ -372,3 +296,4 @@ export default function LeaderboardTable({
     </div>
   );
 }
+
