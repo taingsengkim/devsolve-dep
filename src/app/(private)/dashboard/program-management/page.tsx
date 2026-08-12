@@ -26,7 +26,10 @@ function ProgramManagementPageContent() {
   const searchParams = useSearchParams();
   const { user } = useSidebarAuth();
   const isAdmin = user?.roles?.includes("ADMIN") ?? false;
-  const isAdminScope = searchParams.get("scope") === "admin" && isAdmin;
+  const isCompanyUser = user?.roles?.includes("COMPANY") ?? false;
+  const isAdminScope =
+    (searchParams.get("scope") === "admin" || (isAdmin && !isCompanyUser)) &&
+    isAdmin;
 
   const [submissionStateFilter, setSubmissionStateFilter] = useState<
     ProgramSubmissionState | "ALL"
