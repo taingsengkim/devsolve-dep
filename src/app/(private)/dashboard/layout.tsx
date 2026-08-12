@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Sidebar from "@/components/Sidebar";
+import { ProfileProvisioningGate } from "@/components/auth/ProfileProvisioningGate";
 import { NotificationProvider } from "@/components/notifications/NotificationContext";
 import { NotificationTrigger } from "@/components/notifications/NotificationTrigger";
 
@@ -20,7 +21,9 @@ export default function DashboardLayout({
             <NotificationTrigger />
           </header>
           <main className="flex-1 p-6 md:p-8 overflow-y-auto min-w-0 w-full">
-            {children}
+            {/* The landing point for every signed-in user, social or not, so
+                it is where an unprovisioned profile gets caught. */}
+            <ProfileProvisioningGate>{children}</ProfileProvisioningGate>
           </main>
         </div>
       </div>
