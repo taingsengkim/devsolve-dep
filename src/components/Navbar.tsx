@@ -934,7 +934,7 @@ const Navbar = () => {
                                 }}
                                 className="overflow-hidden"
                               >
-                                <div className="flex flex-col gap-1.5 pl-3 pt-1.5 pb-1">
+                                <div className="flex flex-col gap-1 pl-3 pt-1 pb-1">
                                   {link.items.map((item, idx) => {
                                     const isItemActive = isHrefActive(
                                       pathname,
@@ -944,9 +944,9 @@ const Navbar = () => {
                                     return (
                                       <motion.div
                                         key={`${item.href}-mobile`}
-                                        initial={{ opacity: 0, y: -6, x: -6 }}
-                                        animate={{ opacity: 1, y: 0, x: 0 }}
-                                        exit={{ opacity: 0, y: -4, x: -4 }}
+                                        initial={{ opacity: 0, y: -4 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -4 }}
                                         transition={
                                           reduce
                                             ? { duration: 0 }
@@ -954,19 +954,9 @@ const Navbar = () => {
                                               type: "spring",
                                               stiffness: 420,
                                               damping: 28,
-                                              delay: idx * 0.035,
+                                              delay: idx * 0.03,
                                             }
                                         }
-                                        className={cn(
-                                          // Two columns, not three: the old
-                                          // trailing 18px track held nothing
-                                          // and cost the description ~30px of
-                                          // width on a narrow phone.
-                                          "grid min-h-[104px] grid-cols-[40px_1fr] items-start gap-3 rounded-xl bg-white px-3.5 py-3 transition-colors dark:bg-neutral-900/70",
-                                          isItemActive
-                                            ? "bg-slate-100 text-blue-700 dark:bg-neutral-800/90 dark:text-blue-300"
-                                            : "text-slate-600 hover:bg-slate-100/90 hover:text-slate-950 dark:text-neutral-300 dark:hover:bg-neutral-800/90 dark:hover:text-white",
-                                        )}
                                       >
                                         <Link
                                           href={item.href}
@@ -978,30 +968,37 @@ const Navbar = () => {
                                             isItemActive ? "page" : undefined
                                           }
                                           className={cn(
-                                            "group flex min-h-11 items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition-all duration-200",
+                                            "group flex items-center justify-between rounded-2xl px-3.5 py-2.5 transition-all duration-200",
                                             isItemActive
-                                              ? "bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
+                                              ? "bg-slate-100 text-blue-700 dark:bg-neutral-900 dark:text-blue-300"
                                               : "text-slate-700 hover:bg-slate-100/80 hover:text-slate-950 dark:text-neutral-300 dark:hover:bg-neutral-900/80 dark:hover:text-white",
                                           )}
                                         >
                                           <div className="flex min-w-0 items-center gap-3">
                                             <span
                                               className={cn(
-                                                "flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors duration-200",
+                                                "flex size-10 shrink-0 items-center justify-center rounded-xl transition-all duration-200",
                                                 isItemActive
-                                                  ? "bg-blue-600 text-white dark:bg-blue-500"
-                                                  : "bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white dark:bg-neutral-800 dark:text-neutral-300 dark:group-hover:bg-blue-500 dark:group-hover:text-white",
+                                                  ? "bg-blue-600 text-white dark:bg-blue-600 dark:text-white"
+                                                  : "bg-slate-100 text-slate-700 group-hover:bg-blue-600 group-hover:text-white dark:bg-neutral-800 dark:text-neutral-300 dark:group-hover:bg-blue-600 dark:group-hover:text-white",
                                               )}
                                             >
                                               <CommunityMenuIcon
                                                 icon={item.icon}
                                               />
                                             </span>
-                                            <span className="truncate text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                                            <span className="truncate text-sm font-bold text-slate-900 dark:text-neutral-100">
                                               {item.name}
                                             </span>
                                           </div>
-                                          <ArrowRight className="size-4 text-slate-400 opacity-0 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:opacity-100 dark:text-neutral-400" />
+                                          <ArrowRight
+                                            className={cn(
+                                              "size-4 transition-all duration-200",
+                                              isItemActive
+                                                ? "text-slate-400 opacity-100 translate-x-0 dark:text-neutral-400"
+                                                : "text-slate-400 opacity-0 -translate-x-1 group-hover:translate-x-0 group-hover:opacity-100 dark:text-neutral-400",
+                                            )}
+                                          />
                                         </Link>
                                       </motion.div>
                                     );
