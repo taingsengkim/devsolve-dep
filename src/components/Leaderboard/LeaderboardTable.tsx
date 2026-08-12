@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import ResearcherAvatar from "./ResearcherAvatar";
 import RankMovement from "./RankMovement";
-import { MEDALS, SEVERITY_STYLES, formatNumber, profileHref } from "./leaderboard-ui";
+import { MEDALS, SEVERITY_STYLES, formatNumber, getCountryFlagCode, isUuid, profileHref } from "./leaderboard-ui";
 
 const PAGE_SIZES = [10, 25, 50];
 
@@ -24,6 +24,7 @@ type Props = {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
 };
+
 
 function RankBadge({ rank }: { rank: number }) {
   const medal = rank <= 3 ? MEDALS[rank - 1] : null;
@@ -62,6 +63,7 @@ function ReputationPill({ value, isCurrentUser }: { value: number; isCurrentUser
 }
 
 function Identity({ entry, size = 40 }: { entry: LeaderboardEntry; size?: number }) {
+
   return (
     <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
       <ResearcherAvatar
@@ -85,7 +87,9 @@ function Identity({ entry, size = 40 }: { entry: LeaderboardEntry; size?: number
             </span>
           )}
         </div>
-        <p className="truncate text-xs sm:text-sm text-muted-foreground">@{entry.username}</p>
+        {!isUuid(entry.username) && (
+          <p className="truncate text-xs sm:text-sm text-muted-foreground">@{entry.username}</p>
+        )}
       </div>
     </div>
   );
@@ -196,13 +200,29 @@ export default function LeaderboardTable({
                   </td>
 
                   <td className="hidden px-3 py-3.5 xl:table-cell">
-                    <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                      <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-bold tracking-wide text-muted-foreground">
-                        {entry.countryCode}
-                      </span>
-                      {entry.countryName}
-                    </span>
+                    {(() => {
+                      const flagCode = getCountryFlagCode(entry.countryCode, entry.countryName);
+                      const displayName = entry.countryName && !entry.countryName.includes(",") ? entry.countryName : (entry.countryCode && !entry.countryCode.includes(",") ? entry.countryCode : entry.countryName || "Not specified");
+                      return (
+                        <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                          {flagCode ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={`https://flagcdn.com/w40/${flagCode}.png`}
+                              alt={displayName}
+                              className="h-3.5 w-5 shrink-0 rounded-xs border border-slate-200/80 object-cover shadow-2xs dark:border-neutral-800"
+                            />
+                          ) : (
+                            <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-bold tracking-wide text-muted-foreground">
+                              {entry.countryCode || "??"}
+                            </span>
+                          )}
+                          <span className="truncate">{displayName}</span>
+                        </span>
+                      );
+                    })()}
                   </td>
+
 
                   <td className="hidden px-3 py-3.5 lg:table-cell">
                     <span

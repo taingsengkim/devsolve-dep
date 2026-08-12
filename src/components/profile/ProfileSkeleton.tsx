@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 
 /**
  * Loading skeleton that mirrors the GitHub-style two-column profile layout:
- * sticky left sidebar + right tab content area.
+ * sticky left sidebar card + right tab content area.
  */
 export default function ProfileSkeleton() {
   return (
@@ -12,30 +12,29 @@ export default function ProfileSkeleton() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
-      className="w-full space-y-6 pb-12"
+      className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6 pb-12"
     >
       {/* Share button bar */}
       <div className="flex items-center justify-end">
-        <div className="h-8 w-20 animate-pulse rounded-lg bg-slate-200 dark:bg-neutral-800" />
+        <div className="h-9 w-28 animate-pulse rounded-xl bg-slate-200 dark:bg-neutral-800" />
       </div>
 
       {/* Two-column body */}
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-        {/* Left sidebar skeleton */}
-        <div className="w-full shrink-0 space-y-4 lg:w-64 xl:w-72">
+        {/* Left sidebar skeleton card */}
+        <div className="w-full shrink-0 space-y-4 rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900 lg:w-64 xl:w-72">
           {/* Avatar circle */}
-          <div className="mx-auto aspect-square w-full max-w-[260px] animate-pulse rounded-full bg-slate-200 lg:mx-0 dark:bg-neutral-800" />
-
-          {/* Action buttons */}
-          <div className="space-y-2">
-            <div className="h-9 w-full animate-pulse rounded-lg bg-slate-200 dark:bg-neutral-800" />
-            <div className="h-9 w-full animate-pulse rounded-lg bg-slate-200 dark:bg-neutral-800" />
-          </div>
+          <div className="mx-auto aspect-square size-28 sm:size-36 lg:size-48 xl:size-56 animate-pulse rounded-full bg-slate-200 dark:bg-neutral-800 lg:mx-0" />
 
           {/* Name + username */}
-          <div className="space-y-2">
-            <div className="h-6 w-3/4 animate-pulse rounded-md bg-slate-200 dark:bg-neutral-800" />
-            <div className="h-4 w-1/2 animate-pulse rounded-md bg-slate-200 dark:bg-neutral-800" />
+          <div className="space-y-2 text-center lg:text-left">
+            <div className="mx-auto h-6 w-3/4 animate-pulse rounded-md bg-slate-200 dark:bg-neutral-800 lg:mx-0" />
+            <div className="mx-auto h-4 w-1/2 animate-pulse rounded-md bg-slate-200 dark:bg-neutral-800 lg:mx-0" />
+          </div>
+
+          {/* Action buttons */}
+          <div className="space-y-2 pt-1">
+            <div className="h-9 w-full animate-pulse rounded-xl bg-slate-200 dark:bg-neutral-800" />
           </div>
 
           {/* Bio */}
@@ -46,7 +45,7 @@ export default function ProfileSkeleton() {
           </div>
 
           {/* Followers row */}
-          <div className="h-4 w-40 animate-pulse rounded bg-slate-200 dark:bg-neutral-800" />
+          <div className="mx-auto h-4 w-40 animate-pulse rounded bg-slate-200 dark:bg-neutral-800 lg:mx-0" />
 
           {/* Info rows */}
           <div className="space-y-2.5 border-t border-slate-200/80 pt-4 dark:border-neutral-800">
@@ -87,8 +86,8 @@ export default function ProfileSkeleton() {
           </div>
 
           {/* Stats cards grid */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {[...Array(4)].map((_, i) => (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {[...Array(5)].map((_, i) => (
               <div
                 key={i}
                 className="h-24 animate-pulse rounded-2xl bg-slate-200 dark:bg-neutral-800"
@@ -104,3 +103,4 @@ export default function ProfileSkeleton() {
     </motion.div>
   );
 }
+

@@ -28,16 +28,16 @@ export default function PublicProfilePage() {
           transition={{ duration: 0.3, ease: "easeOut" }}
           className="w-full pb-12"
         >
-          <div className="mx-auto max-w-lg space-y-4 rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
-            <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
+          <div className="mx-auto max-w-lg space-y-4 rounded-2xl border border-slate-200 bg-white p-8 sm:p-12 text-center shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
+            <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-neutral-800 dark:text-neutral-400">
               <UserX className="size-6" />
             </span>
-            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+            <h1 className="text-xl font-bold text-slate-800 dark:text-neutral-100">
               Profile unavailable
             </h1>
-            <p className="text-base text-slate-500 dark:text-slate-400">
+            <p className="text-base text-slate-500 dark:text-neutral-400">
               We couldn&apos;t load{" "}
-              <span className="font-semibold">@{username}</span> right now. The
+              <span className="font-semibold text-slate-800 dark:text-neutral-200">@{username}</span> right now. The
               profile may not exist, or the connection dropped.
             </p>
             <Link
@@ -56,7 +56,7 @@ export default function PublicProfilePage() {
   const profile = { ...rawProfile, isOwnProfile: false };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -70,7 +70,7 @@ export default function PublicProfilePage() {
              Mobile: sidebar stacks above the tabs.
              lg+   : sidebar is a fixed-width sticky column, tabs fill the rest.
         ──────────────────────────────────────────────────────────────────── */}
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+        <div className="flex flex-col gap-6 sm:gap-8 lg:flex-row lg:items-start">
           {/* Left — sticky sidebar */}
           <div className="w-full shrink-0 lg:sticky lg:top-24 lg:w-64 xl:w-72">
             <ProfileSidebar
@@ -97,3 +97,4 @@ export default function PublicProfilePage() {
     </div>
   );
 }
+

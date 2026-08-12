@@ -14,6 +14,7 @@ import {
   MEDALS,
   PERIOD_LABEL_SHORT,
   formatNumber,
+  isUuid,
   profileHref,
 } from "./leaderboard-ui";
 
@@ -110,10 +111,13 @@ function PodiumColumn({
             <p className="w-full truncate text-sm font-bold tracking-tight text-foreground transition-colors group-hover:text-blue-700 dark:group-hover:text-blue-400 sm:text-base">
               {entry.displayName}
             </p>
-            <p className="hidden w-full truncate text-xs font-medium text-muted-foreground sm:block">
-              @{entry.username}
-            </p>
+            {!isUuid(entry.username) && (
+              <p className="hidden w-full truncate text-xs font-medium text-muted-foreground sm:block">
+                @{entry.username}
+              </p>
+            )}
           </motion.div>
+
 
           {/* ── Avatar with medal ring and rank chip ── */}
           <motion.div
