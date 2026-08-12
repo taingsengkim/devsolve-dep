@@ -69,6 +69,18 @@ export interface CreateProgramRequest {
   rewards: RewardTier[];
 }
 
+export interface OrganizationSummary {
+  id?: string;
+  name?: string;
+  slug?: string;
+  logoUrl?: string | null;
+  websiteUrl?: string | null;
+  description?: string | null;
+  industry?: string | null;
+  country?: string | null;
+  verifiedAt?: string | null;
+}
+
 export interface Program {
   id: string;
   organizationId: string;
@@ -76,6 +88,8 @@ export interface Program {
   name: string;
   description: string;
   organizationName: string;
+  organization?: OrganizationSummary | null;
+  logoUrl?: string | null;
   engagementType: EngagementType;
   state: ProgramState;
   submissionState: SubmissionState;
@@ -98,6 +112,8 @@ export interface ProgramDetail {
   name: string;
   description: string;
   organizationName: string;
+  organization?: OrganizationSummary | null;
+  logoUrl?: string | null;
   engagementType: EngagementType;
   state: ProgramState;
   submissionState: SubmissionState;

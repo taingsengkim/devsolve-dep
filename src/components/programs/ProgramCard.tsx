@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Bookmark, ArrowRight } from "lucide-react";
+import { Bookmark, ArrowRight, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { Program } from "@/lib/types/programs/types";
 import { usePathname } from "next/navigation";
@@ -18,6 +18,18 @@ interface ProgramCardProps {
 }
 
 export function ProgramCard({ program }: ProgramCardProps) {
+  const [imageError, setImageError] = React.useState(false);
+  const logoUrl = !imageError ? (program.organization?.logoUrl || program.logoUrl) : null;
+  const orgName = program.organizationName || program.organization?.name || "Organization";
+  const initials =
+    orgName
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase() || "OR";
+
   const { data: isBookmarked } = useGetBookmarkStatusQuery({ type: "PROGRAM", targetId: program.id });
   const [addBookmark, { isLoading: isSaving }] = useAddBookmarkMutation();
   const [removeBookmark, { isLoading: isRemoving }] = useRemoveBookmarkMutation();
@@ -100,17 +112,25 @@ export function ProgramCard({ program }: ProgramCardProps) {
         {/* HEADER: LOGO, ORGANIZATION & BADGES */}
         <div className="flex items-start gap-3.5 pr-8">
           <div className="w-11 h-11 bg-muted rounded-xl flex items-center justify-center ring-1 ring-foreground/5 dark:ring-foreground/10 shrink-0 overflow-hidden shadow-sm group-hover:scale-105 transition-all duration-300">
-            <Image
-              src="https://media.wired.com/photos/5926ffe47034dc5f91bed4e8/3:2/w_2560%2Cc_limit/google-logo.jpg"
-              alt={program.handle || "Organization"}
-              className="w-full h-full object-cover"
-              width={44}
-              height={44}
-            />
+            {logoUrl ? (
+              <Image
+                src={logoUrl}
+                alt={orgName}
+                className="w-full h-full object-cover"
+                width={44}
+                height={44}
+                onError={() => setImageError(true)}
+                unoptimized
+              />
+            ) : (
+              <span className="text-xs font-extrabold text-foreground tracking-wider">
+                {initials}
+              </span>
+            )}
           </div>
           <div>
             <h4 className={`font-bold text-[17px] leading-tight ${companyTitleColor}`}>
-              {program.organizationName || "Organization"}
+              {orgName}
             </h4>
             <div className="flex items-center gap-1.5 mt-1">
               <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border transition-colors ${badgeStyle}`}>
