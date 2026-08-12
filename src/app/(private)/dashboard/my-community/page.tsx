@@ -69,28 +69,28 @@ export default function MyCommunityPage() {
       transition={{ duration: 0.3, ease: "easeOut" }}
       className="space-y-6 w-full pb-12"
     >
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
         <div className="space-y-1">
           <nav
             aria-label="Breadcrumb"
-            className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400"
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground"
           >
             <Link
               href="/dashboard"
-              className="transition-colors hover:text-slate-900 dark:hover:text-slate-200"
+              className="transition-colors hover:text-foreground"
             >
               Dashboard
             </Link>
-            <span className="text-slate-300 dark:text-slate-700">/</span>
-            <span className="text-slate-900 dark:text-slate-200">
+            <span className="text-border">/</span>
+            <span className="text-foreground">
               My Community
             </span>
           </nav>
 
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             My Community
           </h1>
-          <p className="text-base text-slate-500 dark:text-slate-400">
+          <p className="text-base text-muted-foreground">
             Every problem, solution and showcase you have posted — and where
             each one stands.
           </p>
@@ -100,7 +100,7 @@ export default function MyCommunityPage() {
           href="/community/create"
           className={cn(
             buttonVariants({ size: "lg" }),
-            "rounded-xl bg-blue-600 font-semibold text-white hover:bg-blue-700",
+            "rounded-xl bg-blue-600 font-semibold text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700",
           )}
         >
           <Plus data-icon="inline-start" aria-hidden="true" />
@@ -109,7 +109,7 @@ export default function MyCommunityPage() {
       </header>
 
       {needsAttention > 0 && (
-        <div className="flex gap-2.5 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-800 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-200">
+        <div className="flex gap-2.5 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm font-medium text-rose-700 dark:text-rose-300">
           <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           <span>
             {needsAttention === 1
@@ -153,7 +153,7 @@ export default function MyCommunityPage() {
           <div
             role="group"
             aria-label="Filter posts"
-            className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-slate-200/80 bg-white p-1.5 shadow-2xs dark:border-slate-800 dark:bg-slate-900"
+            className="flex flex-wrap items-center gap-1.5 rounded-2xl bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 p-1.5 shadow-xs"
           >
             {FILTERS.map((option) => {
               const isActive = filter === option.value;
@@ -170,13 +170,13 @@ export default function MyCommunityPage() {
                     "relative cursor-pointer rounded-xl px-3.5 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40",
                     isActive
                       ? "text-white"
-                      : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800",
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   {isActive && (
                     <motion.span
                       layoutId="my-community-filter-pill"
-                      className="absolute inset-0 rounded-xl bg-blue-600"
+                      className="absolute inset-0 rounded-xl bg-blue-600 dark:bg-blue-600"
                       transition={{ type: "spring", stiffness: 400, damping: 35 }}
                     />
                   )}
@@ -187,7 +187,7 @@ export default function MyCommunityPage() {
                         "rounded-md px-1.5 py-0.5 text-xs font-bold tabular-nums",
                         isActive
                           ? "bg-white/20 text-white"
-                          : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
+                          : "bg-muted text-muted-foreground",
                       )}
                     >
                       {count}

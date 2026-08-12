@@ -69,20 +69,20 @@ export const ProgramStatCards: React.FC<ProgramStatCardsProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, delay: idx * 0.05 }}
           >
-            <Card className="gap-3 rounded-2xl border border-slate-200 bg-white py-5 shadow-2xs transition-shadow hover:shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <Card className="gap-3 rounded-2xl bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 py-5 shadow-xs transition-shadow hover:shadow-sm">
               <CardHeader className="grid grid-cols-[1fr_auto] items-center gap-3 px-5">
-                <CardTitle className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                <CardTitle className="text-sm font-semibold text-muted-foreground">
                   {stat.title}
                 </CardTitle>
-                <div className="flex size-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+                <div className="flex size-9 items-center justify-center rounded-xl border border-border bg-muted text-muted-foreground">
                   <Icon className="size-4" />
                 </div>
               </CardHeader>
               <CardContent className="flex flex-col gap-0.5 px-5">
-                <div className="text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-100">
+                <div className="text-2xl font-bold tabular-nums text-foreground">
                   {stat.value}
                 </div>
-                <CardDescription className="text-sm text-slate-500 dark:text-slate-400">
+                <CardDescription className="text-sm text-muted-foreground">
                   {stat.subtext}
                 </CardDescription>
               </CardContent>

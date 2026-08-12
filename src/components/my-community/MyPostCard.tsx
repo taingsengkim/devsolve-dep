@@ -40,19 +40,19 @@ import { cn } from "@/lib/utils";
  */
 
 const KIND_STYLES: Record<MyPost["kind"], string> = {
-  Problem: "bg-red-50 text-red-600 border border-red-100",
-  Solution: "bg-emerald-50 text-emerald-700 border border-emerald-100",
-  Showcase: "bg-blue-50 text-blue-700 border border-blue-100",
+  Problem: "bg-red-50 text-red-700 border border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/20",
+  Solution: "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20",
+  Showcase: "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20",
 };
 
 const STATE_STYLES: Record<MyPost["state"]["tone"], string> = {
-  live: "bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20",
+  live: "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20",
   pending:
-    "bg-amber-50 text-amber-700 border border-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20",
+    "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20",
   blocked:
-    "bg-rose-50 text-rose-700 border border-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20",
+    "bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20",
   draft:
-    "bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+    "bg-muted text-muted-foreground border border-border",
 };
 
 function formatDate(iso: string) {
@@ -111,7 +111,7 @@ export function MyPostCard({ post }: { post: MyPost }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ duration: 0.2 }}
-      className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs sm:flex-row sm:p-5 dark:border-slate-800 dark:bg-slate-900"
+      className="flex flex-col gap-4 rounded-2xl bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 p-4 shadow-xs transition-all sm:flex-row sm:p-5 text-card-foreground hover:ring-blue-500/30"
     >
       {post.kind === "Showcase" && (
         <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 sm:w-40 dark:border-slate-700 dark:bg-slate-800">

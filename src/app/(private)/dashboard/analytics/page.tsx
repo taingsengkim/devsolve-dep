@@ -130,12 +130,12 @@ export default function OrganizationAnalyticsPage() {
       className="space-y-6 w-full pb-12"
     >
       {/* HEADER SECTION */}
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-border">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Analytics Overview
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Real-time security insights, submission trends, and researcher contributions.
           </p>
         </div>
@@ -146,15 +146,15 @@ export default function OrganizationAnalyticsPage() {
             variant="outline"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="h-10 px-3.5 rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium shadow-2xs cursor-pointer"
+            className="h-10 px-3.5 rounded-xl border-border bg-card hover:bg-muted text-foreground text-sm font-medium shadow-xs cursor-pointer"
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
             Refresh
           </Button>
 
           <Select value={timeRange} onValueChange={(val) => { if (val) setTimeRange(val); }}>
-            <SelectTrigger className="w-[160px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 shadow-2xs text-sm font-medium text-slate-700 dark:text-slate-300 h-10">
-              <Calendar className="w-4 h-4 mr-2 text-slate-400 dark:text-slate-500 shrink-0" />
+            <SelectTrigger className="w-[160px] bg-card border-border rounded-xl px-3.5 py-2 shadow-xs text-sm font-medium text-foreground h-10">
+              <Calendar className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
               <SelectValue placeholder="Time Range" />
             </SelectTrigger>
             <SelectContent>
@@ -164,7 +164,7 @@ export default function OrganizationAnalyticsPage() {
             </SelectContent>
           </Select>
 
-          <Button className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 text-white text-sm font-bold h-10 px-4 rounded-xl transition-all shadow-2xs cursor-pointer">
+          <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold h-10 px-4 rounded-xl transition-all shadow-xs cursor-pointer dark:bg-blue-600 dark:hover:bg-blue-700">
             <Download className="w-4 h-4" />
             Export Data
           </Button>
@@ -174,93 +174,93 @@ export default function OrganizationAnalyticsPage() {
       {/* 4 KPI CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* 1. TOTAL REPORTS */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3">
+        <div className="bg-card text-card-foreground p-6 rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Total Reports
             </span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
               <FileText className="w-5 h-5" />
             </div>
           </div>
 
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-black text-slate-900 dark:text-slate-100">{totalReports}</span>
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-100 dark:border-emerald-800/60">
+            <span className="text-3xl font-black text-foreground">{totalReports}</span>
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-500/20">
               <ArrowUpRight className="w-3.5 h-3.5" /> +14%
             </span>
           </div>
 
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          <p className="text-xs text-muted-foreground font-medium">
             All submitted vulnerability reports
           </p>
         </div>
 
         {/* 2. ACCEPTED */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3">
+        <div className="bg-card text-card-foreground p-6 rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Accepted
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
 
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-black text-slate-900 dark:text-slate-100">{acceptedReports}</span>
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-100 dark:border-emerald-800/60">
+            <span className="text-3xl font-black text-foreground">{acceptedReports}</span>
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-500/20">
               <ArrowUpRight className="w-3.5 h-3.5" /> +11%
             </span>
           </div>
 
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          <p className="text-xs text-muted-foreground font-medium">
             Valid reports ready for reward & closure
           </p>
         </div>
 
         {/* 3. REJECTED */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3">
+        <div className="bg-card text-card-foreground p-6 rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Rejected
             </span>
-            <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
               <XCircle className="w-5 h-5" />
             </div>
           </div>
 
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-black text-slate-900 dark:text-slate-100">{rejectedReports}</span>
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-2.5 py-1 rounded-full border border-amber-100 dark:border-amber-800/60">
+            <span className="text-3xl font-black text-foreground">{rejectedReports}</span>
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-500/20">
               <ArrowDownRight className="w-3.5 h-3.5" /> -5%
             </span>
           </div>
 
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          <p className="text-xs text-muted-foreground font-medium">
             Invalid, duplicate, or out-of-scope
           </p>
         </div>
 
         {/* 4. TOTAL SUBMITTERS */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3">
+        <div className="bg-card text-card-foreground p-6 rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Total Submitters
             </span>
-            <div className="w-9 h-9 rounded-xl bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center">
               <Users className="w-5 h-5" />
             </div>
           </div>
 
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-black text-slate-900 dark:text-slate-100">{totalUsers}</span>
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-100 dark:border-emerald-800/60">
+            <span className="text-3xl font-black text-foreground">{totalUsers}</span>
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-500/20">
               <ArrowUpRight className="w-3.5 h-3.5" /> +8%
             </span>
           </div>
 
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          <p className="text-xs text-muted-foreground font-medium">
             Unique researchers submitting findings
           </p>
         </div>
@@ -269,12 +269,12 @@ export default function OrganizationAnalyticsPage() {
       {/* CHARTS ROW */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* REPORT SUBMISSION & ACCEPTANCE TREND (2 COLS) */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-6">
+        <div className="lg:col-span-2 bg-card text-card-foreground p-6 rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs space-y-6">
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+            <h3 className="text-lg font-bold text-foreground">
               Report Submission & Acceptance Trend
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Comparing total incoming reports against accepted vulnerabilities.
             </p>
           </div>
@@ -292,15 +292,15 @@ export default function OrganizationAnalyticsPage() {
                     <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148, 163, 184, 0.2)" />
-                <XAxis dataKey="month" tickLine={false} axisLine={false} stroke="#94A3B8" />
-                <YAxis tickLine={false} axisLine={false} stroke="#94A3B8" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
+                <YAxis tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "var(--color-bg, #0f172a)",
-                    borderColor: "rgba(148, 163, 184, 0.2)",
+                    backgroundColor: "var(--card)",
+                    borderColor: "var(--border)",
                     borderRadius: "0.75rem",
-                    color: "#f8fafc",
+                    color: "var(--card-foreground)",
                   }}
                 />
                 <Area
@@ -327,12 +327,12 @@ export default function OrganizationAnalyticsPage() {
         </div>
 
         {/* SEVERITY BREAKDOWN (1 COL) */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-6 flex flex-col justify-between">
+        <div className="bg-card text-card-foreground p-6 rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs space-y-6 flex flex-col justify-between">
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+            <h3 className="text-lg font-bold text-foreground">
               Vulnerability Severity Breakdown
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Distribution of reports based on CVSS severity rating.
             </p>
           </div>
@@ -355,10 +355,10 @@ export default function OrganizationAnalyticsPage() {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "var(--color-bg, #0f172a)",
-                    borderColor: "rgba(148, 163, 184, 0.2)",
+                    backgroundColor: "var(--card)",
+                    borderColor: "var(--border)",
                     borderRadius: "0.75rem",
-                    color: "#f8fafc",
+                    color: "var(--card-foreground)",
                   }}
                 />
               </PieChart>
@@ -366,15 +366,15 @@ export default function OrganizationAnalyticsPage() {
           </div>
 
           {/* Legend */}
-          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
             {severityData.map((s) => (
               <div key={s.name} className="flex items-center gap-2">
                 <span
                   className="w-3 h-3 rounded-full shrink-0"
                   style={{ backgroundColor: s.color }}
                 />
-                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{s.name}</span>
-                <span className="text-xs text-slate-400 dark:text-slate-500 ml-auto font-mono">{s.value}</span>
+                <span className="text-xs font-semibold text-foreground">{s.name}</span>
+                <span className="text-xs text-muted-foreground ml-auto font-mono">{s.value}</span>
               </div>
             ))}
           </div>
@@ -384,33 +384,33 @@ export default function OrganizationAnalyticsPage() {
       {/* BOTTOM ROW: REWARDS & TARGET ASSETS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* REWARDS SUMMARY */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-5">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+        <div className="bg-card text-card-foreground p-6 rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs space-y-5">
+          <h3 className="text-lg font-bold text-foreground">
             Payouts & Rewards Summary
           </h3>
 
           <div className="space-y-4">
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
+            <div className="p-4 bg-muted/40 rounded-xl border border-border flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
                   <DollarSign className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Total Bounty Paid</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">128 Bounty program reports</p>
+                  <h4 className="text-sm font-bold text-foreground">Total Bounty Paid</h4>
+                  <p className="text-xs text-muted-foreground">128 Bounty program reports</p>
                 </div>
               </div>
               <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">$42,500</span>
             </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
+            <div className="p-4 bg-muted/40 rounded-xl border border-border flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                   <Award className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Points Awarded</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">72 Response program reports</p>
+                  <h4 className="text-sm font-bold text-foreground">Points Awarded</h4>
+                  <p className="text-xs text-muted-foreground">72 Response program reports</p>
                 </div>
               </div>
               <span className="text-lg font-black text-blue-600 dark:text-blue-400">3,400 pts</span>
@@ -419,12 +419,12 @@ export default function OrganizationAnalyticsPage() {
         </div>
 
         {/* MOST TESTED ASSETS */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-5">
+        <div className="lg:col-span-2 bg-card text-card-foreground p-6 rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs space-y-5">
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+            <h3 className="text-lg font-bold text-foreground">
               Most Vulnerable Scope Targets
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Assets receiving the highest volume of security findings.
             </p>
           </div>
@@ -432,34 +432,34 @@ export default function OrganizationAnalyticsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider">
+                <tr className="border-b border-border text-[11px] font-bold uppercase text-muted-foreground tracking-wider">
                   <th className="pb-3">Asset Target</th>
                   <th className="pb-3">Type</th>
                   <th className="pb-3">Total Reports</th>
                   <th className="pb-3 text-right">Critical Findings</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+              <tbody className="divide-y divide-border text-sm">
                 {topAssets.map((asset) => (
-                  <tr key={asset.name} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3.5 font-mono font-medium text-slate-800 dark:text-slate-200">
-                      <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs">
+                  <tr key={asset.name} className="hover:bg-muted/40 transition-colors">
+                    <td className="py-3.5 font-mono font-medium text-foreground">
+                      <span className="px-2 py-1 bg-muted rounded-lg text-xs">
                         {asset.name}
                       </span>
                     </td>
-                    <td className="py-3.5 text-slate-500 dark:text-slate-400 font-medium text-xs">
+                    <td className="py-3.5 text-muted-foreground font-medium text-xs">
                       {asset.type}
                     </td>
-                    <td className="py-3.5 font-bold text-slate-900 dark:text-slate-100">
+                    <td className="py-3.5 font-bold text-foreground">
                       {asset.reports}
                     </td>
                     <td className="py-3.5 text-right">
                       {asset.critical > 0 ? (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/60">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-500/20">
                           {asset.critical} Critical
                         </span>
                       ) : (
-                        <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">0</span>
+                        <span className="text-xs text-muted-foreground font-medium">0</span>
                       )}
                     </td>
                   </tr>

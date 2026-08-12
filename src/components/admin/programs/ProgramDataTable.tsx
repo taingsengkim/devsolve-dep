@@ -129,7 +129,7 @@ export function ProgramDataTable<TData, TValue>({
             return (
               <div
                 key={row.id}
-                className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-2xs"
+                className="flex flex-col gap-3 rounded-2xl bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 p-4 shadow-xs"
               >
                 {/* Header: Name + Handle */}
                 <div className="flex items-start justify-between gap-2 border-b border-border/60 pb-3">
@@ -160,7 +160,7 @@ export function ProgramDataTable<TData, TValue>({
             );
           })
         ) : (
-          <Card className="gap-3 border border-border bg-card py-8 shadow-2xs text-center">
+          <Card className="gap-3 bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 py-8 shadow-xs text-center rounded-2xl">
             <CardHeader className="grid justify-items-center gap-3 px-6 text-center">
               <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                 <Building2 className="size-6" />
@@ -177,7 +177,7 @@ export function ProgramDataTable<TData, TValue>({
       </div>
 
       {/* Desktop Table View (visible on screens >= md) */}
-      <div className="hidden md:block overflow-hidden rounded-2xl border border-border bg-card shadow-2xs">
+      <div className="hidden md:block overflow-hidden rounded-2xl bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs">
         <div className="w-full overflow-x-auto">
           <Table>
             <TableHeader className="border-b border-border bg-muted/60">

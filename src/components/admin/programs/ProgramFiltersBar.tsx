@@ -71,7 +71,7 @@ export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
   counts,
 }) => {
   return (
-    <div className="flex flex-col justify-between gap-4 rounded-2xl border border-border bg-card p-4 shadow-2xs xl:flex-row xl:items-center">
+    <div className="flex flex-col justify-between gap-4 rounded-2xl bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 p-4 shadow-xs xl:flex-row xl:items-center">
       {/* REVIEW STATE TABS */}
       <ToggleGroup
         multiple={false}
