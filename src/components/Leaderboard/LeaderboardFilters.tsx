@@ -52,7 +52,7 @@ export default function LeaderboardFilters({
         <div
           role="group"
           aria-label="Ranking period"
-          className="flex h-11 shrink-0 rounded-xl bg-muted/60 p-1"
+          className="grid grid-cols-3 w-full sm:w-auto sm:flex h-11 shrink-0 rounded-xl bg-muted/60 p-1"
         >
           {PERIOD_OPTIONS.map((option) => {
             const active = value.period === option.value;
@@ -62,7 +62,7 @@ export default function LeaderboardFilters({
                 type="button"
                 aria-pressed={active}
                 onClick={() => onChange({ period: option.value })}
-                className={`relative rounded-lg px-4 text-sm font-semibold transition-colors ${
+                className={`relative rounded-lg px-2 sm:px-4 text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center text-center ${
                   active
                     ? "text-white"
                     : "text-muted-foreground hover:text-foreground"

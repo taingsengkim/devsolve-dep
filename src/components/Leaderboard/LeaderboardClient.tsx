@@ -73,7 +73,7 @@ export default function LeaderboardClient() {
   if (isLoading || !data) return <LeaderboardSkeleton />;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-12 sm:pb-16">
       <LeaderboardPodium podium={data.podium} period={filters.period} />
 
       {/* Filter & Search Bar */}

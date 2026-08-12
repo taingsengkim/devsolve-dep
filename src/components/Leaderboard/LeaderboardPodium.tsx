@@ -155,13 +155,24 @@ function PodiumColumn({
               // one hue from crown to floor.
               style={{ boxShadow: `0 0 0 2px ${tone.edge}` }}
             >
-              <ResearcherAvatar
-                username={entry.username}
-                displayName={entry.displayName}
-                avatarUrl={entry.avatarUrl}
-                initials={entry.avatarInitials}
-                size={AVATAR[place]}
-              />
+              <span className="hidden sm:inline-block">
+                <ResearcherAvatar
+                  username={entry.username}
+                  displayName={entry.displayName}
+                  avatarUrl={entry.avatarUrl}
+                  initials={entry.avatarInitials}
+                  size={AVATAR[place]}
+                />
+              </span>
+              <span className="sm:hidden">
+                <ResearcherAvatar
+                  username={entry.username}
+                  displayName={entry.displayName}
+                  avatarUrl={entry.avatarUrl}
+                  initials={entry.avatarInitials}
+                  size={place === 0 ? 48 : 40}
+                />
+              </span>
             </motion.span>
 
             <span

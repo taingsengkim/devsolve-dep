@@ -63,7 +63,7 @@ function ReputationPill({ value, isCurrentUser }: { value: number; isCurrentUser
 
 function Identity({ entry, size = 40 }: { entry: LeaderboardEntry; size?: number }) {
   return (
-    <div className="flex min-w-0 items-center gap-3">
+    <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
       <ResearcherAvatar
         username={entry.username}
         displayName={entry.displayName}
@@ -71,19 +71,21 @@ function Identity({ entry, size = 40 }: { entry: LeaderboardEntry; size?: number
         initials={entry.avatarInitials}
         size={size}
       />
-      <div className="min-w-0">
-        <Link
-          href={profileHref(entry.username)}
-          className="block truncate text-base font-semibold tracking-tight text-foreground underline-offset-4 hover:text-blue-700 dark:hover:text-blue-400 hover:underline"
-        >
-          {entry.displayName}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <Link
+            href={profileHref(entry.username)}
+            className="truncate text-sm sm:text-base font-semibold tracking-tight text-foreground underline-offset-4 hover:text-blue-700 dark:hover:text-blue-400 hover:underline"
+          >
+            {entry.displayName}
+          </Link>
           {entry.isCurrentUser && (
-            <span className="ml-2 rounded-md bg-blue-50 px-1.5 py-0.5 align-middle text-xs font-bold uppercase tracking-wide text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
+            <span className="shrink-0 rounded-md bg-blue-50 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
               You
             </span>
           )}
-        </Link>
-        <p className="truncate text-sm text-muted-foreground">@{entry.username}</p>
+        </div>
+        <p className="truncate text-xs sm:text-sm text-muted-foreground">@{entry.username}</p>
       </div>
     </div>
   );
@@ -264,34 +266,34 @@ export default function LeaderboardTable({
           return (
             <li
               key={entry.id}
-              className={`p-4 ${entry.isCurrentUser ? "bg-blue-50/60 dark:bg-blue-500/10" : ""}`}
+              className={`group flex items-center justify-between gap-2.5 p-3.5 sm:p-4 transition-colors ${
+                entry.isCurrentUser
+                  ? "bg-blue-50/60 hover:bg-blue-50 dark:bg-blue-500/10 dark:hover:bg-blue-500/15"
+                  : "hover:bg-muted/60"
+              }`}
               style={medal ? { boxShadow: `inset 3px 0 0 0 ${medal.ring}` } : undefined}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
+              <div className="flex flex-1 min-w-0 items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-1 shrink-0">
                   <RankBadge rank={entry.rank} />
-                  <Identity entry={entry} size={36} />
+                  <RankMovement rank={entry.rank} previousRank={entry.previousRank} />
                 </div>
-                <ReputationPill value={entry.reputation} isCurrentUser={entry.isCurrentUser} />
+                <Identity entry={entry} size={36} />
               </div>
 
-              <dl className="mt-3 grid grid-cols-4 gap-2 text-center">
-                {[
-                  { label: "Reports", value: entry.totalReports, tone: "text-muted-foreground" },
-                  { label: "Valid", value: entry.validReports, tone: "text-foreground" },
-                  { label: "Critical", value: entry.criticalReports, tone: "text-rose-700 dark:text-rose-400" },
-                  { label: "Thanks", value: entry.recognitionCount, tone: "text-emerald-700 dark:text-emerald-400" },
-                ].map((stat) => (
-                  <div key={stat.label} className="rounded-lg bg-muted py-2">
-                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {stat.label}
-                    </dt>
-                    <dd className={`text-base font-bold tabular-nums ${stat.tone}`}>
-                      {formatNumber(stat.value)}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <ReputationPill value={entry.reputation} isCurrentUser={entry.isCurrentUser} />
+                <Link
+                  href={profileHref(entry.username)}
+                  aria-label={`Open ${entry.displayName}'s profile`}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <ChevronRight
+                    className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
+                    aria-hidden
+                  />
+                </Link>
+              </div>
             </li>
           );
         })}
