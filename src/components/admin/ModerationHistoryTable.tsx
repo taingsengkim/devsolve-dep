@@ -86,11 +86,11 @@ export function ModerationHistoryTable() {
   return (
     <div className="space-y-4">
       {/* FILTER TOOLBAR */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-card p-4 rounded-2xl border border-border shadow-xs">
         <div className="flex flex-wrap items-center gap-3 flex-1">
           {/* Target ID Search */}
           <div className="relative flex-1 min-w-[200px] max-w-xs">
-            <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+            <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
             <Input
               value={targetIdSearch}
               onChange={(e) => {
@@ -98,7 +98,7 @@ export function ModerationHistoryTable() {
                 setPageNumber(0);
               }}
               placeholder="Search by Target ID..."
-              className="h-9 pl-9 pr-3 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl text-sm"
+              className="h-9 pl-9 pr-3 bg-card border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground shadow-2xs"
             />
           </div>
 
@@ -113,10 +113,10 @@ export function ModerationHistoryTable() {
                 }
               }}
             >
-              <SelectTrigger className="h-9 rounded-xl border-slate-300 bg-white text-sm font-semibold dark:border-slate-700 dark:bg-slate-950">
+              <SelectTrigger className="h-9 rounded-xl border-border bg-card text-sm font-semibold text-foreground shadow-2xs">
                 <SelectValue placeholder="Target Type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border-border bg-card text-card-foreground">
                 <SelectGroup>
                   <SelectItem value="ALL">All Target Types</SelectItem>
                   <SelectItem value="PROGRAM">Program</SelectItem>
@@ -142,10 +142,10 @@ export function ModerationHistoryTable() {
                 }
               }}
             >
-              <SelectTrigger className="h-9 rounded-xl border-slate-300 bg-white text-sm font-semibold dark:border-slate-700 dark:bg-slate-950">
+              <SelectTrigger className="h-9 rounded-xl border-border bg-card text-sm font-semibold text-foreground shadow-2xs">
                 <SelectValue placeholder="Action Type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border-border bg-card text-card-foreground">
                 <SelectGroup>
                   <SelectItem value="ALL">All Actions</SelectItem>
                   <SelectItem value="WARN">WARN</SelectItem>
@@ -165,7 +165,7 @@ export function ModerationHistoryTable() {
               variant="ghost"
               size="sm"
               onClick={resetFilters}
-              className="h-9 cursor-pointer rounded-xl px-3 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              className="h-9 cursor-pointer rounded-xl px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               <RotateCcw data-icon="inline-start" /> Reset
             </Button>
@@ -173,26 +173,26 @@ export function ModerationHistoryTable() {
         </div>
 
         {/* Total Badge */}
-        <div className="text-xs text-slate-500 font-semibold self-end lg:self-center">
-          Total Recorded Actions: <span className="text-slate-900 dark:text-slate-100 font-bold">{totalElements}</span>
+        <div className="text-xs text-muted-foreground font-semibold self-end lg:self-center">
+          Total Recorded Actions: <span className="text-foreground font-bold">{totalElements}</span>
         </div>
       </div>
 
       {/* DATA TABLE */}
       {isLoading || isFetching ? (
         <div className="space-y-3 animate-pulse">
-          <div className="h-64 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800" />
+          <div className="h-64 bg-muted/60 rounded-2xl border border-border" />
         </div>
       ) : actionsList.length === 0 ? (
-        <Card className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center space-y-4 shadow-2xs">
-          <div className="size-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center">
+        <Card className="rounded-2xl border border-border bg-card p-12 text-center space-y-4 shadow-xs">
+          <div className="size-14 rounded-2xl bg-muted text-muted-foreground mx-auto flex items-center justify-center">
             <ShieldCheck className="size-7" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+            <h3 className="text-lg font-bold text-foreground">
               No Moderation Actions Found
             </h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
               No historical moderation actions matched your applied search or filter criteria.
             </p>
           </div>
@@ -200,18 +200,18 @@ export function ModerationHistoryTable() {
             <Button
               onClick={resetFilters}
               variant="outline"
-              className="rounded-xl font-semibold border-slate-300 dark:border-slate-700 cursor-pointer h-9 text-xs"
+              className="rounded-xl font-semibold border-border bg-card text-foreground cursor-pointer h-9 text-xs hover:bg-muted"
             >
               <RotateCcw className="size-3.5 mr-1.5" /> Clear Filters
             </Button>
           )}
         </Card>
       ) : (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-2xs">
+        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <tr className="border-b border-border bg-muted/60 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   <th className="py-3.5 px-4">Action</th>
                   <th className="py-3.5 px-4">Target Type</th>
                   <th className="py-3.5 px-4">Target ID</th>
@@ -221,7 +221,7 @@ export function ModerationHistoryTable() {
                   <th className="py-3.5 px-4 text-right">Details</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200/80 dark:divide-slate-800 text-sm">
+              <tbody className="divide-y divide-border text-sm">
                 <AnimatePresence mode="popLayout">
                   {actionsList.map((item) => (
                     <motion.tr
@@ -229,27 +229,27 @@ export function ModerationHistoryTable() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
+                      className="hover:bg-muted/60 transition-colors"
                     >
                       <td className="py-3.5 px-4">{getActionBadge(item.action)}</td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-700 dark:text-slate-300">
+                      <td className="py-3.5 px-4 font-semibold text-foreground">
                         {item.targetType}
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-xs text-slate-600 dark:text-slate-400 max-w-[140px] truncate">
+                      <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground max-w-[140px] truncate">
                         {item.targetId}
                       </td>
-                      <td className="py-3.5 px-4 text-slate-800 dark:text-slate-200 font-medium">
+                      <td className="py-3.5 px-4 text-foreground font-medium">
                         <div className="flex items-center gap-1.5">
-                          <User className="size-3.5 text-slate-400" />
+                          <User className="size-3.5 text-muted-foreground" />
                           <span>{item.adminName || item.adminId}</span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 max-w-[220px] truncate">
+                      <td className="py-3.5 px-4 text-muted-foreground max-w-[220px] truncate">
                         {item.reason}
                       </td>
-                      <td className="py-3.5 px-4 text-xs text-slate-500 dark:text-slate-400">
+                      <td className="py-3.5 px-4 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
-                          <Calendar className="size-3 text-slate-400" />
+                          <Calendar className="size-3 text-muted-foreground" />
                           <span>{new Date(item.createdAt).toLocaleDateString()}</span>
                         </div>
                       </td>
@@ -258,7 +258,7 @@ export function ModerationHistoryTable() {
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedActionId(item.id)}
-                          className="h-8 cursor-pointer rounded-xl px-2.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                          className="h-8 cursor-pointer rounded-xl px-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                         >
                           <Eye data-icon="inline-start" /> View
                         </Button>
@@ -271,7 +271,7 @@ export function ModerationHistoryTable() {
           </div>
 
           {/* PAGINATION FOOTER */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-t border-slate-200/80 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-t border-border text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <span>Rows per page</span>
               <div className="w-20">
@@ -284,10 +284,10 @@ export function ModerationHistoryTable() {
                     }
                   }}
                 >
-                  <SelectTrigger className="h-8 rounded-xl bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs">
+                  <SelectTrigger className="h-8 rounded-xl bg-card border-border text-xs text-foreground">
                     <SelectValue placeholder={String(pageSize)} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="border-border bg-card text-card-foreground">
                     <SelectGroup>
                       <SelectItem value="10">10</SelectItem>
                       <SelectItem value="20">20</SelectItem>
@@ -296,7 +296,7 @@ export function ModerationHistoryTable() {
                   </SelectContent>
                 </Select>
               </div>
-              <span className="ml-2 text-slate-400">
+              <span className="ml-2 text-muted-foreground">
                 Page {pageNumber + 1} of {totalPages} ({totalElements} total items)
               </span>
             </div>
@@ -307,7 +307,7 @@ export function ModerationHistoryTable() {
                 size="sm"
                 onClick={() => setPageNumber(Math.max(pageNumber - 1, 0))}
                 disabled={pageNumber === 0}
-                className="h-8 px-3 rounded-xl text-xs font-semibold cursor-pointer border-slate-200 dark:border-slate-800 disabled:opacity-40"
+                className="h-8 px-3 rounded-xl text-xs font-semibold cursor-pointer border-border bg-card text-foreground disabled:opacity-40 hover:bg-muted"
               >
                 <ChevronLeft className="size-4 mr-1" /> Previous
               </Button>
@@ -316,7 +316,7 @@ export function ModerationHistoryTable() {
                 size="sm"
                 onClick={() => setPageNumber(Math.min(pageNumber + 1, totalPages - 1))}
                 disabled={pageNumber >= totalPages - 1}
-                className="h-8 px-3 rounded-xl text-xs font-semibold cursor-pointer border-slate-200 dark:border-slate-800 disabled:opacity-40"
+                className="h-8 px-3 rounded-xl text-xs font-semibold cursor-pointer border-border bg-card text-foreground disabled:opacity-40 hover:bg-muted"
               >
                 Next <ChevronRight className="size-4 ml-1" />
               </Button>

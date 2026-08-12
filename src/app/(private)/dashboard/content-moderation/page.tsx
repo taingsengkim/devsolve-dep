@@ -487,17 +487,17 @@ function ContentManagement() {
                   ))}
                 </div>
               ) : filteredReports.length === 0 ? (
-                <Card className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-12 text-center shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-                  <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
+                <Card className="space-y-4 rounded-2xl border border-border bg-card p-12 text-center shadow-xs">
+                  <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                     <Flag className="size-7" />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                    <h3 className="text-lg font-bold text-foreground">
                       {pendingReports === 0
                         ? "Nothing flagged right now"
                         : "No reports match your filters"}
                     </h3>
-                    <p className="mx-auto max-w-md text-sm text-slate-500 dark:text-slate-400">
+                    <p className="mx-auto max-w-md text-sm text-muted-foreground">
                       {pendingReports === 0
                         ? "Every flagged post and comment has been reviewed and resolved."
                         : "No pending reports matched the filters you applied."}
@@ -507,7 +507,7 @@ function ContentManagement() {
                     <Button
                       onClick={resetFilters}
                       variant="outline"
-                      className="h-9 cursor-pointer rounded-xl border-slate-300 text-xs font-semibold dark:border-slate-700"
+                      className="h-9 cursor-pointer rounded-xl border-border bg-card text-foreground text-xs font-semibold hover:bg-muted"
                     >
                       <RotateCcw className="mr-1.5 size-3.5" /> Clear Filters
                     </Button>
@@ -535,7 +535,7 @@ function ContentManagement() {
                   </AnimatePresence>
 
                   {totalFiltered > 0 && (
-                    <div className="flex flex-col justify-between gap-4 border-t border-slate-200/80 pt-4 text-xs text-slate-500 sm:flex-row sm:items-center dark:border-slate-800 dark:text-slate-400">
+                    <div className="flex flex-col justify-between gap-4 border-t border-border pt-4 text-xs text-muted-foreground sm:flex-row sm:items-center">
                       <div className="flex items-center gap-2">
                         <span id="report-rows-per-page">Rows per page</span>
                         <div className="w-20">
@@ -547,11 +547,11 @@ function ContentManagement() {
                           >
                             <SelectTrigger
                               aria-labelledby="report-rows-per-page"
-                              className="h-8 rounded-xl border-slate-200 bg-white text-xs font-semibold dark:border-slate-800 dark:bg-slate-900"
+                              className="h-8 rounded-xl border-border bg-card text-xs font-semibold text-foreground"
                             >
                               <SelectValue placeholder={String(rowsPerPage)} />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="border-border bg-card text-card-foreground">
                               <SelectGroup>
                                 <SelectItem value="10">10</SelectItem>
                                 <SelectItem value="25">25</SelectItem>
@@ -560,7 +560,7 @@ function ContentManagement() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <span className="ml-2 text-slate-400">
+                        <span className="ml-2 text-muted-foreground">
                           Showing {(currentPage - 1) * rowsPerPage + 1}–
                           {Math.min(currentPage * rowsPerPage, totalFiltered)}{" "}
                           of {totalFiltered} items
@@ -574,21 +574,18 @@ function ContentManagement() {
                             setCurrentPage(Math.max(currentPage - 1, 1))
                           }
                           disabled={currentPage === 1}
-                          className="flex cursor-pointer items-center gap-1 font-medium text-slate-600 transition hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-400 dark:hover:text-slate-100"
+                          className="flex cursor-pointer items-center gap-1 font-medium text-muted-foreground transition hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           <ChevronLeft className="size-4" />
                           Previous
                         </button>
 
-                        {/* Windowed rather than one button per page: at 50
-                            rows a page the old list stayed short, at 10 it
-                            grew past the width of the column. */}
                         {pageWindow(currentPage, totalPages).map((item, i) =>
                           item === "gap" ? (
                             <span
                               key={`gap-${i}`}
                               aria-hidden="true"
-                              className="px-1 text-slate-400"
+                              className="px-1 text-muted-foreground"
                             >
                               …
                             </span>
@@ -603,8 +600,8 @@ function ContentManagement() {
                               className={cn(
                                 "flex size-7 cursor-pointer items-center justify-center rounded-full text-xs font-bold transition",
                                 currentPage === item
-                                  ? "bg-slate-900 text-white shadow-2xs dark:bg-slate-100 dark:text-slate-900"
-                                  : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800",
+                                  ? "bg-primary text-primary-foreground shadow-2xs"
+                                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
                               )}
                             >
                               {item}
@@ -618,7 +615,7 @@ function ContentManagement() {
                             setCurrentPage(Math.min(currentPage + 1, totalPages))
                           }
                           disabled={currentPage === totalPages}
-                          className="flex cursor-pointer items-center gap-1 font-medium text-slate-600 transition hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-400 dark:hover:text-slate-100"
+                          className="flex cursor-pointer items-center gap-1 font-medium text-muted-foreground transition hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           Next
                           <ChevronRight className="size-4" />

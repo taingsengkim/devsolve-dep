@@ -79,9 +79,9 @@ export function ProblemReviewQueue() {
 
   return (
     <div className="space-y-4">
-      {/* Status tabs, in the same segmented style as the page's own tabs. */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-2xs sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800/80">
+      {/* Status tabs */}
+      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-1 rounded-xl bg-muted p-1">
           {STATUS_TABS.map((tab) => (
             <button
               key={tab.value}
@@ -93,8 +93,8 @@ export function ProblemReviewQueue() {
               aria-pressed={status === tab.value}
               className={`cursor-pointer rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${
                 status === tab.value
-                  ? "bg-white text-slate-900 shadow-2xs dark:bg-slate-900 dark:text-slate-100"
-                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                  ? "bg-card text-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {tab.label}
@@ -102,8 +102,8 @@ export function ProblemReviewQueue() {
           ))}
         </div>
 
-        <p className="px-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-          <span className="font-bold tabular-nums text-slate-800 dark:text-slate-100">
+        <p className="px-1 text-xs font-medium text-muted-foreground">
+          <span className="font-bold tabular-nums text-foreground">
             {totalElements}
           </span>{" "}
           {status === "PENDING_APPROVAL"
@@ -171,9 +171,7 @@ export function ProblemReviewQueue() {
             ))}
           </AnimatePresence>
 
-          {/* Server-side paging: `page` is 0-based upstream, so the number on
-              screen is the state plus one. */}
-          <div className="flex flex-col justify-between gap-4 border-t border-slate-200/80 pt-4 text-xs text-slate-500 sm:flex-row sm:items-center dark:border-slate-800 dark:text-slate-400">
+          <div className="flex flex-col justify-between gap-4 border-t border-border pt-4 text-xs text-muted-foreground sm:flex-row sm:items-center">
             <div className="flex items-center gap-2">
               <span id="problem-queue-rows">Rows per page</span>
               <div className="w-20">
@@ -187,11 +185,11 @@ export function ProblemReviewQueue() {
                 >
                   <SelectTrigger
                     aria-labelledby="problem-queue-rows"
-                    className="h-8 rounded-xl border-slate-200 bg-white text-xs font-semibold dark:border-slate-800 dark:bg-slate-900"
+                    className="h-8 rounded-xl border-border bg-card text-xs font-semibold text-foreground"
                   >
                     <SelectValue placeholder={String(pageSize)} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="border-border bg-card text-card-foreground">
                     {[10, 25, 50].map((option) => (
                       <SelectItem key={option} value={String(option)}>
                         {option}
@@ -219,7 +217,7 @@ export function ProblemReviewQueue() {
                 <ChevronLeft data-icon="inline-start" aria-hidden="true" />
                 Previous
               </Button>
-              <span className="text-xs font-bold tabular-nums text-slate-700 dark:text-slate-300">
+              <span className="text-xs font-bold tabular-nums text-foreground">
                 {page + 1} / {Math.max(1, totalPages)}
               </span>
               <Button
@@ -274,19 +272,19 @@ function QueueRow({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ duration: 0.2 }}
-      className={`flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900 ${
+      className={`flex flex-col gap-3 rounded-2xl border border-border bg-card text-card-foreground p-4 shadow-xs ${
         busy ? "opacity-60" : ""
       }`}
     >
       <div className="flex flex-wrap items-center gap-2">
         <ProblemStatusBadge status={item.status} />
         {item.category?.name && (
-          <span className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300">
+          <span className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted-foreground bg-muted">
             {item.category.name}
           </span>
         )}
         {item.sdlcPhase && (
-          <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          <span className="rounded-lg bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground border border-border">
             {SDLC_LABELS[item.sdlcPhase]}
           </span>
         )}
@@ -297,28 +295,26 @@ function QueueRow({
         )}
       </div>
 
-      {/* The backend's own automated flags. Whatever tripped them is the first
-          thing a reviewer should read the description for. */}
       {warnings.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-500/30 dark:bg-amber-500/10">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2">
           <AlertTriangle
             aria-hidden="true"
             className="size-4 shrink-0 text-amber-600 dark:text-amber-400"
           />
-          <span className="text-xs font-bold text-amber-800 dark:text-amber-200">
+          <span className="text-xs font-bold text-amber-700 dark:text-amber-300">
             Flagged automatically:
           </span>
-          <span className="text-xs font-medium text-amber-800 dark:text-amber-200">
+          <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
             {warnings.join(", ")}
           </span>
         </div>
       )}
 
       <div className="min-w-0">
-        <h3 className="truncate text-base font-bold text-slate-900 dark:text-slate-100">
+        <h3 className="truncate text-base font-bold text-foreground">
           {item.title ?? "Untitled problem"}
         </h3>
-        <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+        <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
           {excerptOf(description, 220)}
         </p>
       </div>
@@ -328,7 +324,7 @@ function QueueRow({
           {technologies.map((tech, index) => (
             <span
               key={tech.id ?? `${tech.name}-${index}`}
-              className="rounded-lg border border-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300"
+              className="rounded-lg border border-border bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground"
             >
               {tech.name}
               {tech.version ? ` ${tech.version}` : ""}
@@ -337,7 +333,7 @@ function QueueRow({
           {tags.map((tag, index) => (
             <span
               key={tag.id ?? `${tag.name}-${index}`}
-              className="rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+              className="rounded-lg bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground border border-border"
             >
               #{tag.name}
             </span>
@@ -346,7 +342,7 @@ function QueueRow({
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="truncate text-xs font-semibold text-slate-600 dark:text-slate-300">
+        <span className="truncate text-xs font-semibold text-muted-foreground">
           by {authorNameOf(item.author)}
         </span>
 
@@ -354,7 +350,7 @@ function QueueRow({
           {item.id && (
             <Link
               href={problemReviewHref(item.id)}
-              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-xs font-bold text-foreground transition hover:bg-muted"
             >
               <Eye className="size-3.5" />
               Review in full
@@ -367,7 +363,7 @@ function QueueRow({
                 type="button"
                 disabled={busy}
                 onClick={() => onDecide("REJECTED")}
-                className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl border border-rose-200 px-3 text-xs font-bold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50 dark:border-rose-500/30 dark:text-rose-300 dark:hover:bg-rose-500/10"
+                className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl border border-rose-500/30 px-3 text-xs font-bold text-rose-600 dark:text-rose-400 transition hover:bg-rose-500/10 disabled:opacity-50"
               >
                 <XCircle className="size-3.5" />
                 Reject
@@ -411,12 +407,12 @@ function PanelCard({
   action?: React.ReactNode;
 }) {
   return (
-    <Card className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-12 text-center shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+    <Card className="space-y-4 rounded-2xl border border-border bg-card p-12 text-center shadow-xs">
       <div
         className={`mx-auto flex size-14 items-center justify-center rounded-2xl ${
           tone === "error"
-            ? "bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300"
-            : "bg-slate-100 text-slate-400 dark:bg-slate-800"
+            ? "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+            : "bg-muted text-muted-foreground"
         }`}
       >
         {tone === "error" ? (
@@ -426,10 +422,10 @@ function PanelCard({
         )}
       </div>
       <div className="space-y-1">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+        <h3 className="text-lg font-bold text-foreground">
           {title}
         </h3>
-        <p className="mx-auto max-w-md text-sm text-slate-500 dark:text-slate-400">
+        <p className="mx-auto max-w-md text-sm text-muted-foreground">
           {body}
         </p>
       </div>
