@@ -17,14 +17,14 @@ export function ReportDetailSectionCard({
   contentClassName,
 }: ReportDetailSectionCardProps) {
   return (
-    <Card className="overflow-hidden rounded-[24px] border border-slate-200 bg-white py-0 shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
-      <CardHeader className="rounded-t-[24px] border-b border-slate-200 bg-slate-50/80 px-5 py-4 sm:px-6">
+    <Card className="overflow-hidden rounded-[24px] bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 border-none py-0 shadow-xs">
+      <CardHeader className="rounded-t-[24px] border-b border-border bg-muted/60 px-5 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
               {icon}
             </div>
-            <CardTitle className="text-xl font-semibold text-slate-900">
+            <CardTitle className="text-xl font-bold text-foreground">
               {title}
             </CardTitle>
           </div>

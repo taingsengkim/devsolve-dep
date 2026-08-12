@@ -24,12 +24,12 @@ export function ReportDetailSidebar({
   return (
     <aside className="space-y-5 xl:sticky xl:top-6">
       {/* Moderation actions */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-950">
-          Moderation actions
+      <section className="rounded-2xl bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 p-5 shadow-xs">
+        <h2 className="text-lg font-bold text-foreground">
+          Moderation Actions
         </h2>
 
-        <p className="mt-2 text-sm leading-6 text-slate-500">
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
           Review the submission and choose the appropriate moderation action.
         </p>
 
@@ -40,11 +40,11 @@ export function ReportDetailSidebar({
               buttonVariants({
                 size: "default",
               }),
-              "w-full rounded-xl bg-blue-600 font-medium text-white shadow-none hover:bg-blue-700",
+              "w-full rounded-xl bg-blue-600 font-semibold text-white hover:bg-blue-700 dark:bg-blue-600 dark:text-white cursor-pointer",
             )}
           >
             <CheckCircle2 className="mr-2 size-4" />
-            Accept and adjust severity
+            Accept & Adjust Severity
           </Link>
 
           <a
@@ -54,11 +54,11 @@ export function ReportDetailSidebar({
                 variant: "outline",
                 size: "default",
               }),
-              "w-full rounded-xl border-slate-200 bg-white font-medium text-slate-700 shadow-none",
+              "w-full rounded-xl border-border bg-card font-semibold text-foreground hover:bg-muted cursor-pointer",
             )}
           >
             <AlertCircle className="mr-2 size-4 text-amber-500" />
-            Request information
+            Request Information
           </a>
 
           <Link
@@ -68,31 +68,31 @@ export function ReportDetailSidebar({
                 variant: "outline",
                 size: "default",
               }),
-              "w-full rounded-xl border-red-200 bg-white font-medium text-red-600 shadow-none hover:bg-red-50 hover:text-red-700",
+              "w-full rounded-xl border-red-500/20 bg-red-500/10 font-semibold text-red-600 dark:text-red-400 hover:bg-red-500/20 cursor-pointer",
             )}
           >
             <XCircle className="mr-2 size-4" />
-            Reject submission
+            Reject Submission
           </Link>
         </div>
       </section>
 
       {/* Researcher information */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-          Researcher information
+      <section className="rounded-2xl bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 p-5 shadow-xs">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Researcher Information
         </h2>
 
         <dl className="mt-5 space-y-4">
           <InfoRow label="Name" value={detail.submitter} />
 
           <div className="flex items-start justify-between gap-4">
-            <dt className="text-sm text-slate-500">Contact</dt>
+            <dt className="text-sm text-muted-foreground">Contact</dt>
 
             <dd>
               <a
                 href={`mailto:${contactEmail}`}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:underline"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
               >
                 <Mail className="size-4" />
                 {contactEmail}
@@ -116,8 +116,8 @@ type InfoRowProps = {
 function InfoRow({ label, value }: InfoRowProps) {
   return (
     <div className="flex items-start justify-between gap-4">
-      <dt className="text-sm text-slate-500">{label}</dt>
-      <dd className="text-right text-sm font-medium text-slate-900">
+      <dt className="text-sm text-muted-foreground">{label}</dt>
+      <dd className="text-right text-sm font-semibold text-foreground">
         {value}
       </dd>
     </div>

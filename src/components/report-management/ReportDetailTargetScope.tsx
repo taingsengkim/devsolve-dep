@@ -20,13 +20,13 @@ export function ReportDetailTargetScope({
         <>
           <Badge
             variant="outline"
-            className="rounded-full border-emerald-200 bg-emerald-50 px-3 text-emerald-700"
+            className="rounded-full border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
           >
             In Scope
           </Badge>
           <Badge
             variant="outline"
-            className="rounded-full border-slate-200 bg-slate-100 px-3 text-slate-700"
+            className="rounded-full border-border bg-muted text-muted-foreground"
           >
             CV
           </Badge>
@@ -35,32 +35,32 @@ export function ReportDetailTargetScope({
     >
         <div className="grid gap-4 md:grid-cols-[minmax(0,1.6fr)_0.7fr_0.9fr]">
           <FieldBlock label="Affected URL">
-            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700">
-              <Link2 className="size-4 text-slate-400" />
+            <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-3 text-sm text-foreground">
+              <Link2 className="size-4 text-muted-foreground" />
               <code className="truncate font-mono">{detail.affectedUrl}</code>
             </div>
           </FieldBlock>
 
           <FieldBlock label="HTTP Method">
-            <p className="text-lg font-semibold tracking-tight text-slate-900">
+            <p className="text-lg font-semibold tracking-tight text-foreground">
               {detail.httpMethod}
             </p>
           </FieldBlock>
 
           <FieldBlock label="Parameter">
-            <code className="inline-flex rounded-lg bg-slate-100 px-2.5 py-1 font-mono text-sm text-slate-700">
+            <code className="inline-flex rounded-lg bg-muted px-2.5 py-1 font-mono text-sm text-foreground">
               {detail.parameter}
             </code>
           </FieldBlock>
         </div>
 
-        <div className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4">
-          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-600" />
+        <div className="flex gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-4">
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
           <div className="space-y-1">
-            <p className="text-sm font-semibold text-amber-900">
+            <p className="text-sm font-semibold text-amber-700 dark:text-amber-300">
               Environment: {detail.environment}
             </p>
-            <p className="text-sm leading-6 text-amber-800">
+            <p className="text-sm leading-6 text-amber-600 dark:text-amber-400">
               {detail.environmentNote}
             </p>
           </div>
@@ -78,7 +78,7 @@ function FieldBlock({
 }) {
   return (
     <div className="space-y-2">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>
       {children}

@@ -28,23 +28,23 @@ type ReportSeverityAdjustmentFormProps = {
 
 function getSeverityClass(option: SeverityOption, selected: boolean) {
   if (!selected) {
-    return "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50";
+    return "border-border bg-card text-foreground hover:bg-muted";
   }
 
   if (option === "Critical") {
-    return "border-red-200 bg-red-50 text-red-700";
+    return "border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400";
   }
   if (option === "High") {
-    return "border-orange-200 bg-orange-50 text-orange-700";
+    return "border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400";
   }
   if (option === "Medium") {
-    return "border-amber-200 bg-amber-50 text-amber-700";
+    return "border-sky-500/20 bg-sky-500/10 text-sky-600 dark:text-sky-400";
   }
   if (option === "Low") {
-    return "border-blue-200 bg-blue-50 text-blue-700";
+    return "border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-400";
   }
 
-  return "border-slate-200 bg-slate-100 text-slate-700";
+  return "border-border bg-muted text-muted-foreground";
 }
 
 export function ReportSeverityAdjustmentForm({
@@ -57,20 +57,20 @@ export function ReportSeverityAdjustmentForm({
   const fileInputId = useId();
 
   return (
-    <Card className="rounded-2xl border border-slate-200/80 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+    <Card className="rounded-2xl bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 border-none shadow-xs">
       <CardHeader className="gap-2">
-        <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
+        <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
           Severity Adjustment Form
         </CardTitle>
-        <p className="text-base text-slate-500">
+        <p className="text-base text-muted-foreground">
           Confirm the final severity, document why it changed, and prepare feedback for the researcher.
         </p>
       </CardHeader>
 
       <CardContent className="flex flex-col gap-6">
         <FieldGroup>
-          <Field className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
-            <FieldLabel>Select correct severity</FieldLabel>
+          <Field className="rounded-2xl border border-border bg-muted/40 p-5">
+            <FieldLabel className="text-foreground font-semibold">Select correct severity</FieldLabel>
             <FieldContent>
               <ToggleGroup
                 value={[selectedSeverity]}
@@ -80,7 +80,7 @@ export function ReportSeverityAdjustmentForm({
                     setSelectedSeverity(next as SeverityOption);
                   }
                 }}
-                className="flex w-full flex-wrap gap-2"
+                className="flex w-full flex-wrap gap-2 mt-2"
               >
                 {SEVERITY_OPTIONS.map((option) => (
                   <ToggleGroupItem
@@ -88,7 +88,7 @@ export function ReportSeverityAdjustmentForm({
                     value={option}
                     variant="outline"
                     className={cn(
-                      "rounded-xl border px-5 font-semibold",
+                      "rounded-xl border px-5 font-semibold cursor-pointer",
                       getSeverityClass(option, selectedSeverity === option)
                     )}
                   >
@@ -96,9 +96,9 @@ export function ReportSeverityAdjustmentForm({
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
-              <FieldDescription>
+              <FieldDescription className="text-muted-foreground mt-3">
                 Current researcher-submitted severity is{" "}
-                <span className="font-semibold text-slate-700">
+                <span className="font-semibold text-foreground">
                   {detail.severity} ({detail.cvssScore})
                 </span>
                 . Select the final company assessment.
@@ -107,80 +107,80 @@ export function ReportSeverityAdjustmentForm({
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="adjustment-explanation">
+            <FieldLabel htmlFor="adjustment-explanation" className="text-foreground font-semibold">
               Detailed explanation for adjustment
             </FieldLabel>
             <FieldContent>
               <Textarea
                 id="adjustment-explanation"
                 placeholder="Describe why the severity was adjusted. This note is visible to the internal security team."
-                className="min-h-32 border border-slate-200 bg-white text-base"
+                className="min-h-32 border border-border bg-card text-foreground text-base focus-visible:ring-1 focus-visible:ring-ring"
               />
             </FieldContent>
           </Field>
         </FieldGroup>
 
-        <div className="rounded-3xl border border-slate-200/80 bg-slate-50/50 p-5">
+        <div className="rounded-3xl border border-border bg-muted/40 p-5">
           <div className="mb-4 flex items-center gap-2">
-            <Badge variant="outline" className="border-blue-200 bg-white text-blue-700">
+            <Badge variant="outline" className="border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-400">
               Feedback to hacker
             </Badge>
           </div>
 
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor="findings-summary">Summary of findings</FieldLabel>
+              <FieldLabel htmlFor="findings-summary" className="text-foreground font-semibold">Summary of findings</FieldLabel>
               <FieldContent>
                 <Textarea
                   id="findings-summary"
                   placeholder="Briefly summarize your validation steps."
-                  className="min-h-24 border border-slate-200 bg-white text-base"
+                  className="min-h-24 border border-border bg-card text-foreground text-base focus-visible:ring-1 focus-visible:ring-ring"
                 />
               </FieldContent>
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="decision-reason">Reason for decision</FieldLabel>
+              <FieldLabel htmlFor="decision-reason" className="text-foreground font-semibold">Reason for decision</FieldLabel>
               <FieldContent>
                 <Textarea
                   id="decision-reason"
                   placeholder="Explain the severity decision to the researcher clearly."
-                  className="min-h-24 border border-slate-200 bg-white text-base"
+                  className="min-h-24 border border-border bg-card text-foreground text-base focus-visible:ring-1 focus-visible:ring-ring"
                 />
               </FieldContent>
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="improvement-suggestions">
+              <FieldLabel htmlFor="improvement-suggestions" className="text-foreground font-semibold">
                 Suggestions for improvement
               </FieldLabel>
               <FieldContent>
                 <Textarea
                   id="improvement-suggestions"
                   placeholder="Help the researcher submit better reports in the future."
-                  className="min-h-24 border border-slate-200 bg-white text-base"
+                  className="min-h-24 border border-border bg-card text-foreground text-base focus-visible:ring-1 focus-visible:ring-ring"
                 />
               </FieldContent>
             </Field>
           </FieldGroup>
         </div>
 
-        <div className="rounded-2xl border border-dashed border-blue-300 bg-blue-50/40 p-5">
+        <div className="rounded-2xl border border-dashed border-blue-500/30 bg-blue-500/5 p-5">
           <div className="flex flex-col items-center justify-center gap-3 text-center">
-            <div className="flex size-12 items-center justify-center rounded-2xl bg-white text-blue-600 ring-1 ring-blue-200">
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-card text-blue-600 dark:text-blue-400 ring-1 ring-border">
               <CloudUpload className="size-6" />
             </div>
             <div className="flex flex-col gap-1">
-              <p className="text-base font-semibold text-slate-900">
+              <p className="text-base font-semibold text-foreground">
                 Upload internal notes or screenshots
               </p>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-muted-foreground">
                 Upload screenshots, logs, or PoC videos to support the company decision.
               </p>
             </div>
             <label
               htmlFor={fileInputId}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
             >
               <FileText className="size-4" />
               Choose files
@@ -196,7 +196,7 @@ export function ReportSeverityAdjustmentForm({
                 )
               }
             />
-            <p className="text-xs text-slate-400">PNG, JPG, PDF, or MP4 up to 25MB</p>
+            <p className="text-xs text-muted-foreground">PNG, JPG, PDF, or MP4 up to 25MB</p>
           </div>
 
           {selectedFiles.length > 0 ? (
@@ -205,7 +205,7 @@ export function ReportSeverityAdjustmentForm({
                 <Badge
                   key={fileName}
                   variant="outline"
-                  className="border-slate-200 bg-white text-slate-600"
+                  className="border-border bg-muted text-muted-foreground"
                 >
                   {fileName}
                 </Badge>
@@ -214,26 +214,26 @@ export function ReportSeverityAdjustmentForm({
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-slate-50/40 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-muted/40 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-1">
-            <p className="text-base font-semibold text-slate-900">
+            <p className="text-base font-semibold text-foreground">
               Final action for Report #{detail.reportId}
             </p>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               Selected company severity:{" "}
-              <span className="font-semibold text-slate-700">{selectedSeverity}</span>
+              <span className="font-semibold text-foreground">{selectedSeverity}</span>
             </p>
           </div>
 
           <div className="flex flex-wrap gap-3">
             <Button
               variant="outline"
-              className="rounded-xl border-red-200 bg-white text-red-600 hover:bg-red-50 hover:text-red-700"
+              className="rounded-xl border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 cursor-pointer"
             >
               <ShieldX data-icon="inline-start" />
               Reject
             </Button>
-            <Button className="rounded-xl bg-emerald-600 text-white hover:bg-emerald-700">
+            <Button className="rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 dark:bg-emerald-600 dark:text-white cursor-pointer">
               <CheckCircle2 data-icon="inline-start" />
               Approve Application
             </Button>

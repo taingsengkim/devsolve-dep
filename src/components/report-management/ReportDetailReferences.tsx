@@ -41,7 +41,7 @@ function ReferenceBlock({
 }) {
   return (
     <div className="space-y-3">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>
 
@@ -50,7 +50,7 @@ function ReferenceBlock({
           <a
             key={item}
             href="#"
-            className="flex items-start gap-2 text-sm font-medium text-blue-600 transition-colors hover:text-blue-700"
+            className="flex items-start gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 transition-colors hover:underline"
           >
             <ExternalLink className="mt-0.5 size-4 shrink-0" />
             <span>{item}</span>

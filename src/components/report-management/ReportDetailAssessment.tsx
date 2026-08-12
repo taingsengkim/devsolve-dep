@@ -20,19 +20,19 @@ export function ReportDetailAssessment({
       contentClassName="space-y-6"
     >
         <section className="space-y-2">
-          <h3 className="text-lg font-semibold text-slate-900">Summary</h3>
-          <p className="text-sm leading-7 text-slate-600">
+          <h3 className="text-lg font-bold text-foreground">Summary</h3>
+          <p className="text-sm leading-7 text-muted-foreground">
             {detail.assessmentSummary}
           </p>
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold text-slate-900">
+          <h3 className="text-lg font-bold text-foreground">
             Steps to Reproduce
           </h3>
-          <ol className="space-y-3 pl-6 text-sm leading-7 text-slate-600">
+          <ol className="space-y-3 pl-6 text-sm leading-7 text-muted-foreground">
             {detail.reproductionSteps.map((step) => (
-              <li key={step} className="pl-1 list-decimal marker:font-semibold marker:text-slate-500">
+              <li key={step} className="pl-1 list-decimal marker:font-semibold marker:text-muted-foreground">
                 {step}
               </li>
             ))}
@@ -53,34 +53,34 @@ export function ReportDetailAssessment({
         </div>
 
         <section className="space-y-2">
-          <h3 className="text-lg font-semibold text-slate-900">Remediation</h3>
-          <p className="text-sm leading-7 text-slate-600">
+          <h3 className="text-lg font-bold text-foreground">Remediation</h3>
+          <p className="text-sm leading-7 text-muted-foreground">
             {detail.remediation}
           </p>
         </section>
 
-        <div className="flex gap-3 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4">
-          <Lightbulb className="mt-0.5 size-5 shrink-0 text-blue-600" />
-          <p className="text-sm leading-6 text-blue-700">{detail.analystTip}</p>
+        <div className="flex gap-3 rounded-2xl border border-blue-500/20 bg-blue-500/10 px-4 py-4">
+          <Lightbulb className="mt-0.5 size-5 shrink-0 text-blue-600 dark:text-blue-400" />
+          <p className="text-sm leading-6 text-blue-600 dark:text-blue-400">{detail.analystTip}</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+        <div className="rounded-2xl border border-border bg-card p-5">
           <div className="space-y-1">
-            <p className="text-base font-semibold text-slate-900">
+            <p className="text-base font-semibold text-foreground">
               Continue to severity adjustment
             </p>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               Move to company review when the assessment is confirmed.
             </p>
           </div>
 
-          <div className="mt-4 border-t border-slate-200 pt-4">
+          <div className="mt-4 border-t border-border pt-4">
             <div className="flex justify-end">
               <Link
                 href={`/dashboard/report-management/${detail.id}/severity-review`}
                 className={cn(
                   buttonVariants({ variant: "default", size: "lg" }),
-                  "h-11 rounded-full bg-slate-950 px-6 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(15,23,42,0.14)] transition-colors hover:bg-slate-900"
+                  "h-11 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 dark:bg-blue-600 dark:text-white cursor-pointer"
                 )}
               >
                 Next
@@ -104,16 +104,16 @@ function InsightCard({
   return (
     <div
       className={cn(
-        "rounded-2xl px-4 py-4",
-        tone === "red" && "border border-red-100 bg-red-50",
-        tone === "blue" && "border border-blue-100 bg-blue-50"
+        "rounded-2xl px-4 py-4 border",
+        tone === "red" && "border-red-500/20 bg-red-500/10",
+        tone === "blue" && "border-blue-500/20 bg-blue-500/10"
       )}
     >
       <p
         className={cn(
           "text-sm font-semibold",
-          tone === "red" && "text-red-700",
-          tone === "blue" && "text-blue-700"
+          tone === "red" && "text-red-600 dark:text-red-400",
+          tone === "blue" && "text-blue-600 dark:text-blue-400"
         )}
       >
         {title}
@@ -121,8 +121,8 @@ function InsightCard({
       <p
         className={cn(
           "mt-2 text-sm leading-6",
-          tone === "red" && "text-red-600/90",
-          tone === "blue" && "text-blue-700/90"
+          tone === "red" && "text-red-600/90 dark:text-red-300",
+          tone === "blue" && "text-blue-600/90 dark:text-blue-300"
         )}
       >
         {content}

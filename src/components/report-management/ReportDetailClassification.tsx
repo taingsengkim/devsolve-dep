@@ -11,12 +11,12 @@ export function ReportDetailClassification({
 }: ReportDetailClassificationProps) {
   const severityBadgeClass =
     detail.severity === "Critical"
-      ? "border-red-200 bg-red-50 text-red-700"
+      ? "border-red-200 bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20"
       : detail.severity === "High"
-        ? "border-orange-200 bg-orange-50 text-orange-700"
+        ? "border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
         : detail.severity === "Medium"
-          ? "border-amber-200 bg-amber-50 text-amber-700"
-          : "border-blue-200 bg-blue-50 text-blue-700";
+          ? "border-sky-200 bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400 dark:border-sky-500/20"
+          : "border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20";
 
   return (
     <ReportDetailSectionCard
@@ -33,7 +33,7 @@ export function ReportDetailClassification({
     >
         <div className="grid gap-5 md:grid-cols-3">
           <InfoBlock label="Vulnerability Type">
-            <p className="text-base font-semibold tracking-tight text-slate-900">
+            <p className="text-base font-semibold tracking-tight text-foreground">
               {detail.vulnerabilityType}
             </p>
           </InfoBlock>
@@ -41,7 +41,7 @@ export function ReportDetailClassification({
           <InfoBlock label="CWE Identifier">
             <a
               href="#"
-              className="text-base font-semibold text-blue-600 hover:text-blue-700"
+              className="text-base font-semibold text-blue-600 dark:text-blue-400 hover:underline"
             >
               {detail.cweIdentifier}
             </a>
@@ -49,7 +49,7 @@ export function ReportDetailClassification({
 
           <InfoBlock label="CVSS Score">
             <div className="flex items-center gap-2">
-              <span className="text-base font-semibold text-red-600">
+              <span className="text-base font-semibold text-red-600 dark:text-red-400">
                 {detail.cvssScore}
               </span>
               <Badge
@@ -63,7 +63,7 @@ export function ReportDetailClassification({
         </div>
 
         <InfoBlock label="Vector String">
-          <code className="block overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 font-mono text-xs text-slate-700">
+          <code className="block overflow-x-auto rounded-xl border border-border bg-card px-3 py-3 font-mono text-xs text-foreground">
             {detail.vectorString}
           </code>
         </InfoBlock>
@@ -80,7 +80,7 @@ function InfoBlock({
 }) {
   return (
     <div className="space-y-2">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>
       {children}
