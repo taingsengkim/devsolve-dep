@@ -136,6 +136,16 @@ export async function GET(request: NextRequest) {
   const { session, token } = await getSessionAndToken(request);
   if (!session || !token) return unauthorized();
 
+  /**
+   * A 404 here means the caller is authenticated but the backend holds no
+   * profile row for them. Ordinarily that is smoothed over with a synthesised
+   * profile so a hiccup does not blank out the UI — but it also makes the
+   * failure invisible, which is wrong for the one caller whose whole job is to
+   * detect it. `?strict=1` opts out of the smoothing and relays what the
+   * backend actually said. Callers that pass nothing are unaffected.
+   */
+  const strict = request.nextUrl.searchParams.get("strict") === "1";
+
   try {
     const upstream = await fetch(`${BACKEND_API_URL}/user-profiles/me`, {
       method: "GET",
@@ -143,13 +153,13 @@ export async function GET(request: NextRequest) {
       cache: "no-store",
     });
 
-    if (upstream.status === 404 && session.user) {
+    if (upstream.status === 404 && session.user && !strict) {
       return NextResponse.json(createFallbackProfile(session.user), { status: 200 });
     }
 
     return relay(upstream);
   } catch {
-    if (session.user) {
+    if (session.user && !strict) {
       return NextResponse.json(createFallbackProfile(session.user), { status: 200 });
     }
     return unreachable();

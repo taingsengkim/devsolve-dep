@@ -576,6 +576,20 @@ export const profileApi = baseApi.injectEndpoints({
       providesTags: ["Profile"],
     }),
 
+    /**
+     * The first authenticated request after login, which is what makes the
+     * backend create the user's profile row — for social sign-ups there is no
+     * registration call, so this is the only thing that provisions them.
+     *
+     * `strict=1` keeps the proxy from papering a 404 over with a synthesised
+     * profile: here a 404 is the whole signal, meaning authenticated but
+     * unprovisioned, i.e. a backend/Keycloak misconfiguration.
+     */
+    getProfileProvisioningStatus: builder.query<UserProfileApiResponse, void>({
+      query: () => `/user-profiles/me?strict=1`,
+      providesTags: ["Profile"],
+    }),
+
     getEditProfileForm: builder.query<EditProfileFormData, void>({
       query: () => `/user-profiles/me`,
       transformResponse: (raw: UserProfileApiResponse): EditProfileFormData => {
@@ -774,6 +788,7 @@ export const {
   useGetCommunityPostsQuery,
   useGetThanksQuery,
   useGetEditProfileFormQuery,
+  useGetProfileProvisioningStatusQuery,
   useUpdateProfileMutation,
   useGetAccountStatusQuery,
   useGetMyFollowsQuery,
