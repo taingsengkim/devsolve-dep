@@ -8,38 +8,39 @@ import { UserX } from "lucide-react";
 import { useGetEditProfileFormQuery } from "@/lib/redux/services/profileApi";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
 import CompanyProfileView from "@/components/profile/company/CompanyProfileView";
+import AdminProfileView from "@/components/profile/admin/AdminProfileView";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 
 /**
  * /dashboard/profile — "my profile".
  *
- * The username is not in the session, so it has to come from the backend
- * before the canonical URL can be built. Everything else in the app links
- * here rather than trying to derive a slug from a display name or an email
- * prefix, which is how "@adminuser" ended up pointing at a profile the
- * backend calls "@devsolve".
- *
- * Redirecting rather than rendering in place keeps one canonical, shareable
- * URL per profile, and keeps the `followers`/`following` children reachable
- * under the same segment.
+ * Supports all 3 profile types in DevSolve:
+ * 1. Admin: renders AdminProfileView
+ * 2. Company: renders CompanyProfileView
+ * 3. User: redirects to canonical /dashboard/profile/${username}
  */
 export default function MyProfilePage() {
   const router = useRouter();
   const { user, areRolesResolved } = useSidebarAuth();
   const isCompany = user?.roles?.includes("COMPANY") ?? false;
+  const isAdmin = user?.roles?.includes("ADMIN") ?? false;
   const { data, isError } = useGetEditProfileFormQuery(undefined, {
-    skip: !areRolesResolved || isCompany,
+    skip: !areRolesResolved || isCompany || isAdmin,
   });
   const username = data?.username;
 
   useEffect(() => {
-    if (areRolesResolved && !isCompany && username) {
+    if (areRolesResolved && !isCompany && !isAdmin && username) {
       router.replace(`/dashboard/profile/${username}`);
     }
-  }, [areRolesResolved, isCompany, username, router]);
+  }, [areRolesResolved, isCompany, isAdmin, username, router]);
 
   if (!areRolesResolved) {
     return <ProfileSkeleton />;
+  }
+
+  if (isAdmin) {
+    return <AdminProfileView />;
   }
 
   if (isCompany) {
@@ -79,3 +80,4 @@ export default function MyProfilePage() {
   // committing, so there is never a blank frame.
   return <ProfileSkeleton />;
 }
+

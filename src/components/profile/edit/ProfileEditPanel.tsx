@@ -22,6 +22,7 @@ import { parseApiError, type ParsedApiError } from "@/lib/api/errors";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   useGetEditProfileFormQuery,
   useUpdateProfileMutation,
@@ -90,21 +91,21 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <label
         htmlFor={htmlFor}
-        className="block text-sm font-semibold text-slate-800 dark:text-neutral-200"
+        className="block text-base font-semibold text-slate-800 dark:text-neutral-200"
       >
         {label}
       </label>
       {children}
       {error ? (
-        <p className="text-sm font-medium text-rose-600 dark:text-rose-400">
+        <p className="text-base font-medium text-rose-600 dark:text-rose-400">
           {error}
         </p>
       ) : (
         hint && (
-          <p className="text-xs text-slate-500 dark:text-neutral-400">{hint}</p>
+          <p className="text-sm text-slate-500 dark:text-neutral-400">{hint}</p>
         )
       )}
     </div>
@@ -125,46 +126,46 @@ function BioEditor({
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
 
   return (
-    <div className="space-y-1.5">
-      <label className="block text-sm font-semibold text-slate-800 dark:text-neutral-200">
+    <div className="space-y-2">
+      <label className="block text-base font-semibold text-slate-800 dark:text-neutral-200">
         Bio
       </label>
 
       {/* GitHub Tab Strip */}
       <div className="overflow-hidden rounded-xl border border-slate-300 bg-slate-50/50 shadow-2xs dark:border-neutral-700 dark:bg-neutral-900/50">
-        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100/70 px-3 pt-2 dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="flex gap-1">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100/70 px-4 pt-2.5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setActiveTab("write")}
               className={cn(
-                "flex items-center gap-1.5 border-b-2 px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
+                "flex items-center gap-2 border-b-2 px-3.5 py-2 text-sm font-semibold transition-colors cursor-pointer",
                 activeTab === "write"
                   ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
                   : "border-transparent text-slate-600 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-neutral-200",
               )}
             >
-              <Code2 size={13} />
+              <Code2 size={15} />
               Write
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("preview")}
               className={cn(
-                "flex items-center gap-1.5 border-b-2 px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
+                "flex items-center gap-2 border-b-2 px-3.5 py-2 text-sm font-semibold transition-colors cursor-pointer",
                 activeTab === "preview"
                   ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
                   : "border-transparent text-slate-600 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-neutral-200",
               )}
             >
-              <Eye size={13} />
+              <Eye size={15} />
               Preview
             </button>
           </div>
 
           <span
             className={cn(
-              "text-xs tabular-nums font-medium pb-1.5",
+              "text-sm tabular-nums font-medium pb-1.5",
               value.length > MAX_BIO * 0.9
                 ? "text-rose-500"
                 : "text-slate-400 dark:text-neutral-500",
@@ -175,7 +176,7 @@ function BioEditor({
         </div>
 
         {/* Content Box */}
-        <div className="bg-white p-3.5 dark:bg-neutral-950">
+        <div className="bg-white p-4 dark:bg-neutral-950">
           {activeTab === "write" ? (
             <textarea
               id="edit-bio"
@@ -185,16 +186,16 @@ function BioEditor({
               onChange={(e) => onChange(e.target.value)}
               placeholder="Tell the community about yourself. Markdown is supported."
               className={cn(
-                "min-h-[180px] w-full resize-y bg-transparent font-mono text-sm text-slate-900 outline-none placeholder:text-slate-400 placeholder:font-sans dark:text-neutral-100",
+                "min-h-[180px] w-full resize-y bg-transparent font-mono text-base text-slate-900 outline-none placeholder:text-slate-400 placeholder:font-sans dark:text-neutral-100",
                 error && errorInputClass,
               )}
             />
           ) : (
-            <div className="min-h-[180px] w-full prose prose-sm prose-slate max-w-none dark:prose-invert">
+            <div className="min-h-[180px] w-full prose prose-base prose-slate max-w-none dark:prose-invert">
               {value.trim() ? (
                 <ReactMarkdown>{value}</ReactMarkdown>
               ) : (
-                <p className="text-sm italic text-slate-400 dark:text-neutral-500">
+                <p className="text-base italic text-slate-400 dark:text-neutral-500">
                   Nothing to preview
                 </p>
               )}
@@ -204,7 +205,7 @@ function BioEditor({
       </div>
 
       {/* Footer hint */}
-      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-neutral-400">
+      <div className="flex items-center justify-between text-sm text-slate-500 dark:text-neutral-400">
         {error ? (
           <p className="font-medium text-rose-600 dark:text-rose-400">{error}</p>
         ) : (
@@ -247,16 +248,16 @@ function SocialLinksEditor({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-semibold text-slate-800 dark:text-neutral-200">
+        <label className="block text-base font-semibold text-slate-800 dark:text-neutral-200">
           Social links
         </label>
         <button
           type="button"
           onClick={add}
           id="social-add-btn"
-          className="flex cursor-pointer items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/40"
+          className="flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/40"
         >
-          <Plus size={13} />
+          <Plus size={15} />
           Add link
         </button>
       </div>
@@ -274,7 +275,7 @@ function SocialLinksEditor({
             <div className="flex items-center gap-2 pt-1">
               <div className="relative flex-1">
                 <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 dark:text-neutral-500">
-                  <Link2 size={15} />
+                  <Link2 size={16} />
                 </span>
                 <Input
                   id={`social-link-${entry.id}`}
@@ -284,7 +285,7 @@ function SocialLinksEditor({
                   placeholder="https://github.com/username or website URL"
                   className={cn(
                     inputClass,
-                    "pl-9 font-mono text-sm",
+                    "pl-9 font-mono text-base",
                     error && errorInputClass,
                   )}
                 />
@@ -292,10 +293,10 @@ function SocialLinksEditor({
               <button
                 type="button"
                 onClick={() => remove(entry.id)}
-                className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:text-neutral-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:text-neutral-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
                 aria-label="Remove link"
               >
-                <Trash2 size={15} />
+                <Trash2 size={16} />
               </button>
             </div>
           </motion.div>
@@ -303,22 +304,22 @@ function SocialLinksEditor({
       </AnimatePresence>
 
       {entries.length === 0 && (
-        <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-4 text-center dark:border-neutral-800 dark:bg-neutral-900/30">
-          <p className="text-sm text-slate-500 dark:text-neutral-400">
+        <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-5 text-center dark:border-neutral-800 dark:bg-neutral-900/30">
+          <p className="text-base text-slate-500 dark:text-neutral-400">
             No social links added yet.
           </p>
           <button
             type="button"
             onClick={add}
-            className="mt-1.5 inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
+            className="mt-2 inline-flex cursor-pointer items-center gap-1.5 text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400"
           >
-            <Plus size={12} /> Add your first link
+            <Plus size={14} /> Add your first link
           </button>
         </div>
       )}
 
       {error && (
-        <p className="text-sm font-medium text-rose-600 dark:text-rose-400">
+        <p className="text-base font-medium text-rose-600 dark:text-rose-400">
           {error}
         </p>
       )}
@@ -457,16 +458,16 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
           >
             <AlertCircle className="mt-0.5 size-5 shrink-0 text-rose-600 dark:text-rose-400" />
             <div className="min-w-0 space-y-1">
-              <p className="text-sm font-bold text-rose-800 dark:text-rose-200">
+              <p className="text-base font-bold text-rose-800 dark:text-rose-200">
                 {saveError.status
                   ? `Couldn't save (${saveError.status})`
                   : "Couldn't save"}
               </p>
-              <p className="text-sm text-rose-700 dark:text-rose-300">
+              <p className="text-base text-rose-700 dark:text-rose-300">
                 {saveError.message}
               </p>
               {Object.keys(saveError.fieldErrors).length > 0 && (
-                <ul className="mt-1 list-inside list-disc space-y-0.5 text-sm text-rose-700 dark:text-rose-300">
+                <ul className="mt-1 list-inside list-disc space-y-0.5 text-base text-rose-700 dark:text-rose-300">
                   {Object.entries(saveError.fieldErrors).map(([f, msg]) => (
                     <li key={f}>
                       <span className="font-semibold">{f}</span>: {msg}
@@ -483,7 +484,7 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
       <div className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_300px] lg:grid-cols-[1fr_340px] md:items-start">
         {/* Left Column: Form Fields */}
         <div className="space-y-6">
-          <h2 className="border-b border-slate-200/80 pb-3 text-xl font-bold tracking-tight text-slate-900 dark:border-neutral-800 dark:text-neutral-100">
+          <h2 className="border-b border-slate-200/80 pb-3 text-2xl font-bold tracking-tight text-slate-900 dark:border-neutral-800 dark:text-neutral-100">
             Public profile
           </h2>
 
@@ -516,8 +517,8 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
           />
 
           {/* Personal Details */}
-          <div className="space-y-4 border-t border-slate-200/80 pt-4 dark:border-neutral-800">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
+          <div className="space-y-4 border-t border-slate-200/80 pt-5 dark:border-neutral-800">
+            <h3 className="text-base font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">
               Personal details
             </h3>
 
@@ -538,21 +539,18 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
                 htmlFor="edit-dob"
                 error={fieldError("dateOfBirth")}
               >
-                <Input
+                <DatePicker
                   id="edit-dob"
-                  type="date"
                   value={values.dateOfBirth ?? ""}
-                  onChange={(e) => patch({ dateOfBirth: e.target.value })}
-                  className={cn(
-                    inputClass,
-                    fieldError("dateOfBirth") && errorInputClass,
-                  )}
+                  onChange={(val) => patch({ dateOfBirth: val })}
+                  error={Boolean(fieldError("dateOfBirth"))}
+                  placeholder="Select date of birth"
                 />
               </Field>
             </div>
 
             <Field label="Gender" error={fieldError("gender")}>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 pt-1">
                 {GENDER_OPTIONS.map((opt) => {
                   const active = values.gender === opt.value;
                   return (
@@ -561,7 +559,7 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
                       type="button"
                       onClick={() => patch({ gender: opt.value })}
                       className={cn(
-                        "cursor-pointer rounded-xl px-4 py-2 text-sm font-semibold transition-colors",
+                        "cursor-pointer rounded-xl px-4 py-2.5 text-base font-semibold transition-colors",
                         active
                           ? "bg-blue-600 text-white shadow-xs"
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700",
@@ -575,7 +573,7 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
                   <button
                     type="button"
                     onClick={() => patch({ gender: undefined })}
-                    className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+                    className="cursor-pointer rounded-xl px-3.5 py-2.5 text-base font-semibold text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
                   >
                     Clear
                   </button>
@@ -586,8 +584,8 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
 
           {/* Sticky Bottom Action Bar (equal to width of form) */}
           <div className="sticky bottom-4 z-20 mt-8 flex flex-col gap-3.5 rounded-2xl border border-slate-200/80 bg-white/95 px-5 py-4 shadow-xl backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/95 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-neutral-300">
-              <span className="inline-block size-2 shrink-0 rounded-full bg-blue-600 animate-pulse" />
+            <div className="flex items-center gap-2 text-base font-medium text-slate-600 dark:text-neutral-300">
+              <span className="inline-block size-2.5 shrink-0 rounded-full bg-blue-600 animate-pulse" />
               <span>Careful — you have unsaved changes.</span>
             </div>
 
@@ -597,9 +595,9 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
                 variant="outline"
                 id="edit-cancel-btn"
                 onClick={onDone}
-                className="h-10 rounded-xl border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                className="h-11 rounded-xl border-slate-300 bg-white px-5 text-base font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
               >
-                <X size={14} />
+                <X size={15} />
                 Cancel
               </Button>
 
@@ -608,12 +606,12 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
                 id="edit-save-btn"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="h-10 rounded-xl bg-blue-600 px-6 text-sm font-bold text-white shadow-md transition hover:bg-blue-700"
+                className="h-11 rounded-xl bg-blue-600 px-6 text-base font-bold text-white shadow-md transition hover:bg-blue-700"
               >
                 {isSaving ? (
-                  <Loader2 size={14} className="animate-spin" />
+                  <Loader2 size={15} className="animate-spin" />
                 ) : (
-                  <Check size={14} />
+                  <Check size={15} />
                 )}
                 Save changes
               </Button>
@@ -623,7 +621,7 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
 
         {/* Right Column: Profile Picture (GitHub Style) */}
         <div className="space-y-3 md:sticky md:top-6">
-          <label className="block text-base font-semibold text-slate-800 dark:text-neutral-200">
+          <label className="block text-lg font-bold text-slate-800 dark:text-neutral-200">
             Profile picture
           </label>
 
@@ -654,11 +652,11 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
               <label
                 htmlFor="profile-avatar-upload"
                 className={cn(
-                  "flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700",
+                  "flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 text-base font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700",
                   isAvatarBusy && "pointer-events-none opacity-60",
                 )}
               >
-                <Camera size={16} />
+                <Camera size={18} />
                 <span>Upload new photo</span>
                 <input
                   id="profile-avatar-upload"
@@ -675,20 +673,20 @@ export default function ProfileEditPanel({ onDone }: ProfileEditPanelProps) {
                   type="button"
                   onClick={handleAvatarRemove}
                   disabled={isAvatarBusy}
-                  className="flex h-10 w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl px-4 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                  className="flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-4 text-base font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
                 >
-                  <Trash2 size={15} />
+                  <Trash2 size={16} />
                   Remove photo
                 </button>
               )}
             </div>
 
-            <p className="text-center text-xs font-medium text-slate-400 dark:text-neutral-500">
+            <p className="text-center text-sm font-medium text-slate-400 dark:text-neutral-500">
               PNG, JPG or WebP · max 2 MB
             </p>
 
             {avatarError && (
-              <p className="text-center text-xs font-medium text-rose-600">{avatarError}</p>
+              <p className="text-center text-sm font-medium text-rose-600">{avatarError}</p>
             )}
           </div>
         </div>
