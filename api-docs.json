@@ -7412,6 +7412,7 @@
           },
           "handle": { "type": "string" },
           "name": { "type": "string" },
+          "description": { "type": "string" },
           "engagementType": {
             "type": "string",
             "enum": ["BOUNTY", "RESPONSE"]
@@ -7430,6 +7431,10 @@
           },
           "offersBounties": { "type": "boolean" },
           "maximumBounty": { "type": "number" },
+          "assets": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProgramAssetResponseDto" }
+          },
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" }
         }

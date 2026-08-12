@@ -122,7 +122,7 @@ export const programsApi = proxyApi.injectEndpoints({
 
     deleteProgram: builder.mutation<void, string>({
       query: (id) => ({
-        url: `/organizations/me/programs/${id}`,
+        url: `/programs/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: (_result, _error, id) => [
