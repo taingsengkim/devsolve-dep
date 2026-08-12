@@ -60,8 +60,8 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ duration: 0.2 }}
-      className={`group relative flex items-start gap-3.5 p-3.5 sm:p-4 rounded-xl transition-all ${
-        item.isUnread ? "bg-slate-50/80 hover:bg-slate-100/60" : "bg-white hover:bg-slate-50/70"
+      className={`group relative flex items-start gap-3.5 p-3.5 sm:p-4 rounded-xl transition-all border border-transparent ${
+        item.isUnread ? "bg-muted/70 hover:bg-muted" : "bg-card hover:bg-muted/50"
       }`}
     >
       {/* Active Green Indicator Bar on Left */}
@@ -70,11 +70,11 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
       )}
 
       {/* User Avatar */}
-      <Avatar className="w-10 h-10 rounded-full border border-slate-200/80 shrink-0 shadow-2xs">
+      <Avatar className="w-10 h-10 rounded-full border border-border shrink-0 shadow-2xs">
         {item.actor.avatar && (
           <AvatarImage src={item.actor.avatar} alt={item.actor.name} />
         )}
-        <AvatarFallback className="bg-slate-100 text-slate-700 font-semibold text-sm">
+        <AvatarFallback className="bg-muted text-muted-foreground font-semibold text-sm">
           {getInitials(item.actor.name)}
         </AvatarFallback>
       </Avatar>
@@ -83,23 +83,23 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
           {/* Action text line */}
-          <div className="text-sm sm:text-base text-slate-700 font-normal leading-snug">
-            <span className="font-bold text-slate-900 mr-1.5">
+          <div className="text-sm sm:text-base text-muted-foreground font-normal leading-snug">
+            <span className="font-bold text-foreground mr-1.5">
               {item.actor.name}
             </span>
-            <span className="text-slate-600 mr-1.5">{item.action}</span>
+            <span className="text-muted-foreground mr-1.5">{item.action}</span>
 
             {/* Target Title or Target Link */}
             {item.target?.title && (
               item.target.href ? (
                 <Link
                   href={item.target.href}
-                  className="font-bold text-slate-900 hover:text-blue-600 transition-colors inline-flex items-center"
+                  className="font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center"
                 >
                   {item.target.title}
                 </Link>
               ) : (
-                <span className="font-bold text-slate-900">{item.target.title}</span>
+                <span className="font-bold text-foreground">{item.target.title}</span>
               )
             )}
 
@@ -107,7 +107,7 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
             {item.target?.badge && (
               <Badge
                 variant="outline"
-                className="ml-2 inline-flex items-center gap-1 py-0.5 px-2 font-medium text-xs rounded-full border-slate-300 bg-slate-50 text-slate-700"
+                className="ml-2 inline-flex items-center gap-1 py-0.5 px-2 font-medium text-xs rounded-full border-border bg-muted/60 text-muted-foreground"
               >
                 {item.target.badge.iconType === "incident" && (
                   <Flame className="w-3.5 h-3.5 text-rose-500" />
@@ -132,13 +132,13 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
 
         {/* Content Snippet / Excerpt */}
         {item.contentSnippet && (
-          <p className="text-sm text-slate-600 font-normal mt-1 leading-relaxed break-words">
+          <p className="text-sm text-muted-foreground font-normal mt-1 leading-relaxed break-words">
             {item.contentSnippet}
           </p>
         )}
 
         {/* Timestamp */}
-        <div className="text-xs sm:text-sm text-slate-400 font-medium mt-1.5 flex items-center gap-2">
+        <div className="text-xs sm:text-sm text-muted-foreground/80 font-medium mt-1.5 flex items-center gap-2">
           <span>{item.timestamp}</span>
         </div>
 
@@ -147,9 +147,9 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
           <div className="mt-2">
             <button
               onClick={() => setShowReplyInput(!showReplyInput)}
-              className="text-xs sm:text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors cursor-pointer inline-flex items-center gap-1"
+              className="text-xs sm:text-sm font-semibold text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer inline-flex items-center gap-1"
             >
-              <CornerDownRight className="w-3.5 h-3.5 text-slate-400" />
+              <CornerDownRight className="w-3.5 h-3.5 text-muted-foreground" />
               <span>Reply</span>
             </button>
           </div>
@@ -157,12 +157,12 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
 
         {/* Previous Replies */}
         {item.replies && item.replies.length > 0 && (
-          <div className="mt-2.5 space-y-2 border-l-2 border-slate-200 pl-3">
+          <div className="mt-2.5 space-y-2 border-l-2 border-border pl-3">
             {item.replies.map((reply) => (
               <div key={reply.id} className="text-xs sm:text-sm">
-                <span className="font-semibold text-slate-900">{reply.author}: </span>
-                <span className="text-slate-700">{reply.message}</span>
-                <span className="text-slate-400 text-xs ml-2">({reply.timestamp})</span>
+                <span className="font-semibold text-foreground">{reply.author}: </span>
+                <span className="text-muted-foreground">{reply.message}</span>
+                <span className="text-muted-foreground/70 text-xs ml-2">({reply.timestamp})</span>
               </div>
             ))}
           </div>
@@ -184,7 +184,7 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
                   placeholder="Write a reply..."
                   value={replyMessage}
                   onChange={(e) => setReplyMessage(e.target.value)}
-                  className="h-9 text-sm bg-white border-slate-300 rounded-lg focus-visible:ring-blue-500"
+                  className="h-9 text-sm bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-blue-500"
                   autoFocus
                 />
                 <Button
