@@ -91,10 +91,10 @@ export function ManagedReportCard({
 
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="space-y-1.5">
-                  <h3 className="truncate text-[17px] font-semibold leading-6 text-foreground">
+                  <h3 className="truncate text-base font-semibold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {report.title}
                   </h3>
-                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted-foreground">
+                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                     <span>{reportId}</span>
                     <span className="text-muted-foreground/60">&bull;</span>
                     <span className="truncate">{report.author}</span>
@@ -103,7 +103,7 @@ export function ManagedReportCard({
                   </p>
                 </div>
 
-                <p className="line-clamp-1 text-[14px] leading-6 text-muted-foreground">
+                <p className="line-clamp-1 text-sm leading-relaxed text-muted-foreground">
                   {report.summary}
                 </p>
               </div>

@@ -20,17 +20,17 @@ export function ReportDetailAssessment({
       contentClassName="space-y-6"
     >
         <section className="space-y-2">
-          <h3 className="text-lg font-bold text-foreground">Summary</h3>
-          <p className="text-sm leading-7 text-muted-foreground">
+          <h3 className="text-lg font-bold tracking-tight text-foreground">Summary</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
             {detail.assessmentSummary}
           </p>
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-bold text-foreground">
+          <h3 className="text-lg font-bold tracking-tight text-foreground">
             Steps to Reproduce
           </h3>
-          <ol className="space-y-3 pl-6 text-sm leading-7 text-muted-foreground">
+          <ol className="space-y-3 pl-6 text-sm leading-relaxed text-muted-foreground">
             {detail.reproductionSteps.map((step) => (
               <li key={step} className="pl-1 list-decimal marker:font-semibold marker:text-muted-foreground">
                 {step}
@@ -53,8 +53,8 @@ export function ReportDetailAssessment({
         </div>
 
         <section className="space-y-2">
-          <h3 className="text-lg font-bold text-foreground">Remediation</h3>
-          <p className="text-sm leading-7 text-muted-foreground">
+          <h3 className="text-lg font-bold tracking-tight text-foreground">Remediation</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
             {detail.remediation}
           </p>
         </section>

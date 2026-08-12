@@ -60,7 +60,7 @@ export function ReportDetailTargetScope({
             <p className="text-sm font-semibold text-amber-700 dark:text-amber-300">
               Environment: {detail.environment}
             </p>
-            <p className="text-sm leading-6 text-amber-600 dark:text-amber-400">
+            <p className="text-sm leading-relaxed text-amber-600 dark:text-amber-400">
               {detail.environmentNote}
             </p>
           </div>
@@ -78,7 +78,7 @@ function FieldBlock({
 }) {
   return (
     <div className="space-y-2">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
       {children}

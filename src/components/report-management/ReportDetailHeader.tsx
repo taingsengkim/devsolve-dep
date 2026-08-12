@@ -173,14 +173,14 @@ export function ReportDetailHeader({ detail }: ReportDetailHeaderProps) {
             </div>
 
             <div className="space-y-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 In-scope assets
               </p>
               <div className="flex flex-wrap gap-2">
                 {detail.assets.map((asset) => (
                   <span
                     key={asset}
-                    className="inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-[12px] font-medium text-foreground"
+                    className="inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-foreground"
                   >
                     {asset}
                   </span>
@@ -230,10 +230,10 @@ function MetricCard({
         </div>
 
         <div className="space-y-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
-          <p className={cn("text-lg font-semibold tracking-tight", toneClass.text)}>{value}</p>
+          <p className={cn("text-lg font-bold tracking-tight", toneClass.text)}>{value}</p>
         </div>
       </CardContent>
     </Card>

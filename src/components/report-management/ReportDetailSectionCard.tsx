@@ -24,7 +24,7 @@ export function ReportDetailSectionCard({
             <div className="flex size-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
               {icon}
             </div>
-            <CardTitle className="text-xl font-bold text-foreground">
+            <CardTitle className="text-xl font-bold tracking-tight text-foreground">
               {title}
             </CardTitle>
           </div>

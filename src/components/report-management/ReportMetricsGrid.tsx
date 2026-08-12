@@ -61,7 +61,7 @@ export function ReportMetricsGrid({
                     <Icon className="size-5" />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       {metric.title}
                     </span>
                     <span className="text-xs text-muted-foreground">{METRIC_HELPERS[index]}</span>
@@ -72,7 +72,7 @@ export function ReportMetricsGrid({
                   {isLoading ? (
                     <div className="h-10 w-20 animate-pulse rounded-xl bg-muted" />
                   ) : (
-                    <p className="text-[2rem] font-semibold leading-none tracking-[-0.05em] text-foreground">
+                    <p className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-none">
                       {metric.value}
                     </p>
                   )}

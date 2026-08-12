@@ -25,7 +25,7 @@ export function ReportDetailProofOfConcept({
       contentClassName="space-y-5"
     >
         <div className="space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             HTTP Request
           </p>
           <div className="overflow-hidden rounded-2xl border border-border bg-[#0B0F19] shadow-xs">
@@ -72,7 +72,7 @@ export function ReportDetailProofOfConcept({
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Attachments
               </p>
               <p className="mt-1 text-sm text-muted-foreground">

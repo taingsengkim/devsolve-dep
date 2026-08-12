@@ -25,7 +25,7 @@ export function ReportDetailSidebar({
     <aside className="space-y-5 xl:sticky xl:top-6">
       {/* Moderation actions */}
       <section className="rounded-2xl bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 p-5 shadow-xs">
-        <h2 className="text-lg font-bold text-foreground">
+        <h2 className="text-lg font-bold tracking-tight text-foreground">
           Moderation Actions
         </h2>
 
