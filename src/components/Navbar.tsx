@@ -164,28 +164,28 @@ const Navbar = () => {
     : undefined;
   const navbarIdentity: NavbarIdentity = isCompany
     ? {
-        isCompany: true,
-        name: organization?.name || "Company workspace",
-        detail: organization?.slug
-          ? `@${organization.slug}`
-          : organization?.domain || organizationStatus,
-        status: organizationStatus,
-        image: organization?.logoUrl,
-        profileHref: "/dashboard/profile",
-        profileLabel: "Organization profile",
-        settingsHref: "/dashboard/organizations",
-        settingsLabel: "Organization settings",
-      }
+      isCompany: true,
+      name: organization?.name || "Company workspace",
+      detail: organization?.slug
+        ? `@${organization.slug}`
+        : organization?.domain || organizationStatus,
+      status: organizationStatus,
+      image: organization?.logoUrl,
+      profileHref: "/dashboard/profile",
+      profileLabel: "Organization profile",
+      settingsHref: "/dashboard/organizations",
+      settingsLabel: "Organization settings",
+    }
     : {
-        isCompany: false,
-        name: displayName,
-        detail: sessionUser?.email || undefined,
-        image: sessionUser?.image,
-        profileHref: "/dashboard/profile",
-        profileLabel: "My profile",
-        settingsHref: "/dashboard/profile/settings",
-        settingsLabel: "Settings",
-      };
+      isCompany: false,
+      name: displayName,
+      detail: sessionUser?.email || undefined,
+      image: sessionUser?.image,
+      profileHref: "/dashboard/profile",
+      profileLabel: "My profile",
+      settingsHref: "/dashboard/profile/settings",
+      settingsLabel: "Settings",
+    };
   const isNavbarIdentityPending =
     isSessionPending ||
     (Boolean(sessionUser) && !areRolesResolved) ||
@@ -848,11 +848,11 @@ const Navbar = () => {
                 reduce
                   ? { duration: 0 }
                   : {
-                      type: "spring",
-                      stiffness: 350,
-                      damping: 28,
-                      mass: 0.8,
-                    }
+                    type: "spring",
+                    stiffness: 350,
+                    damping: 28,
+                    mass: 0.8,
+                  }
               }
               style={{ transformOrigin: "top center" }}
               className="pointer-events-auto relative z-10 overflow-hidden px-4 pb-4 sm:px-6 lg:hidden"
@@ -951,11 +951,11 @@ const Navbar = () => {
                                           reduce
                                             ? { duration: 0 }
                                             : {
-                                                type: "spring",
-                                                stiffness: 420,
-                                                damping: 28,
-                                                delay: idx * 0.035,
-                                              }
+                                              type: "spring",
+                                              stiffness: 420,
+                                              damping: 28,
+                                              delay: idx * 0.035,
+                                            }
                                         }
                                         className={cn(
                                           // Two columns, not three: the old
@@ -1063,7 +1063,7 @@ const Navbar = () => {
                               className={cn(
                                 "size-9 shrink-0",
                                 navbarIdentity.isCompany &&
-                                  "rounded-lg after:rounded-lg",
+                                "rounded-lg after:rounded-lg",
                               )}
                             >
                               {navbarIdentity.image && (
@@ -1098,7 +1098,7 @@ const Navbar = () => {
                               </span>
                               {navbarIdentity.status &&
                                 navbarIdentity.status !==
-                                  navbarIdentity.detail && (
+                                navbarIdentity.detail && (
                                   <span className="mt-0.5 block truncate text-sm font-medium text-slate-500 dark:text-neutral-400">
                                     {navbarIdentity.status}
                                   </span>
