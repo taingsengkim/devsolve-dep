@@ -230,9 +230,18 @@ function fullNameOf(raw: UserProfileApiResponse, fallback: string): string {
   return raw.fullName || [raw.firstName, raw.lastName].filter(Boolean).join(" ") || fallback;
 }
 
+/**
+ * The API exposes no username, so the one in profile URLs is the local part of
+ * the email. It is a display handle only — never send it anywhere the backend
+ * expects a `userId`.
+ */
 function usernameOf(raw: UserProfileApiResponse, fallback: string): string {
   return raw.email ? raw.email.split("@")[0] : fallback;
 }
+
+/** Tells a real `userId` path segment from a derived username. */
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function memberSinceOf(iso: string | undefined, fallback: string): string {
   const date = iso ? new Date(iso) : null;
@@ -346,26 +355,25 @@ function fallbackProfileOverview(usernameArg?: string): ProfileOverviewResponse 
 
 export const profileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    /**
+     * Resolves the `[username]` route segment to a profile.
+     *
+     * The API keys profiles on a UUID (`GET /user-profiles/{userId}`) and
+     * returns no username field at all — the one in our URLs is derived from
+     * the email by `usernameOf`. So a segment that is not a UUID is a name
+     * only we know about, and handing it to `/user-profiles/{userId}` makes
+     * the backend reject it as a malformed UUID with a 400 before it looks
+     * anything up. The shape is therefore checked here, and a derived name is
+     * resolved against `/user-profiles/me`, the one place it can be matched.
+     */
     getProfileByUsername: builder.query<ProfileOverviewResponse, string>({
       async queryFn(username, _api, _extraOptions, fetchWithBQ) {
         const isMeRoute = !username || username === "me";
-        const profileEndpoint = isMeRoute
-          ? `/user-profiles/me`
-          : `/user-profiles/${encodeURIComponent(username)}`;
+        const isUserId = !isMeRoute && UUID_PATTERN.test(username);
 
-        let profileResult = await fetchWithBQ(profileEndpoint);
-
-        // If fetching specific username returned an error, fallback to /user-profiles/me if authenticated
-        if (profileResult.error && !isMeRoute) {
-          const meResult = await fetchWithBQ(`/user-profiles/me`);
-          if (!meResult.error) {
-            const meRaw = meResult.data as UserProfileApiResponse;
-            const meUsername = usernameOf(meRaw, "");
-            if (meUsername.toLowerCase() === username.toLowerCase()) {
-              profileResult = meResult;
-            }
-          }
-        }
+        const profileResult = await fetchWithBQ(
+          isUserId ? `/user-profiles/${username}` : `/user-profiles/me`,
+        );
 
         if (profileResult.error) {
           return { data: fallbackProfileOverview(username) };
@@ -373,10 +381,24 @@ export const profileApi = baseApi.injectEndpoints({
 
         const raw = profileResult.data as UserProfileApiResponse;
 
+        // A derived name that is not the signed-in user's belongs to somebody
+        // else, and nothing in the API can look it up — returning `me` here
+        // would show the wrong person's profile under their URL.
+        if (
+          !isMeRoute &&
+          !isUserId &&
+          usernameOf(raw, "").toLowerCase() !== username.toLowerCase()
+        ) {
+          return { data: fallbackProfileOverview(username) };
+        }
+
+        // Either the `me` route, or a derived name that just matched it.
+        const isSelf = !isUserId;
+
         const [followingResult, followersResult, reportsResult] = await Promise.all([
-          fetchWithBQ(isMeRoute ? `/follows/mine?size=1` : `/follows/users/${raw.id}/following?size=1`),
+          fetchWithBQ(isSelf ? `/follows/mine?size=1` : `/follows/users/${raw.id}/following?size=1`),
           fetchWithBQ(`/follows/USER/${raw.id}/followers?size=1`),
-          fetchWithBQ(isMeRoute ? `/reports/mine?size=100` : `/user-profiles/${raw.id}/problems?pageSize=100`),
+          fetchWithBQ(isSelf ? `/reports/mine?size=100` : `/user-profiles/${raw.id}/problems?pageSize=100`),
         ]);
 
         const followingCount = !followingResult.error

@@ -1,42 +1,87 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useSyncSocialAccountMutation } from "@/lib/redux/services/authApi";
 import { useGetProfileProvisioningStatusQuery } from "@/lib/redux/services/profileApi";
 
+function isNotFound(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    (error as { status?: number | string }).status === 404
+  );
+}
+
 /**
- * The backend creates a user's `user_profiles` row on their first authenticated
- * request. Email/password sign-ups get one from the registration call, but
- * social sign-ups have no registration call at all — the OIDC redirect is the
- * whole flow — so this request is what provisions them.
+ * Makes sure the signed-in user has a local profile row before the app tries to
+ * read one.
  *
- * A 404 therefore means authenticated but unprovisioned: a backend or Keycloak
- * misconfiguration rather than anything the user did or can fix by filling
- * something in. It is the one outcome worth stopping for, since everything past
- * here reads a profile that does not exist.
+ * Email/password sign-ups get their row from `/auth/register`. Social sign-ups
+ * never touch that endpoint — the OIDC redirect is the entire flow — so the
+ * backend only learns about them when `/auth/social/sync` is called. Nothing
+ * was calling it, which is why a Google account could authenticate perfectly
+ * and still have no profile behind it.
  *
- * Every other outcome falls through to the app. A slow or briefly unreachable
- * backend is not a provisioning failure, and locking people out of the whole
- * dashboard over one is worse than the pages showing their own empty states.
+ * So a 404 here is not necessarily a failure: for a first-time social user it
+ * is the expected state, and the fix is to sync and look again. Only a 404 that
+ * survives that is a real misconfiguration worth stopping for. Everything else
+ * falls through to the app — a slow or briefly unreachable backend is not a
+ * provisioning failure, and locking someone out of the dashboard over one is
+ * worse than the pages showing their own empty states.
  */
 export function ProfileProvisioningGate({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { error, isFetching, refetch } =
-    useGetProfileProvisioningStatusQuery();
+  const { error, isFetching, refetch } = useGetProfileProvisioningStatusQuery();
+  const [syncSocialAccount, syncState] = useSyncSocialAccountMutation();
 
-  const isUnprovisioned =
-    typeof error === "object" &&
-    error !== null &&
-    "status" in error &&
-    (error as { status?: number | string }).status === 404;
+  // One automatic attempt per mount, so a backend that keeps answering 404
+  // isn't synced again on every render. Touched only inside the effect — the
+  // render below reads the mutation's own state instead.
+  const hasAutoSynced = useRef(false);
 
-  if (!isUnprovisioned) {
+  const needsProfile = isNotFound(error);
+
+  useEffect(() => {
+    if (!needsProfile || hasAutoSynced.current) return;
+
+    hasAutoSynced.current = true;
+    syncSocialAccount()
+      .unwrap()
+      .then(() => refetch())
+      .catch(() => {
+        // Leaves the query's 404 in place, which shows the state below.
+      });
+  }, [needsProfile, syncSocialAccount, refetch]);
+
+  const isWorking = syncState.isLoading || isFetching;
+
+  if (!needsProfile) {
     return <>{children}</>;
+  }
+
+  /* The sync is normal first-run setup, not an error, so it reads as setting
+     up rather than failing — until it has actually run and the profile is
+     still missing. `isUninitialized` covers the gap between the 404 landing
+     and the effect firing. */
+  if (isWorking || syncState.isUninitialized) {
+    return (
+      <div className="flex min-h-[60vh] w-full items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <Loader2 className="size-6 animate-spin text-blue-600" />
+          <p className="text-sm font-medium text-slate-500 dark:text-neutral-400">
+            Setting up your account...
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -61,11 +106,16 @@ export function ProfileProvisioningGate({
 
         <Button
           type="button"
-          onClick={() => refetch()}
-          disabled={isFetching}
+          onClick={() => {
+            syncSocialAccount()
+              .unwrap()
+              .then(() => refetch())
+              .catch(() => refetch());
+          }}
+          disabled={isWorking}
           className="mt-6 h-11 w-full rounded-xl bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700"
         >
-          {isFetching ? (
+          {isWorking ? (
             <>
               <Loader2 className="size-4 animate-spin" />
               Retrying...

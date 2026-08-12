@@ -22,13 +22,16 @@ export async function GET(request: NextRequest, context: Context) {
   const identifier = raw?.trim();
   if (!identifier) return badRequest("User identifier is required");
 
+  // The backend binds this segment to a UUID, so anything else comes back as a
+  // 400 naming an internal path. Rejecting it here keeps that leak out of the
+  // client and says what was actually wrong.
+  const userId = asUuid(identifier);
+  if (!userId) return badRequest("User identifier must be a valid user id");
+
   const token = await bearerTokenFor(request);
 
   try {
-    const upstream = await upstreamFetch(
-      `/user-profiles/${encodeURIComponent(identifier)}`,
-      token,
-    );
+    const upstream = await upstreamFetch(`/user-profiles/${userId}`, token);
     return relay(upstream, "Unable to load that profile.");
   } catch {
     return unreachable("profile");
