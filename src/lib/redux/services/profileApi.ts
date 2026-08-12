@@ -19,7 +19,6 @@ import {
   mockStats,
   mockSeverity,
   mockBadges,
-  mockThanks,
   mockEditProfileFormData,
 } from "@/lib/types/profile/mock-data";
 
@@ -56,6 +55,14 @@ interface UserProfileApiResponse {
   lastLoginAt?: string;
   createdAt?: string;
   updatedAt?: string;
+  /**
+   * `GET /user-profiles/{userId}` answers with PublicUserProfileResponse, not
+   * the shape above: it carries only id, fullName, biography, avatarUrl,
+   * country, socialLinks, the four counters, and `joinedAt`. Everything else
+   * here — email, firstName/lastName, phone, dateOfBirth, gender, status,
+   * createdAt — is private and absent for anyone but the signed-in user.
+   */
+  joinedAt?: string;
 }
 
 // Real shape of GET /api/v1/reports/mine content items (per the live OpenAPI
@@ -289,24 +296,35 @@ function reportCountsOf(raw: UserProfileApiResponse, reports: ReportApiResponse[
 function toProfileOverview(
   raw: UserProfileApiResponse,
   social: { followers: number; following: number },
-  reports: ReportApiResponse[]
+  reports: ReportApiResponse[],
+  isOwnProfile: boolean
 ): ProfileOverviewResponse {
-  const displayName = fullNameOf(raw, mockProfile.displayName);
+  const displayName = fullNameOf(raw, "DevSolve user");
   const { total: totalReports, valid: validReports } = reportCountsOf(raw, reports);
 
+  /* Deliberately not spread over `mockProfile`. Doing that quietly backfilled
+     every field the response didn't carry, and a public profile is missing ten
+     of them — so another researcher's page showed the mock's username, bio,
+     location and join date, and inherited its `isOwnProfile: true`, which put
+     owner-only controls on a stranger's profile and made the followers and
+     following tabs load the viewer's own lists. Absent data now reads as
+     absent. */
   const profile: Profile = {
-    ...mockProfile,
-    id: raw.id ?? mockProfile.id,
-    username: usernameOf(raw, mockProfile.username),
+    id: raw.id,
+    // Derived from the email, which only `/me` returns — blank for everyone
+    // else, since there is no username on the API at all.
+    username: usernameOf(raw, ""),
     displayName,
     avatarInitials: initialsOf(displayName),
     avatarUrl: raw.avatarUrl,
-    bio: raw.biography || mockProfile.bio,
-    location: raw.country || mockProfile.location,
-    memberSince: memberSinceOf(raw.createdAt, mockProfile.memberSince),
+    bio: raw.biography || "",
+    location: raw.country || undefined,
+    // Public profiles carry `joinedAt`; `/me` carries `createdAt`.
+    memberSince: memberSinceOf(raw.joinedAt ?? raw.createdAt, ""),
     socialLinks: socialLinksOf(raw),
     followers: social.followers,
     following: social.following,
+    isOwnProfile,
     phone: raw.phone,
     dateOfBirth: raw.dateOfBirth,
     gender: raw.gender,
@@ -319,10 +337,25 @@ function toProfileOverview(
     reportsSubmitted: totalReports,
     accepted: validReports,
     acceptedRate: acceptedRateOf(totalReports, validReports),
-    totalEarned: totalEarnedOf(reports),
+    // Rewards live on the reports themselves, and `/reports/mine` is the only
+    // endpoint that returns any — so this is unknowable for another user.
+    totalEarned: isOwnProfile ? totalEarnedOf(reports) : 0,
   };
 
-  const severity = severityStatsOf(reports);
+  /* Same limitation: a per-severity breakdown needs the individual reports.
+     The public profile exposes one aggregate, `criticalReports`, so that is
+     the only band that can be filled in. */
+  const severity = isOwnProfile
+    ? severityStatsOf(reports)
+    : {
+        critical: raw.criticalReports ?? 0,
+        high: 0,
+        medium: 0,
+        low: 0,
+        rejected: 0,
+        duplicate: 0,
+        retests: 0,
+      };
 
   // No badges endpoint exists yet — an empty grid is honest; the mock badge
   // set was fabricated achievement data with no backing from the backend.
@@ -395,10 +428,16 @@ export const profileApi = baseApi.injectEndpoints({
         // Either the `me` route, or a derived name that just matched it.
         const isSelf = !isUserId;
 
+        /* Reports are confidential: `/reports/mine` is the only per-user report
+           endpoint the API has, so there is nothing to fetch for anyone else.
+           This used to fall back to `/user-profiles/{id}/problems` and read the
+           result as reports — but problems carry `status`, not `state`, and no
+           `severity` or `rewards`, so every field derived from them came out
+           empty anyway. It just cost a 100-row request to produce zeros. */
         const [followingResult, followersResult, reportsResult] = await Promise.all([
           fetchWithBQ(isSelf ? `/follows/mine?size=1` : `/follows/users/${raw.id}/following?size=1`),
           fetchWithBQ(`/follows/USER/${raw.id}/followers?size=1`),
-          fetchWithBQ(isSelf ? `/reports/mine?size=100` : `/user-profiles/${raw.id}/problems?pageSize=100`),
+          isSelf ? fetchWithBQ(`/reports/mine?size=100`) : Promise.resolve(null),
         ]);
 
         const followingCount = !followingResult.error
@@ -407,9 +446,10 @@ export const profileApi = baseApi.injectEndpoints({
         const followersCount = !followersResult.error
           ? (followersResult.data as { totalElements?: number } | undefined)?.totalElements
           : undefined;
-        const reports = !reportsResult.error
-          ? (reportsResult.data as { content?: ReportApiResponse[] } | undefined)?.content ?? []
-          : [];
+        const reports =
+          reportsResult && !reportsResult.error
+            ? (reportsResult.data as { content?: ReportApiResponse[] } | undefined)?.content ?? []
+            : [];
 
         return {
           data: toProfileOverview(
@@ -418,7 +458,8 @@ export const profileApi = baseApi.injectEndpoints({
               followers: followersCount ?? 0,
               following: followingCount ?? 0,
             },
-            reports
+            reports,
+            isSelf
           ),
         };
       },
@@ -427,6 +468,16 @@ export const profileApi = baseApi.injectEndpoints({
 
     getHacktivity: builder.query<HacktivityEntry[], string>({
       async queryFn(username, _api, _extraOptions, fetchWithBQ) {
+        /* This is built from `/reports/mine`, which is the signed-in user's
+           own reports and takes no user parameter — the API exposes no
+           per-user report endpoint, because reports are confidential. The
+           argument used to be ignored outright, so opening anyone else's
+           profile rendered the *viewer's* reports under their name. A UUID
+           segment means another user, and there is nothing to show. */
+        if (UUID_PATTERN.test(username)) {
+          return { data: [] };
+        }
+
         const reportsResult = await fetchWithBQ(`/reports/mine?size=50&sort=submittedAt,DESC`);
         if (reportsResult.error) return { error: reportsResult.error };
 
@@ -593,8 +644,12 @@ export const profileApi = baseApi.injectEndpoints({
     }),
 
     // No backend endpoint yet — mocked until a hall-of-thanks API exists.
+    /* The API has no thanks/recognition endpoint — only the `recognitionCount`
+       aggregate on the profile — so there is nothing to read. It returned a
+       fixed mock list, which put the same invented names and messages on every
+       profile including strangers'. An empty tab is at least true. */
     getThanks: builder.query<ThanksEntry[], string>({
-      queryFn: () => ({ data: mockThanks }),
+      queryFn: () => ({ data: [] as ThanksEntry[] }),
       providesTags: ["Profile"],
     }),
 

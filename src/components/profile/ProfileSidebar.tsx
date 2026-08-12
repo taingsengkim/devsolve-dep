@@ -90,7 +90,10 @@ export default function ProfileSidebar({
         <h1 className="text-xl sm:text-2xl font-bold leading-tight tracking-tight text-slate-900 wrap-break-word dark:text-neutral-100">
           {displayName}
         </h1>
-        {!isUuid(username) && (
+        {/* The API carries no username: it is derived from the email, which
+            only the signed-in user's own profile returns. So it is blank for
+            everyone else, and a bare "@" is worse than no line at all. */}
+        {username && !isUuid(username) && (
           <p className="text-sm sm:text-base font-medium text-slate-500 dark:text-neutral-400">
             @{username}
           </p>
