@@ -124,31 +124,20 @@ export function NavbarUserMenu({
             type="button"
             aria-label={identity.isCompany ? "Organization menu" : "Account menu"}
             className={cn(
-              "hidden cursor-pointer items-center gap-2 border border-slate-200/80 bg-white p-1 pr-2 shadow-xs transition-colors hover:border-blue-200 hover:bg-blue-50 sm:inline-flex dark:border-neutral-800 dark:bg-neutral-900/80 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800",
-              identity.isCompany ? "rounded-xl" : "rounded-full",
+              "hidden cursor-pointer items-center gap-2 rounded-full border border-slate-200/80 bg-white p-1 pr-2 shadow-xs transition-colors hover:border-blue-200 hover:bg-blue-50 sm:inline-flex dark:border-neutral-800 dark:bg-neutral-900/80 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800"
             )}
           />
         }
       >
-        <Avatar
-          className={cn(
-            "size-8 shrink-0",
-            identity.isCompany && "rounded-lg after:rounded-lg",
-          )}
-        >
+        <Avatar className="size-8 shrink-0 rounded-full">
           {identity.image && (
             <AvatarImage
               src={identity.image}
               alt={identity.isCompany ? `${identity.name} logo` : ""}
-              className={cn(identity.isCompany && "rounded-lg")}
+              className="rounded-full"
             />
           )}
-          <AvatarFallback
-            className={cn(
-              "bg-blue-600 text-xs font-bold text-white",
-              identity.isCompany && "rounded-lg",
-            )}
-          >
+          <AvatarFallback className="bg-blue-600 text-xs font-bold text-white rounded-full">
             {getInitials(identity.name)}
           </AvatarFallback>
         </Avatar>

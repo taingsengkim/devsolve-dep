@@ -173,25 +173,15 @@ function SidebarContent({
           </div>
         ) : (
           <>
-            <Avatar
-              className={cn(
-                "size-10 shrink-0 border-2 border-blue-500",
-                isCompany && "rounded-xl after:rounded-xl",
-              )}
-            >
+            <Avatar className="size-10 shrink-0 border-none rounded-full">
               {identityImage && (
                 <AvatarImage
                   src={identityImage}
                   alt={isCompany ? `${identityName} logo` : ""}
-                  className={cn(isCompany && "rounded-xl")}
+                  className="rounded-full"
                 />
               )}
-              <AvatarFallback
-                className={cn(
-                  "bg-blue-600 font-bold text-white",
-                  isCompany && "rounded-xl",
-                )}
-              >
+              <AvatarFallback className="bg-blue-600 font-bold text-white rounded-full">
                 {getInitials(identityName)}
               </AvatarFallback>
             </Avatar>
