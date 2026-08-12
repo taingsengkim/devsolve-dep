@@ -188,7 +188,7 @@ export function TeamsMembersSection({
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search by member name or email..."
-              className="h-10.5 w-full rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-blue-600/30"
+              className="h-10.5 w-full rounded-xl border border-border bg-card pl-10 text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-blue-600/30"
             />
           </div>
 
