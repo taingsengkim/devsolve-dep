@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState } from "react";
 import { NotificationModal } from "./NotificationModal";
+import { useNotificationStream } from "@/lib/hooks/useNotificationStream";
 
 interface NotificationContextType {
   isOpen: boolean;
@@ -14,6 +15,9 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Mount real-time SSE listener
+  useNotificationStream();
 
   const openNotification = () => setIsOpen(true);
   const closeNotification = () => setIsOpen(false);
