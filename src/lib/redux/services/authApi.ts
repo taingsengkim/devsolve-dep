@@ -18,6 +18,23 @@ export interface RegisterUserRequest {
 }
 
 /**
+ * POST /api/v1/auth/social/sync — response body.
+ * `created` is true only on the sign-up that actually made the row.
+ */
+export interface SocialSyncResponse {
+  created: boolean;
+  profile: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    fullName: string;
+    avatarUrl: string;
+    status: string;
+  };
+}
+
+/**
  * POST /api/v1/auth/register — 201 response body.
  */
 export interface RegisterUserResponse {
@@ -141,6 +158,24 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ["User"],
     }),
 
+    /**
+     * Create the local profile for a social sign-up.
+     * POST /api/v1/auth/social/sync
+     *
+     * Google/GitHub users never reach `/auth/register` — the OIDC redirect is
+     * the whole flow — so this is the only thing that provisions them. It
+     * takes no body: the backend identifies them from the bearer token.
+     * `created` is true the first time, false for a returning user, which
+     * makes it safe to call more than once.
+     */
+    syncSocialAccount: builder.mutation<SocialSyncResponse, void>({
+      query: () => ({
+        url: `/auth/social/sync`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Profile", "User"],
+    }),
+
     registerCompany: builder.mutation<RegisterCompanyResponse, RegisterCompanyRequest>({
       query: (body) => ({
         url: "/organizations/register",
@@ -158,4 +193,8 @@ export const authApi = baseApi.injectEndpoints({
   overrideExisting: true,
 });
 
-export const { useRegisterUserMutation, useRegisterCompanyMutation } = authApi;
+export const {
+  useRegisterUserMutation,
+  useRegisterCompanyMutation,
+  useSyncSocialAccountMutation,
+} = authApi;
