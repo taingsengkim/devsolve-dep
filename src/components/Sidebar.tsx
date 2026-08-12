@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useNotification } from "@/components/notifications/NotificationContext";
 import { NotificationTrigger } from "@/components/notifications/NotificationTrigger";
+import { ThemeToggle } from "@/components/motion/theme-toggle";
 import { useGetBookmarksQuery } from "@/lib/redux/services/bookmarksApi";
 import {
   type Organization,
@@ -407,6 +408,12 @@ const Sidebar = () => {
 
         <div className="flex items-center gap-2">
           <NotificationTrigger />
+          <ThemeToggle
+            variant="rectangle"
+            start="bottom-up"
+            className="size-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-2xs transition-colors hover:bg-slate-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 cursor-pointer"
+            iconClassName="size-5"
+          />
           <Button
             size="icon"
             variant="ghost"
