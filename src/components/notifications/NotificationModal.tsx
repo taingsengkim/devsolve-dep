@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Calendar,
@@ -10,7 +11,9 @@ import {
   X,
   CheckCheck,
   ChevronDown,
+  Settings,
 } from "lucide-react";
+
 import {
   useGetNotificationsQuery,
   useMarkAsReadMutation,
@@ -87,6 +90,15 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
       <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
         <h2 className="text-xl font-bold text-foreground tracking-tight">Notification</h2>
         <div className="flex items-center gap-1.5 text-muted-foreground">
+          <Link
+            href="/dashboard/notifications/settings"
+            onClick={onClose}
+            className="flex w-8 h-8 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors"
+            title="Notification Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </Link>
+
           {!isEmbedded && (
             <Button
               size="icon"
@@ -115,6 +127,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             </Button>
           )}
         </div>
+
       </div>
 
       {/* Action / Filter Bar */}

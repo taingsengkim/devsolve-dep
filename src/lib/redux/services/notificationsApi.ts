@@ -3,7 +3,12 @@ import {
   NotificationItem,
   NotificationsResponse,
   ReplyNotificationRequest,
+  NotificationSettingsPreferences,
+  UpdateNotificationSettingsRequest,
+  NotificationCategoryKey,
 } from "@/lib/types/notifications/types";
+
+
 
 export * from "@/lib/types/notifications/types";
 
@@ -166,6 +171,28 @@ export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
 
 let localNotificationsState: NotificationItem[] = [...INITIAL_NOTIFICATIONS];
 
+export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettingsPreferences = {
+  masterEnabled: true,
+  digestFrequency: "DAILY_DIGEST",
+  categories: {
+    reportStatusChanges: { inApp: true, email: true, push: true },
+    retestInvites: { inApp: true, email: true, push: true },
+    bountyPayouts: { inApp: true, email: true, push: true },
+    newPrograms: { inApp: true, email: true, push: false },
+    scopeUpdates: { inApp: true, email: true, push: false },
+    privateInvites: { inApp: true, email: true, push: true },
+    discussionReplies: { inApp: true, email: true, push: false },
+    solutionApprovals: { inApp: true, email: true, push: false },
+    followerActivity: { inApp: true, email: false, push: false },
+    securityAlerts: { inApp: true, email: true, push: true },
+    passwordChanges: { inApp: true, email: true, push: true },
+  },
+};
+
+let localNotificationSettingsState: NotificationSettingsPreferences = {
+  ...DEFAULT_NOTIFICATION_SETTINGS,
+};
+
 export const notificationsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getNotifications: builder.query<NotificationsResponse, { dateAdded?: string } | void>({
@@ -227,6 +254,47 @@ export const notificationsApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Notification"],
     }),
+
+    getNotificationSettings: builder.query<NotificationSettingsPreferences, void>({
+      queryFn: () => {
+        return { data: localNotificationSettingsState };
+      },
+      providesTags: ["Notification"],
+    }),
+
+    updateNotificationSettings: builder.mutation<
+      NotificationSettingsPreferences,
+      UpdateNotificationSettingsRequest
+    >({
+      queryFn: (updates) => {
+        localNotificationSettingsState = {
+          ...localNotificationSettingsState,
+          ...updates,
+          categories: {
+            ...localNotificationSettingsState.categories,
+            ...(updates.categories
+              ? Object.entries(updates.categories).reduce((acc, [catKey, channels]) => {
+                  const key = catKey as NotificationCategoryKey;
+                  return {
+                    ...acc,
+                    [key]: {
+                      ...(localNotificationSettingsState.categories[key] || {
+                        inApp: true,
+                        email: true,
+                        push: false,
+                      }),
+                      ...channels,
+                    },
+                  };
+                }, {})
+              : {}),
+          },
+        };
+        return { data: localNotificationSettingsState };
+      },
+      invalidatesTags: ["Notification"],
+    }),
+
   }),
 });
 
@@ -234,4 +302,7 @@ export const {
   useGetNotificationsQuery,
   useMarkAsReadMutation,
   useReplyNotificationMutation,
+  useGetNotificationSettingsQuery,
+  useUpdateNotificationSettingsMutation,
 } = notificationsApi;
+

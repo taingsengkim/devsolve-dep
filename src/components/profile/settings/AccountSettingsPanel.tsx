@@ -1,33 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import {
   Bell,
+  ChevronRight,
   ExternalLink,
   HelpCircle,
   KeyRound,
   Lock,
-  Monitor,
-  Moon,
-  Sun,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Toggle from "./Toggle";
-import { useThemeToggle } from "@/components/motion/theme-toggle";
-import type {
-  NotificationKey,
-  NotificationPreferences,
-} from "@/lib/types/profile/types";
+import {
+  useGetNotificationSettingsQuery,
+  useUpdateNotificationSettingsMutation,
+} from "@/lib/redux/services/notificationsApi";
+import type { NotificationCategoryKey } from "@/lib/types/notifications/types";
+import type { NotificationPreferences } from "@/lib/types/profile/types";
 
-const NOTIFICATION_ITEMS: { key: NotificationKey; label: string }[] = [
+
+const NOTIFICATION_ITEMS: { key: NotificationCategoryKey; label: string }[] = [
   { key: "reportStatusChanges", label: "Report Status Changes" },
-  { key: "adminApprovals", label: "Admin Approvals" },
+  { key: "passwordChanges", label: "Security & Login Alerts" },
   { key: "newPrograms", label: "New Programs & Targets" },
   { key: "retestInvites", label: "Retest Invites" },
-  { key: "communityActivity", label: "Community Activity & Comments" },
-  { key: "followActivity", label: "Follow Activity & Achievements" },
+  { key: "discussionReplies", label: "Community Activity & Comments" },
+  { key: "followerActivity", label: "Follow Activity & Achievements" },
 ];
 
 interface AccountSettingsPanelProps {
@@ -35,25 +36,16 @@ interface AccountSettingsPanelProps {
   initialTwoFactorEnabled: boolean;
 }
 
-/**
- * Settings for the account and the app itself — security, notifications,
- * appearance. Deliberately holds none of the profile's own content: name,
- * photo, bio and links are edited in place on the profile page, so there is
- * exactly one place to change each thing.
- */
 export default function AccountSettingsPanel({
   initialNotifications,
   initialTwoFactorEnabled,
 }: AccountSettingsPanelProps) {
-  const [notifications, setNotifications] =
-    useState<NotificationPreferences>(initialNotifications);
+  const { data: notificationSettings } = useGetNotificationSettingsQuery();
+  const [updateNotificationSettings] = useUpdateNotificationSettingsMutation();
+
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(
-    initialTwoFactorEnabled,
+    initialTwoFactorEnabled
   );
-  const { isDark, mounted, toggle } = useThemeToggle({
-    variant: "rectangle",
-    start: "bottom-up",
-  });
 
   const handleManagePassword = () => {
     const issuer = process.env.NEXT_PUBLIC_KEYCLOAK_ISSUER;
@@ -64,8 +56,28 @@ export default function AccountSettingsPanel({
     window.open(
       `${issuer.replace(/\/+$/, "")}/account`,
       "_blank",
-      "noopener,noreferrer",
+      "noopener,noreferrer"
     );
+  };
+
+  const handleToggleNotification = async (
+    key: NotificationCategoryKey,
+    value: boolean
+  ) => {
+    try {
+      await updateNotificationSettings({
+        categories: {
+          [key]: {
+            inApp: value,
+            email: value,
+            push: value,
+          },
+        },
+      }).unwrap();
+      toast.success("Notification preference updated.");
+    } catch {
+      toast.error("Failed to update notification preference.");
+    }
   };
 
   return (
@@ -125,44 +137,57 @@ export default function AccountSettingsPanel({
       </section>
 
       <div className="space-y-6">
-        {/* Notifications */}
+        {/* Notifications Overview */}
         <section className="space-y-5 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center gap-2.5 border-b border-slate-100 pb-4 text-lg font-bold text-slate-900 dark:border-slate-800/80 dark:text-slate-100">
-            <Bell className="size-5 text-slate-500 dark:text-slate-400" />
-            <span>Notifications</span>
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800/80">
+            <div className="flex items-center gap-2.5 text-lg font-bold text-slate-900 dark:text-slate-100">
+              <Bell className="size-5 text-slate-500 dark:text-slate-400" />
+              <span>Notifications</span>
+            </div>
+            <Link
+              href="/dashboard/notifications/settings"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400"
+            >
+              Detailed Settings
+              <ChevronRight className="size-4" />
+            </Link>
           </div>
 
           <div className="space-y-4 pt-1">
-            {NOTIFICATION_ITEMS.map((item) => (
-              <div
-                key={item.key}
-                className="flex items-center justify-between gap-4 py-1"
-              >
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {item.label}
-                </span>
-                <Toggle
-                  checked={notifications[item.key]?.email ?? true}
-                  onChange={(value) =>
-                    setNotifications((prev) => ({
-                      ...prev,
-                      [item.key]: { ...prev[item.key], email: value },
-                    }))
-                  }
-                  label={item.label}
-                />
-              </div>
-            ))}
+            {NOTIFICATION_ITEMS.map((item) => {
+              const isEnabled =
+                notificationSettings?.categories[item.key]?.email ?? true;
+
+              return (
+                <div
+                  key={item.key}
+                  className="flex items-center justify-between gap-4 py-1"
+                >
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {item.label}
+                  </span>
+                  <Toggle
+                    checked={isEnabled}
+                    onChange={(val) => handleToggleNotification(item.key, val)}
+                    label={item.label}
+                  />
+                </div>
+              );
+            })}
           </div>
 
-          {/* Honest about the state of things: there is no preferences
-              endpoint yet, so these do not survive a reload. */}
-          <p className="border-t border-slate-100 pt-4 text-sm text-slate-400 dark:border-slate-800 dark:text-slate-500">
-            Notification preferences aren&apos;t saved to your account yet.
-          </p>
+          <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
+            <Link
+              href="/dashboard/notifications/settings"
+              className="flex items-center justify-between rounded-xl bg-slate-50 p-3.5 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:bg-slate-800/60 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
+            >
+              <span>Manage channel options (In-App, Email, Push & Frequency)</span>
+              <ChevronRight className="size-4 text-slate-400" />
+            </Link>
+          </div>
         </section>
-        
       </div>
     </motion.div>
   );
 }
+

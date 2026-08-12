@@ -57,3 +57,51 @@ export interface NotificationsResponse {
   items: NotificationItem[];
   unreadCount: number;
 }
+
+export type NotificationChannel = "inApp" | "email" | "push";
+
+export interface NotificationChannelOptions {
+  inApp: boolean;
+  email: boolean;
+  push: boolean;
+}
+
+export type NotificationCategoryKey =
+  | "reportStatusChanges"
+  | "retestInvites"
+  | "bountyPayouts"
+  | "newPrograms"
+  | "scopeUpdates"
+  | "privateInvites"
+  | "discussionReplies"
+  | "solutionApprovals"
+  | "followerActivity"
+  | "securityAlerts"
+  | "passwordChanges";
+
+export type NotificationFrequency =
+  | "IMMEDIATE"
+  | "DAILY_DIGEST"
+  | "WEEKLY_SUMMARY"
+  | "OFF";
+
+export interface NotificationCategoryConfig {
+  key: NotificationCategoryKey;
+  label: string;
+  description: string;
+  section: "security" | "reports" | "programs" | "community";
+}
+
+export interface NotificationSettingsPreferences {
+  masterEnabled: boolean;
+  digestFrequency: NotificationFrequency;
+  categories: Record<NotificationCategoryKey, NotificationChannelOptions>;
+}
+
+export interface UpdateNotificationSettingsRequest {
+  masterEnabled?: boolean;
+  digestFrequency?: NotificationFrequency;
+  categories?: Partial<Record<NotificationCategoryKey, Partial<NotificationChannelOptions>>>;
+}
+
+
