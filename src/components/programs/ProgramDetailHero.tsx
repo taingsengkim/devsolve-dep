@@ -23,6 +23,18 @@ interface ProgramDetailHeroProps {
 }
 
 export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
+  const [imageError, setImageError] = React.useState(false);
+  const logoUrl = !imageError ? (program.organization?.logoUrl || program.logoUrl) : null;
+  const orgName = program.organizationName || program.organization?.name || program.handle || "Organization";
+  const initials =
+    orgName
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase() || "OR";
+
   const { data: isSaved } = useGetBookmarkStatusQuery({ type: "PROGRAM", targetId: program.id });
   const [addBookmark, { isLoading: isSaving }] = useAddBookmarkMutation();
   const [removeBookmark, { isLoading: isRemoving }] = useRemoveBookmarkMutation();
@@ -70,14 +82,22 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
         {/* TOP HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 bg-muted rounded-xl flex items-center justify-center font-bold text-foreground text-base ring-1 ring-foreground/5 dark:ring-foreground/10 shrink-0 overflow-hidden">
-              <Image
-                src="https://media.wired.com/photos/5926ffe47034dc5f91bed4e8/3:2/w_2560%2Cc_limit/google-logo.jpg"
-                alt={program.handle || "Organization"}
-                className="w-full h-full object-cover"
-                width={40}
-                height={40}
-              />
+            <div className="w-11 h-11 bg-muted rounded-xl flex items-center justify-center font-bold text-foreground text-base ring-1 ring-foreground/5 dark:ring-foreground/10 shrink-0 overflow-hidden shadow-sm">
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  alt={orgName}
+                  className="w-full h-full object-cover"
+                  width={40}
+                  height={40}
+                  onError={() => setImageError(true)}
+                  unoptimized
+                />
+              ) : (
+                <span className="text-xs font-extrabold text-foreground tracking-wider">
+                  {initials}
+                </span>
+              )}
             </div>
 
             <div className="space-y-0.5">

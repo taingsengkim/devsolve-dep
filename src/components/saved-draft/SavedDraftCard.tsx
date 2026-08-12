@@ -52,10 +52,20 @@ function getDraftHref(item: SavedDraftItem) {
 }
 
 export function SavedDraftCard({ item, onDelete }: SavedDraftCardProps) {
+  const [imageError, setImageError] = useState(false);
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const meta = getDraftMeta(item);
   const href = getDraftHref(item);
+
+  const logoSrc = !imageError ? item.logoSrc : null;
+  const initials = (item.title || "Draft")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase() || "DF";
 
   return (
     <>
@@ -120,13 +130,21 @@ export function SavedDraftCard({ item, onDelete }: SavedDraftCardProps) {
           <div>
             <div className="flex items-start gap-3.5 pr-8">
               <div className="size-11 shrink-0 overflow-hidden rounded-xl bg-muted ring-1 ring-foreground/5 shadow-sm transition-all duration-300 group-hover:scale-105 dark:ring-foreground/10 flex items-center justify-center">
-                <Image
-                  src={item.logoSrc || STATIC_CARD_LOGO}
-                  alt={item.logoAlt || item.title}
-                  className="size-full object-cover"
-                  width={44}
-                  height={44}
-                />
+                {logoSrc ? (
+                  <Image
+                    src={logoSrc}
+                    alt={item.logoAlt || item.title}
+                    className="size-full object-cover"
+                    width={44}
+                    height={44}
+                    onError={() => setImageError(true)}
+                    unoptimized
+                  />
+                ) : (
+                  <span className="text-xs font-extrabold text-foreground tracking-wider">
+                    {initials}
+                  </span>
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <h4 className="font-bold text-[17px] leading-snug text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 line-clamp-1 transition-colors" title={item.title}>
