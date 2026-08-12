@@ -16,7 +16,7 @@ export function CreateProgramStepper({
   setActiveTab,
 }: CreateProgramStepperProps) {
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200/80 dark:border-slate-800">
+    <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-border">
       {steps.map((step) => {
         const Icon = step.icon;
         const isActive = activeTab === step.id;
@@ -30,8 +30,8 @@ export function CreateProgramStepper({
               isActive
                 ? "bg-blue-600 text-white dark:bg-blue-600 dark:text-white shadow-xs"
                 : isCompleted
-                  ? "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 hover:bg-blue-100/70 dark:hover:bg-blue-900/50"
-                  : "bg-slate-100 text-slate-600 dark:bg-slate-800/60 dark:text-slate-400 hover:bg-slate-200/70 dark:hover:bg-slate-800"
+                  ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 hover:bg-blue-100/70 dark:hover:bg-blue-500/20"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
             }`}
           >
             {isCompleted ? (

@@ -33,22 +33,22 @@ export function Step4BountyMatrix({
 }: Step4BountyMatrixProps) {
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+      <h2 className="text-lg font-bold text-foreground">
         {programType === "BOUNTY" ? "Bounty Matrix" : "Response Matrix"}
       </h2>
 
       {/* Checkbox Offer Financial Bounties */}
-      <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/80 dark:border-slate-800 flex items-center gap-3">
+      <div className="p-4 bg-muted/50 rounded-xl border border-border flex items-center gap-3">
         <input
           type="checkbox"
           id="offerBounties"
           checked={offerBounties}
           onChange={(e) => setOfferBounties(e.target.checked)}
-          className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
+          className="w-4 h-4 text-blue-600 rounded border-border focus:ring-blue-500 cursor-pointer"
         />
         <label
           htmlFor="offerBounties"
-          className="text-sm font-semibold text-slate-800 dark:text-slate-200 cursor-pointer"
+          className="text-sm font-semibold text-foreground cursor-pointer"
         >
           {programType === "BOUNTY"
             ? "Offer financial bounties (Bounty Program)"
@@ -58,10 +58,10 @@ export function Step4BountyMatrix({
 
       {/* REWARD MATRIX TABLE (DYNAMIC $ vs pts) */}
       {offerBounties && (
-        <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+        <div className="border border-border rounded-xl overflow-hidden bg-card">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/70 dark:bg-slate-800/50 border-b border-slate-200/80 dark:border-slate-800 text-xs font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider">
+              <tr className="bg-muted/60 border-b border-border text-xs font-bold uppercase text-muted-foreground tracking-wider">
                 <th className="py-3.5 px-6">Severity</th>
                 <th className="py-3.5 px-4">
                   Min ({programType === "BOUNTY" ? "$" : "pts"})
@@ -71,11 +71,11 @@ export function Step4BountyMatrix({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-border">
               {/* CRITICAL */}
               <tr>
                 <td className="py-4 px-6">
-                  <span className="inline-block px-3 py-1 text-xs font-bold rounded-md bg-rose-50 text-rose-600 border border-rose-200 dark:bg-rose-950/50 dark:text-rose-400 dark:border-rose-900/50">
+                  <span className="inline-block px-3 py-1 text-xs font-bold rounded-md bg-rose-50 text-rose-600 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20">
                     CRITICAL
                   </span>
                 </td>
@@ -101,7 +101,7 @@ export function Step4BountyMatrix({
                         });
                       }
                     }}
-                    className="h-10 w-32 rounded-xl text-base font-semibold border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                    className="h-10 w-32 rounded-xl text-base font-semibold border-border bg-card text-foreground"
                   />
                 </td>
                 <td className="py-4 px-6">
@@ -126,7 +126,7 @@ export function Step4BountyMatrix({
                         });
                       }
                     }}
-                    className="h-10 w-32 rounded-xl text-base font-semibold border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                    className="h-10 w-32 rounded-xl text-base font-semibold border-border bg-card text-foreground"
                   />
                 </td>
               </tr>
@@ -134,7 +134,7 @@ export function Step4BountyMatrix({
               {/* HIGH */}
               <tr>
                 <td className="py-4 px-6">
-                  <span className="inline-block px-3 py-1 text-xs font-bold rounded-md bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-900/50">
+                  <span className="inline-block px-3 py-1 text-xs font-bold rounded-md bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20">
                     HIGH
                   </span>
                 </td>
@@ -160,7 +160,7 @@ export function Step4BountyMatrix({
                         });
                       }
                     }}
-                    className="h-10 w-32 rounded-xl text-base font-semibold border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                    className="h-10 w-32 rounded-xl text-base font-semibold border-border bg-card text-foreground"
                   />
                 </td>
                 <td className="py-4 px-6">
@@ -185,7 +185,7 @@ export function Step4BountyMatrix({
                         });
                       }
                     }}
-                    className="h-10 w-32 rounded-xl text-base font-semibold border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                    className="h-10 w-32 rounded-xl text-base font-semibold border-border bg-card text-foreground"
                   />
                 </td>
               </tr>
@@ -193,7 +193,7 @@ export function Step4BountyMatrix({
               {/* MEDIUM */}
               <tr>
                 <td className="py-4 px-6">
-                  <span className="inline-block px-3 py-1 text-xs font-bold rounded-md bg-sky-50 text-sky-600 border border-sky-200 dark:bg-sky-950/50 dark:text-sky-400 dark:border-sky-900/50">
+                  <span className="inline-block px-3 py-1 text-xs font-bold rounded-md bg-sky-50 text-sky-600 border border-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-500/20">
                     MEDIUM
                   </span>
                 </td>
@@ -219,7 +219,7 @@ export function Step4BountyMatrix({
                         });
                       }
                     }}
-                    className="h-10 w-32 rounded-xl text-base font-semibold border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                    className="h-10 w-32 rounded-xl text-base font-semibold border-border bg-card text-foreground"
                   />
                 </td>
                 <td className="py-4 px-6">
@@ -244,7 +244,7 @@ export function Step4BountyMatrix({
                         });
                       }
                     }}
-                    className="h-10 w-32 rounded-xl text-base font-semibold border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                    className="h-10 w-32 rounded-xl text-base font-semibold border-border bg-card text-foreground"
                   />
                 </td>
               </tr>
@@ -252,7 +252,7 @@ export function Step4BountyMatrix({
               {/* LOW */}
               <tr>
                 <td className="py-4 px-6">
-                  <span className="inline-block px-3 py-1 text-xs font-bold rounded-md bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-900/50">
+                  <span className="inline-block px-3 py-1 text-xs font-bold rounded-md bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20">
                     LOW
                   </span>
                 </td>
@@ -278,7 +278,7 @@ export function Step4BountyMatrix({
                         });
                       }
                     }}
-                    className="h-10 w-32 rounded-xl text-base font-semibold border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                    className="h-10 w-32 rounded-xl text-base font-semibold border-border bg-card text-foreground"
                   />
                 </td>
                 <td className="py-4 px-6">
@@ -303,7 +303,7 @@ export function Step4BountyMatrix({
                         });
                       }
                     }}
-                    className="h-10 w-32 rounded-xl text-base font-semibold border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                    className="h-10 w-32 rounded-xl text-base font-semibold border-border bg-card text-foreground"
                   />
                 </td>
               </tr>
@@ -313,7 +313,7 @@ export function Step4BountyMatrix({
       )}
 
       {/* INFO BOX */}
-      <div className="p-4 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-xl flex items-start gap-3 text-blue-900 dark:text-blue-200">
+      <div className="p-4 bg-blue-50/80 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl flex items-start gap-3 text-blue-900 dark:text-blue-200">
         <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
         <p className="text-xs sm:text-sm font-medium leading-relaxed">
           {programType === "BOUNTY"

@@ -102,7 +102,7 @@ function CreateProgramContent() {
       {/* MAIN LAYOUT GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* LEFT 2 COLUMNS: FORM STEPS */}
-        <div className="lg:col-span-2 p-6 sm:p-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-6">
+        <div className="lg:col-span-2 p-6 sm:p-8 bg-card text-card-foreground rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-xs space-y-6">
           {activeTab === 1 && (
             <Step1BasicInfo
               programName={programName}
@@ -161,13 +161,13 @@ function CreateProgramContent() {
           )}
 
           {/* FOOTER NAVIGATION BUTTONS */}
-          <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
+          <div className="pt-4 border-t border-border flex items-center justify-between">
             <Button
               type="button"
               variant="outline"
               disabled={activeTab === 1}
               onClick={() => setActiveTab(Math.max(activeTab - 1, 1))}
-              className="rounded-xl border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm h-11 px-5 cursor-pointer"
+              className="rounded-xl border-border bg-card text-foreground font-semibold text-sm h-11 px-5 cursor-pointer hover:bg-muted"
             >
               <ChevronLeft className="w-4 h-4 mr-1.5" />
               Previous
@@ -179,9 +179,9 @@ function CreateProgramContent() {
                 variant="outline"
                 onClick={handleSaveDraft}
                 disabled={isCreating}
-                className="rounded-xl border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm h-11 px-5 gap-2 cursor-pointer"
+                className="rounded-xl border-border bg-card text-foreground font-semibold text-sm h-11 px-5 gap-2 cursor-pointer hover:bg-muted"
               >
-                <Save className="w-4 h-4 text-slate-500" />
+                <Save className="w-4 h-4 text-muted-foreground" />
                 Save as Draft
               </Button>
 
@@ -190,7 +190,7 @@ function CreateProgramContent() {
                   type="button"
                   onClick={() => setActiveTab(Math.min(activeTab + 1, 4))}
                   disabled={isNextDisabled}
-                  className="rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm h-11 px-6 gap-1.5 cursor-pointer"
+                  className="rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm h-11 px-6 gap-1.5 cursor-pointer dark:bg-blue-600 dark:hover:bg-blue-700"
                 >
                   Next
                   <ChevronRight className="w-4 h-4" />
@@ -200,7 +200,7 @@ function CreateProgramContent() {
                   type="button"
                   onClick={handleCreateProgram}
                   disabled={!isFormValid || isCreating}
-                  className="rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm h-11 px-6 gap-2 cursor-pointer"
+                  className="rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm h-11 px-6 gap-2 cursor-pointer dark:bg-emerald-600 dark:hover:bg-emerald-700"
                 >
                   {isCreating
                     ? isEditingDraft

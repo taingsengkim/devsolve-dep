@@ -36,17 +36,17 @@ export function Step2Scope({
 }: Step2ScopeProps) {
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+      <h2 className="text-lg font-bold text-foreground">
         Scope Definition
       </h2>
 
       {/* IN-SCOPE TARGETS */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs font-bold">
+          <span className="w-5 h-5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs font-bold">
             ✓
           </span>
-          <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+          <label className="text-sm font-semibold text-foreground">
             In-Scope Targets
           </label>
         </div>
@@ -61,7 +61,7 @@ export function Step2Scope({
                 setInScopeTargets(updated);
               }}
             >
-              <SelectTrigger className="h-11 w-32 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-medium shrink-0">
+              <SelectTrigger className="h-11 w-32 rounded-xl border-border bg-card text-foreground text-sm font-medium shrink-0">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -81,7 +81,7 @@ export function Step2Scope({
                 updated[index].target = e.target.value;
                 setInScopeTargets(updated);
               }}
-              className="h-11 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-base focus-visible:ring-blue-500 flex-1"
+              className="h-11 rounded-xl border-border bg-card text-foreground text-base focus-visible:ring-blue-500 flex-1"
             />
 
             <Input
@@ -93,7 +93,7 @@ export function Step2Scope({
                 updated[index].description = e.target.value;
                 setInScopeTargets(updated);
               }}
-              className="h-11 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-base focus-visible:ring-blue-500 flex-1 hidden md:block"
+              className="h-11 rounded-xl border-border bg-card text-foreground text-base focus-visible:ring-blue-500 flex-1 hidden md:block"
             />
 
             {inScopeTargets.length > 1 && (
@@ -102,7 +102,7 @@ export function Step2Scope({
                 variant="ghost"
                 size="icon"
                 onClick={() => removeInScope(item.id)}
-                className="h-11 w-11 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 shrink-0"
+                className="h-11 w-11 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 shrink-0"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -113,22 +113,22 @@ export function Step2Scope({
         <Button
           type="button"
           onClick={addInScope}
-          className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm h-10 px-4"
+          className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm h-10 px-4 cursor-pointer dark:bg-emerald-600 dark:hover:bg-emerald-700"
         >
           <Plus className="w-4 h-4 mr-1.5" />
           Add In-Scope Target
         </Button>
       </div>
 
-      <hr className="border-slate-200/80 dark:border-slate-800" />
+      <hr className="border-border" />
 
       {/* OUT-OF-SCOPE TARGETS */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <span className="w-5 h-5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xs font-bold">
+          <span className="w-5 h-5 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xs font-bold">
             ✕
           </span>
-          <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+          <label className="text-sm font-semibold text-foreground">
             Out-of-Scope Targets
           </label>
         </div>
@@ -143,7 +143,7 @@ export function Step2Scope({
                 setOutOfScopeTargets(updated);
               }}
             >
-              <SelectTrigger className="h-11 w-32 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-medium shrink-0">
+              <SelectTrigger className="h-11 w-32 rounded-xl border-border bg-card text-foreground text-sm font-medium shrink-0">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -163,7 +163,7 @@ export function Step2Scope({
                 updated[index].target = e.target.value;
                 setOutOfScopeTargets(updated);
               }}
-              className="h-11 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-base focus-visible:ring-blue-500 flex-1"
+              className="h-11 rounded-xl border-border bg-card text-foreground text-base focus-visible:ring-blue-500 flex-1"
             />
 
             <Input
@@ -175,7 +175,7 @@ export function Step2Scope({
                 updated[index].description = e.target.value;
                 setOutOfScopeTargets(updated);
               }}
-              className="h-11 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-base focus-visible:ring-blue-500 flex-1 hidden md:block"
+              className="h-11 rounded-xl border-border bg-card text-foreground text-base focus-visible:ring-blue-500 flex-1 hidden md:block"
             />
 
             {outOfScopeTargets.length > 1 && (
@@ -184,7 +184,7 @@ export function Step2Scope({
                 variant="ghost"
                 size="icon"
                 onClick={() => removeOutOfScope(item.id)}
-                className="h-11 w-11 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 shrink-0"
+                className="h-11 w-11 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 shrink-0"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -195,7 +195,7 @@ export function Step2Scope({
         <Button
           type="button"
           onClick={addOutOfScope}
-          className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm h-10 px-4"
+          className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm h-10 px-4 cursor-pointer dark:bg-rose-600 dark:hover:bg-rose-700"
         >
           <Plus className="w-4 h-4 mr-1.5" />
           Add Out-Of-Scope Target

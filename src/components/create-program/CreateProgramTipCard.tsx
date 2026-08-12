@@ -10,7 +10,7 @@ interface CreateProgramTipCardProps {
 
 export function CreateProgramTipCard({ tip }: CreateProgramTipCardProps) {
   return (
-    <div className="bg-blue-50/60 dark:bg-blue-950/30 rounded-2xl border border-blue-100 dark:border-blue-900/50 p-5 space-y-2 text-blue-900 dark:text-blue-200">
+    <div className="bg-blue-50/80 dark:bg-blue-500/10 rounded-2xl border border-blue-200 dark:border-blue-500/20 p-5 space-y-2 text-blue-900 dark:text-blue-200">
       <div className="flex items-center gap-2">
         <HelpCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
         <h4 className="text-sm font-bold text-blue-900 dark:text-blue-200">

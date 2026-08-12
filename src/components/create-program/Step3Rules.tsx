@@ -30,26 +30,26 @@ export function Step3Rules({
 }: Step3RulesProps) {
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+      <h2 className="text-lg font-bold text-foreground">
         Rules & Exclusions
       </h2>
 
       {/* Rules of Engagement */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+        <label className="text-sm font-semibold text-foreground">
           Rules of Engagement
         </label>
         <Textarea
           rows={5}
           value={rulesOfEngagement}
           onChange={(e) => setRulesOfEngagement(e.target.value)}
-          className="rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-base focus-visible:ring-blue-500 font-mono resize-none p-3.5"
+          className="rounded-xl border-border bg-card text-foreground text-base focus-visible:ring-blue-500 font-mono resize-none p-3.5"
         />
       </div>
 
       {/* Excluded Vulnerabilities */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+        <label className="text-sm font-semibold text-foreground">
           Excluded Vulnerability Types ({excludedTypes.length})
         </label>
         <div className="flex gap-2">
@@ -62,12 +62,12 @@ export function Step3Rules({
               e.key === "Enter" &&
               (e.preventDefault(), handleAddExcludedType())
             }
-            className="h-11 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-base focus-visible:ring-blue-500 flex-1"
+            className="h-11 rounded-xl border-border bg-card text-foreground text-base focus-visible:ring-blue-500 flex-1"
           />
           <Button
             type="button"
             onClick={handleAddExcludedType}
-            className="rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm h-11 px-6"
+            className="rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm h-11 px-6 cursor-pointer dark:bg-amber-500 dark:hover:bg-amber-600"
           >
             Add
           </Button>
@@ -78,7 +78,7 @@ export function Step3Rules({
             {excludedTypes.map((item, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700"
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-muted text-foreground rounded-lg text-xs font-semibold border border-border"
               >
                 {item}
                 <button
@@ -100,14 +100,14 @@ export function Step3Rules({
 
       {/* Proof of Concept Requirements */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+        <label className="text-sm font-semibold text-foreground">
           Proof of Concept (PoC) Requirements
         </label>
         <Textarea
           rows={4}
           value={pocRequirements}
           onChange={(e) => setPocRequirements(e.target.value)}
-          className="rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-base focus-visible:ring-blue-500 font-mono resize-none p-3.5"
+          className="rounded-xl border-border bg-card text-foreground text-base focus-visible:ring-blue-500 font-mono resize-none p-3.5"
         />
       </div>
     </div>
