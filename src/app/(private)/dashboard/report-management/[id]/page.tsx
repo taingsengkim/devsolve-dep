@@ -30,7 +30,7 @@ export default function ReportManagementDetailPage() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="mx-auto flex w-full max-w-[1400px] flex-col gap-5 pb-12"
+      className="space-y-6 w-full pb-12"
     >
       <ReportDetailHeader detail={detail} />
       <ReportDetailTargetScope detail={detail} />
