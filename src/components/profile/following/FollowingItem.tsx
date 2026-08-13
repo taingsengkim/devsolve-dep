@@ -108,7 +108,7 @@ export default function FollowingItem({
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex items-start gap-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-2xs transition-all hover:border-slate-300 dark:hover:border-slate-700"
+      className="flex items-start gap-3.5 rounded-2xl border border-border bg-card p-4 shadow-2xs ring-1 ring-foreground/5 transition-all hover:bg-muted/20 dark:ring-foreground/10 sm:p-5"
     >
       <Link href={profileUrl} className="relative shrink-0 group">
         <ResearcherAvatar
@@ -117,7 +117,7 @@ export default function FollowingItem({
           avatarUrl={user.avatarUrl ?? undefined}
           initials={initials}
           size={48}
-          className="rounded-2xl ring-slate-200 transition-transform group-hover:scale-105 dark:ring-slate-800"
+          className="rounded-2xl ring-foreground/10 transition-transform group-hover:scale-105"
         />
       </Link>
 
@@ -126,13 +126,13 @@ export default function FollowingItem({
           <div className="min-w-0 flex-1 space-y-1">
             <Link
               href={profileUrl}
-              className="block truncate text-base font-bold text-slate-900 transition-colors hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-400"
+              className="block truncate text-base font-bold text-foreground transition-colors hover:text-blue-600 dark:hover:text-blue-400"
             >
               {displayName}
             </Link>
 
             {biographyPreview && (
-              <p className="truncate text-sm text-slate-600 dark:text-slate-400">
+              <p className="truncate text-sm text-muted-foreground">
                 {biographyPreview}
               </p>
             )}
@@ -140,7 +140,7 @@ export default function FollowingItem({
 
           <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
             {followerCount > 0 && (
-              <p className="whitespace-nowrap text-sm font-medium text-slate-500 dark:text-slate-400">
+              <p className="whitespace-nowrap text-sm font-medium text-muted-foreground">
                 {formatFollowerCount(followerCount)}{" "}
                 {followerCount === 1 ? "follower" : "followers"}
               </p>
@@ -152,8 +152,8 @@ export default function FollowingItem({
               onClick={handleToggleFollow}
               className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition cursor-pointer disabled:opacity-70 ${
                 isFollowing
-                  ? "border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-900/50"
-                  : "bg-blue-600 hover:bg-blue-700 text-white shadow-2xs"
+                  ? "border border-border bg-card text-foreground hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:hover:border-rose-500/20 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
+                  : "bg-blue-600 text-white shadow-2xs hover:bg-blue-700"
               }`}
             >
               {isPending ? (

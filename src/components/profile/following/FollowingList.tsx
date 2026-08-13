@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Search, UserCheck } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { FollowingUser } from "@/lib/types/profile/types";
 import FollowingItem from "./FollowingItem";
 
@@ -32,33 +33,33 @@ export default function FollowingList({
   return (
     <div className="space-y-6">
       {/* Header & Filter Controls */}
-      <div className="flex flex-col gap-3 border-b border-slate-200/80 dark:border-slate-800 pb-4">
+      <div className="flex flex-col gap-3 border-b border-border pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <div className="flex items-center gap-2.5">
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                 Following
               </h2>
             </div>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               People you follow on DevSolve.
             </p>
           </div>
 
           {/* Search Input */}
           <div className="relative min-w-[220px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-            <input
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search following..."
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-4 py-2 text-sm font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-500 focus:outline-hidden dark:focus:border-blue-500"
+              className="h-11 rounded-xl border border-border bg-card pl-9 pr-4 text-sm font-medium text-foreground shadow-none placeholder:text-muted-foreground focus-visible:border-blue-500 focus-visible:ring-4 focus-visible:ring-blue-500/10"
             />
           </div>
         </div>
 
-        <p className="pt-0.5 text-sm font-medium text-slate-500 dark:text-slate-400">
+        <p className="pt-0.5 text-sm font-medium text-muted-foreground">
           {totalUsers} {totalUsers === 1 ? "person" : "people"}
         </p>
       </div>
@@ -78,14 +79,14 @@ export default function FollowingList({
             />
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 py-12 px-6 text-center shadow-2xs">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 mb-3">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card py-12 px-6 text-center shadow-2xs ring-1 ring-foreground/5 dark:ring-foreground/10">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
               <UserCheck size={24} />
             </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+            <h3 className="text-base font-bold text-foreground">
               {search ? "No users found" : "You're not following any users yet."}
             </h3>
-            <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 max-w-sm text-sm text-muted-foreground">
               {search
                 ? `No users match "${search}".`
                 : "When you follow researchers, they will appear here."}

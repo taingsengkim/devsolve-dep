@@ -25,15 +25,15 @@ export default function PublicFollowingPage() {
   if (isLoadingProfile || isLoadingFollows) {
     return (
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6 w-full pb-12 animate-pulse">
-        <div className="h-28 rounded-2xl bg-slate-200 dark:bg-slate-800" />
-        <div className="h-64 rounded-2xl bg-slate-200 dark:bg-slate-800" />
+        <div className="h-28 rounded-2xl bg-muted" />
+        <div className="h-64 rounded-2xl bg-muted" />
       </div>
     );
   }
   if (isError || !overview || !followingUsers) return notFound();
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-7xl bg-background px-4 py-8 text-foreground sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}

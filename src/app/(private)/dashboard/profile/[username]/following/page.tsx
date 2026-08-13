@@ -25,8 +25,8 @@ export default function FollowingPage() {
   if (isLoadingProfile || isLoadingFollows) {
     return (
       <div className="space-y-6 w-full pb-12 animate-pulse">
-        <div className="h-28 rounded-2xl bg-slate-200 dark:bg-slate-800" />
-        <div className="h-64 rounded-2xl bg-slate-200 dark:bg-slate-800" />
+        <div className="h-28 rounded-2xl bg-muted" />
+        <div className="h-64 rounded-2xl bg-muted" />
       </div>
     );
   }
@@ -37,7 +37,7 @@ export default function FollowingPage() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="space-y-6 w-full pb-12"
+      className="space-y-6 w-full pb-12 text-foreground"
     >
       <ProfileHeader
         profile={overview.profile}
