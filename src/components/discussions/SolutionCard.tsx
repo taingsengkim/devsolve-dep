@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 
 import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
+import { VoteControl } from "@/components/ui/vote-control";
 import type {
   ResourceSummary,
   SolutionResponse,
@@ -119,11 +120,9 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
   const [expanded, setExpanded] = useState(body.length <= COLLAPSE_OVER);
   const isLong = body.length > COLLAPSE_OVER;
 
-  const hasUpvoted = votes?.currentUserVote === 1;
-  const hasDownvoted = votes?.currentUserVote === -1;
   /* The summary is authoritative once loaded; until then the score that came
      with the solution itself is the better guess than zero. */
-  const score = votes?.score ?? solution.voteScore ?? 0;
+  const upvoteCount = votes?.upvotes ?? 0;
 
   const isAccepted = accepted ?? Boolean(solution.isAccepted);
   const author = solution.author;
@@ -170,41 +169,15 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
 
       <div className="flex flex-col gap-4 p-4 sm:flex-row sm:p-5">
         {/* Vote rail — a row on a phone, a column from `sm` up. */}
-        <div className="flex shrink-0 flex-row items-center gap-1 sm:flex-col">
-          <button
-            type="button"
-            onClick={() => void castVote(1)}
-            disabled={isVoting}
-            aria-pressed={hasUpvoted}
-            aria-label={hasUpvoted ? "Remove upvote" : "Upvote this answer"}
-            className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
-              hasUpvoted
-                ? "bg-blue-600 text-white"
-                : "text-slate-500 hover:bg-slate-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
-            }`}
-          >
-            <ChevronUp aria-hidden="true" className="size-4" />
-          </button>
-          <span className="text-sm font-bold tabular-nums text-slate-800 dark:text-neutral-100">
-            {score}
-          </span>
-          <button
-            type="button"
-            onClick={() => void castVote(-1)}
-            disabled={isVoting}
-            aria-pressed={hasDownvoted}
-            aria-label={
-              hasDownvoted ? "Remove downvote" : "Downvote this answer"
-            }
-            className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
-              hasDownvoted
-                ? "bg-rose-600 text-white"
-                : "text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800"
-            }`}
-          >
-            <ChevronDown aria-hidden="true" className="size-4" />
-          </button>
-        </div>
+        <VoteControl
+          voteCount={upvoteCount}
+          currentVote={votes?.currentUserVote ?? 0}
+          onVote={castVote}
+          isLoading={isVoting}
+          upvoteLabel="Upvote this answer"
+          downvoteLabel="Downvote this answer"
+          className="shrink-0 self-start"
+        />
 
         <div className="min-w-0 flex-1 space-y-4">
           {/* ── Who, and what kind of answer ── */}
