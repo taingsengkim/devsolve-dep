@@ -49,7 +49,9 @@ export default function MarketplacePage() {
     isFetching,
   } = useGetProgramsQuery(queryProps);
 
-  const rawPrograms: Program[] = responseData?.content || [];
+  const rawPrograms: Program[] = Array.isArray(responseData)
+    ? responseData
+    : responseData?.content || [];
 
   // CLIENT-SIDE FILTERING LOGIC
   const filteredPrograms = useMemo(() => {
