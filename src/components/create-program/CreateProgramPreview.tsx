@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
-import { Shield, Bookmark, ArrowRight, Eye } from "lucide-react";
+import React, { useState } from "react";
+import Image from "next/image";
+import { Shield, ArrowRight, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useGetMyOrganizationQuery } from "@/lib/redux/services/organizationsApi";
 import type { ProgramType, ScopeTarget } from "./types";
 
 interface CreateProgramPreviewProps {
@@ -20,6 +22,20 @@ export function CreateProgramPreview({
   activeInScope,
   getRewardRange,
 }: CreateProgramPreviewProps) {
+  const { data: organization } = useGetMyOrganizationQuery();
+  const [imageError, setImageError] = useState(false);
+
+  const logoUrl = !imageError && organization?.logoUrl ? organization.logoUrl : null;
+  const companyName = organization?.name || "My Organization";
+
+  const initials = companyName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase() || "CO";
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 px-1">
@@ -33,14 +49,28 @@ export function CreateProgramPreview({
         {/* Header: Logo, Org Name, Badge & Bookmark */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            {/* Placeholder Icon / Logo */}
-            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-border shrink-0 text-muted-foreground">
-              <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            {/* Real Logo / Initials */}
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center border border-border shrink-0 overflow-hidden text-muted-foreground shadow-xs">
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  alt={companyName}
+                  className="w-full h-full object-cover"
+                  width={40}
+                  height={40}
+                  onError={() => setImageError(true)}
+                  unoptimized
+                />
+              ) : (
+                <span className="text-xs font-extrabold text-foreground tracking-wider">
+                  {initials}
+                </span>
+              )}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h4 className="text-base font-bold text-blue-600 dark:text-blue-400 leading-tight">
-                  CyberShield Inc.
+                <h4 className="text-base font-bold text-foreground leading-tight">
+                  {companyName}
                 </h4>
               </div>
               <div className="flex items-center gap-1.5 mt-1">
@@ -62,13 +92,6 @@ export function CreateProgramPreview({
               </div>
             </div>
           </div>
-
-          <button
-            type="button"
-            className="text-muted-foreground hover:text-foreground cursor-pointer"
-          >
-            <Bookmark className="w-4 h-4" />
-          </button>
         </div>
 
         {/* Program Title & Short Description */}

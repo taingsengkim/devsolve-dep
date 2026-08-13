@@ -136,19 +136,6 @@ export function Step1BasicInfo({
         </div>
       </div>
 
-      {/* Policy */}
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-foreground">
-          Policy
-        </label>
-        <Textarea
-          rows={4}
-          placeholder="Describe your responsible disclosure policy..."
-          value={policy}
-          onChange={(e) => setPolicy(e.target.value)}
-          className="rounded-xl border-border bg-card text-foreground text-base focus-visible:ring-blue-500 resize-none p-3.5"
-        />
-      </div>
     </div>
   );
 }

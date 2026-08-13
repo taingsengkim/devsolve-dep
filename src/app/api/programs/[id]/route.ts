@@ -74,8 +74,9 @@ export async function GET(
         upstream = fallbackUpstream;
       } else if (token) {
         if (idIsUuid) {
-          const adminUpstream = await fetch(
-            `${BACKEND_API_URL}/admin/programs/${id}`,
+          // 1. Try company organization program detail endpoint first (full ProgramDetail object)
+          const orgMeUpstream = await fetch(
+            `${BACKEND_API_URL}/organizations/me/programs/${id}`,
             {
               method: "GET",
               headers: {
@@ -85,11 +86,29 @@ export async function GET(
               cache: "no-store",
             }
           );
-          if (adminUpstream.ok) {
-            upstream = adminUpstream;
+
+          if (orgMeUpstream.ok) {
+            upstream = orgMeUpstream;
+          } else {
+            // 2. Try admin program detail endpoint
+            const adminUpstream = await fetch(
+              `${BACKEND_API_URL}/admin/programs/${id}`,
+              {
+                method: "GET",
+                headers: {
+                  Accept: "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                cache: "no-store",
+              }
+            );
+            if (adminUpstream.ok) {
+              upstream = adminUpstream;
+            }
           }
         }
 
+        // 3. Fallback to summary list lookup if detailed endpoints failed
         if (!upstream.ok) {
           const orgProgramsUpstream = await fetch(
             `${BACKEND_API_URL}/organizations/me/programs?size=100`,
@@ -119,19 +138,6 @@ export async function GET(
               }
             }
           }
-        }
-      } else if (token && idIsUuid) {
-        // Fall back to company organization programs endpoint if public program lookup returns 404
-        const orgMeUpstream = await fetch(
-          `${BACKEND_API_URL}/organizations/me/programs/${id}`,
-          {
-            method: "GET",
-            headers,
-            cache: "no-store",
-          }
-        );
-        if (orgMeUpstream.ok) {
-          upstream = orgMeUpstream;
         }
       }
     }

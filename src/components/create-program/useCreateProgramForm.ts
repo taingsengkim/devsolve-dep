@@ -10,7 +10,7 @@ import {
   useGetMyCompanyProgramByIdQuery,
   useUpdateProgramMutation,
 } from "@/lib/redux/services/program/programsApi";
-import type { Asset } from "@/lib/types/programs/types";
+import type { Asset, ProgramState } from "@/lib/types/programs/types";
 import type { ScopeTarget, ProgramType, ProgramVisibility } from "./types";
 
 export function useCreateProgramForm() {
@@ -93,9 +93,20 @@ export function useCreateProgramForm() {
     if (existingProgram.visibility) {
       setVisibility(existingProgram.visibility === "PRIVATE" ? "PRIVATE" : "PUBLIC");
     }
-    if (existingProgram.policy) setPolicy(existingProgram.policy);
     if (existingProgram.proofOfConceptRequirements) {
-      setPocRequirements(existingProgram.proofOfConceptRequirements);
+      if (typeof existingProgram.proofOfConceptRequirements === "string") {
+        setPocRequirements(existingProgram.proofOfConceptRequirements);
+      } else if (
+        typeof existingProgram.proofOfConceptRequirements === "object" &&
+        Array.isArray(
+          (existingProgram.proofOfConceptRequirements as unknown as { rules?: string[] }).rules
+        )
+      ) {
+        const rules = (existingProgram.proofOfConceptRequirements as unknown as { rules: string[] }).rules;
+        setPocRequirements(
+          rules.map((r) => (r.startsWith("•") ? r : `• ${r}`)).join("\n")
+        );
+      }
     }
 
     if (existingProgram.rulesOfEngagement?.rules?.length) {
@@ -274,9 +285,8 @@ export function useCreateProgramForm() {
   const isStep1Valid = useMemo(() => {
     const nameValid = programName.trim().length >= 2 && programName.trim().length <= 255;
     const descValid = description.trim().length >= 1;
-    const policyValid = policy.trim().length >= 1;
-    return nameValid && isHandleValid && descValid && policyValid;
-  }, [programName, isHandleValid, description, policy]);
+    return nameValid && isHandleValid && descValid;
+  }, [programName, isHandleValid, description]);
 
   const isStep2Valid = useMemo(() => {
     return buildAssets().length > 0;
@@ -330,12 +340,6 @@ export function useCreateProgramForm() {
         return;
       }
 
-      if (!policy.trim()) {
-        toast.error("Responsible disclosure policy is required.");
-        setActiveTab(1);
-        return;
-      }
-
       const effectiveExcludedTypes = newExcludedInput.trim()
         ? [...excludedTypes, newExcludedInput.trim()]
         : excludedTypes;
@@ -365,14 +369,19 @@ export function useCreateProgramForm() {
         engagementType:
           programType === "RESPONSE" ? ("RESPONSE" as const) : ("BOUNTY" as const),
         visibility,
-        policy: policy || "Responsible disclosure policy draft",
-        proofOfConceptRequirements: pocRequirements,
+        policy:
+          policy.trim() ||
+          "Please test only using designated sandbox API keys and test merchant accounts provided in our documentation. Do not attempt real financial transactions, credit card authorization overrides, or account takeovers against active merchants.",
+        proofOfConceptRequirements: buildRuleSection(
+          pocRequirements,
+          "Reports must contain complete details to allow our engineering team to quickly validate the issue."
+        ),
         rulesOfEngagement: buildRuleSection(
           rulesOfEngagement,
-          "Rules of engagement",
+          "Researchers must follow these operational guidelines during testing activities:"
         ),
         exclusions: {
-          description: "Excluded vulnerability types",
+          description: "The following issue types are considered out-of-scope and non-rewardable:",
           rules: effectiveExcludedTypes.length > 0 ? effectiveExcludedTypes : ["DoS"],
         },
         offersBounties: offerBounties,
@@ -384,7 +393,7 @@ export function useCreateProgramForm() {
           : 0,
         assets: buildAssets(),
         rewards: buildRewards(),
-        state: isDraft ? "DRAFT" : "PUBLISHED",
+        state: (isDraft ? "DRAFT" : "ACTIVE") as ProgramState,
       };
 
       if (programId) {

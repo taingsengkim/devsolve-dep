@@ -58,8 +58,9 @@ export interface CreateProgramRequest {
   description: string;
   engagementType: "BOUNTY" | "RESPONSE";
   visibility: "PUBLIC" | "PRIVATE" | "INVITE_ONLY";
+  state?: ProgramState;
   policy: string;
-  proofOfConceptRequirements: string;
+  proofOfConceptRequirements: RuleSection | string;
   rulesOfEngagement: RuleSection;
   exclusions: RuleSection;
   offersBounties: boolean;
