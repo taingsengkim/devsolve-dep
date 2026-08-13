@@ -77,13 +77,13 @@ function InfoField({
   return (
     <div className="space-y-1.5 group">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-          <Icon className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+        <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+          <Icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
           {label}
         </span>
         {action}
       </div>
-      <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 break-words leading-snug">
+      <div className="text-sm font-semibold text-foreground break-words leading-snug">
         {children}
       </div>
     </div>
@@ -308,21 +308,21 @@ export default function OrganizationVerificationDetailPage({
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="space-y-6 w-full pb-12"
       >
-        <nav className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+        <nav className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
           <Link
             href="/dashboard/company-verification"
-            className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+            className="flex items-center gap-1 hover:text-foreground transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             Organizations
           </Link>
         </nav>
-        <Card className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 text-center space-y-4 max-w-md mx-auto my-12 shadow-2xs">
+        <Card className="bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 p-8 text-center space-y-4 max-w-md mx-auto my-12 shadow-2xs">
           <AlertCircle className="w-12 h-12 text-rose-500 mx-auto" />
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="text-xl font-bold text-foreground">
             Organization Not Found
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-muted-foreground">
             The requested organization details could not be retrieved from the
             server.
           </p>
@@ -348,37 +348,37 @@ export default function OrganizationVerificationDetailPage({
       className="space-y-6 w-full pb-12"
     >
       {/* ── BREADCRUMB ──────────────────────────────────────────────── */}
-      <nav className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+      <nav className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <Link
           href="/dashboard/company-verification"
-          className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+          className="flex items-center gap-1 hover:text-foreground transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
           Organizations
         </Link>
         <span>/</span>
-        <span className="text-slate-900 dark:text-slate-100 font-semibold truncate max-w-[240px]">
+        <span className="text-foreground font-semibold truncate max-w-60">
           {company.companyName}
         </span>
       </nav>
 
       {/* ── PAGE HEADER ─────────────────────────────────────────────── */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border">
         <div className="flex items-start sm:items-center gap-4">
           {/* Avatar */}
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-center font-bold text-white text-2xl shrink-0">
+          <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-blue-600 to-indigo-600 border border-border shadow-sm flex items-center justify-center font-bold text-white text-2xl shrink-0">
             {company.companyName.charAt(0)}
           </div>
           <div className="space-y-1.5 min-w-0">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 truncate">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground truncate">
                 {company.companyName}
               </h1>
               {company.orgCode && (
                 <button
                   type="button"
                   onClick={() => handleCopy(company.orgCode!, "Slug")}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-mono text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted text-xs font-mono text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                   title="Copy slug"
                 >
                   {copiedField === "Slug" ? (
@@ -395,7 +395,7 @@ export default function OrganizationVerificationDetailPage({
 
               <Badge
                 variant="outline"
-                className="rounded-full px-2.5 py-0.5 text-xs font-semibold border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60"
+                className="rounded-full px-2.5 py-0.5 text-xs font-semibold border-border text-muted-foreground bg-muted/60"
               >
                 {company.industry ?? company.businessType}
               </Badge>
@@ -419,11 +419,11 @@ export default function OrganizationVerificationDetailPage({
         </div>
 
         {/* Submission date & status indicator */}
-        <div className="text-left md:text-right shrink-0 bg-slate-50 dark:bg-slate-800/40 p-3 sm:p-0 rounded-xl sm:bg-transparent border border-slate-100 sm:border-none dark:border-slate-800">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium block">
+        <div className="text-left md:text-right shrink-0 bg-muted/40 p-3 sm:p-0 rounded-xl sm:bg-transparent border border-border sm:border-none">
+          <span className="text-xs text-muted-foreground font-medium block">
             Submitted Date
           </span>
-          <span className="text-sm font-bold text-slate-800 dark:text-slate-200 block mt-0.5">
+          <span className="text-sm font-bold text-foreground block mt-0.5">
             {company.submittedAt ?? company.registrationDate ?? "—"}
           </span>
         </div>
@@ -489,13 +489,13 @@ export default function OrganizationVerificationDetailPage({
         {/* ══ MAIN COLUMN (2/3) ══════════════════════════════════════ */}
         <div className="lg:col-span-2 space-y-6">
           {/* DECISION ACTION CARD */}
-          <Card className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-2xs">
+          <Card className="bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 p-6 shadow-2xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                   Verification Decision
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {isFinalized
                     ? "Decision has been recorded for this application."
                     : "Review organization details and take immediate action."}
@@ -506,7 +506,7 @@ export default function OrganizationVerificationDetailPage({
                 {isFinalized ? (
                   <Badge
                     variant="outline"
-                    className="px-3 py-1 text-xs font-semibold text-slate-500 border-slate-200 dark:border-slate-800"
+                    className="px-3 py-1 text-xs font-semibold text-muted-foreground border-border"
                   >
                     Decision Finalized
                   </Badge>
@@ -541,10 +541,10 @@ export default function OrganizationVerificationDetailPage({
           </Card>
 
           {/* COMPANY INFORMATION CARD */}
-          <Card className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-2xs space-y-6">
-            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 pb-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <Card className="bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 p-6 shadow-2xs space-y-6">
+            <h2 className="text-base font-bold text-foreground pb-3 border-b border-border flex items-center justify-between">
               <span>Company Information</span>
-              <Building2 className="w-4 h-4 text-slate-400" />
+              <Building2 className="w-4 h-4 text-muted-foreground" />
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
@@ -568,7 +568,7 @@ export default function OrganizationVerificationDetailPage({
                     <button
                       type="button"
                       onClick={() => handleCopy(company.email!, "Email")}
-                      className="text-[11px] font-semibold text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
+                      className="text-[11px] font-semibold text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                       title="Copy email"
                     >
                       {copiedField === "Email" ? "Copied" : "Copy"}
@@ -603,7 +603,7 @@ export default function OrganizationVerificationDetailPage({
                     className="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 font-semibold"
                   >
                     {company.website ?? `https://${company.domain}`}
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                    <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
                   </a>
                 ) : (
                   "—"
@@ -628,10 +628,10 @@ export default function OrganizationVerificationDetailPage({
             {/* Joining Reason */}
             {company.joiningReason && (
               <div className="pt-2">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2">
                   Joining Reason & Goal
                 </span>
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl text-sm text-slate-700 dark:text-slate-300 border border-slate-100 dark:border-slate-800/80 leading-relaxed">
+                <div className="bg-muted/50 p-4 rounded-xl text-sm text-foreground border border-border leading-relaxed">
                   {company.joiningReason}
                 </div>
               </div>
@@ -640,10 +640,10 @@ export default function OrganizationVerificationDetailPage({
             {/* Description */}
             {company.description && (
               <div className="pt-2">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2">
                   Company Overview
                 </span>
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl text-sm text-slate-700 dark:text-slate-300 border border-slate-100 dark:border-slate-800/80 leading-relaxed">
+                <div className="bg-muted/50 p-4 rounded-xl text-sm text-foreground border border-border leading-relaxed">
                   {company.description}
                 </div>
               </div>
@@ -654,15 +654,15 @@ export default function OrganizationVerificationDetailPage({
         {/* ══ SIDEBAR COLUMN (1/3) ══════════════════════════════════ */}
         <aside className="space-y-6">
           {/* VERIFICATION SIGNALS & METADATA */}
-          <Card className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-2xs space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+          <Card className="bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 p-5 shadow-2xs space-y-4">
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-blue-500" />
               Verification Signals
             </h3>
 
             <dl className="space-y-3 text-sm">
               <div className="flex items-center justify-between gap-2">
-                <dt className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium">
+                <dt className="flex items-center gap-1.5 text-muted-foreground font-medium">
                   <Mail className="w-3.5 h-3.5" />
                   Email Verified
                 </dt>
@@ -679,40 +679,40 @@ export default function OrganizationVerificationDetailPage({
                 </dd>
               </div>
 
-              <div className="flex items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
-                <dt className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium">
+              <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
+                <dt className="flex items-center gap-1.5 text-muted-foreground font-medium">
                   <Globe className="w-3.5 h-3.5" />
                   Domain Match
                 </dt>
-                <dd className="font-semibold text-slate-900 dark:text-slate-100 text-right truncate max-w-[140px]">
+                <dd className="font-semibold text-foreground text-right truncate max-w-35">
                   {displayValue(company.domain)}
                 </dd>
               </div>
 
-              <div className="flex items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
-                <dt className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium">
+              <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
+                <dt className="flex items-center gap-1.5 text-muted-foreground font-medium">
                   <Hash className="w-3.5 h-3.5" />
                   Organization Code
                 </dt>
-                <dd className="font-mono font-semibold text-slate-900 dark:text-slate-100 text-right">
+                <dd className="font-mono font-semibold text-foreground text-right">
                   {displayValue(company.orgCode)}
                 </dd>
               </div>
 
-              <div className="flex items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
-                <dt className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium">
+              <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
+                <dt className="flex items-center gap-1.5 text-muted-foreground font-medium">
                   <Calendar className="w-3.5 h-3.5" />
                   Submitted Date
                 </dt>
-                <dd className="font-semibold text-slate-900 dark:text-slate-100 text-right">
+                <dd className="font-semibold text-foreground text-right">
                   {displayValue(
                     company.submittedAt ?? company.registrationDate,
                   )}
                 </dd>
               </div>
 
-              <div className="flex items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
-                <dt className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium">
+              <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
+                <dt className="flex items-center gap-1.5 text-muted-foreground font-medium">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   Status
                 </dt>
@@ -725,8 +725,8 @@ export default function OrganizationVerificationDetailPage({
 
           {/* REVIEW HISTORY CARD (IF AVAILABLE) */}
           {reviewHistory && reviewHistory.length > 0 && (
-            <Card className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-2xs space-y-3">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+            <Card className="bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 p-5 shadow-2xs space-y-3">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
                 <History className="w-4 h-4 text-blue-500" />
                 Review History Timeline
               </h3>
@@ -734,7 +734,7 @@ export default function OrganizationVerificationDetailPage({
                 {reviewHistory.map((item) => (
                   <div
                     key={item.id}
-                    className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs space-y-1 border border-slate-100 dark:border-slate-800"
+                    className="p-3 bg-muted/50 rounded-xl text-xs space-y-1 border border-border"
                   >
                     <div className="flex items-center justify-between font-semibold">
                       <span
@@ -745,12 +745,12 @@ export default function OrganizationVerificationDetailPage({
                             : item.decision === "REJECTED" ||
                                 item.action === "REJECTED"
                               ? "text-rose-600 dark:text-rose-400 font-bold"
-                              : "text-slate-800 dark:text-slate-200"
+                              : "text-foreground"
                         }
                       >
                         {item.decision ?? item.action ?? "REVIEW"}
                       </span>
-                      <span className="text-slate-400 text-[11px]">
+                      <span className="text-muted-foreground text-[11px]">
                         {item.reviewedAt || item.createdAt
                           ? new Date(
                               item.reviewedAt || item.createdAt!,
@@ -760,14 +760,14 @@ export default function OrganizationVerificationDetailPage({
                     </div>
 
                     {(item.reviewerName || item.reviewerId) && (
-                      <p className="text-slate-500 dark:text-slate-400 text-[11px]">
+                      <p className="text-muted-foreground text-[11px]">
                         Reviewer:{" "}
                         {item.reviewerName ?? item.reviewerId?.slice(0, 8)}
                       </p>
                     )}
 
                     {(item.reason || item.notes) && (
-                      <p className="text-slate-600 dark:text-slate-300 italic pt-1 border-t border-slate-200/50 dark:border-slate-700/50 leading-relaxed">
+                      <p className="text-muted-foreground italic pt-1 border-t border-border leading-relaxed">
                         &ldquo;{item.reason ?? item.notes}&rdquo;
                       </p>
                     )}
@@ -778,8 +778,8 @@ export default function OrganizationVerificationDetailPage({
           )}
 
           {/* QUICK ACTIONS CARD */}
-          <Card className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-2xs space-y-3">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+          <Card className="bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 p-5 shadow-2xs space-y-3">
+            <h3 className="text-sm font-bold text-foreground">
               Quick Actions
             </h3>
 
@@ -787,7 +787,7 @@ export default function OrganizationVerificationDetailPage({
               {company.email && company.email !== "—" && (
                 <a
                   href={`mailto:${company.email}`}
-                  className="flex items-center gap-2.5 w-full rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-colors group cursor-pointer"
+                  className="flex items-center gap-2.5 w-full rounded-xl px-3 py-2.5 text-sm font-semibold text-foreground hover:bg-accent border border-border transition-colors group cursor-pointer"
                 >
                   <Send className="w-4 h-4 text-blue-500 group-hover:text-blue-600 transition-colors" />
                   Email Owner
