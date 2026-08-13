@@ -1,211 +1,186 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "motion/react";
-import { Flame, HelpCircle, CornerDownRight, Send, Check } from "lucide-react";
-import { NotificationItem } from "@/lib/types/notifications/types";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { motion } from "motion/react";
+import {
+  AlertTriangle,
+  Award,
+  BadgeCheck,
+  BookOpen,
+  Building,
+  Building2,
+  CheckCircle2,
+  ChevronRight,
+  Gavel,
+  Mail,
+  MessageSquare,
+  Sparkles,
+} from "lucide-react";
+import type { Notification, NotificationType } from "@/lib/types/notifications/types";
 
 interface NotificationItemCardProps {
-  item: NotificationItem;
+  item: Notification;
   onMarkRead?: (id: string) => void;
-  onReply?: (id: string, message: string) => void;
+  onCloseModal?: () => void;
 }
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+function getNotificationLink(type: NotificationType, id: string): string {
+  switch (type) {
+    case "PROBLEM":
+      return `/dashboard/problems/${id}`;
+    case "SOLUTION":
+      return `/dashboard/solutions/${id}`;
+    case "PROGRAM":
+      return `/dashboard/programs/${id}`;
+    case "SHOWCASE":
+      return `/dashboard/showcases/${id}`;
+    case "ORGANIZATION":
+      return `/dashboard/organizations/${id}`;
+    case "REPORT":
+      return `/dashboard/my-reports?id=${id}`;
+    case "INVITATION":
+      return `/dashboard/organizations/invitations`;
+    case "KYC":
+      return `/dashboard/profile/kyc`;
+    case "DISPUTE":
+      return `/dashboard/disputes/${id}`;
+    case "RECOGNITION":
+      return `/dashboard/recognitions/${id}`;
+    case "COMMENT":
+    default:
+      return `/dashboard`;
+  }
+}
+
+function getNotificationIcon(type: NotificationType) {
+  switch (type) {
+    case "PROBLEM":
+      return <BookOpen className="w-4 h-4 text-blue-500" />;
+    case "SOLUTION":
+      return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
+    case "PROGRAM":
+      return <Building2 className="w-4 h-4 text-indigo-500" />;
+    case "SHOWCASE":
+      return <Sparkles className="w-4 h-4 text-amber-500" />;
+    case "ORGANIZATION":
+      return <Building className="w-4 h-4 text-cyan-500" />;
+    case "REPORT":
+      return <AlertTriangle className="w-4 h-4 text-rose-500" />;
+    case "INVITATION":
+      return <Mail className="w-4 h-4 text-violet-500" />;
+    case "KYC":
+      return <BadgeCheck className="w-4 h-4 text-emerald-600" />;
+    case "DISPUTE":
+      return <Gavel className="w-4 h-4 text-orange-500" />;
+    case "RECOGNITION":
+      return <Award className="w-4 h-4 text-yellow-500" />;
+    case "COMMENT":
+    default:
+      return <MessageSquare className="w-4 h-4 text-slate-500" />;
+  }
+}
+
+function formatNotificationTime(dateStr: string): string {
+  if (!dateStr) return "";
+  const date = new Date(dateStr.endsWith("Z") ? dateStr : `${dateStr}Z`);
+  if (isNaN(date.getTime())) return dateStr;
+
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return "Just now";
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
   item,
   onMarkRead,
-  onReply,
+  onCloseModal,
 }) => {
-  const [showReplyInput, setShowReplyInput] = useState(false);
-  const [replyMessage, setReplyMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [justSent, setJustSent] = useState(false);
+  const targetHref = getNotificationLink(item.notifiableType, item.notifiableId);
+  const isUnread = !item.read;
 
-  const handleSendReply = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!replyMessage.trim()) return;
-
-    setIsSubmitting(true);
-    if (onReply) {
-      onReply(item.id, replyMessage.trim());
+  const handleClick = () => {
+    if (isUnread && item.id && onMarkRead) {
+      onMarkRead(item.id);
     }
-
-    setIsSubmitting(false);
-    setJustSent(true);
-    setReplyMessage("");
-    setTimeout(() => {
-      setShowReplyInput(false);
-      setJustSent(false);
-    }, 1500);
+    if (onCloseModal) {
+      onCloseModal();
+    }
   };
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ duration: 0.2 }}
-      className={`group relative flex items-start gap-3.5 p-3.5 sm:p-4 rounded-xl transition-all border border-transparent ${
-        item.isUnread ? "bg-muted/70 hover:bg-muted" : "bg-card hover:bg-muted/50"
+      className={`group relative flex items-start gap-3.5 p-3.5 sm:p-4 rounded-2xl transition-all border ${
+        isUnread
+          ? "bg-slate-50/80 hover:bg-slate-100/80 dark:bg-slate-900/60 dark:hover:bg-slate-800/60 border-blue-500/20"
+          : "bg-white hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-900/50 border-slate-200/60 dark:border-slate-800/60"
       }`}
     >
-      {/* Active Green Indicator Bar on Left */}
-      {item.hasActiveBorder && (
-        <span className="w-1.5 self-stretch rounded-full bg-emerald-500 shrink-0 my-0.5" />
-      )}
-
-      {/* User Avatar */}
-      <Avatar className="w-10 h-10 rounded-full border border-border shrink-0 shadow-2xs">
-        {item.actor.avatar && (
-          <AvatarImage src={item.actor.avatar} alt={item.actor.name} />
-        )}
-        <AvatarFallback className="bg-muted text-muted-foreground font-semibold text-sm">
-          {getInitials(item.actor.name)}
-        </AvatarFallback>
-      </Avatar>
+      {/* Icon Avatar */}
+      <div className="flex size-10 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 shrink-0 shadow-2xs border border-slate-200/50 dark:border-slate-700/50">
+        {getNotificationIcon(item.notifiableType)}
+      </div>
 
       {/* Main Content Area */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
-          {/* Action text line */}
-          <div className="text-sm sm:text-base text-muted-foreground font-normal leading-snug">
-            <span className="font-bold text-foreground mr-1.5">
-              {item.actor.name}
-            </span>
-            <span className="text-muted-foreground mr-1.5">{item.action}</span>
-
-            {/* Target Title or Target Link */}
-            {item.target?.title && (
-              item.target.href ? (
-                <Link
-                  href={item.target.href}
-                  className="font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center"
-                >
-                  {item.target.title}
-                </Link>
-              ) : (
-                <span className="font-bold text-foreground">{item.target.title}</span>
-              )
-            )}
-
-            {/* Target Badge (e.g. Incident, Question) */}
-            {item.target?.badge && (
-              <Badge
-                variant="outline"
-                className="ml-2 inline-flex items-center gap-1 py-0.5 px-2 font-medium text-xs rounded-full border-border bg-muted/60 text-muted-foreground"
-              >
-                {item.target.badge.iconType === "incident" && (
-                  <Flame className="w-3.5 h-3.5 text-rose-500" />
-                )}
-                {item.target.badge.iconType === "question" && (
-                  <HelpCircle className="w-3.5 h-3.5 text-blue-500" />
-                )}
-                <span>{item.target.badge.label}</span>
-              </Badge>
-            )}
-          </div>
+          <Link
+            href={targetHref}
+            onClick={handleClick}
+            className="group/title block min-w-0"
+          >
+            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover/title:text-blue-600 dark:group-hover/title:text-blue-400 transition-colors leading-snug truncate">
+              {item.title}
+            </h3>
+          </Link>
 
           {/* Unread Red Dot Indicator */}
-          {item.isUnread && (
+          {isUnread && item.id && (
             <button
-              onClick={() => onMarkRead && onMarkRead(item.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onMarkRead && item.id) onMarkRead(item.id);
+              }}
               title="Mark as read"
-              className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0 mt-1.5 shadow-xs hover:scale-125 transition-transform cursor-pointer"
+              className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0 mt-1 shadow-xs hover:scale-125 transition-transform cursor-pointer"
             />
           )}
         </div>
 
-        {/* Content Snippet / Excerpt */}
-        {item.contentSnippet && (
-          <p className="text-sm text-muted-foreground font-normal mt-1 leading-relaxed break-words">
-            {item.contentSnippet}
-          </p>
-        )}
+        {/* Content Details */}
+        <p className="text-sm text-slate-600 dark:text-slate-400 font-normal mt-1 leading-relaxed break-words">
+          {item.content}
+        </p>
 
-        {/* Timestamp */}
-        <div className="text-xs sm:text-sm text-muted-foreground/80 font-medium mt-1.5 flex items-center gap-2">
-          <span>{item.timestamp}</span>
+        {/* Footer info & Link */}
+        <div className="mt-2.5 flex items-center justify-between gap-2 text-xs font-medium text-slate-400 dark:text-slate-500">
+          <span>{formatNotificationTime(item.createdAt)}</span>
+
+          <Link
+            href={targetHref}
+            onClick={handleClick}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+          >
+            <span>View details</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
-
-        {/* Reply Trigger Link */}
-        {item.canReply && (
-          <div className="mt-2">
-            <button
-              onClick={() => setShowReplyInput(!showReplyInput)}
-              className="text-xs sm:text-sm font-semibold text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer inline-flex items-center gap-1"
-            >
-              <CornerDownRight className="w-3.5 h-3.5 text-muted-foreground" />
-              <span>Reply</span>
-            </button>
-          </div>
-        )}
-
-        {/* Previous Replies */}
-        {item.replies && item.replies.length > 0 && (
-          <div className="mt-2.5 space-y-2 border-l-2 border-border pl-3">
-            {item.replies.map((reply) => (
-              <div key={reply.id} className="text-xs sm:text-sm">
-                <span className="font-semibold text-foreground">{reply.author}: </span>
-                <span className="text-muted-foreground">{reply.message}</span>
-                <span className="text-muted-foreground/70 text-xs ml-2">({reply.timestamp})</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Quick Reply Form */}
-        <AnimatePresence>
-          {showReplyInput && (
-            <motion.form
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              onSubmit={handleSendReply}
-              className="mt-3 overflow-hidden"
-            >
-              <div className="flex items-center gap-2">
-                <Input
-                  type="text"
-                  placeholder="Write a reply..."
-                  value={replyMessage}
-                  onChange={(e) => setReplyMessage(e.target.value)}
-                  className="h-9 text-sm bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-blue-500"
-                  autoFocus
-                />
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || !replyMessage.trim()}
-                  className="h-9 px-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shrink-0"
-                >
-                  {justSent ? (
-                    <span className="flex items-center gap-1">
-                      <Check className="w-4 h-4" /> Sent
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1">
-                      <Send className="w-3.5 h-3.5" /> Send
-                    </span>
-                  )}
-                </Button>
-              </div>
-            </motion.form>
-          )}
-        </AnimatePresence>
       </div>
     </motion.div>
   );

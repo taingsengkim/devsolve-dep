@@ -3,12 +3,12 @@
 import React from "react";
 import { Bell } from "lucide-react";
 import { useNotification } from "./NotificationContext";
-import { useGetNotificationsQuery } from "@/lib/redux/services/notificationsApi";
+import { useGetUnreadCountQuery } from "@/lib/redux/services/notificationsApi";
 import { Button } from "@/components/ui/button";
 
 export const NotificationTrigger: React.FC<{ className?: string }> = ({ className }) => {
   const { openNotification } = useNotification();
-  const { data } = useGetNotificationsQuery();
+  const { data } = useGetUnreadCountQuery();
   const unreadCount = data?.unreadCount ?? 0;
 
   return (
