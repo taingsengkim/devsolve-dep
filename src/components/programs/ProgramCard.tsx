@@ -111,37 +111,42 @@ export function ProgramCard({ program }: ProgramCardProps) {
       <div className="space-y-4">
         {/* HEADER: LOGO, ORGANIZATION & BADGES */}
         <div className="flex items-start gap-3.5 pr-8">
-          <div className="w-11 h-11 bg-muted rounded-xl flex items-center justify-center ring-1 ring-foreground/5 dark:ring-foreground/10 shrink-0 overflow-hidden shadow-sm group-hover:scale-105 transition-all duration-300">
-            {logoUrl ? (
-              <Image
-                src={logoUrl}
-                alt={orgName}
-                className="w-full h-full object-cover"
-                width={44}
-                height={44}
-                onError={() => setImageError(true)}
-                unoptimized
-              />
-            ) : (
-              <span className="text-xs font-extrabold text-foreground tracking-wider">
-                {initials}
-              </span>
-            )}
-          </div>
-          <div>
-            <h4 className={`font-bold text-[17px] leading-tight ${companyTitleColor}`}>
-              {orgName}
-            </h4>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border transition-colors ${badgeStyle}`}>
-                {isBounty ? "Bounty" : "Response"}
-              </span>
-              <span className="text-xs text-muted-foreground">•</span>
-              <span className="text-[13px] text-muted-foreground capitalize">
-                {program.state?.toLowerCase() || "Open"}
-              </span>
+          <Link
+            href="/dashboard/visit"
+            className="flex items-start gap-3.5 group/org cursor-pointer"
+          >
+            <div className="w-11 h-11 bg-muted rounded-xl flex items-center justify-center ring-1 ring-foreground/5 dark:ring-foreground/10 shrink-0 overflow-hidden shadow-sm group-hover/org:scale-105 transition-all duration-300">
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  alt={orgName}
+                  className="w-full h-full object-cover"
+                  width={44}
+                  height={44}
+                  onError={() => setImageError(true)}
+                  unoptimized
+                />
+              ) : (
+                <span className="text-xs font-extrabold text-foreground tracking-wider">
+                  {initials}
+                </span>
+              )}
             </div>
-          </div>
+            <div>
+              <h4 className={`font-bold text-[17px] leading-tight hover:underline ${companyTitleColor}`}>
+                {orgName}
+              </h4>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border transition-colors ${badgeStyle}`}>
+                  {isBounty ? "Bounty" : "Response"}
+                </span>
+                <span className="text-xs text-muted-foreground">•</span>
+                <span className="text-[13px] text-muted-foreground capitalize">
+                  {program.state?.toLowerCase() || "Open"}
+                </span>
+              </div>
+            </div>
+          </Link>
         </div>
 
         {/* PROGRAM TITLE & DESCRIPTION */}

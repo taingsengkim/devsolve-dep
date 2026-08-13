@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import React from "react";
+import Link from "next/link";
 import {
   Bookmark,
   Send,
@@ -58,14 +59,6 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
   const minBounty = program.minimumBounty ?? 0;
   const maxBounty = program.maximumBounty ?? 0;
 
-  const formattedCreatedDate = program.createdAt
-    ? new Date(program.createdAt).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    : "N/A";
-
   const totalAssetsCount = program.assets?.length || 0;
 
   const assetTypes = Array.from(
@@ -81,8 +74,11 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
       <div className="p-4 sm:p-6 space-y-4">
         {/* TOP HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 bg-muted rounded-xl flex items-center justify-center font-bold text-foreground text-base ring-1 ring-foreground/5 dark:ring-foreground/10 shrink-0 overflow-hidden shadow-sm">
+          <Link
+            href="/dashboard/visit"
+            className="flex items-center gap-3.5 group/org cursor-pointer"
+          >
+            <div className="w-11 h-11 bg-muted rounded-xl flex items-center justify-center font-bold text-foreground text-base ring-1 ring-foreground/5 dark:ring-foreground/10 shrink-0 overflow-hidden shadow-sm group-hover/org:scale-105 transition-all duration-300">
               {logoUrl ? (
                 <Image
                   src={logoUrl}
@@ -102,8 +98,8 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
 
             <div className="space-y-0.5">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
-                  {program.handle}
+                <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight group-hover/org:text-blue-600 dark:group-hover/org:text-blue-400 group-hover/org:underline transition-colors">
+                  {orgName}
                 </h1>
                 <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20">
                   • {program.state || "Active"}
@@ -122,7 +118,7 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
                 <p className="text-xs font-medium text-muted-foreground">@{program.handle}</p>
               )}
             </div>
-          </div>
+          </Link>
 
           {/* TOP RIGHT BUTTONS */}
           <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
