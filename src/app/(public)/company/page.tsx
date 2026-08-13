@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Globe,
   Building2,
@@ -18,20 +19,23 @@ import {
   ArrowRight,
   ArrowLeft,
 } from "lucide-react";
+import {
+  useGetOrganizationByIdQuery,
+  useGetOrganizationProgramsByIdQuery,
+} from "@/lib/redux/services/organizationsApi";
 
-// Mock data for company profile
-const companyProfile = {
+const defaultCompanyProfile = {
   name: "CyberShield Security",
   handle: "@cybershield",
-  logo: "https://upload.wikimedia.org/wikipedia/commons/0/0f/Pepsi_logo_2014.svg",
+  logo: null as string | null,
   verified: true,
   description:
     "Official CyberShield Security Organization. We invite security researchers to help us keep our web applications, core API infrastructure, and payment gateways secure.",
   stats: {
-    activePrograms: 3,
-    resolvedReports: 142,
-    totalBountyPaid: "$42,500",
-    maxBounty: "$15,000",
+    activePrograms: 0,
+    resolvedReports: 0,
+    totalBountyPaid: "$0",
+    maxBounty: "$0",
   },
   details: {
     industry: "Cybersecurity & SaaS",
@@ -40,26 +44,67 @@ const companyProfile = {
     domain: "cybershield.io",
     websiteUrl: "https://cybershield.io",
   },
-  programs: [
-    {
-      id: "prog-001",
-      title: "Ky Reaksa AUPP Queen",
-      handle: "@ky-reaksa-aupp-queen",
-      type: "BOUNTY",
-      rewardText: "Up to $15,000",
-    },
-    {
-      id: "prog-002",
-      title: "CyberShield Mobile SDK & Auth Services",
-      handle: "@cybershield-mobile-2026",
-      type: "RESPONSE",
-      rewardText: "Points Only",
-    },
-  ],
 };
 
-export default function PublicOrganizationProfilePage() {
+function CompanyProfileContent() {
   const [isFollowing, setIsFollowing] = useState(false);
+  const searchParams = useSearchParams();
+  const orgId = searchParams.get("id") || searchParams.get("orgId");
+
+  const { data: orgData } = useGetOrganizationByIdQuery(orgId!, {
+    skip: !orgId,
+  });
+
+  const { data: orgProgramsData } = useGetOrganizationProgramsByIdQuery(
+    { id: orgId!, page: 1, size: 20 },
+    { skip: !orgId }
+  );
+
+  const fetchedPrograms: any[] = Array.isArray(orgProgramsData)
+    ? orgProgramsData
+    : (orgProgramsData as any)?.content ||
+      (Array.isArray((orgProgramsData as any)?.data)
+        ? (orgProgramsData as any).data
+        : []);
+  const activeProgramsCount =
+    (orgProgramsData as any)?.totalElements ?? fetchedPrograms.length;
+
+  const displayProfile = {
+    name: orgData?.name || defaultCompanyProfile.name,
+    handle: orgData?.slug
+      ? `@${orgData.slug}`
+      : orgData?.name
+      ? `@${orgData.name.toLowerCase().replace(/\s+/g, "-")}`
+      : defaultCompanyProfile.handle,
+    logo: orgData?.logoUrl || defaultCompanyProfile.logo,
+    verified: orgData ? (!!orgData.verifiedAt || orgData.status === "ACTIVE") : defaultCompanyProfile.verified,
+    description: orgData?.description || defaultCompanyProfile.description,
+    stats: {
+      activePrograms: activeProgramsCount,
+      resolvedReports: 0,
+      totalBountyPaid: "$0",
+      maxBounty: "$0",
+    },
+    details: {
+      industry: orgData?.industry || defaultCompanyProfile.details.industry,
+      companySize: orgData?.companySize || defaultCompanyProfile.details.companySize,
+      country: orgData?.country || defaultCompanyProfile.details.country,
+      domain: orgData?.domain || defaultCompanyProfile.details.domain,
+      websiteUrl: orgData?.websiteUrl || (orgData?.domain ? `https://${orgData.domain}` : defaultCompanyProfile.details.websiteUrl),
+    },
+  };
+
+  const logoUrl = orgData?.logoUrl;
+  const companyInitials = (displayProfile.name || "OR")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+
+  const displayPrograms = fetchedPrograms.slice(0, 2);
+  const catalogHref = orgId ? `/company/programs?id=${orgId}` : "/company/programs";
 
   return (
     <div className="min-h-screen w-full text-foreground font-sans p-6 sm:p-8 space-y-6">
@@ -80,20 +125,26 @@ export default function PublicOrganizationProfilePage() {
             
             {/* Logo & Company Title Info */}
             <div className="flex items-start sm:items-center gap-5">
-              <div className="w-20 h-20 rounded-2xl bg-card p-2.5 flex items-center justify-center shrink-0 ring-1 ring-foreground/10 dark:ring-foreground/20 shadow-md">
-                <img
-                  src={companyProfile.logo}
-                  alt={companyProfile.name}
-                  className="w-full h-full object-contain"
-                />
+              <div className="w-20 h-20 rounded-2xl bg-card border border-border flex items-center justify-center shrink-0 shadow-md overflow-hidden ring-1 ring-foreground/5">
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt={displayProfile.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-xl font-black text-foreground tracking-wider">
+                    {companyInitials}
+                  </span>
+                )}
               </div>
 
               <div className="space-y-1">
                 <div className="flex items-center gap-3 flex-wrap">
                   <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-                    {companyProfile.name}
+                    {displayProfile.name}
                   </h1>
-                  {companyProfile.verified && (
+                  {displayProfile.verified && (
                     <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold px-3 py-1 rounded-full">
                       <ShieldCheck className="w-3.5 h-3.5" />
                       Active / Verified
@@ -105,11 +156,11 @@ export default function PublicOrganizationProfilePage() {
                 </div>
 
                 <p className="text-sm text-muted-foreground font-mono">
-                  {companyProfile.handle}
+                  {displayProfile.handle}
                 </p>
 
                 <p className="text-sm text-muted-foreground max-w-2xl pt-1 leading-relaxed">
-                  {companyProfile.description}
+                  {displayProfile.description}
                 </p>
               </div>
             </div>
@@ -138,7 +189,7 @@ export default function PublicOrganizationProfilePage() {
               </button>
 
               <a
-                href={companyProfile.details.websiteUrl}
+                href={displayProfile.details.websiteUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
@@ -160,7 +211,7 @@ export default function PublicOrganizationProfilePage() {
                 Active Programs
               </div>
               <div className="text-2xl font-black text-foreground">
-                {companyProfile.stats.activePrograms}
+                {displayProfile.stats.activePrograms}
               </div>
               <p className="text-[11px] text-muted-foreground">Currently accepting reports</p>
             </div>
@@ -171,7 +222,7 @@ export default function PublicOrganizationProfilePage() {
                 Resolved Reports
               </div>
               <div className="text-2xl font-black text-foreground">
-                {companyProfile.stats.resolvedReports}
+                {displayProfile.stats.resolvedReports}
               </div>
               <p className="text-[11px] text-muted-foreground">Closed vulnerabilities</p>
             </div>
@@ -182,7 +233,7 @@ export default function PublicOrganizationProfilePage() {
                 Total Disbursed
               </div>
               <div className="text-2xl font-black text-foreground">
-                {companyProfile.stats.totalBountyPaid}
+                {displayProfile.stats.totalBountyPaid}
               </div>
               <p className="text-[11px] text-muted-foreground">Bounties paid to researchers</p>
             </div>
@@ -193,7 +244,7 @@ export default function PublicOrganizationProfilePage() {
                 Top Bounty Award
               </div>
               <div className="text-2xl font-black text-foreground">
-                {companyProfile.stats.maxBounty}
+                {displayProfile.stats.maxBounty}
               </div>
               <p className="text-[11px] text-muted-foreground">For Critical findings</p>
             </div>
@@ -207,61 +258,86 @@ export default function PublicOrganizationProfilePage() {
           {/* ACTIVE PROGRAMS DIRECTORY (2 COLUMNS) */}
           <div className="lg:col-span-2 bg-card text-card-foreground ring-1 ring-foreground/5 dark:ring-foreground/10 rounded-2xl p-6 space-y-5">
             
-            {/* SECTION HEADER WITH LINK TO PAGE 2 */}
+            {/* SECTION HEADER WITH LINK TO CATALOG */}
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div>
                 <h2 className="text-lg font-bold text-foreground tracking-tight">
                   Security Programs
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Public programs owned and operated by {companyProfile.name}.
+                  Public programs owned and operated by {displayProfile.name}.
                 </p>
               </div>
 
               <Link
-                href="/company/programs"
+                href={catalogHref}
                 className="flex items-center gap-1.5 bg-muted/60 hover:bg-muted text-primary border border-border text-xs font-bold px-3.5 py-2 rounded-xl transition-all cursor-pointer group shadow-2xs"
               >
-                View Catalog ({companyProfile.stats.activePrograms})
+                View Catalog ({activeProgramsCount})
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
 
-            {/* Preview Program Items */}
-            <div className="space-y-3">
-              {companyProfile.programs.map((program) => (
-                <div
-                  key={program.id}
-                  className="bg-muted/40 hover:bg-accent/60 ring-1 ring-foreground/5 dark:ring-foreground/10 rounded-xl p-4 flex items-center justify-between gap-4 transition-all"
-                >
-                  <div className="space-y-1">
-                    <h3 className="text-sm font-bold text-foreground">
-                      {program.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground font-mono">
-                      {program.handle}
-                    </p>
-                  </div>
+            {/* Preview Program Items (Max 2 items) */}
+            {displayPrograms.length === 0 ? (
+              <div className="p-8 text-center bg-muted/30 rounded-xl ring-1 ring-foreground/5 space-y-2">
+                <p className="text-sm font-semibold text-foreground">
+                  No security programs published yet
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {displayProfile.name} has not published any public bug bounty or response programs.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {displayPrograms.map((program) => {
+                  const title = program.name || (program as any).title || "Program";
+                  const rawHandle = program.handle || title.toLowerCase().replace(/\s+/g, "-");
+                  const handle = rawHandle.startsWith("@") ? rawHandle : `@${rawHandle}`;
+                  const isBounty = program.offersBounties || (program.engagementType as string) === "BOUNTY";
+                  const maxBounty = program.maximumBounty ?? 0;
+                  const rewardBadgeText = isBounty
+                    ? maxBounty > 0
+                      ? `Up to $${maxBounty.toLocaleString()}`
+                      : "Up to $15,000"
+                    : "Points Only";
 
-                  <div className="flex items-center gap-3 shrink-0">
-                    {program.type === "BOUNTY" ? (
-                      <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold px-3 py-1 rounded-lg">
-                        {program.rewardText}
-                      </span>
-                    ) : (
-                      <span className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-xs font-bold px-3 py-1 rounded-lg">
-                        {program.rewardText}
-                      </span>
-                    )}
+                  return (
+                    <Link
+                      key={program.id}
+                      href={`/programs/${program.id}`}
+                      className="bg-muted/40 hover:bg-accent/60 ring-1 ring-foreground/5 dark:ring-foreground/10 rounded-xl p-4 flex items-center justify-between gap-4 transition-all group cursor-pointer"
+                    >
+                      <div className="space-y-1">
+                        <h3 className="text-sm font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground font-mono">
+                          {handle}
+                        </p>
+                      </div>
 
-                    <button className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition-colors cursor-pointer">
-                      <Send className="w-3.5 h-3.5" />
-                      Submit
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        {isBounty ? (
+                          <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold px-3 py-1 rounded-full">
+                            {rewardBadgeText}
+                          </span>
+                        ) : (
+                          <span className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-xs font-bold px-3 py-1 rounded-full">
+                            {rewardBadgeText}
+                          </span>
+                        )}
+
+                        <span className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-colors">
+                          <Send className="w-3.5 h-3.5" />
+                          Submit
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* COMPANY DETAILS SIDEBAR (1 COLUMN) */}
@@ -277,7 +353,7 @@ export default function PublicOrganizationProfilePage() {
                   <Building2 className="w-4 h-4 text-muted-foreground" /> Industry
                 </span>
                 <span className="text-foreground font-medium">
-                  {companyProfile.details.industry}
+                  {displayProfile.details.industry}
                 </span>
               </div>
 
@@ -286,7 +362,7 @@ export default function PublicOrganizationProfilePage() {
                   <Users className="w-4 h-4 text-muted-foreground" /> Size
                 </span>
                 <span className="text-foreground font-medium">
-                  {companyProfile.details.companySize}
+                  {displayProfile.details.companySize}
                 </span>
               </div>
 
@@ -295,7 +371,7 @@ export default function PublicOrganizationProfilePage() {
                   <MapPin className="w-4 h-4 text-muted-foreground" /> Country
                 </span>
                 <span className="text-foreground font-medium">
-                  {companyProfile.details.country}
+                  {displayProfile.details.country}
                 </span>
               </div>
 
@@ -304,12 +380,12 @@ export default function PublicOrganizationProfilePage() {
                   <Globe className="w-4 h-4 text-muted-foreground" /> Domain
                 </span>
                 <a
-                  href={`https://${companyProfile.details.domain}`}
+                  href={displayProfile.details.websiteUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs inline-flex items-center gap-1"
                 >
-                  {companyProfile.details.domain}
+                  {displayProfile.details.domain}
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
@@ -321,5 +397,13 @@ export default function PublicOrganizationProfilePage() {
 
       </div>
     </div>
+  );
+}
+
+export default function PublicOrganizationProfilePage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading organization profile...</div>}>
+      <CompanyProfileContent />
+    </Suspense>
   );
 }

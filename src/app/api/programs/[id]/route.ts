@@ -72,8 +72,8 @@ export async function GET(
       });
       if (fallbackUpstream.ok) {
         upstream = fallbackUpstream;
-      } else if (token) {
-        if (idIsUuid) {
+      } else {
+        if (idIsUuid && token) {
           // 1. Try company organization program detail endpoint first (full ProgramDetail object)
           const orgMeUpstream = await fetch(
             `${BACKEND_API_URL}/organizations/me/programs/${id}`,
@@ -108,25 +108,22 @@ export async function GET(
           }
         }
 
-        // 3. Fallback to summary list lookup if detailed endpoints failed
+        // 3. Fallback to public/summary list lookup if detailed endpoints failed
         if (!upstream.ok) {
-          const orgProgramsUpstream = await fetch(
-            `${BACKEND_API_URL}/organizations/me/programs?size=100`,
+          const publicSearchRes = await fetch(
+            `${BACKEND_API_URL}/programs?size=100`,
             {
               method: "GET",
-              headers: {
-                Accept: "application/json",
-                Authorization: `Bearer ${token}`,
-              },
+              headers: { Accept: "application/json" },
               cache: "no-store",
             }
           );
-          if (orgProgramsUpstream.ok) {
-            const rawOrg = await orgProgramsUpstream.text();
-            if (rawOrg) {
+          if (publicSearchRes.ok) {
+            const rawPublic = await publicSearchRes.text();
+            if (rawPublic) {
               try {
-                const parsed = JSON.parse(rawOrg);
-                const items: any[] = parsed.content ?? parsed ?? [];
+                const parsed = JSON.parse(rawPublic);
+                const items: any[] = parsed.content ?? (Array.isArray(parsed) ? parsed : []);
                 const found = items.find(
                   (item: any) => item.id === id || item.handle === id
                 );
@@ -134,7 +131,38 @@ export async function GET(
                   return NextResponse.json(found, { status: 200 });
                 }
               } catch {
-                // Ignore JSON parse error
+                // Ignore parse error
+              }
+            }
+          }
+
+          if (token) {
+            const orgProgramsUpstream = await fetch(
+              `${BACKEND_API_URL}/organizations/me/programs?size=100`,
+              {
+                method: "GET",
+                headers: {
+                  Accept: "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                cache: "no-store",
+              }
+            );
+            if (orgProgramsUpstream.ok) {
+              const rawOrg = await orgProgramsUpstream.text();
+              if (rawOrg) {
+                try {
+                  const parsed = JSON.parse(rawOrg);
+                  const items: any[] = parsed.content ?? parsed ?? [];
+                  const found = items.find(
+                    (item: any) => item.id === id || item.handle === id
+                  );
+                  if (found) {
+                    return NextResponse.json(found, { status: 200 });
+                  }
+                } catch {
+                  // Ignore JSON parse error
+                }
               }
             }
           }

@@ -30,6 +30,9 @@ export function ProgramCard({ program }: ProgramCardProps) {
       .join("")
       .toUpperCase() || "OR";
 
+  const orgId = program.organizationId || program.organization?.id;
+  const companyHref = orgId ? `/company?id=${orgId}` : "/company";
+
   const { data: isBookmarked } = useGetBookmarkStatusQuery({ type: "PROGRAM", targetId: program.id });
   const [addBookmark, { isLoading: isSaving }] = useAddBookmarkMutation();
   const [removeBookmark, { isLoading: isRemoving }] = useRemoveBookmarkMutation();
@@ -112,10 +115,10 @@ export function ProgramCard({ program }: ProgramCardProps) {
         {/* HEADER: LOGO, ORGANIZATION & BADGES */}
         <div className="flex items-start gap-3.5 pr-8">
           <Link
-            href="/company"
+            href={companyHref}
             className="flex items-start gap-3.5 group/org cursor-pointer"
           >
-            <div className="w-11 h-11 bg-muted rounded-xl flex items-center justify-center ring-1 ring-foreground/5 dark:ring-foreground/10 shrink-0 overflow-hidden shadow-sm group-hover/org:scale-105 transition-all duration-300">
+            <div className="w-11 h-11 bg-card border border-border rounded-xl flex items-center justify-center shrink-0 overflow-hidden shadow-2xs group-hover/org:scale-105 transition-all duration-300">
               {logoUrl ? (
                 <Image
                   src={logoUrl}

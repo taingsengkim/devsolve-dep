@@ -19,9 +19,6 @@ async function bearerTokenFor(request: NextRequest): Promise<string | null> {
   }
 }
 
-const unauthorized = () =>
-  NextResponse.json({ message: "Not authenticated" }, { status: 401 });
-
 const unreachable = () =>
   NextResponse.json(
     { message: "Unable to reach the organization service. Please try again." },
@@ -41,6 +38,12 @@ export async function GET(
     );
   }
 
+  const { searchParams } = new URL(request.url);
+  const queryString = searchParams.toString();
+  const targetUrl = queryString
+    ? `${BACKEND_API_URL}/organizations/${encodeURIComponent(id)}/programs?${queryString}`
+    : `${BACKEND_API_URL}/organizations/${encodeURIComponent(id)}/programs`;
+
   const headers: Record<string, string> = {
     Accept: "application/json",
   };
@@ -49,7 +52,7 @@ export async function GET(
   }
 
   try {
-    const upstream = await fetch(`${BACKEND_API_URL}/organizations/${id}`, {
+    const upstream = await fetch(targetUrl, {
       method: "GET",
       headers,
       cache: "no-store",
@@ -68,7 +71,7 @@ export async function GET(
     if (!upstream.ok) {
       const message =
         (body as { message?: string } | null)?.message ??
-        "Failed to fetch organization.";
+        "Failed to fetch organization programs.";
       return NextResponse.json(
         { message, details: body },
         { status: upstream.status }
