@@ -12,8 +12,6 @@ import {
   ArrowRight,
   Bookmark,
   CheckCircle2,
-  ChevronDown,
-  ChevronUp,
   CircleDot,
   Clock,
   Download,
@@ -34,6 +32,7 @@ import {
 
 import { SolutionCard } from "@/components/discussions/SolutionCard";
 import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
+import { VoteControl } from "@/components/ui/vote-control";
 import {
   useGetProblemByIdQuery,
   useRemoveAcceptedSolutionMutation,
@@ -186,8 +185,7 @@ function Loaded({
   const [setVote, { isLoading: isSettingVote }] = useSetVoteMutation();
   const [removeVote, { isLoading: isRemovingVote }] = useRemoveVoteMutation();
   const isVoting = isSettingVote || isRemovingVote;
-  const hasUpvoted = votes?.currentUserVote === 1;
-  const hasDownvoted = votes?.currentUserVote === -1;
+  const upvoteCount = votes?.upvotes ?? 0;
 
   const { data: bookmarkStatus } = useGetBookmarkStatusQuery({
     type: "PROBLEM",
@@ -404,38 +402,15 @@ function Loaded({
                   {problem.title ?? "Untitled problem"}
                 </h1>
 
-                {/* Keep the vote actions available without surfacing an
-                    aggregate problem score on the detail page. */}
-                <div className="flex shrink-0 flex-col items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-neutral-700 dark:bg-neutral-800">
-                  <button
-                    type="button"
-                    onClick={() => void onVote(1)}
-                    disabled={isVoting}
-                    aria-pressed={hasUpvoted}
-                    aria-label={hasUpvoted ? "Remove upvote" : "Upvote"}
-                    className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
-                      hasUpvoted
-                        ? "bg-blue-600 text-white"
-                        : "text-slate-500 hover:bg-slate-200 dark:text-neutral-400 dark:hover:bg-neutral-700"
-                    }`}
-                  >
-                    <ChevronUp aria-hidden="true" className="size-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void onVote(-1)}
-                    disabled={isVoting}
-                    aria-pressed={hasDownvoted}
-                    aria-label={hasDownvoted ? "Remove downvote" : "Downvote"}
-                    className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
-                      hasDownvoted
-                        ? "bg-rose-600 text-white"
-                        : "text-slate-400 hover:bg-slate-200 dark:hover:bg-neutral-700"
-                    }`}
-                  >
-                    <ChevronDown aria-hidden="true" className="size-4" />
-                  </button>
-                </div>
+                <VoteControl
+                  voteCount={upvoteCount}
+                  currentVote={votes?.currentUserVote ?? 0}
+                  onVote={onVote}
+                  isLoading={isVoting}
+                  upvoteLabel="Upvote this problem"
+                  downvoteLabel="Downvote this problem"
+                  className="shrink-0"
+                />
               </div>
 
               {(tags.length > 0 || technologies.length > 0) && (
