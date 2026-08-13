@@ -158,6 +158,22 @@ export const problemsApi = baseApi.injectEndpoints({
     }),
 
     /**
+     * POST /api/problems/{id}/submit — the author sending a draft to review.
+     *
+     * The step between `DRAFT` and `PENDING_APPROVAL`. A draft nobody submits
+     * is visible only to its author, so this is what turns one into a post.
+     */
+    submitProblem: builder.mutation<ProblemResponse, string>({
+      query: (id) => ({ url: `/problems/${id}/submit`, method: "POST" }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: "Problem", id },
+        { type: "Problem", id: "LIST" },
+        { type: "Problem", id: "MINE" },
+        { type: "Discussion", id: "LIST" },
+      ],
+    }),
+
+    /**
      * DELETE /api/problems/{id} — the author withdrawing their own problem.
      * A soft delete upstream, so the record survives but stops being served.
      */
@@ -232,6 +248,7 @@ export const problemsApi = baseApi.injectEndpoints({
 export const {
   useCreateProblemMutation,
   useUpdateProblemMutation,
+  useSubmitProblemMutation,
   useGetProblemByIdQuery,
   useGetProblemsQuery,
   useDeleteProblemMutation,

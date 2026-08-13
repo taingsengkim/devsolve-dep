@@ -55,14 +55,14 @@ export default function MyProfilePage() {
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="w-full pb-12"
       >
-        <div className="mx-auto max-w-lg space-y-4 rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
+        <div className="mx-auto max-w-lg space-y-4 rounded-2xl bg-card p-12 text-center shadow-xs ring-1 ring-foreground/5 dark:ring-foreground/10">
+          <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
             <UserX className="size-6" />
           </span>
-          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+          <h1 className="text-xl font-bold text-foreground">
             Couldn&apos;t load your profile
           </h1>
-          <p className="text-base text-slate-500 dark:text-slate-400">
+          <p className="text-base text-muted-foreground">
             Your session may have expired. Try signing in again.
           </p>
           <Link

@@ -52,13 +52,13 @@ export function OrgActionsMenu({ status }: OrgActionsMenuProps) {
 
   return (
     <>
-      <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-        <CardHeader className="pb-4 border-b border-slate-100 dark:border-slate-800">
-          <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+      <Card className="border-border bg-card shadow-sm">
+        <CardHeader className="pb-4 border-b border-border">
+          <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             Quick Management & Actions
           </CardTitle>
-          <CardDescription className="text-sm text-slate-500 dark:text-slate-400">
+          <CardDescription className="text-sm text-muted-foreground">
             Common administrative tasks and settings for your organization.
           </CardDescription>
         </CardHeader>
@@ -68,12 +68,12 @@ export function OrgActionsMenu({ status }: OrgActionsMenuProps) {
             <Link href="/dashboard/teams">
               <Button
                 variant="outline"
-                className="w-full justify-start gap-3 h-auto py-3 px-4 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                className="w-full justify-start gap-3 h-auto py-3 px-4 border-border hover:bg-muted text-foreground"
               >
-                <Users className="w-5 h-5 text-indigo-500 shrink-0" />
+                <Users className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
                 <div className="text-left">
                   <div className="text-sm font-semibold">Manage Team Members</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Invite, edit roles and permissions</div>
+                  <div className="text-xs text-muted-foreground">Invite, edit roles and permissions</div>
                 </div>
               </Button>
             </Link>
@@ -81,18 +81,18 @@ export function OrgActionsMenu({ status }: OrgActionsMenuProps) {
             <Link href="/dashboard/create-program">
               <Button
                 variant="outline"
-                className="w-full justify-start gap-3 h-auto py-3 px-4 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                className="w-full justify-start gap-3 h-auto py-3 px-4 border-border hover:bg-muted text-foreground"
               >
                 <PlusCircle className="w-5 h-5 text-emerald-500 shrink-0" />
                 <div className="text-left">
                   <div className="text-sm font-semibold">Launch New Program</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Create a bug bounty or disclosure policy</div>
+                  <div className="text-xs text-muted-foreground">Create a bug bounty or disclosure policy</div>
                 </div>
               </Button>
             </Link>
           </div>
 
-          <div className="border-t border-slate-100 dark:border-slate-800 pt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="border-t border-border pt-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               {status === "REJECTED" && (
                 <Button
@@ -123,23 +123,23 @@ export function OrgActionsMenu({ status }: OrgActionsMenuProps) {
 
       {/* Delete Confirmation Modal */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+        <DialogContent className="sm:max-w-md bg-card border-border">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5" />
               Delete Organization
             </DialogTitle>
-            <DialogDescription className="text-sm text-slate-600 dark:text-slate-300 pt-2">
+            <DialogDescription className="text-sm text-muted-foreground pt-2">
               Are you sure you want to delete your organization? This action is <strong className="text-rose-600">permanent</strong> and will remove all programs, team member access, and associated verification records.
             </DialogDescription>
           </DialogHeader>
 
-          <DialogFooter className="gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <DialogFooter className="gap-2 pt-4 border-t border-border">
             <Button
               type="button"
               variant="outline"
               onClick={() => setIsDeleteOpen(false)}
-              className="border-slate-300 dark:border-slate-700"
+              className="border-border"
             >
               Cancel
             </Button>

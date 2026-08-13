@@ -61,8 +61,13 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  /* The brand primary from design.md. It used to be shadcn's neutral
+     (oklch(0.205 0 0)), which rendered every `bg-primary` button near-black —
+     which is why 30-odd call sites hardcode `bg-blue-600 hover:bg-blue-700` to
+     get the brand colour instead. This is that colour, so `bg-primary` and
+     `text-primary` mean what they say. */
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --tag: #EFF6FF;
@@ -102,6 +107,22 @@
     transparent 78%
   );
 
+  /* Scrollbar, painted in the brand primary (#2563EB) instead of the OS grey.
+     The thumb carries alpha so it reads as a tint of the surface at rest and
+     resolves to solid primary only while being dragged. */
+  --scrollbar-size: 10px;
+  --scrollbar-thumb-color: rgb(37 99 235 / 0.45);
+  --scrollbar-thumb-hover-color: rgb(37 99 235 / 0.7);
+  --scrollbar-thumb-active-color: rgb(37 99 235 / 0.9);
+  --scrollbar-track-color: rgb(37 99 235 / 0.07);
+
+  /* lightswind's plugin reads these three as bare HSL triples
+     (`hsl(var(--scrollbar-thumb))`), so they have to stay triples rather than
+     colours. Re-pointed at the primary hue so the Firefox bar and the
+     plugin's `bg-scrollbar-*` utilities land on the same blue. */
+  --scrollbar-thumb: 221 83% 53%;
+  --scrollbar-track: 221 83% 96%;
+  --scrollbar-hover: 221 83% 45%;
 }
 
 /* ─── Landing & about palette ────────────────────────────────────────────
@@ -183,8 +204,11 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  /* Same blue in dark, matching what the hardcoded buttons already do
+     (`dark:bg-blue-600`). White on #2563EB clears 4.5:1 either way, so the
+     fill does not need to lighten the way text on a dark field does. */
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --tag: #172554;
@@ -222,6 +246,17 @@
     transparent 78%
   );
 
+  /* #2563EB is too dense to see against a near-black field, so the dark bar
+     steps up to the lighter tint of the same hue the rest of the dark palette
+     already uses for primary (--ds-trend, #60A5FA). */
+  --scrollbar-thumb-color: rgb(96 165 250 / 0.4);
+  --scrollbar-thumb-hover-color: rgb(96 165 250 / 0.65);
+  --scrollbar-thumb-active-color: rgb(96 165 250 / 0.85);
+  --scrollbar-track-color: rgb(96 165 250 / 0.08);
+
+  --scrollbar-thumb: 213 94% 68%;
+  --scrollbar-track: 220 30% 16%;
+  --scrollbar-hover: 213 94% 78%;
 }
 
 @layer base {
@@ -239,6 +274,186 @@
        underneath it. */
     scroll-padding-top: calc(var(--navbar-height) + 1rem);
   }
+
+  /* ─── Scrollbars ──────────────────────────────────────────────────────
+     Every scroll container in the app is a plain overflow box — there is no
+     ScrollArea component — so styling the native bar once here reaches all
+     of them, page-level included.
+
+     Two engines, two mechanisms. Chromium and Safari paint the
+     ::-webkit-scrollbar pseudo-elements, which is the only route to a
+     rounded, inset, hover-reactive thumb — but Chromium ignores those
+     pseudo-elements outright the moment `scrollbar-width` or
+     `scrollbar-color` is anything but `auto`, and lightswind's plugin sets
+     both on `*`. Hence the reset below: it hands the pseudo-elements back.
+     Firefox has no pseudo-elements to paint, so it keeps the two standard
+     properties instead, tinted to the same blue.
+
+     The selector is `:root, :root *` rather than `*` purely to outrank the
+     plugin's own `*` rule, which shares this layer. Specificity is still low
+     enough — and this is still `base` — that the hiding utilities below win
+     wherever a rail asks for no bar at all. */
+  @supports selector(::-webkit-scrollbar) {
+    :root,
+    :root * {
+      scrollbar-width: auto;
+      scrollbar-color: auto;
+    }
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    :root,
+    :root * {
+      scrollbar-width: thin;
+      scrollbar-color: hsl(var(--scrollbar-thumb) / 0.75) hsl(var(--scrollbar-track));
+    }
+  }
+
+  ::-webkit-scrollbar {
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: var(--scrollbar-track-color);
+    border-radius: 9999px;
+  }
+
+  /* The transparent border plus content-box clip is what insets the thumb:
+     a 10px bar with a 6px pill in it, so the thumb never touches the edge of
+     its container. */
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb-color);
+    background-clip: content-box;
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    transition: background-color 150ms ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover-color);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background-color: var(--scrollbar-thumb-active-color);
+  }
+
+  /* Legacy stepper arrows, and the dead square where a vertical and a
+     horizontal bar meet. */
+  ::-webkit-scrollbar-button {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+}
+
+/* ─── lightswind border repair ───────────────────────────────────────────
+   The plugin injects `.border { border-color: hsl(var(--border)) }`, and the
+   same for `-t/-r/-b/-l/-x/-y`, written for a build where `--border` is a bare
+   HSL triple (`0 0% 90%`). Ours is an oklch colour, so `hsl(oklch(0.922 0 0))`
+   parses as garbage: the declaration is dropped, and `border-color` falls back
+   to its initial value, `currentColor` — a near-black rule wherever a bare
+   `border-b` appears with no colour utility beside it. The card header and
+   footer dividers are exactly that case.
+
+   `components` is the right home. It outranks the plugin's rules, which land
+   in `base`, while any real `border-<colour>` utility still wins over it,
+   since layer order is compared before specificity. */
+@layer components {
+  .border,
+  .border-x,
+  .border-y,
+  .border-t,
+  .border-r,
+  .border-b,
+  .border-l {
+    border-color: var(--border);
+  }
+}
+
+@layer utilities {
+  /* Both names are already in use on horizontal filter rails
+     (ProblemFiltersBar, ReportConfirmationFilters) but neither was ever
+     defined, so those rails have been rendering a bar they meant to hide. */
+  .no-scrollbar,
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar,
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ─── Hover-revealed scrollbar ────────────────────────────────────────
+     A bar that stays invisible until the pointer is somewhere inside the
+     enclosing `[data-scroll-host]` — the whole sidebar, say, rather than
+     only the few pixels the bar occupies. Focus counts too, so tabbing
+     through a list that scrolls still shows where you are in it.
+
+     Only the paint is dropped, never the width: the gutter stays reserved,
+     so the list does not reflow the moment the bar appears.
+
+     A host attribute rather than Tailwind's `group`, which is already spoken
+     for on nested items and would fire on the wrong ancestor. */
+  [data-scroll-host] .scrollbar-hover-only::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  [data-scroll-host] .scrollbar-hover-only::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+
+  [data-scroll-host]:hover .scrollbar-hover-only::-webkit-scrollbar-thumb,
+  [data-scroll-host]:focus-within .scrollbar-hover-only::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb-color);
+  }
+
+  [data-scroll-host]:hover
+    .scrollbar-hover-only::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover-color);
+  }
+
+  /* Firefox, which has no pseudo-elements to paint. Scoped to the same
+     branch as the base rules: a non-auto `scrollbar-color` in Chromium
+     switches it to the standard bar and drops everything above. */
+  @supports not selector(::-webkit-scrollbar) {
+    [data-scroll-host] .scrollbar-hover-only {
+      scrollbar-color: transparent transparent;
+    }
+
+    [data-scroll-host]:hover .scrollbar-hover-only,
+    [data-scroll-host]:focus-within .scrollbar-hover-only {
+      scrollbar-color: hsl(var(--scrollbar-thumb) / 0.75) transparent;
+    }
+  }
+}
+
+/* @uiw/react-md-editor ships its own grey 8px bar for code blocks inside
+   rendered markdown (`.wmde-markdown pre > code::-webkit-scrollbar`). That
+   stylesheet is unlayered and loads lazily with the component, so it beats
+   anything in @layer base regardless of order — this has to win on
+   specificity instead, which is all the leading `html` is doing. */
+html .wmde-markdown pre > code::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+  background: transparent;
+}
+
+html .wmde-markdown pre > code::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-color);
+  background-clip: content-box;
+  border: 2px solid transparent;
+  border-radius: 9999px;
+}
+
+html .wmde-markdown pre > code::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover-color);
 }
 
 @keyframes fadeSlideIn {

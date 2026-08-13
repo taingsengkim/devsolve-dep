@@ -78,16 +78,13 @@ function CompanyProfileSkeleton() {
       transition={{ duration: 0.3, ease: "easeOut" }}
       className="space-y-6 w-full pb-12 animate-pulse"
     >
+      {/* Mirrors the real layout — header, hero, then the 2:1 split — so the
+          page does not rearrange itself the moment the data lands. */}
       <div className="h-20 rounded-2xl bg-muted" />
-      <div className="h-64 rounded-2xl bg-muted" />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {[0, 1, 2].map((item) => (
-          <div key={item} className="h-28 rounded-2xl bg-muted" />
-        ))}
-      </div>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="h-72 rounded-2xl bg-muted" />
-        <div className="h-72 rounded-2xl bg-muted" />
+      <div className="h-80 rounded-2xl bg-muted" />
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+        <div className="h-72 rounded-2xl bg-muted lg:col-span-2" />
+        <div className="h-64 rounded-2xl bg-muted" />
       </div>
     </motion.div>
   );
@@ -161,6 +158,33 @@ export default function CompanyProfileView() {
     .slice(0, 4);
   const websiteUrl = safeExternalUrl(organization.websiteUrl);
 
+  const metrics = [
+    {
+      label: "All programs",
+      value: programs.length,
+      helper: "Owned by this company",
+      icon: Layers3,
+    },
+    {
+      label: "Active",
+      value: activePrograms,
+      helper: "Currently running",
+      icon: ShieldCheck,
+    },
+    {
+      label: "Team",
+      value: members.length,
+      helper: members.length === 1 ? "Member" : "Members",
+      icon: Users,
+    },
+    {
+      label: "In review",
+      value: pendingPrograms,
+      helper: pendingPrograms === 1 ? "Program pending" : "Programs pending",
+      icon: CalendarDays,
+    },
+  ];
+
   const details = [
     {
       label: "Industry",
@@ -193,7 +217,7 @@ export default function CompanyProfileView() {
       transition={{ duration: 0.3, ease: "easeOut" }}
       className="space-y-6 w-full pb-12"
     >
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
         <div className="flex flex-col gap-1">
           <Link
             href="/dashboard"
@@ -202,15 +226,15 @@ export default function CompanyProfileView() {
             <ArrowLeft className="size-4" aria-hidden="true" />
             Dashboard
           </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Company Profile
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-base text-muted-foreground">
             Your organization identity, security programs, and team presence.
           </p>
         </div>
         <Link
-          href="/dashboard/organizations"
+          href="/dashboard/organizations/edit"
           className={cn(
             buttonVariants({ variant: "outline", size: "lg" }),
             "rounded-xl",
@@ -221,7 +245,9 @@ export default function CompanyProfileView() {
         </Link>
       </header>
 
-      <Card className="rounded-2xl shadow-xs">
+      {/* Hero: identity, then the numbers that describe it, then what you can
+          do about them — one card instead of three stacked bands. */}
+      <Card>
         <CardHeader className="border-b">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
             <Avatar
@@ -259,31 +285,29 @@ export default function CompanyProfileView() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="flex flex-col gap-1 rounded-xl bg-muted/50 p-4">
-            <span className="text-sm font-medium text-muted-foreground">
-              Organization handle
-            </span>
-            <strong className="truncate text-base font-semibold">
-              {organization.slug ? `@${organization.slug}` : "Not assigned"}
-            </strong>
-          </div>
-          <div className="flex flex-col gap-1 rounded-xl bg-muted/50 p-4">
-            <span className="text-sm font-medium text-muted-foreground">
-              Primary domain
-            </span>
-            <strong className="truncate text-base font-semibold">
-              {organization.domain || "Not specified"}
-            </strong>
-          </div>
-          <div className="flex flex-col gap-1 rounded-xl bg-muted/50 p-4">
-            <span className="text-sm font-medium text-muted-foreground">
-              Verification
-            </span>
-            <strong className="truncate text-base font-semibold">
-              {formatDisplayValue(organization.status)}
-            </strong>
-          </div>
+        {/* The metric row the design spec calls for on a detail hero. Separate
+            tiles rather than a divided grid — the hairline rules this had at
+            first drew a hard cross through the middle of the card. */}
+        <CardContent>
+          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {metrics.map((metric) => (
+              <div
+                key={metric.label}
+                className="flex flex-col gap-1 rounded-xl bg-muted/50 p-4"
+              >
+                <dt className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <metric.icon className="size-4" aria-hidden="true" />
+                  {metric.label}
+                </dt>
+                <dd className="text-3xl font-bold tracking-tight tabular-nums">
+                  {metric.value}
+                </dd>
+                <dd className="text-sm text-muted-foreground">
+                  {metric.helper}
+                </dd>
+              </div>
+            ))}
+          </dl>
         </CardContent>
         <CardFooter className="flex-wrap gap-3 border-t bg-muted/20">
           <Link
@@ -315,133 +339,90 @@ export default function CompanyProfileView() {
         </CardFooter>
       </Card>
 
-      <section
-        className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
-        aria-label="Organization summary"
-      >
-        {[
-          {
-            label: "All programs",
-            value: programs.length,
-            helper: "Owned by this company",
-            icon: Layers3,
-          },
-          {
-            label: "Active programs",
-            value: activePrograms,
-            helper: "Currently running",
-            icon: ShieldCheck,
-          },
-          {
-            label: "Team members",
-            value: members.length,
-            helper: "Organization workspace",
-            icon: Users,
-          },
-          {
-            label: "Review queue",
-            value: pendingPrograms,
-            helper:
-              pendingPrograms === 1 ? "Program pending" : "Programs pending",
-            icon: ShieldCheck,
-          },
-        ].map((stat) => (
-          <Card key={stat.label} size="sm" className="rounded-2xl">
+      {/* Asymmetric grid per the design spec: the programs list is the reason
+          to open this page, so it takes the two wide columns; the reference
+          details sit in the aside. `items-start` keeps the shorter column from
+          stretching to match the taller one. */}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+        <aside className="space-y-6 lg:order-2">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                <stat.icon className="size-4" aria-hidden="true" />
-                {stat.label}
-              </CardTitle>
+              <CardTitle className="text-lg font-bold">Company details</CardTitle>
+              <CardDescription>
+                Public-facing organization information.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="flex items-end justify-between gap-3">
-              <strong className="text-3xl font-bold tracking-tight">
-                {stat.value}
-              </strong>
-              <span className="text-sm text-muted-foreground">
-                {stat.helper}
-              </span>
+            <CardContent className="flex flex-col gap-4">
+              {details.map((detail, index) => (
+                <div key={detail.label} className="flex flex-col gap-4">
+                  {index > 0 && <Separator />}
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <detail.icon className="size-4" aria-hidden="true" />
+                      {detail.label}
+                    </span>
+                    <span className="max-w-[60%] truncate text-sm font-semibold">
+                      {detail.value}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {organization.createdAt && (
+                <>
+                  <Separator />
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CalendarDays className="size-4" aria-hidden="true" />
+                      Registered
+                    </span>
+                    <span className="text-sm font-semibold">
+                      {new Date(organization.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
-        ))}
-      </section>
+        </aside>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
-        <Card className="rounded-2xl lg:order-2">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold">Company details</CardTitle>
-            <CardDescription>
-              Public-facing organization information.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            {details.map((detail, index) => (
-              <div key={detail.label} className="flex flex-col gap-4">
-                {index > 0 && <Separator />}
-                <div className="flex items-center justify-between gap-4">
-                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <detail.icon className="size-4" aria-hidden="true" />
-                    {detail.label}
-                  </span>
-                  <span className="max-w-[60%] truncate text-sm font-semibold">
-                    {detail.value}
-                  </span>
-                </div>
-              </div>
-            ))}
-            {organization.createdAt && (
-              <>
-                <Separator />
-                <div className="flex items-center justify-between gap-4">
-                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <CalendarDays className="size-4" aria-hidden="true" />
-                    Registered
-                  </span>
-                  <span className="text-sm font-semibold">
-                    {new Date(organization.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl lg:order-1">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold">Recent programs</CardTitle>
-            <CardDescription>
-              Programs owned by {organization.name}.
-            </CardDescription>
-            <CardAction>
-              <Link
-                href="/dashboard/program-management"
-                className={buttonVariants({ variant: "ghost", size: "sm" })}
-              >
-                View all
-                <ArrowUpRight data-icon="inline-end" />
-              </Link>
-            </CardAction>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            {recentPrograms.length > 0 ? (
-              recentPrograms.map((program, index) => (
-                <div key={program.id} className="flex flex-col gap-4">
-                  {index > 0 && <Separator />}
-                  <Link
-                    href={`/dashboard/program-management/${program.id}`}
-                    className="flex items-center justify-between gap-4 rounded-xl transition-colors hover:text-primary"
-                  >
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-semibold">
-                        {program.name}
+        <div className="space-y-6 lg:order-1 lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-bold">Recent programs</CardTitle>
+              <CardDescription>
+                Programs owned by {organization.name}.
+              </CardDescription>
+              <CardAction>
+                <Link
+                  href="/dashboard/program-management"
+                  className={buttonVariants({ variant: "ghost", size: "sm" })}
+                >
+                  View all
+                  <ArrowUpRight data-icon="inline-end" />
+                </Link>
+              </CardAction>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              {recentPrograms.length > 0 ? (
+                recentPrograms.map((program, index) => (
+                  <div key={program.id} className="flex flex-col gap-4">
+                    {index > 0 && <Separator />}
+                    <Link
+                      href={`/dashboard/program-management/${program.id}`}
+                      className="flex items-center justify-between gap-4 rounded-xl transition-colors hover:text-primary"
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-semibold">
+                          {program.name}
+                        </span>
+                        <span className="block truncate text-sm text-muted-foreground">
+                          @{program.handle}
+                        </span>
                       </span>
-                      <span className="block truncate text-sm text-muted-foreground">
-                        @{program.handle}
-                      </span>
-                    </span>
-                    <Badge variant="secondary">
-                      {formatDisplayValue(program.submissionState)}
-                    </Badge>
-                  </Link>
+                      <Badge variant="secondary">
+                        {formatDisplayValue(program.submissionState)}
+                      </Badge>
+                    </Link>
                 </div>
               ))
             ) : (
@@ -465,6 +446,7 @@ export default function CompanyProfileView() {
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
     </motion.div>
   );
