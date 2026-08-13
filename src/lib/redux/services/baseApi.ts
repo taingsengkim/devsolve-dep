@@ -26,7 +26,7 @@ const rawBaseQuery = fetchBaseQuery({
  * cached copy so better-auth mints a fresh one, then replay the request once.
  * A second 401 is a real authorization failure and is passed through.
  */
-const baseQueryWithReauth: BaseQueryFn<
+export const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
