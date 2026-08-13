@@ -7,8 +7,6 @@ import { motion } from "motion/react";
 import {
   ArrowLeft,
   Bookmark,
-  ChevronDown,
-  ChevronUp,
   Code2,
   ExternalLink,
   Eye,
@@ -23,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
+import { VoteControl } from "@/components/ui/vote-control";
 import {
   useCreateCommentMutation,
   useGetCommentsQuery,
@@ -115,12 +114,16 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
   });
   const [setVote] = useSetVoteMutation();
   const [removeVote] = useRemoveVoteMutation();
+  const [isVoting, setIsVoting] = useState(false);
 
-  const score = votes?.score ?? 0;
+  const upvoteCount = votes?.upvotes ?? 0;
   const myVote = votes?.currentUserVote ?? 0;
 
   const vote = async (value: 1 | -1) => {
+    if (isVoting) return;
+
     try {
+      setIsVoting(true);
       if (myVote === value) {
         await removeVote({ type: "SHOWCASE", targetId: id }).unwrap();
       } else {
@@ -129,6 +132,8 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
     } catch {
       /* Signed out, or the vote was rejected. The count stays as the server
          last reported it rather than drifting to an optimistic value. */
+    } finally {
+      setIsVoting(false);
     }
   };
 
@@ -235,39 +240,15 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
                   {showcase.title}
                 </h1>
 
-                {/* Real votes: `PUT`/`DELETE /votes/SHOWCASE/{id}`, with the
-                    caller's own vote lighting the arrow it belongs to. */}
-                <div className="flex items-center space-x-1 rounded-xl border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800/60 p-1 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => void vote(1)}
-                    aria-label={myVote === 1 ? "Remove upvote" : "Upvote"}
-                    aria-pressed={myVote === 1}
-                    className={`rounded-lg p-1.5 transition-colors cursor-pointer ${
-                      myVote === 1
-                        ? "bg-blue-600 text-white"
-                        : "text-slate-500 hover:bg-slate-200 dark:text-neutral-400 dark:hover:bg-neutral-700"
-                    }`}
-                  >
-                    <ChevronUp className="h-4 w-4" />
-                  </button>
-                  <span className="text-sm font-bold text-slate-800 dark:text-neutral-100 px-1.5 tabular-nums">
-                    {score}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => void vote(-1)}
-                    aria-label={myVote === -1 ? "Remove downvote" : "Downvote"}
-                    aria-pressed={myVote === -1}
-                    className={`rounded-lg p-1.5 transition-colors cursor-pointer ${
-                      myVote === -1
-                        ? "bg-slate-800 text-white dark:bg-neutral-200 dark:text-neutral-900"
-                        : "text-slate-500 hover:bg-slate-200 dark:text-neutral-400 dark:hover:bg-neutral-700"
-                    }`}
-                  >
-                    <ChevronDown className="h-4 w-4" />
-                  </button>
-                </div>
+                <VoteControl
+                  voteCount={upvoteCount}
+                  currentVote={myVote}
+                  onVote={vote}
+                  isLoading={isVoting}
+                  upvoteLabel="Upvote this showcase"
+                  downvoteLabel="Downvote this showcase"
+                  className="shrink-0"
+                />
               </div>
 
               {showcase.coverImageUrl && (
