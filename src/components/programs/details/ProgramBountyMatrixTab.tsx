@@ -40,20 +40,41 @@ export function ProgramBountyMatrixTab({ program }: { program: ProgramDetail }) 
 
       {/* Rewards List Stack */}
       {rewards.length === 0 ? (
-        <p className="text-sm text-muted-foreground italic">
-          No specific reward tiers configured.
-        </p>
+        program?.offersBounties && (program?.minimumBounty || program?.maximumBounty) ? (
+          <div className="ring-1 ring-foreground/5 dark:ring-foreground/10 rounded-2xl p-4 sm:p-5 bg-muted/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <span className="inline-flex items-center justify-center px-3 py-1 text-xs font-black uppercase rounded-full tracking-wider w-fit shrink-0 bg-emerald-600 text-white">
+                Bounty Range
+              </span>
+              <span className="text-sm font-semibold text-foreground leading-snug">
+                Standard reward range configured for this program.
+              </span>
+            </div>
+            <p className="text-lg sm:text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
+              ${(program.minimumBounty ?? 0).toLocaleString()} – ${(program.maximumBounty ?? 0).toLocaleString()}
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground italic">
+            No specific reward tiers configured.
+          </p>
+        )
       ) : (
         <div className="flex flex-col gap-3">
-          {rewards.map((reward) => {
+          {rewards.map((reward, idx) => {
+            const severityKey = (reward.severity || "MEDIUM").toUpperCase() as SeverityLevel;
             const badgeStyle =
-              severityBadgeStyles[reward.severity] || "bg-slate-500 text-white";
+              severityBadgeStyles[severityKey] || "bg-slate-500 text-white";
             const description =
-              severityDescriptions[reward.severity] || "";
+              severityDescriptions[severityKey] || "";
+
+            const min = Number(reward.minAmount ?? 0);
+            const max = Number(reward.maxAmount ?? 0);
+            const points = Number(reward.points ?? 0);
 
             return (
               <div
-                key={reward.id}
+                key={reward.id || `${severityKey}-${idx}`}
                 className="ring-1 ring-foreground/5 dark:ring-foreground/10 rounded-2xl p-4 sm:p-5 bg-muted/30 hover:bg-muted/60 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 {/* Left Side: Badge + Examples */}
@@ -61,7 +82,7 @@ export function ProgramBountyMatrixTab({ program }: { program: ProgramDetail }) 
                   <span
                     className={`inline-flex items-center justify-center px-3 py-1 text-xs font-black uppercase rounded-full tracking-wider w-fit shrink-0 ${badgeStyle}`}
                   >
-                    {reward.severity}
+                    {severityKey}
                   </span>
                   <span className="text-sm font-semibold text-foreground leading-snug">
                     {description}
@@ -70,14 +91,14 @@ export function ProgramBountyMatrixTab({ program }: { program: ProgramDetail }) 
 
                 {/* Right Side: Points + Amount Range */}
                 <div className="flex items-center justify-between md:justify-end gap-4 shrink-0">
-                  {reward.points > 0 && (
+                  {points > 0 && (
                     <span className="flex items-center gap-1 text-xs text-amber-600 font-bold bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-lg dark:text-amber-300 dark:bg-amber-500/10 dark:border-amber-500/20">
                       <Zap className="w-3.5 h-3.5 fill-amber-500" />
-                      {reward.points} pts
+                      {points} pts
                     </span>
                   )}
                   <p className="text-lg sm:text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                    ${reward.minAmount.toLocaleString()} – ${reward.maxAmount.toLocaleString()}
+                    ${min.toLocaleString()} – ${max.toLocaleString()}
                   </p>
                 </div>
               </div>

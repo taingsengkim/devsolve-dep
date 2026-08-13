@@ -40,27 +40,55 @@ export const ProgramOverviewTab: React.FC<ProgramOverviewTabProps> = ({
       <hr className="border-border" />
 
       {/* Proof of Concept Requirements */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-          Proof of Concept Requirements
-        </h2>
-        <p className="text-base text-muted-foreground font-medium">
-          Each report must include the following to be considered valid:
-        </p>
-        <ul className="space-y-3">
-          {(  [
-            "Step-by-step reproduction guide",
-            "Exact HTTP request/payload (use Burp Suite export)",
-            "Screenshot or screen recording demonstrating impact",
-            "Affected endpoint and parameter names",
-          ]).map((req, idx) => (
-            <li key={idx} className="flex items-start gap-3 text-base text-foreground font-medium leading-relaxed">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400 shrink-0 mt-0.5" />
-              <span>{req}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      {(() => {
+        const pocData = program?.proofOfConceptRequirements;
+        let pocDescription = "Each report must include the following to be considered valid:";
+        let pocRules: string[] = [];
+
+        if (pocData) {
+          if (typeof pocData === "object" && pocData !== null) {
+            const obj = pocData as { description?: string; rules?: string[] };
+            if (obj.description) pocDescription = obj.description;
+            if (Array.isArray(obj.rules)) pocRules = obj.rules;
+          } else if (typeof pocData === "string") {
+            pocRules = pocData
+              .split(/\r?\n/)
+              .map((r) => r.replace(/^[•\-\s]+/, "").trim())
+              .filter(Boolean);
+          }
+        }
+
+        const defaultFallbackRules = [
+          "Step-by-step reproduction guide",
+          "Exact HTTP request/payload (use Burp Suite export)",
+          "Screenshot or screen recording demonstrating impact",
+          "Affected endpoint and parameter names",
+        ];
+
+        const displayRules = pocRules.length > 0 ? pocRules : defaultFallbackRules;
+
+        return (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+              Proof of Concept Requirements
+            </h2>
+            <p className="text-base text-muted-foreground font-medium">
+              {pocDescription}
+            </p>
+            <ul className="space-y-3">
+              {displayRules.map((req, idx) => (
+                <li
+                  key={idx}
+                  className="flex items-start gap-3 text-base text-foreground font-medium leading-relaxed"
+                >
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400 shrink-0 mt-0.5" />
+                  <span>{req}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })()}
     </motion.div>
   );
 };

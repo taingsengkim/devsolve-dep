@@ -14,13 +14,54 @@ export const ProgramRulesTab: React.FC<ProgramRulesTabProps> = (props) => {
   // Debug Log: Check F12 Console in Browser!
   // console.log("ProgramRulesTab received props:", props);
 
-  // Extract rules from props directly OR from program prop fallback
-  const rulesData = props.rulesOfEngagement ?? props.program?.rulesOfEngagement;
-  const exclusionsData = props.exclusions ?? props.program?.exclusions;
+  const rawRulesData = props.rulesOfEngagement ?? props.program?.rulesOfEngagement;
+  const rawExclusionsData = props.exclusions ?? props.program?.exclusions;
 
-  // Extract rule arrays safely
-  const rulesList = Array.isArray(rulesData?.rules) ? rulesData.rules : [];
-  const exclusionsList = Array.isArray(exclusionsData?.rules) ? exclusionsData.rules : [];
+  const parseSection = (data: unknown, defaultDescription: string) => {
+    if (!data) return { description: defaultDescription, rules: [] };
+
+    if (typeof data === "object" && data !== null) {
+      const obj = data as { description?: string; rules?: unknown };
+      const description = obj.description || defaultDescription;
+      let rules: string[] = [];
+      if (Array.isArray(obj.rules)) {
+        rules = obj.rules.map((r) => String(r));
+      } else if (typeof obj.rules === "string") {
+        rules = obj.rules
+          .split(/\r?\n/)
+          .map((r) => r.replace(/^[•\-\s]+/, "").trim())
+          .filter(Boolean);
+      }
+      return { description, rules };
+    }
+
+    if (Array.isArray(data)) {
+      return {
+        description: defaultDescription,
+        rules: data.map((r) => String(r)),
+      };
+    }
+
+    if (typeof data === "string") {
+      const rules = data
+        .split(/\r?\n/)
+        .map((r) => r.replace(/^[•\-\s]+/, "").trim())
+        .filter(Boolean);
+      return { description: defaultDescription, rules };
+    }
+
+    return { description: defaultDescription, rules: [] };
+  };
+
+  const { description: rulesDescription, rules: rulesList } = parseSection(
+    rawRulesData,
+    "You must follow these rules during your testing. Violations may result in report rejection and account suspension."
+  );
+
+  const { description: exclusionsDescription, rules: exclusionsList } = parseSection(
+    rawExclusionsData,
+    "Reports covering the following vulnerability types will not be accepted. Save your time and focus on what matters."
+  );
 
   return (
     <motion.div
@@ -37,8 +78,7 @@ export const ProgramRulesTab: React.FC<ProgramRulesTabProps> = (props) => {
           Rules of Engagement
         </h2>
         <p className="text-base text-muted-foreground leading-relaxed font-normal">
-          {rulesData?.description ||
-            "You must follow these rules during your testing. Violations may result in report rejection and account suspension."}
+          {rulesDescription}
         </p>
 
         {rulesList.length > 0 ? (
@@ -68,8 +108,7 @@ export const ProgramRulesTab: React.FC<ProgramRulesTabProps> = (props) => {
           Exclusions
         </h2>
         <p className="text-base text-muted-foreground leading-relaxed font-normal">
-          {exclusionsData?.description ||
-            "Reports covering the following vulnerability types will not be accepted. Save your time and focus on what matters."}
+          {exclusionsDescription}
         </p>
 
         {exclusionsList.length > 0 ? (
