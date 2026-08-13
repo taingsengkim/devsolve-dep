@@ -136,6 +136,23 @@ export const problemsApi = baseApi.injectEndpoints({
     }),
 
     /**
+     * POST /api/problems/{id}/views -> POST /api/v1/problems/{id}/views.
+     * The upstream response is 204, so the authoritative updated count is
+     * obtained by refreshing the cached detail and list queries afterward.
+     */
+    incrementProblemViews: builder.mutation<void, string>({
+      query: (id) => ({ url: `/problems/${id}/views`, method: "POST" }),
+      invalidatesTags: (_result, error, id) =>
+        error
+          ? []
+          : [
+              { type: "Problem", id },
+              { type: "Problem", id: "LIST" },
+              { type: "Discussion", id },
+            ],
+    }),
+
+    /**
      * PATCH /api/problems/{id} — the author revising their own problem.
      *
      * `version` becomes the `If-Match` header, quoted the way the upstream
@@ -253,6 +270,7 @@ export const {
   useUpdateProblemMutation,
   useSubmitProblemMutation,
   useGetProblemByIdQuery,
+  useIncrementProblemViewsMutation,
   useGetProblemsQuery,
   useDeleteProblemMutation,
   useSetAcceptedSolutionMutation,

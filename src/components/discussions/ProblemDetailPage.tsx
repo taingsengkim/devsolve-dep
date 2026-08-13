@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion } from "motion/react";
@@ -33,6 +33,7 @@ import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
 import { VoteControl } from "@/components/ui/vote-control";
 import {
   useGetProblemByIdQuery,
+  useIncrementProblemViewsMutation,
   useRemoveAcceptedSolutionMutation,
   useSetAcceptedSolutionMutation,
   type ProblemResponse,
@@ -156,6 +157,18 @@ function Loaded({
   sortOrder: "votes" | "newest";
   onSortChange: (order: "votes" | "newest") => void;
 }) {
+  const [incrementViews] = useIncrementProblemViewsMutation();
+  const countedProblemId = useRef<string | null>(null);
+
+  /* Record a view only after the problem has loaded successfully. Tracking the
+     id (rather than a boolean) also handles client navigation between problem
+     detail routes without double-counting effect replays in development. */
+  useEffect(() => {
+    if (countedProblemId.current === id) return;
+    countedProblemId.current = id;
+    void incrementViews(id);
+  }, [id, incrementViews]);
+
   const { data: solutionPage, isLoading: isLoadingSolutions } =
     useGetSolutionsByProblemQuery({
       problemId: id,
