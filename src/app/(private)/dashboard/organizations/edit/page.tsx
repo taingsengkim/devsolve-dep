@@ -13,7 +13,7 @@ import { useGetMyOrganizationQuery } from "@/lib/redux/services/organizationsApi
  * /dashboard/organizations/edit — the organization's details, on a page of
  * their own rather than in a dialog.
  *
- * A static segment outranks the sibling `[id]` route, so"edit" is never read
+ * A static segment outranks the sibling `[id]` route, so "edit" is never read
  * as an organization id.
  */
 export default function EditMyOrganizationPage() {
