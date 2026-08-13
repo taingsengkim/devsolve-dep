@@ -67,7 +67,7 @@ export default function PublicOrganizationProfilePage() {
 
         {/* BACK TO MARKETPLACE BUTTON */}
         <Link
-          href="/dashboard/programs"
+          href="/programs"
           className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -220,7 +220,7 @@ export default function PublicOrganizationProfilePage() {
 
               {/* 🚀 BUTTON NAVIGATING TO COMPANY CATALOG PAGE */}
               <Link
-                href="/dashboard/visit/programs"
+                href="/visit/programs"
                 className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 border border-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl transition-all cursor-pointer group shadow-sm"
               >
                 View Catalog ({companyProfile.stats.activePrograms})
