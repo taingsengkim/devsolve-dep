@@ -1,4 +1,4 @@
-import { baseApi } from "./baseApi";
+import { proxyApi } from "./proxyApi";
 import {
   LeaderboardCountryOption,
   LeaderboardEntry,
@@ -8,7 +8,6 @@ import {
   SeverityLabel,
 } from "@/lib/types/leaderboard/types";
 import {
-  CURRENT_USERNAME,
   getCountryOptions,
   getHighlights,
   getLeaderboardEntries,
@@ -35,31 +34,37 @@ export interface LeaderboardQueryResponse {
   stats: LeaderboardStats;
 }
 
-export interface MyRankResponse {
-  entry: LeaderboardEntry | null;
-  totalRanked: number;
-  /** Percentile from the top, e.g. 12 → "top 12%". */
-  topPercent: number | null;
-}
-
-interface PublicUserProfileItem {
+interface LeaderboardApiItem {
+  rank: number;
   id: string;
   fullName?: string;
-  biography?: string;
   avatarUrl?: string;
   country?: string;
-  socialLinks?: { platform: string; url: string }[];
   reputation?: number;
   totalReports?: number;
   validReports?: number;
   criticalReports?: number;
   recognitionCount?: number;
-  joinedAt?: string;
+}
+
+interface LeaderboardApiPage {
+  totalElements?: number;
+  totalPages?: number;
+  size?: number;
+  content?: LeaderboardApiItem[];
+  number?: number;
+  numberOfElements?: number;
+  first?: boolean;
+  last?: boolean;
+  empty?: boolean;
+}
+
+interface CurrentUserProfile {
+  id?: string;
 }
 
 function mapProfileToEntry(
-  profile: PublicUserProfileItem,
-  index: number,
+  profile: LeaderboardApiItem,
   myUserId?: string
 ): LeaderboardEntry {
   const name = profile.fullName?.trim() || "Anonymous Researcher";
@@ -81,14 +86,15 @@ function mapProfileToEntry(
 
   return {
     id: profile.id,
-    rank: index + 1,
-    previousRank: index + 1,
+    rank: profile.rank,
+    previousRank: null,
+    // The leaderboard endpoint exposes user ids, not profile slugs.
     username: profile.id,
     displayName: name,
     avatarUrl: profile.avatarUrl,
     avatarInitials: initials,
-    countryCode: profile.country || "US",
-    countryName: profile.country || "United States",
+    countryCode: profile.country || "Unknown",
+    countryName: profile.country || "Unknown country",
     reputation: profile.reputation ?? 0,
     totalReports: total,
     validReports: valid,
@@ -105,7 +111,55 @@ function mapProfileToEntry(
   };
 }
 
-export const leaderboardApi = baseApi.injectEndpoints({
+function filterEntries(
+  entries: LeaderboardEntry[],
+  {
+    country,
+    severity,
+    queryTerm,
+  }: { country: string; severity: SeverityLabel | "all"; queryTerm: string }
+) {
+  return entries.filter((entry) => {
+    if (country !== "all" && entry.countryCode !== country) return false;
+    if (severity !== "all" && entry.topSeverity !== severity) return false;
+    if (
+      queryTerm &&
+      !entry.displayName.toLowerCase().includes(queryTerm) &&
+      !entry.username.toLowerCase().includes(queryTerm)
+    ) {
+      return false;
+    }
+    return true;
+  });
+}
+
+function countryOptionsOf(entries: LeaderboardEntry[]): LeaderboardCountryOption[] {
+  const counts = new Map<string, LeaderboardCountryOption>();
+
+  for (const entry of entries) {
+    const existing = counts.get(entry.countryCode);
+    if (existing) existing.count += 1;
+    else {
+      counts.set(entry.countryCode, {
+        code: entry.countryCode,
+        name: entry.countryName,
+        count: 1,
+      });
+    }
+  }
+
+  return [...counts.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function statsOf(entries: LeaderboardEntry[]): LeaderboardStats {
+  return {
+    activeResearchers: entries.length,
+    validReports: entries.reduce((sum, entry) => sum + entry.validReports, 0),
+    programsLive: 0,
+  };
+}
+
+export const leaderboardApi = proxyApi.injectEndpoints({
   endpoints: (builder) => ({
     getLeaderboard: builder.query<LeaderboardQueryResponse, LeaderboardQueryParams>({
       queryFn: async (
@@ -115,114 +169,68 @@ export const leaderboardApi = baseApi.injectEndpoints({
         fetchWithBQ
       ) => {
         const queryTerm = search.trim().toLowerCase();
-        let apiEntries: LeaderboardEntry[] = [];
-        let myUserId: string | undefined = undefined;
+        let myUserId: string | undefined;
 
         try {
-          // Attempt to resolve signed-in user's profile ID for `isCurrentUser` indicator
-          const meResult = await fetchWithBQ(`/user-profiles/me`);
-          if (meResult.data) {
-            const me = meResult.data as { id?: string };
+          const [leaderboardResult, meResult] = await Promise.all([
+            fetchWithBQ(`/reputation/leaderboard`),
+            fetchWithBQ(`/user-profiles/me`),
+          ]);
+
+          if ("data" in meResult && meResult.data) {
+            const me = meResult.data as CurrentUserProfile;
             if (me.id) myUserId = me.id;
           }
 
-          // Search live public user profiles from backend database via Next.js proxy route
-          const profileQuery = queryTerm ? `?query=${encodeURIComponent(queryTerm)}&pageSize=100` : `?pageSize=100`;
-          const profilesResult = await fetchWithBQ(`/user-profiles${profileQuery}`);
-
-          if (profilesResult.data) {
-            const res = profilesResult.data as { content?: PublicUserProfileItem[] };
-            if (Array.isArray(res.content) && res.content.length > 0) {
-              const sorted = [...res.content].sort(
-                (a, b) => (b.reputation ?? 0) - (a.reputation ?? 0)
-              );
-              apiEntries = sorted.map((p, idx) => mapProfileToEntry(p, idx, myUserId));
-            }
+          if ("error" in leaderboardResult && leaderboardResult.error) {
+            throw leaderboardResult.error;
           }
+
+          const leaderboardPage = leaderboardResult.data as LeaderboardApiPage;
+          const allEntries = (leaderboardPage.content ?? []).map((entry) =>
+            mapProfileToEntry(entry, myUserId),
+          );
+          const filteredEntries = filterEntries(allEntries, {
+            country,
+            severity,
+            queryTerm,
+          });
+
+          return {
+            data: {
+              entries: filteredEntries,
+              podium: allEntries.slice(0, 3),
+              highlights: getHighlights(period),
+              countries: countryOptionsOf(allEntries),
+              totalRanked: leaderboardPage.totalElements ?? allEntries.length,
+              stats: statsOf(allEntries),
+            },
+          };
         } catch {
           // Fall back gracefully to mock entries if backend is unreachable
         }
 
-        // Standard mock leaderboard fallback
         const mockAll = getLeaderboardEntries(period);
-        const filteredMock = mockAll.filter((entry) => {
-          if (country !== "all" && entry.countryCode !== country) return false;
-          if (severity !== "all" && entry.topSeverity !== severity) return false;
-          if (
-            queryTerm &&
-            !entry.displayName.toLowerCase().includes(queryTerm) &&
-            !entry.username.toLowerCase().includes(queryTerm)
-          ) {
-            return false;
-          }
-          return true;
+        const filteredMock = filterEntries(mockAll, {
+          country,
+          severity,
+          queryTerm,
         });
-
-        // Use live API entries when available, filtered by country and severity
-        let finalEntries = apiEntries.length > 0 ? apiEntries : filteredMock;
-
-        if (apiEntries.length > 0) {
-          finalEntries = finalEntries.filter((entry) => {
-            if (country !== "all" && entry.countryCode !== country) return false;
-            if (severity !== "all" && entry.topSeverity !== severity) return false;
-            return true;
-          });
-        }
-
-        const podiumSource = apiEntries.length >= 3 ? apiEntries : mockAll;
 
         return {
           data: {
-            entries: finalEntries,
-            podium: podiumSource.slice(0, 3),
+            entries: filteredMock,
+            podium: mockAll.slice(0, 3),
             highlights: getHighlights(period),
             countries: getCountryOptions(period),
-            totalRanked: Math.max(finalEntries.length, mockAll.length),
+            totalRanked: mockAll.length,
             stats: mockLeaderboardStats,
           },
         };
       },
-      providesTags: ["User", "Profile"],
-    }),
-
-    getMyLeaderboardRank: builder.query<MyRankResponse, LeaderboardPeriod>({
-      queryFn: async (period, _api, _extra, fetchWithBQ) => {
-        try {
-          const meResult = await fetchWithBQ(`/user-profiles/me`);
-          if (meResult.data) {
-            const me = meResult.data as PublicUserProfileItem;
-            if (me.id) {
-              const entry = mapProfileToEntry(me, 0, me.id);
-              entry.isCurrentUser = true;
-              return {
-                data: {
-                  entry,
-                  totalRanked: 100,
-                  topPercent: 5,
-                },
-              };
-            }
-          }
-        } catch {
-          // Fall back to mock
-        }
-
-        const all = getLeaderboardEntries(period);
-        const entry = all.find((e) => e.username === CURRENT_USERNAME) ?? null;
-        return {
-          data: {
-            entry,
-            totalRanked: all.length,
-            topPercent: entry
-              ? Math.max(1, Math.round((entry.rank / all.length) * 100))
-              : null,
-          },
-        };
-      },
-      providesTags: ["User", "Profile"],
     }),
   }),
 });
 
-export const { useGetLeaderboardQuery, useGetMyLeaderboardRankQuery } = leaderboardApi;
+export const { useGetLeaderboardQuery } = leaderboardApi;
 export default leaderboardApi;

@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { Building2, Hash, User, UserCheck, UserPlus, ShieldCheck, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth/auth-client";
+import { useKeycloakLogin } from "@/hooks/useKeycloakLogin";
 import { FollowRecord } from "@/lib/types/profile/types";
 import {
   useFollowTargetMutation,
@@ -29,16 +32,28 @@ function formatFollowedSince(iso: string) {
 }
 
 export default function FollowingItem({ record, baseProfilePath = "/dashboard/profile" }: FollowingItemProps) {
+  const pathname = usePathname();
+  const { data: session, isPending: isSessionPending } = authClient.useSession();
+  const { isLoggingIn, handleLogin } = useKeycloakLogin();
   const [isFollowing, setIsFollowing] = useState(record.isFollowing ?? true);
   const [followTarget, { isLoading: isFollowingLoading }] = useFollowTargetMutation();
   const [unfollowTarget, { isLoading: isUnfollowingLoading }] = useUnfollowTargetMutation();
 
-  const isPending = isFollowingLoading || isUnfollowingLoading;
+  const isPending =
+    isSessionPending || isLoggingIn || isFollowingLoading || isUnfollowingLoading;
   const targetId = record.followableId || record.id;
   const targetType = record.followableType || "USER";
 
   const handleToggleFollow = async () => {
     if (isPending) return;
+    if (!session) {
+      const redirectTo =
+        typeof window === "undefined"
+          ? pathname
+          : `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      await handleLogin(redirectTo);
+      return;
+    }
 
     const previousState = isFollowing;
     setIsFollowing(!previousState);

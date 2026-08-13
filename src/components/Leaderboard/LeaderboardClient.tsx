@@ -1,10 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  useGetLeaderboardQuery,
-  useGetMyLeaderboardRankQuery,
-} from "@/lib/redux/services/leaderboardApi";
+import { useGetLeaderboardQuery } from "@/lib/redux/services/leaderboardApi";
 import { SeverityLabel } from "@/lib/types/leaderboard/types";
 import LeaderboardFilters, {
   LeaderboardFilterState,
@@ -44,7 +41,6 @@ export default function LeaderboardClient() {
     severity: filters.severity as SeverityLabel | "all",
     search: debouncedSearch,
   });
-  const { data: myRank } = useGetMyLeaderboardRankQuery(filters.period);
 
   // Any change to what is being ranked or filtered invalidates the page cursor.
   const updateFilters = useCallback(
@@ -61,6 +57,14 @@ export default function LeaderboardClient() {
   }, []);
 
   const entries = useMemo(() => data?.entries ?? [], [data]);
+  const myRankEntry = useMemo(
+    () => entries.find((entry) => entry.isCurrentUser) ?? null,
+    [entries],
+  );
+  const myTopPercent =
+    myRankEntry && data?.totalRanked
+      ? Math.max(1, Math.round((myRankEntry.rank / data.totalRanked) * 100))
+      : null;
 
   // The pinned bar can only jump to a row the filters actually leave visible.
   const myIndex = entries.findIndex((entry) => entry.isCurrentUser);
@@ -109,9 +113,9 @@ export default function LeaderboardClient() {
       </div>
 
       <YourRankBar
-        entry={myRank?.entry ?? null}
-        totalRanked={myRank?.totalRanked ?? data.totalRanked}
-        topPercent={myRank?.topPercent ?? null}
+        entry={myRankEntry}
+        totalRanked={data.totalRanked}
+        topPercent={myTopPercent}
         period={filters.period}
         onJumpToMe={myIndex >= 0 ? jumpToMe : undefined}
       />
