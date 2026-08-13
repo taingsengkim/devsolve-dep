@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { Check, UserPlus, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth/auth-client";
+import { useKeycloakLogin } from "@/hooks/useKeycloakLogin";
 import {
   useGetFollowSummaryQuery,
   useFollowTargetMutation,
@@ -26,6 +29,9 @@ export default function FollowButton({
   className = "",
   size = "md",
 }: FollowButtonProps) {
+  const pathname = usePathname();
+  const { data: session, isPending: isSessionPending } = authClient.useSession();
+  const { isLoggingIn, handleLogin } = useKeycloakLogin();
   const { data: summary, isLoading: isSummaryLoading } = useGetFollowSummaryQuery(
     { type, targetId: targetId ?? "" },
     { skip: !targetId }
@@ -34,27 +40,35 @@ export default function FollowButton({
   const [followTarget, { isLoading: isFollowingLoading }] = useFollowTargetMutation();
   const [unfollowTarget, { isLoading: isUnfollowingLoading }] = useUnfollowTargetMutation();
 
-  // Local state for optimistic response or fallback mode when targetId is not provided
-  const [isFollowing, setIsFollowing] = useState(initialFollowing);
+  // Fallback mode when no targetId is provided.
+  const [fallbackFollowing, setFallbackFollowing] = useState(initialFollowing);
+  const isFollowing = targetId ? (summary?.following ?? initialFollowing) : fallbackFollowing;
 
-  useEffect(() => {
-    if (summary !== undefined) {
-      setIsFollowing(summary.following);
-    }
-  }, [summary]);
-
-  const isPending = isSummaryLoading || isFollowingLoading || isUnfollowingLoading;
+  const isPending =
+    isSessionPending ||
+    isLoggingIn ||
+    isSummaryLoading ||
+    isFollowingLoading ||
+    isUnfollowingLoading;
 
   const handleToggleFollow = async () => {
     if (isPending) return;
+    if (!session) {
+      const redirectTo =
+        typeof window === "undefined"
+          ? pathname
+          : `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      await handleLogin(redirectTo);
+      return;
+    }
 
-    const previousState = isFollowing;
-    setIsFollowing(!previousState); // Optimistic UI toggle
-
-    if (!targetId) return; // Fallback mode if no targetId provided
+    if (!targetId) {
+      setFallbackFollowing((current) => !current);
+      return;
+    }
 
     try {
-      if (previousState) {
+      if (isFollowing) {
         await unfollowTarget({ type, targetId }).unwrap();
         toast.success("Unfollowed successfully");
       } else {
@@ -62,7 +76,6 @@ export default function FollowButton({
         toast.success("Following");
       }
     } catch (err: unknown) {
-      setIsFollowing(previousState); // Rollback on error
       const message = (err as { data?: { message?: string } })?.data?.message ?? "Failed to update follow status";
       toast.error(message);
     }

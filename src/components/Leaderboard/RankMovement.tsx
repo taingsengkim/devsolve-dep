@@ -44,10 +44,11 @@ export default function RankMovement({
   if (delta.direction === "new") {
     return (
       <span
-        className={`inline-flex items-center gap-1 text-xs font-semibold ${ink.fresh} ${className}`}
+        className={`inline-flex items-center gap-1 text-xs font-semibold ${ink.flat} ${className}`}
       >
         <Sparkle className="h-3.5 w-3.5" aria-hidden />
-        New
+        <span className="sr-only">Previous rank unavailable</span>
+        <span aria-hidden>--</span>
       </span>
     );
   }
