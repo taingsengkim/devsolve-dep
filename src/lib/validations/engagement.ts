@@ -56,6 +56,64 @@ export const commentCreateSchema = z.object({
     .trim()
     .min(1, "A comment cannot be empty")
     .max(5000, "A comment must not exceed 5000 characters"),
-  parentCommentId: z.uuid("parentCommentId must be a UUID").optional(),
-  internal: z.boolean().optional(),
+  /* Defaulted rather than optional so `parsed.data` — which is what the proxy
+     forwards — always carries every field the backend binds. Omitting
+     `internal` makes its non-nullable boolean fail to deserialize, and Spring
+     reports that as a missing or malformed body. */
+  parentCommentId: z
+    .uuid("parentCommentId must be a UUID")
+    .nullable()
+    .default(null),
+  internal: z.boolean().default(false),
+  mentionedUserIds: z.array(z.uuid()).default([]),
+});
+
+/** Mirrors `UpdateCommentRequest` — the body is the only editable field. */
+export const commentUpdateSchema = z.object({
+  content: z
+    .string()
+    .trim()
+    .min(1, "A comment cannot be empty")
+    .max(5000, "A comment must not exceed 5000 characters"),
+});
+
+/** How `/comments/thread` and `/comments` order a page. */
+export const COMMENT_SORTS = ["NEWEST", "OLDEST", "TOP"] as const;
+
+export type CommentSort = (typeof COMMENT_SORTS)[number];
+
+/** What a reader can report. Mirrors `CreateFlagRequest.flaggableType`. */
+export const FLAGGABLE_TYPES = [
+  "PROBLEM",
+  "SOLUTION",
+  "COMMENT",
+  "SHOWCASE",
+] as const;
+
+export type FlaggableType = (typeof FLAGGABLE_TYPES)[number];
+
+export const FLAG_REASONS = [
+  "SPAM",
+  "OFFENSIVE",
+  "DUPLICATE",
+  "OFF_TOPIC",
+  "OTHER",
+] as const;
+
+export type FlagReason = (typeof FLAG_REASONS)[number];
+
+/** Mirrors `CreateFlagRequest`. */
+export const flagCreateSchema = z.object({
+  flaggableType: z.enum(FLAGGABLE_TYPES, {
+    message: `flaggableType must be one of ${FLAGGABLE_TYPES.join(", ")}`,
+  }),
+  flaggableId: z.uuid("flaggableId must be a UUID"),
+  reason: z.enum(FLAG_REASONS, {
+    message: `reason must be one of ${FLAG_REASONS.join(", ")}`,
+  }),
+  description: z
+    .string()
+    .trim()
+    .max(2000, "A description must not exceed 2000 characters")
+    .optional(),
 });

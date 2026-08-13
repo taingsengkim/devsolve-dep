@@ -13,9 +13,11 @@ import {
   CheckCircle2,
   ChevronRight,
   Gavel,
+  Gift,
   Mail,
   MessageSquare,
   Sparkles,
+  UserPlus,
 } from "lucide-react";
 import type { Notification, NotificationType } from "@/lib/types/notifications/types";
 
@@ -25,29 +27,49 @@ interface NotificationItemCardProps {
   onCloseModal?: () => void;
 }
 
+/**
+ * Where tapping a notification goes.
+ *
+ * Every branch here is checked against a route that exists. Most of these used
+ * to point at pages that were never built — `/dashboard/problems/{id}`,
+ * `/dashboard/solutions/{id}`, `/dashboard/showcases/{id}`,
+ * `/dashboard/organizations/invitations`, `/dashboard/profile/kyc`,
+ * `/dashboard/disputes/{id}` and `/dashboard/recognitions/{id}` were all
+ * 404s, so seven of the eleven kinds of notification led nowhere.
+ *
+ * Where the id cannot address a page on its own, this lands on the list that
+ * contains the item rather than on a broken URL. `SOLUTION` is the clearest
+ * case: `notifiableId` is the solution's id, but a solution is only readable
+ * under its problem, whose id the payload does not carry.
+ */
 function getNotificationLink(type: NotificationType, id: string): string {
   switch (type) {
     case "PROBLEM":
-      return `/dashboard/problems/${id}`;
-    case "SOLUTION":
-      return `/dashboard/solutions/${id}`;
+      return `/community/${id}`;
+    case "SHOWCASE":
+      return `/showcases/${id}`;
     case "PROGRAM":
       return `/dashboard/programs/${id}`;
-    case "SHOWCASE":
-      return `/dashboard/showcases/${id}`;
     case "ORGANIZATION":
       return `/dashboard/organizations/${id}`;
     case "REPORT":
-      return `/dashboard/my-reports?id=${id}`;
+      return `/dashboard/my-reports/${id}`;
+    case "SOLUTION":
+      return `/dashboard/my-community`;
     case "INVITATION":
-      return `/dashboard/organizations/invitations`;
+      return `/dashboard/team-management`;
     case "KYC":
-      return `/dashboard/profile/kyc`;
-    case "DISPUTE":
-      return `/dashboard/disputes/${id}`;
+      // Verification state and its next action live on the org page.
+      return `/dashboard/organizations`;
+    case "REWARD":
     case "RECOGNITION":
-      return `/dashboard/recognitions/${id}`;
+      return `/dashboard/rewards`;
+    case "USER":
+      // A follow. The payload carries the actor's uuid and the profile route
+      // keys on username, so this opens the reader's own followers instead.
+      return `/dashboard/profile`;
     case "COMMENT":
+    case "DISPUTE":
     default:
       return `/dashboard`;
   }
@@ -75,6 +97,10 @@ function getNotificationIcon(type: NotificationType) {
       return <Gavel className="w-4 h-4 text-orange-500" />;
     case "RECOGNITION":
       return <Award className="w-4 h-4 text-yellow-500" />;
+    case "REWARD":
+      return <Gift className="w-4 h-4 text-emerald-500" />;
+    case "USER":
+      return <UserPlus className="w-4 h-4 text-blue-500" />;
     case "COMMENT":
     default:
       return <MessageSquare className="w-4 h-4 text-slate-500" />;

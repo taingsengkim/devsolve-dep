@@ -1,3 +1,7 @@
+/**
+ * Mirrors `NotificationResponse.notifiableType` upstream. `USER` and `REWARD`
+ * are the two the backend added most recently.
+ */
 export type NotificationType =
   | "COMMENT"
   | "REPORT"
@@ -9,7 +13,9 @@ export type NotificationType =
   | "INVITATION"
   | "DISPUTE"
   | "RECOGNITION"
-  | "SHOWCASE";
+  | "SHOWCASE"
+  | "USER"
+  | "REWARD";
 
 export interface Notification {
   id: string | null; // UUID — null only on bulk follower SSE push events
