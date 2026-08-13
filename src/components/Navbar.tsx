@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -45,6 +45,12 @@ type NavLink = {
   name: string;
   href?: string;
   items?: NavItem[];
+  /**
+   * Dropped from the bar once there is a session — an introduction to the
+   * platform is for people deciding whether to join, not for members who
+   * already have.
+   */
+  guestOnly?: boolean;
 };
 
 const navLinks: NavLink[] = [
@@ -75,7 +81,7 @@ const navLinks: NavLink[] = [
     ],
   },
   { name: "Leaderboard", href: "/leaderboard" },
-  { name: "About", href: "/about" },
+  { name: "About", href: "/about", guestOnly: true },
 ];
 
 // Scrolling down only retracts the island once the reader is past this much of
@@ -151,6 +157,13 @@ const Navbar = () => {
     displayName,
     handleSignOut,
   } = useSidebarAuth();
+  /* The session resolves on the client, so the guest-only links render on the
+     first pass and drop out once a session is known — the same beat on which
+     the sign-in buttons become the account menu. */
+  const visibleNavLinks = useMemo(
+    () => navLinks.filter((link) => !(link.guestOnly && sessionUser)),
+    [sessionUser],
+  );
   const isCompany = sessionUser?.roles?.includes("COMPANY") ?? false;
   const {
     data: organization,
@@ -550,7 +563,7 @@ const Navbar = () => {
                 className="hidden min-w-0 items-center justify-center lg:flex"
               >
                 <div className="flex min-w-0 items-center gap-0.5 xl:gap-1">
-                  {navLinks.map((link) => {
+                  {visibleNavLinks.map((link) => {
                     const isActive = isNavLinkActive(pathname, link);
 
                     if (link.items?.length) {
@@ -870,7 +883,7 @@ const Navbar = () => {
                   aria-label="Mobile navigation"
                   className="flex flex-col gap-1"
                 >
-                  {navLinks.map((link) => {
+                  {visibleNavLinks.map((link) => {
                     const isActive = isNavLinkActive(pathname, link);
 
                     if (link.items?.length) {
