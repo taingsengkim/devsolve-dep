@@ -22,8 +22,8 @@ import { showcaseCreateSchema } from "@/lib/validations/showcase";
 const LIST_PARAMS = [
   "query",
   "categoryId",
-  "sortBy",
-  "sortDirection",
+  "tag",
+  "sort",
   "pageNumber",
   "pageSize",
 ] as const;

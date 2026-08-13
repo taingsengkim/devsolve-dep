@@ -29,6 +29,9 @@ interface DiscussionSidebarProps {
   isLoadingTopics?: boolean;
   isLoadingTags?: boolean;
   isLoadingStats?: boolean;
+  className?: string;
+  showExploreHeader?: boolean;
+  showStats?: boolean;
 }
 
 export function DiscussionSidebar({
@@ -42,6 +45,9 @@ export function DiscussionSidebar({
   isLoadingTopics,
   isLoadingTags,
   isLoadingStats,
+  className,
+  showExploreHeader = true,
+  showStats = true,
 }: DiscussionSidebarProps) {
   const totalTopics = topics.reduce((sum, topic) => sum + topic.count, 0);
   /* Only what a list endpoint can answer. There is no platform-wide count of
@@ -56,28 +62,43 @@ export function DiscussionSidebar({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: "easeOut", delay: 0.08 }}
-      aria-label="Discussion filters and stats"
-      className="flex flex-col gap-5 lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start"
+      aria-label={showStats ? "Discussion filters and stats" : "Discussion filters"}
+      className={cn(
+        "flex flex-col gap-5 lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start",
+        className,
+      )}
     >
       <Card className="gap-0 rounded-2xl py-0 shadow-xs ring-1 ring-foreground/5">
-        <CardHeader className="px-5 pt-5 pb-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <span className="flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-                <SlidersHorizontal aria-hidden="true" className="size-4" />
-              </span>
-              <CardTitle className="text-base font-bold">Explore</CardTitle>
+        {showExploreHeader && (
+          <CardHeader className="px-5 pt-5 pb-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <span className="flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                  <SlidersHorizontal aria-hidden="true" className="size-4" />
+                </span>
+                <CardTitle className="text-base font-bold">Explore</CardTitle>
+              </div>
+              <Badge variant="secondary" className="tabular-nums">
+                {totalTopics.toLocaleString()}
+              </Badge>
             </div>
-            <Badge variant="secondary" className="tabular-nums">
-              {totalTopics.toLocaleString()}
-            </Badge>
-          </div>
-          <CardDescription className="mt-1 text-sm">
-            Narrow the feed by topic or trending tag.
-          </CardDescription>
-        </CardHeader>
+            <CardDescription className="mt-1 text-sm">
+              Narrow the feed by topic or trending tag.
+            </CardDescription>
+          </CardHeader>
+        )}
+        {!showExploreHeader && (
+          <CardHeader className="sr-only">
+            <CardTitle>Explore</CardTitle>
+            <CardDescription>
+              Narrow the feed by topic or trending tag.
+            </CardDescription>
+          </CardHeader>
+        )}
 
-        <CardContent className="px-3 pb-4">
+        <CardContent
+          className={cn("px-3 pb-4", !showExploreHeader && "pt-3")}
+        >
           <div className="flex flex-col gap-1" aria-label="Topics">
             {isLoadingTopics
               ? Array.from({ length: 6 }).map((_, index) => (
@@ -103,7 +124,12 @@ export function DiscussionSidebar({
                           : "text-muted-foreground hover:bg-muted hover:text-foreground",
                       )}
                     >
-                      <span>{topic.name}</span>
+                      <span
+                        className="min-w-0 flex-1 truncate"
+                        title={topic.name}
+                      >
+                        {topic.name}
+                      </span>
                       <span
                         className={cn(
                           "tabular-nums",
@@ -158,41 +184,46 @@ export function DiscussionSidebar({
         </CardContent>
       </Card>
 
-      <div className="hidden lg:block">
-        <Card className="gap-0 rounded-2xl py-0 shadow-xs ring-1 ring-foreground/5">
-          <CardHeader className="px-5 pt-5 pb-4">
-            <div className="flex items-center gap-2.5">
-              <span className="flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-                <BarChart3 aria-hidden="true" className="size-4" />
-              </span>
-              <div>
-                <CardTitle className="text-base font-bold">Community</CardTitle>
-                <CardDescription>Platform activity</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3 px-5 pb-5">
-            <dl className="flex flex-col gap-3">
-              {metrics.map(({ label, value }) => (
-                <div key={label} className="flex items-center justify-between gap-3">
-                  <dt className="text-sm font-medium text-muted-foreground">
-                    {label}
-                  </dt>
-                  <dd>
-                    {isLoadingStats ? (
-                      <div className="h-5 w-14 animate-pulse rounded bg-muted" />
-                    ) : (
-                      <span className="text-base font-bold tabular-nums text-foreground">
-                        {value.toLocaleString()}
-                      </span>
-                    )}
-                  </dd>
+      {showStats && (
+        <div className="hidden lg:block">
+          <Card className="gap-0 rounded-2xl py-0 shadow-xs ring-1 ring-foreground/5">
+            <CardHeader className="px-5 pt-5 pb-4">
+              <div className="flex items-center gap-2.5">
+                <span className="flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                  <BarChart3 aria-hidden="true" className="size-4" />
+                </span>
+                <div>
+                  <CardTitle className="text-base font-bold">Community</CardTitle>
+                  <CardDescription>Platform activity</CardDescription>
                 </div>
-              ))}
-            </dl>
-          </CardContent>
-        </Card>
-      </div>
+              </div>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 px-5 pb-5">
+              <dl className="flex flex-col gap-3">
+                {metrics.map(({ label, value }) => (
+                  <div
+                    key={label}
+                    className="flex items-center justify-between gap-3"
+                  >
+                    <dt className="text-sm font-medium text-muted-foreground">
+                      {label}
+                    </dt>
+                    <dd>
+                      {isLoadingStats ? (
+                        <div className="h-5 w-14 animate-pulse rounded bg-muted" />
+                      ) : (
+                        <span className="text-base font-bold tabular-nums text-foreground">
+                          {value.toLocaleString()}
+                        </span>
+                      )}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </motion.aside>
   );
 }

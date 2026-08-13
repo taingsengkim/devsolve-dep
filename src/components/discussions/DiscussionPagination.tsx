@@ -81,7 +81,7 @@ export function DiscussionPagination({
             </SelectTrigger>
             <SelectContent alignItemWithTrigger={false}>
               <SelectGroup>
-                {[3, 5, 10, 20].map((option) => (
+                {[10, 20, 50, 100].map((option) => (
                   <SelectItem
                     key={option}
                     value={String(option)}

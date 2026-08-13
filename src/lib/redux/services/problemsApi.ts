@@ -17,11 +17,14 @@ export interface ProblemFeedParams {
   sdlcPhase?: SdlcPhase;
   tag?: string;
   technology?: string;
+  q?: string;
+  status?: ProblemStatus;
+  unansweredOnly?: boolean;
   /** Zero-based, matching Spring's own paging on this controller. */
   page?: number;
   size?: number;
-  /** `property,(asc|desc)` — defaults to `publishedAt,DESC` upstream. */
-  sort?: string;
+  /** Named listing order from the public OpenAPI contract. */
+  sort?: "NEWEST" | "OLDEST" | "TOP" | "TRENDING" | "MOST_VIEWED" | "TITLE";
 }
 
 /**

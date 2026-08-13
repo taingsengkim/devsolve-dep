@@ -11,6 +11,7 @@ import {
   DiscussionHeader,
   DiscussionSearch,
 } from "@/components/discussions/DiscussionHeader";
+import { DiscussionMobileFilters } from "@/components/discussions/DiscussionMobileFilters";
 import { DiscussionPagination } from "@/components/discussions/DiscussionPagination";
 import { DiscussionSidebar } from "@/components/discussions/DiscussionSidebar";
 import { DiscussionSkeleton } from "@/components/discussions/DiscussionSkeleton";
@@ -131,6 +132,17 @@ export function DiscussionsFeed({
               onSortChange={setSort}
               totalCount={discussions?.totalCount ?? 0}
             />
+            <DiscussionMobileFilters
+              topics={topics}
+              tags={tags}
+              selectedTopic={topic}
+              selectedTag={tag}
+              totalCount={discussions?.totalCount ?? 0}
+              onSelectTopic={setTopic}
+              onSelectTag={setTag}
+              isLoadingTopics={isLoadingTopics}
+              isLoadingTags={isLoadingTags}
+            />
             <DiscussionActiveFilters
               category={category}
               defaultCategory={defaultCategory}
@@ -156,6 +168,7 @@ export function DiscussionsFeed({
             isLoadingTopics={isLoadingTopics}
             isLoadingTags={isLoadingTags}
             isLoadingStats={isLoadingStats}
+            className="hidden lg:flex"
           />
 
           <section

@@ -13,7 +13,7 @@ import type {
   TopicName,
 } from "@/lib/types/dicussion/types";
 
-const DEFAULT_LIMIT = 3;
+const DEFAULT_LIMIT = 10;
 const DEFAULT_SORT: DiscussionSort = "newest";
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -86,18 +86,22 @@ export function useDiscussionFilters(defaultCategory: DiscussionCategory = "All"
     setPage(1);
   }, [defaultCategory]);
 
-  // RTK Query hooks
-  const discussionsResult = useGetDiscussionsQuery({
-    category,
-    topic,
-    tag,
-    searchQuery,
-    sort,
-    page,
-    limit,
-  });
-
   const topicsResult = useGetDiscussionTopicsQuery();
+  const selectedTopic = topicsResult.data?.find((item) => item.name === topic);
+  const discussionsResult = useGetDiscussionsQuery(
+    {
+      category,
+      topic,
+      problemCategoryId: selectedTopic?.problemCategoryId,
+      showcaseCategoryId: selectedTopic?.showcaseCategoryId,
+      tag,
+      searchQuery,
+      sort,
+      page,
+      limit,
+    },
+    { skip: topic !== null && topicsResult.isLoading },
+  );
   const tagsResult = useGetTrendingTagsQuery();
   const statsResult = useGetDiscussionStatsQuery();
 

@@ -131,9 +131,8 @@ export interface ShowcaseViewCountResponse {
 export interface ShowcaseListParams {
   query?: string;
   categoryId?: string;
-  /** Column name, e.g. `createdAt` or `viewCount`. Defaults upstream. */
-  sortBy?: string;
-  sortDirection?: "ASC" | "DESC";
+  tag?: string;
+  sort?: "NEWEST" | "OLDEST" | "TOP" | "TRENDING" | "MOST_VIEWED" | "TITLE";
   pageNumber?: number;
   pageSize?: number;
 }

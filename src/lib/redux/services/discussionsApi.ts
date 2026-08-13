@@ -11,6 +11,8 @@ import { authorNameOf } from "@/lib/discussions/format";
 export interface DiscussionsFilterParams {
   category?: "All" | "Problems" | "Showcase";
   topic?: string | null;
+  problemCategoryId?: string;
+  showcaseCategoryId?: string;
   tag?: string | null;
   searchQuery?: string;
   sort?: DiscussionSort;
@@ -35,10 +37,9 @@ export interface DiscussionStats {
 // ─── Real backend shapes (per devsolve-api.quizzy.it.com/v3/api-docs) ─────────
 // Problems and showcases are two separate REST resources with different
 // response shapes; both get flattened into the shared DiscussionPost shape
-// the UI already renders. Neither carries a vote score or a comment/solution
-// count, so those stay at 0 on the list until the user interacts with a
-// specific card (see voteDiscussion) — there's no bulk aggregate endpoint for
-// either, and doing per-item N+1 calls for every fetched row isn't worth it.
+// the UI already renders. Problem rows include vote/solution totals; showcase
+// rows include comment totals, while their vote score is read only when the
+// user explicitly requests the vote-based sort.
 
 interface CategorySummary {
   id: string;
@@ -52,6 +53,12 @@ interface ProblemApiResponse {
   title: string;
   description?: string;
   viewCount?: number;
+  solutionCount?: number;
+  commentCount?: number;
+  voteScore?: number;
+  isBookmarkedByViewer?: boolean;
+  viewerVote?: string | null;
+  status?: "PUBLISHED" | "RESOLVED" | "CLOSED";
   tags?: { name: string }[];
   publishedAt?: string;
   createdAt?: string;
@@ -60,6 +67,7 @@ interface ProblemApiResponse {
 interface PageProblemApiResponse {
   content: ProblemApiResponse[];
   totalElements: number;
+  totalPages?: number;
 }
 
 interface ShowcaseApiResponse {
@@ -70,23 +78,15 @@ interface ShowcaseApiResponse {
   overview?: string;
   coverImageUrl?: string;
   viewCount?: number;
+  commentCount?: number;
+  tags?: { name?: string }[];
   createdAt?: string;
 }
 
 interface PageShowcaseApiResponse {
   content: ShowcaseApiResponse[];
   totalElements: number;
-}
-
-interface BookmarkApiResponse {
-  bookmarkableType: "PROGRAM" | "PROBLEM" | "SOLUTION" | "SHOWCASE";
-  bookmarkableId: string;
-}
-
-interface VoteApiResponse {
-  type: "PROBLEM" | "SOLUTION" | "COMMENT" | "SHOWCASE";
-  targetId: string;
-  value: number;
+  totalPages?: number;
 }
 
 interface VoteSummaryApiResponse {
@@ -94,6 +94,14 @@ interface VoteSummaryApiResponse {
   currentUserVote: number;
 }
 
+interface ActiveCategoryApiResponse {
+  id: string;
+  name: string;
+  scope: "PROBLEM" | "SHOWCASE";
+}
+
+// Keep this binding stable across Turbopack hot updates. Older discussion
+// query modules still reference LIST_PAGE_SIZE until the page is refreshed.
 const LIST_PAGE_SIZE = 100;
 
 function toRelativeDate(iso?: string): string {
@@ -113,9 +121,8 @@ function toRelativeDate(iso?: string): string {
 
 function toProblemPost(
   raw: ProblemApiResponse,
-  isBookmarked: boolean,
-  isUpvoted: boolean
 ): DiscussionPost {
+  const timestamp = raw.publishedAt || raw.createdAt;
   return {
     id: raw.id,
     title: raw.title,
@@ -123,23 +130,23 @@ function toProblemPost(
     topic: raw.category?.name ?? "General",
     description: raw.description ?? "",
     tags: (raw.tags ?? []).map((t) => t.name),
-    votes: 0,
-    answersCount: 0,
+    votes: raw.voteScore ?? 0,
+    answersCount: raw.solutionCount ?? 0,
     viewsCount: raw.viewCount ?? 0,
+    status: raw.status === "RESOLVED" ? "Solved" : "Open",
     author: {
       name: authorNameOf(raw.author, "Community Member"),
       avatarUrl: raw.author?.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${raw.id}`,
     },
-    createdAt: toRelativeDate(raw.publishedAt || raw.createdAt),
-    isBookmarked,
-    isUpvoted,
+    createdAt: toRelativeDate(timestamp),
+    sortTimestamp: timestamp,
+    isBookmarked: raw.isBookmarkedByViewer ?? false,
+    isUpvoted: raw.viewerVote === "UP" || raw.viewerVote === "UPVOTE",
   };
 }
 
 function toShowcasePost(
   raw: ShowcaseApiResponse,
-  isBookmarked: boolean,
-  isUpvoted: boolean
 ): DiscussionPost {
   return {
     id: raw.id,
@@ -147,10 +154,9 @@ function toShowcasePost(
     category: "Showcase",
     topic: raw.categoryName ?? "General",
     description: raw.overview ?? "",
-    tags: [],
-    techStack: [],
+    tags: (raw.tags ?? []).flatMap((tag) => tag.name ? [tag.name] : []),
     votes: 0,
-    answersCount: 0,
+    answersCount: raw.commentCount ?? 0,
     viewsCount: raw.viewCount ?? 0,
     thumbnailUrl: raw.coverImageUrl,
     author: {
@@ -158,16 +164,21 @@ function toShowcasePost(
       avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${raw.id}`,
     },
     createdAt: toRelativeDate(raw.createdAt),
-    isBookmarked,
-    isUpvoted,
+    sortTimestamp: raw.createdAt,
+    isBookmarked: false,
+    isUpvoted: false,
   };
 }
 
 // ─── Sorting helpers ──────────────────────────────────────────────────────────
 
-function createdAtTime(value: string): number {
-  const parsed = Date.parse(value);
+function createdAtTime(post: DiscussionPost): number {
+  const parsed = Date.parse(post.sortTimestamp ?? post.createdAt);
   return Number.isNaN(parsed) ? Date.now() : parsed;
+}
+
+function newestFirst(a: DiscussionPost, b: DiscussionPost): number {
+  return createdAtTime(b) - createdAtTime(a) || a.id.localeCompare(b.id);
 }
 
 function sortDiscussions<T extends DiscussionPost>(
@@ -178,20 +189,31 @@ function sortDiscussions<T extends DiscussionPost>(
   switch (sort) {
     case "oldest":
       return sorted.sort(
-        (a, b) => createdAtTime(a.createdAt) - createdAtTime(b.createdAt),
+        (a, b) => createdAtTime(a) - createdAtTime(b) || a.id.localeCompare(b.id),
       );
     case "top":
-      return sorted.sort((a, b) => b.votes - a.votes);
+      return sorted.sort((a, b) => b.votes - a.votes || newestFirst(a, b));
     case "discussed":
-      return sorted.sort((a, b) => b.answersCount - a.answersCount);
+      return sorted.sort(
+        (a, b) => b.answersCount - a.answersCount || newestFirst(a, b),
+      );
     case "viewed":
-      return sorted.sort((a, b) => b.viewsCount - a.viewsCount);
+      return sorted.sort(
+        (a, b) => b.viewsCount - a.viewsCount || newestFirst(a, b),
+      );
     case "newest":
     default:
-      return sorted.sort(
-        (a, b) => createdAtTime(b.createdAt) - createdAtTime(a.createdAt),
-      );
+      return sorted.sort(newestFirst);
   }
+}
+
+function apiUrl(path: string, params: Record<string, string | number | undefined>): string {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== "") query.set(key, String(value));
+  }
+  const encoded = query.toString();
+  return encoded ? `${path}?${encoded}` : path;
 }
 
 // ─── API slice ────────────────────────────────────────────────────────────────
@@ -201,75 +223,138 @@ export const discussionsApi = baseApi.injectEndpoints({
     // ── List discussions with filter + pagination ───────────────────────────
     getDiscussions: builder.query<DiscussionsResponse, DiscussionsFilterParams | void>({
       async queryFn(params, _api, _extraOptions, fetchWithBQ) {
-        const wantProblems = !params?.category || params.category === "All" || params.category === "Problems";
-        const wantShowcases = !params?.category || params.category === "All" || params.category === "Showcase";
+        const category = params?.category ?? "All";
+        const topicSelected = Boolean(params?.topic);
+        const wantProblems =
+          (category === "All" || category === "Problems") &&
+          (!topicSelected || Boolean(params?.problemCategoryId));
+        const wantShowcases =
+          (category === "All" || category === "Showcase") &&
+          (!topicSelected || Boolean(params?.showcaseCategoryId));
+        const limit = Math.min(LIST_PAGE_SIZE, Math.max(1, params?.limit ?? 10));
+        const requestedPage = Math.max(1, params?.page ?? 1);
+        const sort = params?.sort ?? "newest";
+        const fetchCompleteResult = sort !== "newest";
+        const prefixSize = requestedPage * limit;
+        const apiPageSize = fetchCompleteResult
+          ? LIST_PAGE_SIZE
+          : Math.min(LIST_PAGE_SIZE, prefixSize);
 
-        const [problemsResult, showcasesResult, myVotesResult, myBookmarksResult] = await Promise.all([
-          wantProblems ? fetchWithBQ(`/problems?size=${LIST_PAGE_SIZE}`) : Promise.resolve(null),
-          wantShowcases ? fetchWithBQ(`/showcases?pageSize=${LIST_PAGE_SIZE}`) : Promise.resolve(null),
-          fetchWithBQ(`/votes/mine?pageSize=${LIST_PAGE_SIZE}`),
-          fetchWithBQ(`/bookmarks/mine?pageSize=${LIST_PAGE_SIZE}`),
+        const problemUrl = (page: number) =>
+          apiUrl("/problems", {
+            categoryId: params?.problemCategoryId,
+            tag: params?.tag ?? undefined,
+            q: params?.searchQuery || undefined,
+            page,
+            size: apiPageSize,
+          });
+        const showcaseUrl = (page: number) =>
+          apiUrl("/showcases", {
+            categoryId: params?.showcaseCategoryId,
+            tag: params?.tag ?? undefined,
+            query: params?.searchQuery || undefined,
+            pageNumber: page,
+            pageSize: apiPageSize,
+          });
+
+        const [firstProblemsResult, firstShowcasesResult] = await Promise.all([
+          wantProblems ? fetchWithBQ(problemUrl(0)) : Promise.resolve(null),
+          wantShowcases ? fetchWithBQ(showcaseUrl(0)) : Promise.resolve(null),
         ]);
 
-        if (problemsResult?.error) return { error: problemsResult.error };
-        if (showcasesResult?.error) return { error: showcasesResult.error };
+        if (firstProblemsResult?.error) return { error: firstProblemsResult.error };
+        if (firstShowcasesResult?.error) return { error: firstShowcasesResult.error };
 
-        // Best-effort: a logged-out visitor (401) just sees nothing as
-        // bookmarked/upvoted rather than the whole feed failing to load.
-        const upvotedKeys = new Set<string>();
-        if (!myVotesResult.error) {
-          const page = myVotesResult.data as { content: VoteApiResponse[] };
-          page.content.forEach((v) => {
-            if (v.value > 0) upvotedKeys.add(`${v.type}:${v.targetId}`);
-          });
-        }
-        const bookmarkedKeys = new Set<string>();
-        if (!myBookmarksResult.error) {
-          const page = myBookmarksResult.data as { content: BookmarkApiResponse[] };
-          page.content.forEach((b) => bookmarkedKeys.add(`${b.bookmarkableType}:${b.bookmarkableId}`));
-        }
+        const firstProblemPage = firstProblemsResult
+          ? (firstProblemsResult.data as PageProblemApiResponse)
+          : null;
+        const firstShowcasePage = firstShowcasesResult
+          ? (firstShowcasesResult.data as PageShowcaseApiResponse)
+          : null;
+        const problemPages: PageProblemApiResponse[] = firstProblemPage
+          ? [firstProblemPage]
+          : [];
+        const showcasePages: PageShowcaseApiResponse[] = firstShowcasePage
+          ? [firstShowcasePage]
+          : [];
 
-        const problems = wantProblems ? (problemsResult!.data as PageProblemApiResponse).content : [];
-        const showcases = wantShowcases ? (showcasesResult!.data as PageShowcaseApiResponse).content : [];
+        const neededPageCount = (totalElements: number, reportedPages?: number) => {
+          const available = reportedPages ?? Math.ceil(totalElements / apiPageSize);
+          const needed = fetchCompleteResult
+            ? available
+            : Math.ceil(Math.min(prefixSize, totalElements) / apiPageSize);
+          return Math.max(1, Math.min(available, needed));
+        };
 
+        const problemPageCount = firstProblemPage
+          ? neededPageCount(firstProblemPage.totalElements, firstProblemPage.totalPages)
+          : 0;
+        const showcasePageCount = firstShowcasePage
+          ? neededPageCount(firstShowcasePage.totalElements, firstShowcasePage.totalPages)
+          : 0;
+        const remainingProblems = Array.from(
+          { length: Math.max(0, problemPageCount - 1) },
+          (_, index) => fetchWithBQ(problemUrl(index + 1)),
+        );
+        const remainingShowcases = Array.from(
+          { length: Math.max(0, showcasePageCount - 1) },
+          (_, index) => fetchWithBQ(showcaseUrl(index + 1)),
+        );
+        const [problemResults, showcaseResults] = await Promise.all([
+          Promise.all(remainingProblems),
+          Promise.all(remainingShowcases),
+        ]);
+
+        const failedProblemPage = problemResults.find((result) => result.error);
+        if (failedProblemPage?.error) return { error: failedProblemPage.error };
+        const failedShowcasePage = showcaseResults.find((result) => result.error);
+        if (failedShowcasePage?.error) return { error: failedShowcasePage.error };
+
+        problemPages.push(
+          ...problemResults.map((result) => result.data as PageProblemApiResponse),
+        );
+        showcasePages.push(
+          ...showcaseResults.map((result) => result.data as PageShowcaseApiResponse),
+        );
+
+        const problems = problemPages.flatMap((result) => result.content);
+        const showcases = showcasePages.flatMap((result) => result.content);
         let results: DiscussionPost[] = [
-          ...problems.map((p) =>
-            toProblemPost(p, bookmarkedKeys.has(`PROBLEM:${p.id}`), upvotedKeys.has(`PROBLEM:${p.id}`))
-          ),
-          ...showcases.map((s) =>
-            toShowcasePost(s, bookmarkedKeys.has(`SHOWCASE:${s.id}`), upvotedKeys.has(`SHOWCASE:${s.id}`))
-          ),
+          ...problems.map(toProblemPost),
+          ...showcases.map(toShowcasePost),
         ];
 
-        if (params?.topic) {
-          results = results.filter((post) => post.topic === params.topic);
-        }
-        if (params?.tag) {
-          results = results.filter((post) => post.tags.includes(params.tag!));
-        }
-        if (params?.searchQuery) {
-          const q = params.searchQuery.toLowerCase();
-          results = results.filter(
-            (post) =>
-              // Showcases were already matched upstream, against their full
-              // overview rather than the excerpt held here — re-testing them
-              // against the excerpt would drop genuine matches.
-              post.category === "Showcase" ||
-              post.title.toLowerCase().includes(q) ||
-              post.description.toLowerCase().includes(q) ||
-              post.tags.some((tag) => tag.toLowerCase().includes(q)),
+        // The list endpoints own text, category, and tag matching. Keeping the
+        // filtering upstream makes `totalElements` and every page agree.
+        if (sort === "top" && showcases.length > 0) {
+          const voteResults = await Promise.all(
+            showcases.map((showcase) =>
+              fetchWithBQ(`/votes/SHOWCASE/${showcase.id}/summary`),
+            ),
+          );
+          const scoreById = new Map<string, number>();
+          voteResults.forEach((result, index) => {
+            if (!result.error) {
+              scoreById.set(
+                showcases[index].id,
+                (result.data as VoteSummaryApiResponse).score,
+              );
+            }
+          });
+          results = results.map((post) =>
+            post.category === "Showcase"
+              ? { ...post, votes: scoreById.get(post.id) ?? 0 }
+              : post,
           );
         }
 
-        // "top"/"discussed" have nothing real to sort by (see the comment on
-        // ProblemApiResponse above) — they fall back to insertion order, same
-        // as any other tie, rather than actively misordering the feed.
-        results = sortDiscussions(results, params?.sort ?? "newest");
+        results = sortDiscussions(results, sort);
 
-        const limit = params?.limit ?? 10;
-        const totalCount = results.length;
+        const totalCount =
+          (firstProblemPage?.totalElements ?? 0) +
+          (firstShowcasePage?.totalElements ?? 0);
         const totalPages = Math.max(1, Math.ceil(totalCount / limit));
-        const page = Math.min(Math.max(1, params?.page ?? 1), totalPages);
+        const page = Math.min(requestedPage, totalPages);
         const start = (page - 1) * limit;
 
         return {
@@ -311,7 +396,9 @@ export const discussionsApi = baseApi.injectEndpoints({
         if (!problemResult.error) {
           const isBookmarked = !statusResult.error && (statusResult.data as { bookmarked: boolean }).bookmarked;
           const isUpvoted = !voteResult.error && (voteResult.data as VoteSummaryApiResponse).currentUserVote > 0;
-          const post = toProblemPost(problemResult.data as ProblemApiResponse, isBookmarked, isUpvoted);
+          const post = toProblemPost(problemResult.data as ProblemApiResponse);
+          post.isBookmarked = isBookmarked;
+          post.isUpvoted = isUpvoted;
           if (!voteResult.error) post.votes = (voteResult.data as VoteSummaryApiResponse).score;
           return { data: post };
         }
@@ -327,7 +414,9 @@ export const discussionsApi = baseApi.injectEndpoints({
           !showcaseStatusResult.error && (showcaseStatusResult.data as { bookmarked: boolean }).bookmarked;
         const isUpvoted =
           !showcaseVoteResult.error && (showcaseVoteResult.data as VoteSummaryApiResponse).currentUserVote > 0;
-        const post = toShowcasePost(showcaseResult.data as ShowcaseApiResponse, isBookmarked, isUpvoted);
+        const post = toShowcasePost(showcaseResult.data as ShowcaseApiResponse);
+        post.isBookmarked = isBookmarked;
+        post.isUpvoted = isUpvoted;
         if (!showcaseVoteResult.error) post.votes = (showcaseVoteResult.data as VoteSummaryApiResponse).score;
         return { data: post };
       },
@@ -337,26 +426,71 @@ export const discussionsApi = baseApi.injectEndpoints({
     // ── Topic list (derived from live category usage on problems+showcases) ─
     getDiscussionTopics: builder.query<TopicCount[], void>({
       async queryFn(_arg, _api, _extraOptions, fetchWithBQ) {
-        const [problemsResult, showcasesResult] = await Promise.all([
-          fetchWithBQ(`/problems?size=${LIST_PAGE_SIZE}`),
-          fetchWithBQ(`/showcases?pageSize=${LIST_PAGE_SIZE}`),
+        const [problemCategoriesResult, showcaseCategoriesResult] = await Promise.all([
+          fetchWithBQ("/categories/active?scope=PROBLEM"),
+          fetchWithBQ("/categories/active?scope=SHOWCASE"),
         ]);
-        if (problemsResult.error) return { error: problemsResult.error };
-        if (showcasesResult.error) return { error: showcasesResult.error };
+        if (problemCategoriesResult.error) {
+          return { error: problemCategoriesResult.error };
+        }
+        if (showcaseCategoriesResult.error) {
+          return { error: showcaseCategoriesResult.error };
+        }
 
-        const counts = new Map<string, number>();
-        (problemsResult.data as PageProblemApiResponse).content.forEach((p) => {
-          const name = p.category?.name ?? "General";
-          counts.set(name, (counts.get(name) ?? 0) + 1);
+        const problemCategories =
+          problemCategoriesResult.data as ActiveCategoryApiResponse[];
+        const showcaseCategories =
+          showcaseCategoriesResult.data as ActiveCategoryApiResponse[];
+        const [problemCounts, showcaseCounts] = await Promise.all([
+          Promise.all(
+            problemCategories.map((category) =>
+              fetchWithBQ(
+                apiUrl("/problems", { categoryId: category.id, page: 0, size: 1 }),
+              ),
+            ),
+          ),
+          Promise.all(
+            showcaseCategories.map((category) =>
+              fetchWithBQ(
+                apiUrl("/showcases", {
+                  categoryId: category.id,
+                  pageNumber: 0,
+                  pageSize: 1,
+                }),
+              ),
+            ),
+          ),
+        ]);
+
+        const topicsByName = new Map<string, TopicCount>();
+        problemCategories.forEach((category, index) => {
+          const result = problemCounts[index];
+          const count = result.error
+            ? 0
+            : (result.data as PageProblemApiResponse).totalElements;
+          topicsByName.set(category.name, {
+            name: category.name,
+            count,
+            problemCategoryId: category.id,
+          });
         });
-        (showcasesResult.data as PageShowcaseApiResponse).content.forEach((s) => {
-          const name = s.categoryName ?? "General";
-          counts.set(name, (counts.get(name) ?? 0) + 1);
+        showcaseCategories.forEach((category, index) => {
+          const result = showcaseCounts[index];
+          const count = result.error
+            ? 0
+            : (result.data as PageShowcaseApiResponse).totalElements;
+          const existing = topicsByName.get(category.name);
+          topicsByName.set(category.name, {
+            name: category.name,
+            count: (existing?.count ?? 0) + count,
+            problemCategoryId: existing?.problemCategoryId,
+            showcaseCategoryId: category.id,
+          });
         });
 
-        const topics: TopicCount[] = Array.from(counts.entries())
-          .map(([name, count]) => ({ name, count }))
-          .sort((a, b) => b.count - a.count);
+        const topics = Array.from(topicsByName.values()).sort(
+          (a, b) => b.count - a.count || a.name.localeCompare(b.name),
+        );
         return { data: topics };
       },
       providesTags: [{ type: "Discussion" as const, id: "TOPICS" }],
@@ -462,7 +596,7 @@ export const discussionsApi = baseApi.injectEndpoints({
             },
           });
           if (result.error) return { error: result.error };
-          return { data: toProblemPost(result.data as ProblemApiResponse, false, false) };
+          return { data: toProblemPost(result.data as ProblemApiResponse) };
         }
 
         const result = await fetchWithBQ({
@@ -478,7 +612,7 @@ export const discussionsApi = baseApi.injectEndpoints({
           },
         });
         if (result.error) return { error: result.error };
-        return { data: toShowcasePost(result.data as ShowcaseApiResponse, false, false) };
+        return { data: toShowcasePost(result.data as ShowcaseApiResponse) };
       },
       invalidatesTags: [{ type: "Discussion" as const, id: "LIST" }],
     }),
