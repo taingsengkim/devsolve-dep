@@ -153,9 +153,24 @@ export interface PaginatedResponse<T> {
 export interface GetProgramsParams {
   page?: number;
   size?: number;
-  search?: string;
-  engagementType?: string;
-  state?: string;
+  organizationId?: string;
+  engagementType?: EngagementType;
+  offersBounties?: boolean;
+  q?: string;
+  minimumBounty?: number;
+  maximumBounty?: number;
+  assetType?: AssetType;
+  maxSeverity?: SeverityLevel;
+  industry?:
+    | "TECHNOLOGY"
+    | "FINANCE"
+    | "HEALTHCARE"
+    | "ECOMMERCE"
+    | "GOVERNMENT"
+    | "EDUCATION"
+    | "OTHER";
+  country?: string;
+  sort?: string;
 }
 
 export type AssetCategory =

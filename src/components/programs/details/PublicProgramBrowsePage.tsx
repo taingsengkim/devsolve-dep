@@ -1,257 +1,368 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { motion } from "motion/react";
+import React, { useDeferredValue, useEffect, useMemo, useRef } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { Globe } from "lucide-react";
-import { useGetProgramsQuery } from "@/lib/redux/services/program/programsApi";
-import { useProgramFilters } from "@/hooks/useProgramFilters";
-import { ProgramHeader } from "@/components/programs/ProgramHeader";
-import { ProgramFiltersBar } from "@/components/programs/ProgramFiltersBar";
+
+import { ProgramActiveFilters } from "@/components/programs/ProgramActiveFilters";
 import { ProgramCard } from "@/components/programs/ProgramCard";
+import { ProgramFiltersBar } from "@/components/programs/ProgramFiltersBar";
+import {
+  ProgramHeader,
+  ProgramSearch,
+} from "@/components/programs/ProgramHeader";
+import { ProgramMobileFilters } from "@/components/programs/ProgramMobileFilters";
 import { ProgramPagination } from "@/components/programs/ProgramPagination";
+import { ProgramTypeTabs } from "@/components/programs/ProgramTypeTabs";
 import { Button } from "@/components/ui/button";
-import { Program } from "@/lib/types/programs/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useProgramFilters } from "@/hooks/useProgramFilters";
+import { useGetCountriesQuery } from "@/lib/redux/services/geoApi";
+import {
+  useGetProgramCountryValuesQuery,
+  useGetProgramsQuery,
+} from "@/lib/redux/services/program/programsApi";
+import type { GetProgramsParams } from "@/lib/types/programs/types";
+import { cn } from "@/lib/utils";
 
 export default function MarketplacePage() {
   const {
     searchTerm,
-    setSearchTerm,
-    quickFilter,
-    setQuickFilter,
     selectedType,
-    setSelectedType,
-    selectedCategory,
-    setSelectedCategory,
-    selectedStatus,
-    setSelectedStatus,
-    minReward,           // 👈 Restored from custom hook
-    setMinReward,        // 👈 Restored from custom hook
-    maxReward,           // 👈 Restored from custom hook
-    setMaxReward,        // 👈 Restored from custom hook
-    showMoreFilters,
-    setShowMoreFilters,
+    selectedAsset,
+    selectedSeverity,
+    selectedIndustry,
+    country,
+    minReward,
+    setMinReward,
+    maxReward,
+    setMaxReward,
+    sort,
     currentPage,
     setCurrentPage,
     rowsPerPage,
     setRowsPerPage,
-    handleSearchSubmit,
+    handleSearchChange,
     handleClearSearch,
     handleTypeChange,
-    handleQuickFilterClick,
+    handleAssetChange,
+    handleSeverityChange,
+    handleIndustryChange,
+    handleCountryChange,
+    handleSortChange,
+    handleResetExploreFilters,
     handleResetFilters,
-    isFilterActive,
-    queryProps,
+    activeExploreFilterCount,
   } = useProgramFilters();
+
+  const deferredSearch = useDeferredValue(searchTerm.trim());
+  const requestedMinimum = minReward === "" ? null : Number(minReward);
+  const requestedMaximum = maxReward === "" ? null : Number(maxReward);
+  const rangeInvalid =
+    requestedMinimum !== null &&
+    requestedMaximum !== null &&
+    requestedMinimum > requestedMaximum;
+
+  const queryProps = useMemo<GetProgramsParams>(
+    () => ({
+      page: currentPage,
+      size: rowsPerPage,
+      q: deferredSearch.slice(0, 100) || undefined,
+      engagementType:
+        selectedType === "Bounty"
+          ? "BOUNTY"
+          : selectedType === "Response"
+            ? "RESPONSE"
+            : undefined,
+      minimumBounty: requestedMinimum ?? undefined,
+      maximumBounty: requestedMaximum ?? undefined,
+      assetType: selectedAsset === "All" ? undefined : selectedAsset,
+      maxSeverity:
+        selectedSeverity === "All" ? undefined : selectedSeverity,
+      industry: selectedIndustry === "All" ? undefined : selectedIndustry,
+      country: country.slice(0, 100) || undefined,
+      sort:
+        sort === "reward-high"
+          ? "maximumBounty,DESC"
+          : sort === "name"
+            ? "name,ASC"
+            : "publishedAt,DESC",
+    }),
+    [
+      currentPage,
+      country,
+      deferredSearch,
+      requestedMaximum,
+      requestedMinimum,
+      rowsPerPage,
+      selectedAsset,
+      selectedIndustry,
+      selectedSeverity,
+      selectedType,
+      sort,
+    ],
+  );
 
   const {
     data: responseData,
     isLoading,
     isFetching,
-  } = useGetProgramsQuery(queryProps);
+    isError,
+    refetch,
+  } = useGetProgramsQuery(queryProps, { skip: rangeInvalid });
+  const { data: allCountries = [], isLoading: isLoadingCountryList } =
+    useGetCountriesQuery();
+  const {
+    data: programCountryValues = [],
+    isLoading: isLoadingProgramCountries,
+  } = useGetProgramCountryValuesQuery();
 
-  const rawPrograms: Program[] = Array.isArray(responseData)
-    ? responseData
-    : responseData?.content || [];
+  const countryOptions = useMemo(
+    () =>
+      programCountryValues
+        .map((storedValue) => {
+          const normalized = storedValue.toLowerCase();
+          const countryMatch = allCountries.find(
+            (option) =>
+              option.name.toLowerCase() === normalized ||
+              option.code.toLowerCase() === normalized,
+          );
+          if (!countryMatch) return null;
 
-  // CLIENT-SIDE FILTERING LOGIC
-  const filteredPrograms = useMemo(() => {
-    return rawPrograms.filter((program: Program) => {
-      const isBounty =
-        program.offersBounties ||
+          return {
+            value: storedValue,
+            label: countryMatch.name,
+            code: countryMatch.code,
+          };
+        })
+        .filter((option): option is NonNullable<typeof option> => Boolean(option))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [allCountries, programCountryValues],
+  );
+  const selectedCountryLabel =
+    countryOptions.find((option) => option.value === country)?.label ?? country;
 
-        program.engagementType === "BOUNTY";
+  const programs = responseData?.content ?? [];
+  const totalPages = Math.max(1, responseData?.totalPages ?? 1);
+  const totalCount = responseData?.totalElements ?? 0;
+  const isInitialLoading = !responseData && (isLoading || isFetching);
+  const isSearchPending =
+    searchTerm.trim() !== deferredSearch ||
+    (isFetching && !isInitialLoading);
 
-      // 0. SEARCH FILTER
-      if (searchTerm && searchTerm.trim() !== "") {
-        const query = searchTerm.toLowerCase().trim();
-        const nameMatch = program.name?.toLowerCase().includes(query);
-        const handleMatch = program.handle?.toLowerCase().includes(query);
-        const descMatch = program.description?.toLowerCase().includes(query);
+  const feedRef = useRef<HTMLElement>(null);
+  const previousPage = useRef(currentPage);
 
-        if (!nameMatch && !handleMatch && !descMatch) {
-          return false;
-        }
-      }
+  useEffect(() => {
+    if (previousPage.current === currentPage) return;
+    previousPage.current = currentPage;
+    feedRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [currentPage]);
 
-      // 1. FILTER BY TYPE
-      if (selectedType === "Bounty" && !isBounty) return false;
-      if (selectedType === "Response" && isBounty) return false;
-
-      // 2. FILTER BY QUICK STATS
-      const normalizedQuickFilter = quickFilter?.toLowerCase?.() || "all";
-      const effectiveQuickFilter =
-        selectedType !== "All" &&
-        (normalizedQuickFilter === "bounty" || normalizedQuickFilter === "response")
-          ? "all"
-          : normalizedQuickFilter;
-
-      if (effectiveQuickFilter === "bounty" && !isBounty) return false;
-      if (effectiveQuickFilter === "response" && isBounty) return false;
-      if (effectiveQuickFilter === "private" && program.visibility !== "PRIVATE") return false;
-
-      // 3. FILTER BY PROGRAM STATUS (All, Open, Done, Archived)
-      if (selectedStatus && selectedStatus !== "All") {
-        const programState = program.state?.toUpperCase() || "";
-        if (programState !== selectedStatus.toUpperCase()) {
-          return false;
-        }
-      }
-
-      // 4. FILTER BY REWARD / POINTS RANGE
-      // 4. FILTER BY REWARD / POINTS RANGE (Strict Minimum & Maximum)
-      const userMin = minReward !== "" && minReward !== undefined ? Number(minReward) : null;
-      const userMax = maxReward !== "" && maxReward !== undefined ? Number(maxReward) : null;
-
-      if (userMin !== null || userMax !== null) {
-        if (isBounty) {
-          const progMin = program.minimumBounty ?? 0;
-          const progMax = program.maximumBounty ?? 0;
-
-          // Filter out if starting bounty is less than the user's min input
-          if (userMin !== null && progMin < userMin) return false;
-
-          // Filter out if maximum bounty is greater than the user's max input
-          if (userMax !== null && progMax > userMax) return false;
-        } else {
-          // Response (Points) Programs
-          const points = program.rewards?.map((r) => r.points ?? 0) || [];
-          const minPts = points.length > 0 ? Math.min(...points) : 20;
-          const maxPts = points.length > 0 ? Math.max(...points) : 80;
-
-          if (userMin !== null && minPts < userMin) return false;
-          if (userMax !== null && maxPts > userMax) return false;
-        }
-      }
-
-      return true;
-    });
-  }, [
-    rawPrograms,
-    searchTerm,
-    selectedType,
-    quickFilter,
-    selectedStatus,
+  const filterPanelProps = {
+    selectedAsset,
+    onAssetChange: handleAssetChange,
+    selectedSeverity,
+    onSeverityChange: handleSeverityChange,
+    selectedIndustry,
+    onIndustryChange: handleIndustryChange,
+    country,
+    onCountryChange: handleCountryChange,
+    countryOptions,
+    isLoadingCountries:
+      isLoadingCountryList || isLoadingProgramCountries,
     minReward,
     maxReward,
-    selectedCategory,
-  ]);
-
-  const totalPages: number = responseData?.totalPages || 1;
-  const totalCount: number =
-    responseData?.totalElements || filteredPrograms.length;
+    onMinRewardChange: (value: string) => {
+      setMinReward(value);
+      setCurrentPage(1);
+    },
+    onMaxRewardChange: (value: string) => {
+      setMaxReward(value);
+      setCurrentPage(1);
+    },
+    activeCount: activeExploreFilterCount,
+    onResetFilters: handleResetExploreFilters,
+  };
 
   return (
-    <div className="min-h-screen w-full   text-foreground font-sans ">
-      <div className=" w-full py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className=" w-full space-y-6  pb-12 "
-        >
-          {/* HEADER SECTION */}
-          <ProgramHeader
-            searchTerm={searchTerm}
-            onSearchTermChange={setSearchTerm}
-            onSearchSubmit={handleSearchSubmit}
-            onClearSearch={handleClearSearch}
-          />
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="min-h-[100dvh] bg-muted/30 text-foreground"
+    >
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <ProgramHeader />
 
-          {/* DETAILED FILTER CONTROLS BAR */}
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-8 xl:grid-cols-[minmax(0,1fr)_20rem]">
+          <section
+            aria-label="Search and sort programs"
+            className="flex min-w-0 flex-col gap-3 lg:col-start-1"
+          >
+            <ProgramSearch
+              searchTerm={searchTerm}
+              onSearchTermChange={handleSearchChange}
+              onClearSearch={handleClearSearch}
+              isSearching={isSearchPending}
+            />
+            <ProgramTypeTabs
+              selected={selectedType}
+              onSelect={handleTypeChange}
+              sort={sort}
+              onSortChange={handleSortChange}
+              totalCount={totalCount}
+            />
+            <ProgramMobileFilters
+              {...filterPanelProps}
+              totalCount={totalCount}
+            />
+            <ProgramActiveFilters
+              searchTerm={searchTerm}
+              type={selectedType}
+              asset={selectedAsset}
+              severity={selectedSeverity}
+              industry={selectedIndustry}
+              country={selectedCountryLabel}
+              minReward={minReward}
+              maxReward={maxReward}
+              sort={sort}
+              onClearSearch={handleClearSearch}
+              onClearType={() => handleTypeChange("All")}
+              onClearAsset={() => handleAssetChange("All")}
+              onClearSeverity={() => handleSeverityChange("All")}
+              onClearIndustry={() => handleIndustryChange("All")}
+              onClearCountry={() => handleCountryChange("")}
+              onClearReward={() => {
+                setMinReward("");
+                setMaxReward("");
+                setCurrentPage(1);
+              }}
+              onClearSort={() => handleSortChange("newest")}
+              onResetAll={handleResetFilters}
+            />
+          </section>
+
           <ProgramFiltersBar
-            selectedType={selectedType}
-            onTypeChange={handleTypeChange}
-            selectedStatus={selectedStatus}
-            // onStatusChange={(s) => {
-            //   setSelectedStatus(s);
-            //   setCurrentPage(1);
-            // }}
-            minReward={minReward}
-            maxReward={maxReward}
-            onMinRewardChange={(val) => {
-              setMinReward(val);
-              setCurrentPage(1);
-            }}
-            onMaxRewardChange={(val) => {
-              setMaxReward(val);
-              setCurrentPage(1);
-            }}
-            showMoreFilters={showMoreFilters}
-            onToggleMoreFilters={() => setShowMoreFilters(!showMoreFilters)}
-            isFilterActive={isFilterActive}
-            onResetFilters={handleResetFilters}
+            {...filterPanelProps}
+            className="hidden lg:block"
           />
 
-          {/* MAIN CARDS GRID */}
-          <main>
-            {isLoading || isFetching ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div
-                    key={i}
-                    className="h-[300px] bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 animate-pulse p-6 flex flex-col justify-between"
-                  >
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 bg-muted rounded-xl" />
-                        <div className="space-y-2 flex-1">
-                          <div className="h-4 bg-muted rounded w-24" />
-                          <div className="h-3 bg-muted rounded w-16" />
-                        </div>
-                      </div>
-                      <div className="h-5 bg-muted rounded w-3/4" />
-                      <div className="h-4 bg-muted rounded w-full" />
-                    </div>
-                    <div className="h-10 bg-muted rounded-xl" />
-                  </div>
-                ))}
-              </div>
-            ) : filteredPrograms.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-12 bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 text-center space-y-4">
-                <div className="w-14 h-14 bg-muted rounded-2xl flex items-center justify-center text-muted-foreground">
-                  <Globe className="w-7 h-7" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-foreground">
-                    No programs found
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1 max-w-md">
-                    We couldn&apos;t find any bug bounty or disclosure programs
-                    matching your current filter criteria.
-                  </p>
-                </div>
-                <Button
-                  onClick={handleResetFilters}
-                  variant="outline"
-                  className="rounded-xl font-semibold"
-                >
-                  Reset Filters
-                </Button>
-              </div>
+          <section
+            ref={feedRef}
+            aria-label="Program marketplace results"
+            className="flex min-w-0 scroll-mt-6 flex-col gap-5 lg:col-start-1 lg:row-start-2"
+          >
+            {isInitialLoading ? (
+              <ProgramSkeleton />
+            ) : isError ? (
+              <ProgramMessage
+                title="Programs could not load"
+                body="The marketplace is temporarily unavailable. Please try again."
+                actionLabel="Try again"
+                onAction={() => void refetch()}
+                isAlert
+              />
+            ) : programs.length === 0 ? (
+              <ProgramMessage
+                title={rangeInvalid ? "Reward range is invalid" : "No programs found"}
+                body={
+                  rangeInvalid
+                    ? "The maximum reward must be greater than or equal to the minimum."
+                    : "Try a broader search or adjust the explore filters."
+                }
+                actionLabel="Reset filters"
+                onAction={handleResetFilters}
+              />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredPrograms.map((prog: Program) => (
-                  <ProgramCard key={prog.id} program={prog} />
-                ))}
+              <div
+                aria-busy={isFetching}
+                className={cn(
+                  "transition-opacity duration-150",
+                  isFetching && "opacity-70",
+                )}
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={`${selectedType}-${selectedAsset}-${selectedSeverity}-${selectedIndustry}-${country}-${deferredSearch}-${minReward}-${maxReward}-${sort}-${currentPage}-${rowsPerPage}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="grid grid-cols-1 gap-5 md:grid-cols-2"
+                  >
+                    {programs.map((program) => (
+                      <ProgramCard key={program.id} program={program} />
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
               </div>
             )}
-          </main>
 
-          {/* FOOTER PAGINATION */}
-          <ProgramPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalCount={totalCount}
-            displayedCount={filteredPrograms.length}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(rows) => {
-              setRowsPerPage(rows);
-              setCurrentPage(1);
-            }}
-            onPageChange={setCurrentPage}
-          />
-        </motion.div>
+            {!isInitialLoading && !isError && programs.length > 0 ? (
+              <ProgramPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalCount={totalCount}
+                displayedCount={programs.length}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(rows) => {
+                  setRowsPerPage(rows);
+                  setCurrentPage(1);
+                }}
+                onPageChange={setCurrentPage}
+              />
+            ) : null}
+          </section>
+        </div>
       </div>
+    </motion.div>
+  );
+}
+
+function ProgramSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+      {Array.from({ length: 6 }, (_, index) => (
+        <Skeleton key={index} className="h-[300px] rounded-2xl" />
+      ))}
+    </div>
+  );
+}
+
+function ProgramMessage({
+  title,
+  body,
+  actionLabel,
+  onAction,
+  isAlert = false,
+}: {
+  title: string;
+  body: string;
+  actionLabel: string;
+  onAction: () => void;
+  isAlert?: boolean;
+}) {
+  return (
+    <div
+      role={isAlert ? "alert" : "status"}
+      className="flex min-h-64 flex-col items-center justify-center gap-4 rounded-2xl bg-card p-8 text-center ring-1 ring-foreground/5 dark:ring-foreground/10"
+    >
+      <div className="flex size-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+        <Globe className="size-7" />
+      </div>
+      <div>
+        <h3 className="text-lg font-bold">{title}</h3>
+        <p className="mt-1 max-w-md text-sm text-muted-foreground">{body}</p>
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onAction}
+        className="rounded-xl"
+      >
+        {actionLabel}
+      </Button>
     </div>
   );
 }
