@@ -220,7 +220,7 @@ export default function PublicOrganizationProfilePage() {
 
               {/* 🚀 BUTTON NAVIGATING TO COMPANY CATALOG PAGE */}
               <Link
-                href="/visit/programs"
+                href="/company/programs"
                 className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 border border-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl transition-all cursor-pointer group shadow-sm"
               >
                 View Catalog ({companyProfile.stats.activePrograms})
