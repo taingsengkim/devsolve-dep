@@ -11,6 +11,7 @@ import {
   ChevronUp,
   Download,
   FileCode2,
+  Flag,
   FolderGit2,
   Link2,
   ListChecks,
@@ -24,6 +25,8 @@ import {
 } from "lucide-react";
 
 import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
+import { ReportContentDialog } from "@/components/comments/ReportCommentDialog";
+import { Button } from "@/components/ui/button";
 import { VoteControl } from "@/components/ui/vote-control";
 import type {
   ResourceSummary,
@@ -73,6 +76,8 @@ interface SolutionCardProps {
   accepted?: boolean;
   /** Whether the reader wrote this answer, so only they are offered Edit. */
   isMine?: boolean;
+  /** Signed-in readers may report another person's answer. */
+  canReport?: boolean;
 }
 
 /** Roughly a screenful. Past this the body is worth folding away. */
@@ -106,6 +111,7 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
   isAccepting = false,
   accepted,
   isMine = false,
+  canReport = false,
 }) => {
   const { data: votes } = useGetVoteSummaryQuery({
     type: "SOLUTION",
@@ -118,6 +124,7 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
 
   const body = solution.bodyMarkdown ?? "";
   const [expanded, setExpanded] = useState(body.length <= COLLAPSE_OVER);
+  const [reporting, setReporting] = useState(false);
   const isLong = body.length > COLLAPSE_OVER;
 
   /* The summary is authoritative once loaded; until then the score that came
@@ -149,17 +156,18 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
   };
 
   return (
-    <motion.article
-      id={`solution-${solution.id}`}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, ease: "easeOut", delay: index * 0.05 }}
-      className={`scroll-mt-28 overflow-hidden rounded-2xl border bg-white shadow-xs transition-colors dark:bg-neutral-900 ${
-        isAccepted
-          ? "border-emerald-400 ring-1 ring-emerald-400/30 dark:border-emerald-500/50 dark:ring-emerald-500/20"
-          : "border-slate-200/80 dark:border-neutral-800"
-      }`}
-    >
+    <>
+      <motion.article
+        id={`solution-${solution.id}`}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut", delay: index * 0.05 }}
+        className={`scroll-mt-28 overflow-hidden rounded-2xl border bg-white shadow-xs transition-colors dark:bg-neutral-900 ${
+          isAccepted
+            ? "border-emerald-400 ring-1 ring-emerald-400/30 dark:border-emerald-500/50 dark:ring-emerald-500/20"
+            : "border-slate-200/80 dark:border-neutral-800"
+        }`}
+      >
       {isAccepted && (
         <p className="flex items-center gap-1.5 bg-emerald-50 px-4 py-2 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
           <CheckCircle2 aria-hidden="true" className="size-3.5" />
@@ -256,6 +264,19 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
                   <Pencil aria-hidden="true" className="size-3.5" />
                   Edit
                 </Link>
+              )}
+
+              {canReport && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setReporting(true)}
+                  className="rounded-xl text-muted-foreground"
+                >
+                  <Flag data-icon="inline-start" />
+                  Report
+                </Button>
               )}
             </div>
           </div>
@@ -397,7 +418,16 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
           )}
         </div>
       </div>
-    </motion.article>
+      </motion.article>
+
+      <ReportContentDialog
+        contentId={solution.id}
+        contentType="SOLUTION"
+        authorName={name}
+        open={reporting}
+        onOpenChange={setReporting}
+      />
+    </>
   );
 };
 

@@ -36,6 +36,7 @@ import { cn } from "@/lib/utils";
 
 interface NotificationItemCardProps {
   item: Notification;
+  isAdmin?: boolean;
   onMarkRead?: (id: string) => void;
   onCloseModal?: () => void;
 }
@@ -55,7 +56,36 @@ interface NotificationItemCardProps {
  * case: `notifiableId` is the solution's id, but a solution is only readable
  * under its problem, whose id the payload does not carry.
  */
-function getNotificationLink(type: NotificationType, id: string): string {
+function getAdminNotificationLink(type: NotificationType, id: string): string {
+  switch (type) {
+    case "ORGANIZATION":
+    case "KYC":
+      return `/dashboard/company-verification/${id}`;
+    case "PROGRAM":
+      return `/dashboard/program-management/${id}?scope=admin`;
+    case "PROBLEM":
+      return `/dashboard/content-moderation/problems/${id}`;
+    case "SHOWCASE":
+      return `/dashboard/content-moderation/showcases/${id}`;
+    case "SOLUTION":
+      return `/dashboard/content-moderation/solutions/${id}`;
+    case "USER":
+      return "/dashboard/users";
+    case "REPORT":
+    case "DISPUTE":
+      return "/dashboard/content-moderation?tab=queue";
+    default:
+      return "/dashboard";
+  }
+}
+
+function getNotificationLink(
+  type: NotificationType,
+  id: string,
+  isAdmin: boolean,
+): string {
+  if (isAdmin) return getAdminNotificationLink(type, id);
+
   switch (type) {
     case "PROBLEM":
       return `/community/${id}`;
@@ -173,13 +203,18 @@ function formatNotificationTime(dateStr: string): string {
 
 export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
   item,
+  isAdmin = false,
   onMarkRead,
   onCloseModal,
 }) => {
   const router = useRouter();
   const [resolveComment, { isFetching: isResolvingComment }] =
     useLazyGetCommentByIdQuery();
-  const targetHref = getNotificationLink(item.notifiableType, item.notifiableId);
+  const targetHref = getNotificationLink(
+    item.notifiableType,
+    item.notifiableId,
+    isAdmin,
+  );
   const isUnread = !item.read;
   const hasCommentAuthor =
     item.notifiableType === "COMMENT" &&

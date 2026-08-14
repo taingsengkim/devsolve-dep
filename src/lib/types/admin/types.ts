@@ -299,7 +299,7 @@ export interface ModerationItem {
 
 export interface ContentReportItem {
   id: string;
-  type: "SOLUTION" | "PROBLEM" | "COMMENT" | "PROGRAM";
+  type: "SOLUTION" | "PROBLEM" | "COMMENT" | "SHOWCASE" | "PROGRAM";
   title: string;
   timestamp: string;
   reportCount: number;

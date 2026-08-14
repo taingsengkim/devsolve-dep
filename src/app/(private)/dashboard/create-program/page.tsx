@@ -28,7 +28,6 @@ function CreateProgramContent() {
     activeTab,
     setActiveTab,
     programName,
-    setProgramName,
     handle,
     setHandle,
     description,
@@ -58,7 +57,9 @@ function CreateProgramContent() {
     pointsMatrix,
     setPointsMatrix,
     isCreating,
+    isSubmitting,
     isEditingDraft,
+    isExistingDraft,
     isFormValid,
     isNextDisabled,
     formatHandle,
@@ -200,15 +201,20 @@ function CreateProgramContent() {
                   type="button"
                   onClick={handleCreateProgram}
                   disabled={!isFormValid || isCreating}
-                  className="rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm h-11 px-6 gap-2 cursor-pointer dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                  size="lg"
+                  className="rounded-xl"
                 >
                   {isCreating
-                    ? isEditingDraft
-                      ? "Updating..."
-                      : "Creating..."
-                    : isEditingDraft
-                      ? "Update Program"
-                      : "Create Program"}
+                    ? isSubmitting
+                      ? "Submitting..."
+                      : isEditingDraft
+                        ? "Updating..."
+                        : "Creating..."
+                    : isExistingDraft
+                      ? "Submit for Review"
+                      : isEditingDraft
+                        ? "Update Program"
+                        : "Submit for Review"}
                 </Button>
               )}
             </div>

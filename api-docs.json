@@ -358,6 +358,197 @@
         }
       }
     },
+    "/api/v1/programs/{id}": {
+      "get": {
+        "tags": ["program-controller"],
+        "operationId": "getPublicProgramById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicProgramResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["program-controller"],
+        "operationId": "saveProgram",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramUpdateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProgramResponseDto" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["program-controller"],
+        "operationId": "deleteProgram",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": { "204": { "description": "No Content" } }
+      },
+      "patch": {
+        "tags": ["program-controller"],
+        "operationId": "updateProgram",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramUpdateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProgramResponseDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/organizations/me/programs/{id}": {
+      "get": {
+        "tags": ["program-controller"],
+        "operationId": "getMyProgram",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProgramResponseDto" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["program-controller"],
+        "operationId": "saveProgram_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramUpdateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProgramResponseDto" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["program-controller"],
+        "operationId": "updateProgram_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramUpdateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProgramResponseDto" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/organizations/me/logo": {
       "put": {
         "tags": ["organization-controller"],
@@ -635,16 +826,26 @@
             "schema": { "type": "string", "format": "uuid" }
           },
           {
-            "name": "sortBy",
+            "name": "tag",
             "in": "query",
             "required": false,
-            "schema": { "type": "string", "default": "createdAt" }
+            "schema": { "type": "string" }
           },
           {
-            "name": "sortDirection",
+            "name": "sort",
             "in": "query",
             "required": false,
-            "schema": { "type": "string", "default": "DESC" }
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NEWEST",
+                "OLDEST",
+                "TOP",
+                "TRENDING",
+                "MOST_VIEWED",
+                "TITLE"
+              ]
+            }
           },
           {
             "name": "pageNumber",
@@ -676,7 +877,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageShowCasesResponse"
+                  "$ref": "#/components/schemas/PageShowCasesSummaryResponse"
                 }
               }
             }
@@ -988,6 +1189,32 @@
         }
       }
     },
+    "/api/v1/programs/{id}/views": {
+      "post": {
+        "tags": ["program-controller"],
+        "operationId": "incrementViewCount_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramViewCountResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/programs/{id}/restore": {
       "post": {
         "tags": ["program-controller"],
@@ -1053,6 +1280,51 @@
             "schema": { "type": "string" }
           },
           {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "PENDING_APPROVAL",
+                "PUBLISHED",
+                "RESOLVED",
+                "CLOSED",
+                "REJECTED"
+              ]
+            }
+          },
+          {
+            "name": "unansweredOnly",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean", "default": false }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NEWEST",
+                "OLDEST",
+                "TOP",
+                "TRENDING",
+                "MOST_VIEWED",
+                "TITLE"
+              ]
+            }
+          },
+          {
             "name": "page",
             "in": "query",
             "description": "Zero-based page index (0..N)",
@@ -1065,17 +1337,6 @@
             "description": "The size of the page to be returned",
             "required": false,
             "schema": { "type": "integer", "default": 20, "minimum": 1 }
-          },
-          {
-            "name": "sort",
-            "in": "query",
-            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
-            "required": false,
-            "schema": {
-              "type": "array",
-              "default": ["publishedAt,DESC"],
-              "items": { "type": "string" }
-            }
           }
         ],
         "responses": {
@@ -1194,7 +1455,7 @@
     "/api/v1/problems/{id}/views": {
       "post": {
         "tags": ["problem-controller"],
-        "operationId": "incrementViewCount_1",
+        "operationId": "incrementViewCount_2",
         "parameters": [
           {
             "name": "id",
@@ -1506,6 +1767,12 @@
             "in": "query",
             "required": false,
             "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["NEWEST", "OLDEST", "TOP"] }
           },
           {
             "name": "pageNumber",
@@ -2053,77 +2320,6 @@
             "content": {
               "*/*": {
                 "schema": { "$ref": "#/components/schemas/ReportResponse" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/programs/{id}": {
-      "get": {
-        "tags": ["program-controller"],
-        "operationId": "getPublicProgramById",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "format": "uuid" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicProgramResponseDto"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": ["program-controller"],
-        "operationId": "deleteProgram",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "format": "uuid" }
-          }
-        ],
-        "responses": { "204": { "description": "No Content" } }
-      },
-      "patch": {
-        "tags": ["program-controller"],
-        "operationId": "updateProgram",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "format": "uuid" }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ProgramUpdateRequestDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": { "$ref": "#/components/schemas/ProgramResponseDto" }
               }
             }
           }
@@ -3688,6 +3884,74 @@
             "schema": { "type": "boolean" }
           },
           {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "maxLength": 100, "minLength": 0 }
+          },
+          {
+            "name": "minimumBounty",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "number", "minimum": 0.0 }
+          },
+          {
+            "name": "maximumBounty",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "number", "minimum": 0.0 }
+          },
+          {
+            "name": "assetType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "URL",
+                "WILDCARD",
+                "IP_RANGE",
+                "MOBILE_APP",
+                "API",
+                "SOURCE_CODE",
+                "HARDWARE",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "maxSeverity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+            }
+          },
+          {
+            "name": "industry",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "TECHNOLOGY",
+                "FINANCE",
+                "HEALTHCARE",
+                "ECOMMERCE",
+                "GOVERNMENT",
+                "EDUCATION",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "maxLength": 100, "minLength": 0 }
+          },
+          {
             "name": "page",
             "in": "query",
             "description": "Zero-based page index (0..N)",
@@ -3708,7 +3972,7 @@
             "required": false,
             "schema": {
               "type": "array",
-              "default": ["createdAt,DESC"],
+              "default": ["publishedAt,DESC"],
               "items": { "type": "string" }
             }
           }
@@ -3993,30 +4257,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/OrganizationVerificationResponse"
                 }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/organizations/me/programs/{id}": {
-      "get": {
-        "tags": ["program-controller"],
-        "operationId": "getMyProgram",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "format": "uuid" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": { "$ref": "#/components/schemas/ProgramResponseDto" }
               }
             }
           }
@@ -4397,6 +4637,55 @@
         }
       }
     },
+    "/api/v1/follows/users/{userId}/following/users": {
+      "get": {
+        "tags": ["follow-controller"],
+        "operationId": "getFollowingUsers",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageFollowingUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/follows/mine": {
       "get": {
         "tags": ["follow-controller"],
@@ -4491,6 +4780,82 @@
             "content": {
               "*/*": {
                 "schema": { "$ref": "#/components/schemas/PageFlagResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/comments/thread": {
+      "get": {
+        "tags": ["comment-controller"],
+        "operationId": "findThread",
+        "parameters": [
+          {
+            "name": "commentableType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["REPORT", "SOLUTION", "PROGRAM", "PROBLEM", "SHOWCASE"]
+            }
+          },
+          {
+            "name": "commentableId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["NEWEST", "OLDEST", "TOP"] }
+          },
+          {
+            "name": "replyLimit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 3,
+              "maximum": 10,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20,
+              "maximum": 50,
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageCommentThreadResponse"
+                }
               }
             }
           }
@@ -5687,6 +6052,7 @@
             "enum": ["PENDING", "APPROVED", "REJECTED"]
           },
           "viewCount": { "type": "integer", "format": "int32" },
+          "commentCount": { "type": "integer", "format": "int64" },
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" },
           "tags": {
@@ -5873,6 +6239,197 @@
           "version": { "type": "string" }
         }
       },
+      "ProgramAssetRequestDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "assetType": {
+            "type": "string",
+            "enum": [
+              "URL",
+              "WILDCARD",
+              "IP_RANGE",
+              "MOBILE_APP",
+              "API",
+              "SOURCE_CODE",
+              "HARDWARE",
+              "OTHER"
+            ]
+          },
+          "identifier": { "type": "string", "maxLength": 500, "minLength": 0 },
+          "description": { "type": "string" },
+          "isInScope": { "type": "boolean" },
+          "maxSeverity": {
+            "type": "string",
+            "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+          }
+        },
+        "required": ["assetType", "identifier", "isInScope"]
+      },
+      "ProgramGuidelinesDto": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 0
+          },
+          "rules": {
+            "type": "array",
+            "items": { "type": "string", "maxLength": 500, "minLength": 0 },
+            "maxItems": 50,
+            "minItems": 0
+          }
+        },
+        "required": ["description", "rules"]
+      },
+      "ProgramRewardRequestDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "severity": {
+            "type": "string",
+            "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+          },
+          "minAmount": { "type": "number", "minimum": 0.0 },
+          "maxAmount": { "type": "number", "minimum": 0.0 },
+          "points": { "type": "integer", "format": "int32" }
+        },
+        "required": ["severity"]
+      },
+      "ProgramUpdateRequestDto": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 2,
+            "pattern": ".*\\S.*"
+          },
+          "description": { "type": "string" },
+          "engagementType": {
+            "type": "string",
+            "enum": ["BOUNTY", "RESPONSE"]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["PUBLIC", "PRIVATE", "INVITE_ONLY"]
+          },
+          "policy": { "type": "string", "pattern": "(?s).*\\S.*" },
+          "proofOfConceptRequirements": {
+            "$ref": "#/components/schemas/ProgramGuidelinesDto"
+          },
+          "rulesOfEngagement": {
+            "$ref": "#/components/schemas/ProgramGuidelinesDto"
+          },
+          "exclusions": { "$ref": "#/components/schemas/ProgramGuidelinesDto" },
+          "offersBounties": { "type": "boolean" },
+          "minimumBounty": { "type": "number", "minimum": 0.0 },
+          "maximumBounty": { "type": "number", "minimum": 0.0 },
+          "assets": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProgramAssetRequestDto" }
+          },
+          "rewards": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProgramRewardRequestDto" }
+          }
+        }
+      },
+      "ProgramAssetResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "assetType": {
+            "type": "string",
+            "enum": [
+              "URL",
+              "WILDCARD",
+              "IP_RANGE",
+              "MOBILE_APP",
+              "API",
+              "SOURCE_CODE",
+              "HARDWARE",
+              "OTHER"
+            ]
+          },
+          "identifier": { "type": "string" },
+          "description": { "type": "string" },
+          "isInScope": { "type": "boolean" },
+          "maxSeverity": {
+            "type": "string",
+            "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+          }
+        }
+      },
+      "ProgramResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "organizationId": { "type": "string", "format": "uuid" },
+          "handle": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "engagementType": {
+            "type": "string",
+            "enum": ["BOUNTY", "RESPONSE"]
+          },
+          "state": {
+            "type": "string",
+            "enum": ["DRAFT", "ACTIVE", "PAUSED", "CLOSED"]
+          },
+          "submissionState": {
+            "type": "string",
+            "enum": ["PENDING_REVIEW", "APPROVED", "REJECTED"]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["PUBLIC", "PRIVATE", "INVITE_ONLY"]
+          },
+          "policy": { "type": "string" },
+          "proofOfConceptRequirements": {
+            "$ref": "#/components/schemas/ProgramGuidelinesDto"
+          },
+          "rulesOfEngagement": {
+            "$ref": "#/components/schemas/ProgramGuidelinesDto"
+          },
+          "exclusions": { "$ref": "#/components/schemas/ProgramGuidelinesDto" },
+          "offersBounties": { "type": "boolean" },
+          "minimumBounty": { "type": "number" },
+          "maximumBounty": { "type": "number" },
+          "assets": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProgramAssetResponseDto" }
+          },
+          "rewards": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProgramRewardResponseDto" }
+          },
+          "viewCount": { "type": "integer", "format": "int64" },
+          "publishedAt": { "type": "string", "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ProgramRewardResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "severity": {
+            "type": "string",
+            "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+          },
+          "minAmount": { "type": "number" },
+          "maxAmount": { "type": "number" },
+          "points": { "type": "integer", "format": "int32" }
+        }
+      },
       "OrganizationResponse": {
         "type": "object",
         "properties": {
@@ -5907,7 +6464,17 @@
           "reviewedAt": { "type": "string", "format": "date-time" },
           "verifiedAt": { "type": "string", "format": "date-time" },
           "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "stats": { "$ref": "#/components/schemas/OrganizationStatsResponse" }
+        }
+      },
+      "OrganizationStatsResponse": {
+        "type": "object",
+        "properties": {
+          "activePrograms": { "type": "integer", "format": "int64" },
+          "resolvedReports": { "type": "integer", "format": "int64" },
+          "totalDisbursed": { "type": "number" },
+          "topBountyAward": { "type": "number" }
         }
       },
       "FollowResponse": {
@@ -6254,107 +6821,11 @@
         },
         "required": ["reportedSeverity", "title", "vulnerabilityInformation"]
       },
-      "ProgramAssetResponseDto": {
+      "ProgramViewCountResponseDto": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "assetType": {
-            "type": "string",
-            "enum": [
-              "URL",
-              "WILDCARD",
-              "IP_RANGE",
-              "MOBILE_APP",
-              "API",
-              "SOURCE_CODE",
-              "HARDWARE",
-              "OTHER"
-            ]
-          },
-          "identifier": { "type": "string" },
-          "description": { "type": "string" },
-          "isInScope": { "type": "boolean" },
-          "maxSeverity": {
-            "type": "string",
-            "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
-          }
-        }
-      },
-      "ProgramGuidelinesDto": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string",
-            "maxLength": 2000,
-            "minLength": 0
-          },
-          "rules": {
-            "type": "array",
-            "items": { "type": "string", "maxLength": 500, "minLength": 0 },
-            "maxItems": 50,
-            "minItems": 0
-          }
-        },
-        "required": ["description", "rules"]
-      },
-      "ProgramResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "organizationId": { "type": "string", "format": "uuid" },
-          "handle": { "type": "string" },
-          "name": { "type": "string" },
-          "description": { "type": "string" },
-          "engagementType": {
-            "type": "string",
-            "enum": ["BOUNTY", "RESPONSE"]
-          },
-          "state": {
-            "type": "string",
-            "enum": ["DRAFT", "ACTIVE", "PAUSED", "CLOSED"]
-          },
-          "submissionState": {
-            "type": "string",
-            "enum": ["PENDING_REVIEW", "APPROVED", "REJECTED"]
-          },
-          "visibility": {
-            "type": "string",
-            "enum": ["PUBLIC", "PRIVATE", "INVITE_ONLY"]
-          },
-          "policy": { "type": "string" },
-          "proofOfConceptRequirements": {
-            "$ref": "#/components/schemas/ProgramGuidelinesDto"
-          },
-          "rulesOfEngagement": {
-            "$ref": "#/components/schemas/ProgramGuidelinesDto"
-          },
-          "exclusions": { "$ref": "#/components/schemas/ProgramGuidelinesDto" },
-          "offersBounties": { "type": "boolean" },
-          "minimumBounty": { "type": "number" },
-          "maximumBounty": { "type": "number" },
-          "assets": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ProgramAssetResponseDto" }
-          },
-          "rewards": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ProgramRewardResponseDto" }
-          },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
-        }
-      },
-      "ProgramRewardResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "severity": {
-            "type": "string",
-            "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
-          },
-          "minAmount": { "type": "number" },
-          "maxAmount": { "type": "number" },
-          "points": { "type": "integer", "format": "int32" }
+          "programId": { "type": "string", "format": "uuid" },
+          "viewCount": { "type": "integer", "format": "int64" }
         }
       },
       "CreateProblemRequest": {
@@ -6620,32 +7091,6 @@
           "password"
         ]
       },
-      "ProgramAssetRequestDto": {
-        "type": "object",
-        "properties": {
-          "assetType": {
-            "type": "string",
-            "enum": [
-              "URL",
-              "WILDCARD",
-              "IP_RANGE",
-              "MOBILE_APP",
-              "API",
-              "SOURCE_CODE",
-              "HARDWARE",
-              "OTHER"
-            ]
-          },
-          "identifier": { "type": "string", "maxLength": 500, "minLength": 0 },
-          "description": { "type": "string" },
-          "isInScope": { "type": "boolean" },
-          "maxSeverity": {
-            "type": "string",
-            "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
-          }
-        },
-        "required": ["assetType", "identifier", "isInScope"]
-      },
       "ProgramRequestDto": {
         "type": "object",
         "properties": {
@@ -6701,19 +7146,6 @@
           "rulesOfEngagement",
           "visibility"
         ]
-      },
-      "ProgramRewardRequestDto": {
-        "type": "object",
-        "properties": {
-          "severity": {
-            "type": "string",
-            "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
-          },
-          "minAmount": { "type": "number", "minimum": 0.0 },
-          "maxAmount": { "type": "number", "minimum": 0.0 },
-          "points": { "type": "integer", "format": "int32" }
-        },
-        "required": ["severity"]
       },
       "InviteMemberRequest": {
         "type": "object",
@@ -6836,7 +7268,13 @@
           "commentableId": { "type": "string", "format": "uuid" },
           "content": { "type": "string", "maxLength": 5000, "minLength": 0 },
           "parentCommentId": { "type": "string", "format": "uuid" },
-          "internal": { "type": "boolean" }
+          "internal": { "type": "boolean" },
+          "mentionedUserIds": {
+            "type": "array",
+            "items": { "type": "string", "format": "uuid" },
+            "maxItems": 10,
+            "minItems": 0
+          }
         },
         "required": ["commentableId", "commentableType", "content"]
       },
@@ -6856,6 +7294,19 @@
           "content": { "type": "string" },
           "internal": { "type": "boolean" },
           "replyCount": { "type": "integer", "format": "int64" },
+          "voteScore": { "type": "integer", "format": "int64" },
+          "upvoteCount": { "type": "integer", "format": "int64" },
+          "downvoteCount": { "type": "integer", "format": "int64" },
+          "myVote": { "type": "integer", "format": "int32" },
+          "edited": { "type": "boolean" },
+          "editedAt": { "type": "string", "format": "date-time" },
+          "removed": { "type": "boolean" },
+          "removalReason": {
+            "type": "string",
+            "enum": ["AUTHOR", "MODERATOR"]
+          },
+          "canEdit": { "type": "boolean" },
+          "canDelete": { "type": "boolean" },
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" }
         }
@@ -7131,51 +7582,6 @@
         },
         "required": ["disclosureStatus"]
       },
-      "ProgramUpdateRequestDto": {
-        "type": "object",
-        "properties": {
-          "handle": {
-            "type": "string",
-            "maxLength": 100,
-            "minLength": 2,
-            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 2,
-            "pattern": ".*\\S.*"
-          },
-          "description": { "type": "string" },
-          "engagementType": {
-            "type": "string",
-            "enum": ["BOUNTY", "RESPONSE"]
-          },
-          "visibility": {
-            "type": "string",
-            "enum": ["PUBLIC", "PRIVATE", "INVITE_ONLY"]
-          },
-          "policy": { "type": "string", "pattern": "(?s).*\\S.*" },
-          "proofOfConceptRequirements": {
-            "$ref": "#/components/schemas/ProgramGuidelinesDto"
-          },
-          "rulesOfEngagement": {
-            "$ref": "#/components/schemas/ProgramGuidelinesDto"
-          },
-          "exclusions": { "$ref": "#/components/schemas/ProgramGuidelinesDto" },
-          "offersBounties": { "type": "boolean" },
-          "minimumBounty": { "type": "number", "minimum": 0.0 },
-          "maximumBounty": { "type": "number", "minimum": 0.0 },
-          "assets": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ProgramAssetRequestDto" }
-          },
-          "rewards": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ProgramRewardRequestDto" }
-          }
-        }
-      },
       "ProblemUpdateRequest": {
         "type": "object",
         "properties": {
@@ -7356,10 +7762,15 @@
               "INVITATION",
               "DISPUTE",
               "RECOGNITION",
-              "SHOWCASE"
+              "SHOWCASE",
+              "USER",
+              "REWARD"
             ]
           },
           "notifiableId": { "type": "string", "format": "uuid" },
+          "authorId": { "type": "string", "format": "uuid" },
+          "authorName": { "type": "string" },
+          "authorAvatarUrl": { "type": "string" },
           "read": { "type": "boolean" },
           "readAt": { "type": "string", "format": "date-time" },
           "createdAt": { "type": "string", "format": "date-time" }
@@ -7452,7 +7863,8 @@
             "type": "string",
             "maxLength": 2000,
             "minLength": 0
-          }
+          },
+          "removeContent": { "type": "boolean" }
         },
         "required": ["resolutionNote"]
       },
@@ -7608,6 +8020,7 @@
           "hasUnpublishedRevision": { "type": "boolean" },
           "rejectionReason": { "type": "string" },
           "viewCount": { "type": "integer", "format": "int32" },
+          "commentCount": { "type": "integer", "format": "int64" },
           "tags": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ShowcaseTagResponse" }
@@ -7750,25 +8163,6 @@
           "avatarUrl": { "type": "string" }
         }
       },
-      "PageShowCasesResponse": {
-        "type": "object",
-        "properties": {
-          "totalElements": { "type": "integer", "format": "int64" },
-          "totalPages": { "type": "integer", "format": "int32" },
-          "size": { "type": "integer", "format": "int32" },
-          "content": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ShowCasesResponse" }
-          },
-          "number": { "type": "integer", "format": "int32" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
-          "numberOfElements": { "type": "integer", "format": "int32" },
-          "pageable": { "$ref": "#/components/schemas/PageableObject" },
-          "sort": { "$ref": "#/components/schemas/SortObject" },
-          "empty": { "type": "boolean" }
-        }
-      },
       "ShowcaseReviewDetailResponse": {
         "type": "object",
         "properties": {
@@ -7909,6 +8303,11 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/ProgramAssetResponseDto" }
           },
+          "viewCount": { "type": "integer", "format": "int64" },
+          "followerCount": { "type": "integer", "format": "int64" },
+          "totalSubmissions": { "type": "integer", "format": "int64" },
+          "publishedAt": { "type": "string", "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" }
         }
       },
@@ -7959,8 +8358,11 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/ProgramRewardResponseDto" }
           },
+          "viewCount": { "type": "integer", "format": "int64" },
+          "followerCount": { "type": "integer", "format": "int64" },
           "totalResearchers": { "type": "integer", "format": "int64" },
           "totalSubmissions": { "type": "integer", "format": "int64" },
+          "publishedAt": { "type": "string", "format": "date-time" },
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" }
         }
@@ -8171,6 +8573,37 @@
           "empty": { "type": "boolean" }
         }
       },
+      "FollowingUserResponse": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string", "format": "uuid" },
+          "fullName": { "type": "string" },
+          "avatarUrl": { "type": "string" },
+          "biography": { "type": "string" },
+          "followerCount": { "type": "integer", "format": "int64" },
+          "following": { "type": "boolean" },
+          "followedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "PageFollowingUserResponse": {
+        "type": "object",
+        "properties": {
+          "totalElements": { "type": "integer", "format": "int64" },
+          "totalPages": { "type": "integer", "format": "int32" },
+          "size": { "type": "integer", "format": "int32" },
+          "content": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/FollowingUserResponse" }
+          },
+          "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "empty": { "type": "boolean" }
+        }
+      },
       "PageFlagResponse": {
         "type": "object",
         "properties": {
@@ -8199,6 +8632,37 @@
           "content": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/CommentResponse" }
+          },
+          "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "empty": { "type": "boolean" }
+        }
+      },
+      "CommentThreadResponse": {
+        "type": "object",
+        "properties": {
+          "comment": { "$ref": "#/components/schemas/CommentResponse" },
+          "replies": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommentResponse" }
+          },
+          "replyCount": { "type": "integer", "format": "int64" },
+          "hasMoreReplies": { "type": "boolean" }
+        }
+      },
+      "PageCommentThreadResponse": {
+        "type": "object",
+        "properties": {
+          "totalElements": { "type": "integer", "format": "int64" },
+          "totalPages": { "type": "integer", "format": "int32" },
+          "size": { "type": "integer", "format": "int32" },
+          "content": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommentThreadResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
           "first": { "type": "boolean" },

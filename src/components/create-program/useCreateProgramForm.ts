@@ -8,6 +8,7 @@ import {
   useCreateProgramMutation,
   useGetProgramByIdQuery,
   useGetMyCompanyProgramByIdQuery,
+  useSubmitProgramMutation,
   useUpdateProgramMutation,
 } from "@/lib/redux/services/program/programsApi";
 import type {
@@ -124,6 +125,9 @@ export function useCreateProgramForm() {
 
   const [createProgram, { isLoading: isCreating }] = useCreateProgramMutation();
   const [updateProgram, { isLoading: isUpdating }] = useUpdateProgramMutation();
+  const [submitProgramForReview, { isLoading: isSubmitting }] =
+    useSubmitProgramMutation();
+  const isExistingDraft = existingProgram?.state === "DRAFT";
 
   // Populate form fields with existing draft data when opened via SavedDraftCard
   /* eslint-disable react-hooks/set-state-in-effect -- The controlled multi-step form must hydrate when the async draft query resolves. */
@@ -465,13 +469,29 @@ export function useCreateProgramForm() {
 
       if (programId) {
         await updateProgram({ id: programId, body: payload }).unwrap();
-        toast.success(isDraft ? "Draft saved successfully!" : "Program updated successfully!");
+
+        if (!isDraft && isExistingDraft) {
+          await submitProgramForReview(programId).unwrap();
+          toast.success("Program submitted for review!");
+        } else {
+          toast.success(
+            isDraft
+              ? "Draft saved successfully!"
+              : "Program updated successfully!",
+          );
+        }
       } else {
-        await createProgram({
+        const createdProgram = await createProgram({
           ...payload,
-          state: (isDraft ? "DRAFT" : "ACTIVE") as ProgramState,
+          state: "DRAFT" as ProgramState,
         }).unwrap();
-        toast.success(isDraft ? "Draft saved successfully!" : "Program created successfully!");
+
+        if (isDraft) {
+          toast.success("Draft saved successfully!");
+        } else {
+          await submitProgramForReview(createdProgram.id).unwrap();
+          toast.success("Program submitted for review!");
+        }
       }
 
       if (isDraft) {
@@ -605,9 +625,12 @@ export function useCreateProgramForm() {
     setBountyMatrix,
     pointsMatrix,
     setPointsMatrix,
-    isCreating: isCreating || isUpdating,
+    isCreating:
+      isCreating || isUpdating || isSubmitting || isFetchingDraft,
+    isSubmitting,
     isFetchingDraft,
     isEditingDraft: Boolean(programId),
+    isExistingDraft,
     isFormValid,
     isNextDisabled,
     formatHandle,

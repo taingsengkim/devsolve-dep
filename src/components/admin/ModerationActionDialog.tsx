@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectTrigger,
@@ -19,10 +18,22 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { AlertTriangle, Trash2, ShieldAlert, UserX, Ban, RotateCcw, Loader2 } from "lucide-react";
+import {
+  Trash2,
+  ShieldAlert,
+  UserX,
+  Ban,
+  RotateCcw,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useCreateModerationActionMutation } from "@/lib/redux/services/admin/moderationActionsApi";
-import type { ModerationActionType, ModerationActionTargetType, ContentReportItem } from "@/lib/types/admin/types";
+import { useUpdateContentReportActionMutation } from "@/lib/redux/services/admin/moderationApi";
+import type {
+  ModerationActionType,
+  ModerationActionTargetType,
+  ContentReportItem,
+} from "@/lib/types/admin/types";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
 
 export interface TargetDetails {
@@ -40,7 +51,6 @@ interface ModerationActionDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-  // Backward compatibility callback if needed
   onConfirm?: (id: string, action: ModerationActionType, note?: string) => void;
 }
 
@@ -53,83 +63,121 @@ export function ModerationActionDialog({
   onSuccess,
   onConfirm,
 }: ModerationActionDialogProps) {
-  const [action, setAction] = useState<ModerationActionType>(
-    initialActionType || "WARN"
-  );
-  const [reason, setReason] = useState("");
-  const [expiresAt, setExpiresAt] = useState("");
-
-  const [createModerationAction, { isLoading }] =
-    useCreateModerationActionMutation();
-
-  useEffect(() => {
-    if (initialActionType) {
-      setAction(initialActionType);
-    }
-  }, [initialActionType]);
-
-  useEffect(() => {
-    if (isOpen && action === "SUSPEND" && !expiresAt) {
-      const defaultDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-      setExpiresAt(defaultDate.toISOString().slice(0, 16));
-    }
-  }, [isOpen, action, expiresAt]);
-
   const targetId = report?.id || target?.id;
+  if (!isOpen || !targetId) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <ModerationActionForm
+        key={`${targetId}-${initialActionType ?? "default"}`}
+        report={report}
+        target={target}
+        initialActionType={initialActionType}
+        onClose={onClose}
+        onSuccess={onSuccess}
+        onConfirm={onConfirm}
+      />
+    </Dialog>
+  );
+}
+
+function ModerationActionForm({
+  report,
+  target,
+  initialActionType,
+  onClose,
+  onSuccess,
+  onConfirm,
+}: {
+  report?: ContentReportItem | null;
+  target?: TargetDetails | null;
+  initialActionType?: ModerationActionType | null;
+  onClose: () => void;
+  onSuccess?: () => void;
+  onConfirm?: (id: string, action: ModerationActionType, note?: string) => void;
+}) {
+  const defaultAction = initialActionType || "WARN";
+  const [action, setAction] = useState<ModerationActionType>(defaultAction);
+  const [reason, setReason] = useState("");
+  const [expiresAt, setExpiresAt] = useState(() => {
+    if (defaultAction === "SUSPEND") {
+      const d = new Date();
+      d.setDate(d.getDate() + 30);
+      return d.toISOString().slice(0, 16);
+    }
+    return "";
+  });
+
+  const [createModerationAction, { isLoading: isCreatingAction }] =
+    useCreateModerationActionMutation();
+  const [updateContentReport, { isLoading: isUpdatingReport }] =
+    useUpdateContentReportActionMutation();
+
+  const isSubmitting = isCreatingAction || isUpdatingReport;
+
+  const targetId = report?.id || target?.id || "";
   const targetName = report?.author || target?.name || "Target Entity";
   const targetTitle = report?.title || target?.subtitle || target?.type || "";
 
-  if (!isOpen || !targetId) return null;
+  const handleActionChange = (newAction: ModerationActionType) => {
+    setAction(newAction);
+    if (newAction === "SUSPEND" && !expiresAt) {
+      const d = new Date();
+      d.setDate(d.getDate() + 30);
+      setExpiresAt(d.toISOString().slice(0, 16));
+    }
+  };
 
   const setPresetDays = (days: number) => {
-    const date = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-    setExpiresAt(date.toISOString().slice(0, 16));
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    setExpiresAt(d.toISOString().slice(0, 16));
   };
 
   const getActionColorClass = (act: ModerationActionType) => {
     switch (act) {
       case "WARN":
-        return "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800";
+        return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20";
       case "SUSPEND":
-        return "bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800";
+        return "bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20";
       case "REMOVE":
-        return "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800";
+        return "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20";
       case "BAN":
-        return "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800";
+        return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20";
       case "REINSTATE":
-        return "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800";
+        return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20";
       default:
-        return "bg-slate-100 text-slate-600";
+        return "bg-muted text-muted-foreground";
     }
   };
 
   const getActionIcon = (act: ModerationActionType) => {
     switch (act) {
       case "WARN":
-        return <ShieldAlert className="size-5.5" />;
+        return <ShieldAlert className="size-5" />;
       case "SUSPEND":
-        return <UserX className="size-5.5" />;
+        return <UserX className="size-5" />;
       case "REMOVE":
-        return <Trash2 className="size-5.5" />;
+        return <Trash2 className="size-5" />;
       case "BAN":
-        return <Ban className="size-5.5" />;
+        return <Ban className="size-5" />;
       case "REINSTATE":
-        return <RotateCcw className="size-5.5" />;
+        return <RotateCcw className="size-5" />;
     }
   };
 
   const getButtonBgClass = (act: ModerationActionType) => {
     switch (act) {
       case "WARN":
-        return "bg-amber-600 hover:bg-amber-700";
+        return "bg-amber-600 hover:bg-amber-700 text-white";
       case "SUSPEND":
-        return "bg-orange-600 hover:bg-orange-700";
+        return "bg-orange-600 hover:bg-orange-700 text-white";
       case "REMOVE":
-        return "bg-rose-600 hover:bg-rose-700";
+        return "bg-rose-600 hover:bg-rose-700 text-white";
       case "BAN":
-        return "bg-purple-600 hover:bg-purple-700";
+        return "bg-purple-600 hover:bg-purple-700 text-white";
       case "REINSTATE":
-        return "bg-emerald-600 hover:bg-emerald-700";
+        return "bg-emerald-600 hover:bg-emerald-700 text-white";
     }
   };
 
@@ -151,20 +199,32 @@ export function ModerationActionDialog({
           ? new Date(expiresAt).toISOString()
           : undefined;
 
-      const targetType = report
-        ? (report.type as ModerationActionTargetType)
-        : (target?.type as ModerationActionTargetType) || "USER";
-
-      await createModerationAction({
-        id: targetId,
-        body: {
-          targetType,
-          targetId,
+      if (report) {
+        // A report ID is a content-flag ID, not a user-profile ID. The backend
+        // resolves flagged content through /admin/flags/{flagId}/resolve and
+        // removes the underlying target when removeContent is true.
+        await updateContentReport({
+          id: report.id,
           action,
-          reason: reason.trim(),
-          expiresAt: formattedExpiresAt,
-        },
-      }).unwrap();
+          resolutionNote: reason.trim(),
+          removeContent: action === "REMOVE",
+        }).unwrap();
+      } else {
+        const targetType =
+          (target?.type as ModerationActionTargetType) || "USER";
+
+        // Direct moderation from the Users page still targets a user profile.
+        await createModerationAction({
+          id: targetId,
+          body: {
+            targetType,
+            targetId,
+            action,
+            reason: reason.trim(),
+            expiresAt: formattedExpiresAt,
+          },
+        }).unwrap();
+      }
 
       toast.success(`Moderation action '${action}' applied successfully.`);
       if (onConfirm) {
@@ -185,166 +245,179 @@ export function ModerationActionDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-xl space-y-4">
-        <DialogHeader className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div
-              className={`size-11 rounded-2xl flex items-center justify-center shrink-0 ${getActionColorClass(
-                action
-              )}`}
-            >
-              {getActionIcon(action)}
-            </div>
-            <div>
-              <DialogTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Apply Moderation Action
-              </DialogTitle>
-              <DialogDescription className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Target:{" "}
-                <span className="font-semibold text-slate-700 dark:text-slate-300">
-                  {targetName}
-                </span>
-              </DialogDescription>
-            </div>
+    <DialogContent className="sm:max-w-md rounded-2xl bg-card border border-border text-card-foreground p-6 shadow-xl space-y-4">
+      <DialogHeader className="space-y-2">
+        <div className="flex items-center gap-3">
+          <div
+            className={`size-11 rounded-2xl flex items-center justify-center shrink-0 ${getActionColorClass(
+              action
+            )}`}
+          >
+            {getActionIcon(action)}
           </div>
-        </DialogHeader>
-
-        {/* Content/Entity Item Summary */}
-        {targetTitle && (
-          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 space-y-1">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
-              <span className="uppercase tracking-wider font-extrabold">
-                {report?.type || target?.type || "TARGET"}
+          <div>
+            <DialogTitle className="text-lg font-bold text-foreground">
+              Apply Moderation Action
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+              Target:{" "}
+              <span className="font-semibold text-foreground">
+                {targetName}
               </span>
-              {report?.reportCount && <span>{report.reportCount} reports</span>}
+            </DialogDescription>
+          </div>
+        </div>
+      </DialogHeader>
+
+      {/* Content/Entity Item Summary */}
+      {targetTitle && (
+        <div className="p-3.5 rounded-xl bg-muted/50 border border-border space-y-1">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+            <span className="uppercase tracking-wider font-extrabold">
+              {report?.type || target?.type || "TARGET"}
+            </span>
+            {report?.reportCount && <span>{report.reportCount} reports</span>}
+          </div>
+          <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2">
+            {targetTitle}
+          </p>
+        </div>
+      )}
+
+      {/* Moderation Form */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Action Select */}
+        {(() => {
+          const isTargetRemoved =
+            (report?.status as string) === "REMOVED" ||
+            target?.status === "REMOVED";
+          const isTargetSuspended =
+            (report?.status as string) === "SUSPENDED" ||
+            target?.status === "SUSPENDED";
+          const isTargetActive =
+            (report?.status as string) === "ACTIVE" ||
+            target?.status === "ACTIVE";
+          return (
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-foreground">
+                Select Action Type
+              </Label>
+              <Select
+                value={action}
+                onValueChange={(val: string | null) => {
+                  if (val) handleActionChange(val as ModerationActionType);
+                }}
+              >
+                <SelectTrigger className="w-full h-10 rounded-xl bg-card border-border text-sm text-foreground">
+                  <SelectValue placeholder="Select action" />
+                </SelectTrigger>
+                <SelectContent className="border-border bg-card text-card-foreground">
+                  <SelectItem value="WARN" disabled={isTargetRemoved}>
+                    {isTargetRemoved ? "WARN (User Removed)" : "WARN"}
+                  </SelectItem>
+                  <SelectItem
+                    value="SUSPEND"
+                    disabled={isTargetSuspended || isTargetRemoved}
+                  >
+                    {isTargetRemoved
+                      ? "SUSPEND (User Removed)"
+                      : isTargetSuspended
+                      ? "SUSPEND (Already suspended)"
+                      : "SUSPEND"}
+                  </SelectItem>
+                  <SelectItem value="REMOVE" disabled={isTargetRemoved}>
+                    {isTargetRemoved ? "REMOVE (Already removed)" : "REMOVE"}
+                  </SelectItem>
+                  <SelectItem value="BAN" disabled={isTargetRemoved}>
+                    {isTargetRemoved ? "BAN (User Removed)" : "BAN"}
+                  </SelectItem>
+                  <SelectItem value="REINSTATE" disabled={isTargetActive}>
+                    {isTargetActive
+                      ? "REINSTATE (User account is already active)"
+                      : "REINSTATE"}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-snug line-clamp-2">
-              {targetTitle}
-            </p>
+          );
+        })()}
+
+        {/* Reason Input */}
+        <div className="space-y-2">
+          <Label className="text-xs font-bold text-foreground">
+            Moderation Reason <span className="text-rose-500">*</span>
+          </Label>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Detailed reason for this moderation action..."
+            rows={3}
+            required
+            maxLength={2000}
+            className="w-full p-3 rounded-xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-muted-foreground"
+          />
+        </div>
+
+        {/* Required Expiration Date (ONLY for SUSPEND) */}
+        {action === "SUSPEND" && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-foreground">
+                Action Expiration Date <span className="text-rose-500">*</span>
+              </Label>
+              <div className="flex items-center gap-1">
+                {[
+                  { label: "+1D", days: 1 },
+                  { label: "+7D", days: 7 },
+                  { label: "+30D", days: 30 },
+                  { label: "+90D", days: 90 },
+                ].map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => setPresetDays(preset.days)}
+                    className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <DateTimePicker
+              value={expiresAt}
+              onChange={setExpiresAt}
+              placeholder="Select expiration date & time"
+            />
           </div>
         )}
 
-        {/* Moderation Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Action Select */}
-          {(() => {
-            const isTargetRemoved = (report?.status as string) === "REMOVED" || target?.status === "REMOVED";
-            const isTargetSuspended = (report?.status as string) === "SUSPENDED" || target?.status === "SUSPENDED";
-            const isTargetActive = (report?.status as string) === "ACTIVE" || target?.status === "ACTIVE";
-            return (
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Select Action Type
-                </Label>
-                <Select
-                  value={action}
-                  onValueChange={(val) => setAction(val as ModerationActionType)}
-                >
-                  <SelectTrigger className="w-full h-10 rounded-xl bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-sm">
-                    <SelectValue placeholder="Select action" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="WARN" disabled={isTargetRemoved}>
-                      {isTargetRemoved ? "WARN (User Removed)" : "WARN"}
-                    </SelectItem>
-                    <SelectItem value="SUSPEND" disabled={isTargetSuspended || isTargetRemoved}>
-                      {isTargetRemoved
-                        ? "SUSPEND (User Removed)"
-                        : isTargetSuspended
-                        ? "SUSPEND (Already suspended)"
-                        : "SUSPEND"}
-                    </SelectItem>
-                    <SelectItem value="REMOVE" disabled={isTargetRemoved}>
-                      {isTargetRemoved ? "REMOVE (Already removed)" : "REMOVE"}
-                    </SelectItem>
-                    <SelectItem value="BAN" disabled={isTargetRemoved}>
-                      {isTargetRemoved ? "BAN (User Removed)" : "BAN"}
-                    </SelectItem>
-                    <SelectItem value="REINSTATE" disabled={isTargetActive}>
-                      {isTargetActive ? "REINSTATE (User account is already active)" : "REINSTATE"}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            );
-          })()}
-
-          {/* Reason Input */}
-          <div className="space-y-2">
-            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-              Moderation Reason <span className="text-rose-500">*</span>
-            </Label>
-            <textarea
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="Detailed reason for this moderation action..."
-              rows={3}
-              required
-              maxLength={2000}
-              className="w-full p-3 rounded-xl bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
-            />
-          </div>
-
-          {/* Required Expiration Date (ONLY for SUSPEND) */}
-          {action === "SUSPEND" && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Action Expiration Date <span className="text-rose-500">*</span>
-                </Label>
-                <div className="flex items-center gap-1">
-                  {[
-                    { label: "+1D", days: 1 },
-                    { label: "+7D", days: 7 },
-                    { label: "+30D", days: 30 },
-                    { label: "+90D", days: 90 },
-                  ].map((preset) => (
-                    <button
-                      key={preset.label}
-                      type="button"
-                      onClick={() => setPresetDays(preset.days)}
-                      className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950 dark:hover:text-blue-400 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <DateTimePicker
-                value={expiresAt}
-                onChange={setExpiresAt}
-                placeholder="Select expiration date & time"
-              />
-            </div>
-          )}
-
-          <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="rounded-xl h-10 text-xs font-semibold border-slate-300 dark:border-slate-700 cursor-pointer"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className={`rounded-xl h-10 text-xs font-bold cursor-pointer text-white shadow-2xs ${getButtonBgClass(
-                action
-              )}`}
-            >
-              {isLoading ? (
-                <Loader2 className="size-4 animate-spin mr-1.5" />
-              ) : (
-                getActionIcon(action)
-              )}
-              <span className="ml-1.5">Confirm {action}</span>
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            className="rounded-xl h-10 text-xs font-semibold border-border bg-card text-foreground cursor-pointer hover:bg-muted"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className={`rounded-xl h-10 text-xs font-bold cursor-pointer shadow-2xs ${getButtonBgClass(
+              action
+            )}`}
+          >
+            {isSubmitting ? (
+              <Loader2 className="size-4 animate-spin mr-1.5" />
+            ) : (
+              getActionIcon(action)
+            )}
+            <span className="ml-1.5">Confirm {action}</span>
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
   );
 }
+
+
