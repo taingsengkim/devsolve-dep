@@ -8,9 +8,6 @@ import {
   ArrowRight,
   MoreVertical,
   ChevronRight,
-  PencilLine,
-  Copy,
-  FolderInput,
   Trash2,
   Eye,
 } from "lucide-react";
@@ -31,8 +28,7 @@ interface SavedDraftCardProps {
   onDelete?: (itemId: string) => void;
 }
 
-const STATIC_CARD_LOGO =
-  "https://media.wired.com/photos/5926ffe47034dc5f91bed4e8/3:2/w_2560%2Cc_limit/google-logo.jpg";
+
 
 function getDraftMeta(item: SavedDraftItem) {
   if (item.category === "report") {
@@ -100,18 +96,6 @@ export function SavedDraftCard({ item, onDelete }: SavedDraftCardProps) {
               >
                 <Eye className="w-4 h-4 mr-2" />
                 View in card
-              </DropdownMenuItem>
-              <DropdownMenuItem className="rounded-[10px] px-3 py-2 text-foreground focus:bg-blue-50 dark:focus:bg-blue-500/10 focus:text-blue-600 dark:focus:text-blue-400 cursor-pointer">
-                <PencilLine className="w-4 h-4 mr-2" />
-                Rename
-              </DropdownMenuItem>
-              <DropdownMenuItem className="rounded-[10px] px-3 py-2 text-foreground focus:bg-blue-50 dark:focus:bg-blue-500/10 focus:text-blue-600 dark:focus:text-blue-400 cursor-pointer">
-                <Copy className="w-4 h-4 mr-2" />
-                Duplicate
-              </DropdownMenuItem>
-              <DropdownMenuItem className="rounded-[10px] px-3 py-2 text-foreground focus:bg-blue-50 dark:focus:bg-blue-500/10 focus:text-blue-600 dark:focus:text-blue-400 cursor-pointer">
-                <FolderInput className="w-4 h-4 mr-2" />
-                Move category
               </DropdownMenuItem>
               <DropdownMenuSeparator className="my-1" />
               <DropdownMenuItem

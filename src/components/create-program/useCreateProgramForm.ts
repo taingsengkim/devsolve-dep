@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
@@ -10,8 +10,50 @@ import {
   useGetMyCompanyProgramByIdQuery,
   useUpdateProgramMutation,
 } from "@/lib/redux/services/program/programsApi";
-import type { Asset } from "@/lib/types/programs/types";
+import type {
+  Asset,
+  ProgramState,
+  RewardTier,
+  SeverityLevel,
+} from "@/lib/types/programs/types";
 import type { ScopeTarget, ProgramType, ProgramVisibility } from "./types";
+
+type RewardLevelKey = "critical" | "high" | "medium" | "low";
+
+const rewardLevelBySeverity: Partial<Record<SeverityLevel, RewardLevelKey>> = {
+  CRITICAL: "critical",
+  HIGH: "high",
+  MEDIUM: "medium",
+  LOW: "low",
+};
+
+const mapAssetType = (type: string): Asset["assetType"] => {
+  if (type === "MOBILE") return "MOBILE_APP";
+  if (type === "IP") return "IP_RANGE";
+  if (type === "API") return "API";
+  if (type === "OTHER") return "OTHER";
+  return "URL";
+};
+
+const scopeTypeForAsset = (type: Asset["assetType"]): string => {
+  if (type === "API") return "API";
+  if (type === "MOBILE_APP") return "MOBILE";
+  if (type === "IP_RANGE") return "IP";
+  if (type === "OTHER" || type === "SOURCE_CODE" || type === "HARDWARE") {
+    return "OTHER";
+  }
+  return "WEB";
+};
+
+const assetTypeForTarget = (target: ScopeTarget): Asset["assetType"] => {
+  if (
+    target.backendAssetType &&
+    scopeTypeForAsset(target.backendAssetType) === target.type
+  ) {
+    return target.backendAssetType;
+  }
+  return mapAssetType(target.type);
+};
 
 export function useCreateProgramForm() {
   const router = useRouter();
@@ -62,16 +104,19 @@ export function useCreateProgramForm() {
     medium: { min: "20", max: "40" },
     low: { min: "5", max: "20" },
   });
+  const [rewardIds, setRewardIds] = useState<
+    Partial<Record<RewardLevelKey, string>>
+  >({});
 
   // RTK Query hooks
   const { data: publicProgram, isLoading: isFetchingPublic } = useGetProgramByIdQuery(
     programId || "",
-    { skip: !programId }
+    { skip: !programId, refetchOnMountOrArgChange: true }
   );
 
   const { data: companyProgram, isLoading: isFetchingCompany } = useGetMyCompanyProgramByIdQuery(
     programId || "",
-    { skip: !programId }
+    { skip: !programId, refetchOnMountOrArgChange: true }
   );
 
   const existingProgram = publicProgram || companyProgram;
@@ -81,6 +126,7 @@ export function useCreateProgramForm() {
   const [updateProgram, { isLoading: isUpdating }] = useUpdateProgramMutation();
 
   // Populate form fields with existing draft data when opened via SavedDraftCard
+  /* eslint-disable react-hooks/set-state-in-effect -- The controlled multi-step form must hydrate when the async draft query resolves. */
   useEffect(() => {
     if (!existingProgram) return;
 
@@ -90,12 +136,22 @@ export function useCreateProgramForm() {
     if (existingProgram.engagementType) {
       setProgramType(existingProgram.engagementType === "RESPONSE" ? "RESPONSE" : "BOUNTY");
     }
-    if (existingProgram.visibility) {
-      setVisibility(existingProgram.visibility === "PRIVATE" ? "PRIVATE" : "PUBLIC");
-    }
+    if (existingProgram.visibility) setVisibility(existingProgram.visibility);
     if (existingProgram.policy) setPolicy(existingProgram.policy);
     if (existingProgram.proofOfConceptRequirements) {
-      setPocRequirements(existingProgram.proofOfConceptRequirements);
+      if (typeof existingProgram.proofOfConceptRequirements === "string") {
+        setPocRequirements(existingProgram.proofOfConceptRequirements);
+      } else if (
+        typeof existingProgram.proofOfConceptRequirements === "object" &&
+        Array.isArray(
+          (existingProgram.proofOfConceptRequirements as unknown as { rules?: string[] }).rules
+        )
+      ) {
+        const rules = (existingProgram.proofOfConceptRequirements as unknown as { rules: string[] }).rules;
+        setPocRequirements(
+          rules.map((r) => (r.startsWith("•") ? r : `• ${r}`)).join("\n")
+        );
+      }
     }
 
     if (existingProgram.rulesOfEngagement?.rules?.length) {
@@ -130,45 +186,67 @@ export function useCreateProgramForm() {
       const inScope: ScopeTarget[] = rawAssets
         .filter((a) => a.isInScope !== false)
         .map((a, i) => ({
-          id: (a as { id?: string }).id || `in-${i}`,
-          type: a.assetType === "API" ? "API" : a.assetType === "MOBILE_APP" ? "MOBILE" : "WEB",
+          id: a.id || `in-${i}`,
+          backendId: a.id,
+          backendAssetType: a.assetType,
+          type: scopeTypeForAsset(a.assetType),
           target: a.identifier || (a as { target?: string }).target || "",
           description: a.description || "",
+          maxSeverity: a.maxSeverity,
         }));
       const outScope: ScopeTarget[] = rawAssets
         .filter((a) => a.isInScope === false)
         .map((a, i) => ({
-          id: (a as { id?: string }).id || `out-${i}`,
-          type: a.assetType === "API" ? "API" : a.assetType === "MOBILE_APP" ? "MOBILE" : "WEB",
+          id: a.id || `out-${i}`,
+          backendId: a.id,
+          backendAssetType: a.assetType,
+          type: scopeTypeForAsset(a.assetType),
           target: a.identifier || (a as { target?: string }).target || "",
           description: a.description || "",
+          maxSeverity: a.maxSeverity,
         }));
 
       if (inScope.length > 0) setInScopeTargets(inScope);
       if (outScope.length > 0) setOutOfScopeTargets(outScope);
     }
 
+    if (existingProgram.rewards?.length) {
+      const nextRewardIds: Partial<Record<RewardLevelKey, string>> = {};
+
+      setBountyMatrix((current) => {
+        const next = { ...current };
+        for (const reward of existingProgram.rewards) {
+          const key = rewardLevelBySeverity[reward.severity];
+          if (!key) continue;
+          next[key] = {
+            min: String(reward.minAmount ?? 0),
+            max: String(reward.maxAmount ?? 0),
+          };
+          if (reward.id) nextRewardIds[key] = reward.id;
+        }
+        return next;
+      });
+
+      setPointsMatrix((current) => {
+        const next = { ...current };
+        for (const reward of existingProgram.rewards) {
+          const key = rewardLevelBySeverity[reward.severity];
+          if (!key) continue;
+          next[key] = {
+            ...next[key],
+            max: String(reward.points ?? 0),
+          };
+        }
+        return next;
+      });
+
+      setRewardIds(nextRewardIds);
+    }
+
     // Auto-navigate to the last tab (Tab 4) so user can directly click Create Program
     setActiveTab(4);
   }, [existingProgram]);
-
-  type AssetType =
-    | "URL"
-    | "WILDCARD"
-    | "IP_RANGE"
-    | "MOBILE_APP"
-    | "API"
-    | "SOURCE_CODE"
-    | "HARDWARE"
-    | "OTHER";
-
-  const mapAssetType = (type: string): AssetType => {
-    if (type === "MOBILE") return "MOBILE_APP";
-    if (type === "IP") return "IP_RANGE";
-    if (type === "API") return "API";
-    if (type === "OTHER") return "OTHER";
-    return "URL";
-  };
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const formatHandle = (text: string): string => {
     return text
@@ -192,33 +270,33 @@ export function useCreateProgramForm() {
       .filter(Boolean),
   });
 
-  const buildAssets = (): Asset[] => {
+  const buildAssets = useCallback((): Asset[] => {
     const inScopeAssets: Asset[] = inScopeTargets
       .filter((item) => item.target.trim() !== "")
       .map((item) => ({
-        assetType: mapAssetType(item.type),
+        ...(item.backendId ? { id: item.backendId } : {}),
+        assetType: assetTypeForTarget(item),
         identifier: item.target.trim(),
         description: item.description.trim() || item.target.trim(),
         isInScope: true,
-        maxSeverity: "MEDIUM",
+        maxSeverity: item.maxSeverity ?? "MEDIUM",
       }));
 
     const outOfScopeAssets: Asset[] = outOfScopeTargets
       .filter((item) => item.target.trim() !== "")
       .map((item) => ({
-        assetType: mapAssetType(item.type),
+        ...(item.backendId ? { id: item.backendId } : {}),
+        assetType: assetTypeForTarget(item),
         identifier: item.target.trim(),
         description: item.description.trim() || item.target.trim(),
         isInScope: false,
-        maxSeverity: "LOW",
+        maxSeverity: item.maxSeverity ?? "LOW",
       }));
 
     return [...inScopeAssets, ...outOfScopeAssets];
-  };
+  }, [inScopeTargets, outOfScopeTargets]);
 
-  type RewardLevelKey = "critical" | "high" | "medium" | "low";
-
-  const buildRewards = () => {
+  const buildRewards = (): RewardTier[] => {
     const levels: Array<{
       key: RewardLevelKey;
       severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
@@ -230,6 +308,7 @@ export function useCreateProgramForm() {
     ];
 
     return levels.map(({ key, severity }) => ({
+      ...(rewardIds[key] ? { id: rewardIds[key] } : {}),
       severity,
       minAmount: offerBounties ? parseInt(bountyMatrix[key].min || "0", 10) : 0,
       maxAmount: offerBounties ? parseInt(bountyMatrix[key].max || "0", 10) : 0,
@@ -274,13 +353,12 @@ export function useCreateProgramForm() {
   const isStep1Valid = useMemo(() => {
     const nameValid = programName.trim().length >= 2 && programName.trim().length <= 255;
     const descValid = description.trim().length >= 1;
-    const policyValid = policy.trim().length >= 1;
-    return nameValid && isHandleValid && descValid && policyValid;
-  }, [programName, isHandleValid, description, policy]);
+    return nameValid && isHandleValid && descValid;
+  }, [programName, isHandleValid, description]);
 
   const isStep2Valid = useMemo(() => {
     return buildAssets().length > 0;
-  }, [inScopeTargets, outOfScopeTargets]);
+  }, [buildAssets]);
 
   const isStep3Valid = useMemo(() => {
     const hasRules = rulesOfEngagement.trim().length >= 1;
@@ -330,12 +408,6 @@ export function useCreateProgramForm() {
         return;
       }
 
-      if (!policy.trim()) {
-        toast.error("Responsible disclosure policy is required.");
-        setActiveTab(1);
-        return;
-      }
-
       const effectiveExcludedTypes = newExcludedInput.trim()
         ? [...excludedTypes, newExcludedInput.trim()]
         : excludedTypes;
@@ -365,14 +437,19 @@ export function useCreateProgramForm() {
         engagementType:
           programType === "RESPONSE" ? ("RESPONSE" as const) : ("BOUNTY" as const),
         visibility,
-        policy: policy || "Responsible disclosure policy draft",
-        proofOfConceptRequirements: pocRequirements,
+        policy:
+          policy.trim() ||
+          "Please test only using designated sandbox API keys and test merchant accounts provided in our documentation. Do not attempt real financial transactions, credit card authorization overrides, or account takeovers against active merchants.",
+        proofOfConceptRequirements: buildRuleSection(
+          pocRequirements,
+          "Reports must contain complete details to allow our engineering team to quickly validate the issue."
+        ),
         rulesOfEngagement: buildRuleSection(
           rulesOfEngagement,
-          "Rules of engagement",
+          "Researchers must follow these operational guidelines during testing activities:"
         ),
         exclusions: {
-          description: "Excluded vulnerability types",
+          description: "The following issue types are considered out-of-scope and non-rewardable:",
           rules: effectiveExcludedTypes.length > 0 ? effectiveExcludedTypes : ["DoS"],
         },
         offersBounties: offerBounties,
@@ -384,14 +461,16 @@ export function useCreateProgramForm() {
           : 0,
         assets: buildAssets(),
         rewards: buildRewards(),
-        state: isDraft ? "DRAFT" : "PUBLISHED",
       };
 
       if (programId) {
         await updateProgram({ id: programId, body: payload }).unwrap();
         toast.success(isDraft ? "Draft saved successfully!" : "Program updated successfully!");
       } else {
-        await createProgram(payload).unwrap();
+        await createProgram({
+          ...payload,
+          state: (isDraft ? "DRAFT" : "ACTIVE") as ProgramState,
+        }).unwrap();
         toast.success(isDraft ? "Draft saved successfully!" : "Program created successfully!");
       }
 

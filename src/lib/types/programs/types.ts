@@ -38,6 +38,7 @@ export interface ProgramReward {
 }
 
 export interface Asset {
+  id?: string;
   assetType: AssetType;
   identifier: string;
   description: string;
@@ -46,6 +47,7 @@ export interface Asset {
 }
 
 export interface RewardTier {
+  id?: string;
   severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "NONE";
   minAmount: number;
   maxAmount: number;
@@ -58,8 +60,9 @@ export interface CreateProgramRequest {
   description: string;
   engagementType: "BOUNTY" | "RESPONSE";
   visibility: "PUBLIC" | "PRIVATE" | "INVITE_ONLY";
+  state?: ProgramState;
   policy: string;
-  proofOfConceptRequirements: string;
+  proofOfConceptRequirements: RuleSection | string;
   rulesOfEngagement: RuleSection;
   exclusions: RuleSection;
   offersBounties: boolean;
@@ -68,6 +71,10 @@ export interface CreateProgramRequest {
   assets: Asset[];
   rewards: RewardTier[];
 }
+
+export type UpdateProgramRequest = Partial<
+  Omit<CreateProgramRequest, "state">
+>;
 
 export interface OrganizationSummary {
   id?: string;
@@ -152,9 +159,24 @@ export interface PaginatedResponse<T> {
 export interface GetProgramsParams {
   page?: number;
   size?: number;
-  search?: string;
-  engagementType?: string;
-  state?: string;
+  organizationId?: string;
+  engagementType?: EngagementType;
+  offersBounties?: boolean;
+  q?: string;
+  minimumBounty?: number;
+  maximumBounty?: number;
+  assetType?: AssetType;
+  maxSeverity?: SeverityLevel;
+  industry?:
+    | "TECHNOLOGY"
+    | "FINANCE"
+    | "HEALTHCARE"
+    | "ECOMMERCE"
+    | "GOVERNMENT"
+    | "EDUCATION"
+    | "OTHER";
+  country?: string;
+  sort?: string;
 }
 
 export type AssetCategory =

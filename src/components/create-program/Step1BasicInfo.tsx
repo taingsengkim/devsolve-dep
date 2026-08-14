@@ -34,13 +34,11 @@ export function Step1BasicInfo({
   description,
   programType,
   visibility,
-  policy,
   onNameChange,
   setHandle,
   setDescription,
   setProgramType,
   setVisibility,
-  setPolicy,
   formatHandle,
 }: Step1BasicInfoProps) {
   return (
@@ -131,24 +129,12 @@ export function Step1BasicInfo({
             <SelectContent>
               <SelectItem value="PUBLIC">Public</SelectItem>
               <SelectItem value="PRIVATE">Private</SelectItem>
+              <SelectItem value="INVITE_ONLY">Invite only</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {/* Policy */}
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-foreground">
-          Policy
-        </label>
-        <Textarea
-          rows={4}
-          placeholder="Describe your responsible disclosure policy..."
-          value={policy}
-          onChange={(e) => setPolicy(e.target.value)}
-          className="rounded-xl border-border bg-card text-foreground text-base focus-visible:ring-blue-500 resize-none p-3.5"
-        />
-      </div>
     </div>
   );
 }

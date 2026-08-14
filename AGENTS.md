@@ -19,6 +19,7 @@ When performing any work related to UI components, layout, styling, theme, anima
    - Ensure loading states use structured skeleton pulse containers (`animate-pulse`) matching the page structure instead of simple unstyled spinners.
 5. **No Native `<select>` Tags**: NEVER use raw HTML `<select>` tags or native browser select dropdowns. ALWAYS use the `shadcn/ui` Select component (`import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"`) for all dropdowns, select inputs, and rows-per-page pickers across the application.
 6. **No Explicit Mock Badges**: NEVER add explicit "Mock Preview Data", "Mock Data", or similar preview badges/indicators to UI headers or components. Render all fallback or mock data cleanly and seamlessly without explicit mock tag banners.
+7. **Strict Dynamic Dark Mode Tokens**: NEVER hardcode dark/light mode hex colors or hardcoded slate shades (e.g. `bg-[#0b0f17]`, `bg-[#131926]`, `bg-[#1a2133]`, `border-slate-800`, `text-slate-300`). ALWAYS use standard dynamic theme tokens (`bg-background`, `bg-card`, `bg-muted`, `text-foreground`, `text-muted-foreground`, `border-border`, `ring-1 ring-foreground/5 dark:ring-foreground/10`) across all components and pages to guarantee seamless Light & Dark mode support without exception.
 
 # Data Fetching & Mutations
 

@@ -33,6 +33,20 @@ const isUuid = (value: string) =>
     value
   );
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const programItemsFrom = (value: unknown): Record<string, unknown>[] => {
+  const items =
+    isRecord(value) && Array.isArray(value.content)
+      ? value.content
+      : Array.isArray(value)
+        ? value
+        : [];
+
+  return items.filter(isRecord);
+};
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -72,10 +86,11 @@ export async function GET(
       });
       if (fallbackUpstream.ok) {
         upstream = fallbackUpstream;
-      } else if (token) {
-        if (idIsUuid) {
-          const adminUpstream = await fetch(
-            `${BACKEND_API_URL}/admin/programs/${id}`,
+      } else {
+        if (idIsUuid && token) {
+          // 1. Try company organization program detail endpoint first (full ProgramDetail object)
+          const orgMeUpstream = await fetch(
+            `${BACKEND_API_URL}/organizations/me/programs/${id}`,
             {
               method: "GET",
               headers: {
@@ -85,53 +100,84 @@ export async function GET(
               cache: "no-store",
             }
           );
-          if (adminUpstream.ok) {
-            upstream = adminUpstream;
+
+          if (orgMeUpstream.ok) {
+            upstream = orgMeUpstream;
+          } else {
+            // 2. Try admin program detail endpoint
+            const adminUpstream = await fetch(
+              `${BACKEND_API_URL}/admin/programs/${id}`,
+              {
+                method: "GET",
+                headers: {
+                  Accept: "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                cache: "no-store",
+              }
+            );
+            if (adminUpstream.ok) {
+              upstream = adminUpstream;
+            }
           }
         }
 
+        // 3. Fallback to public/summary list lookup if detailed endpoints failed
         if (!upstream.ok) {
-          const orgProgramsUpstream = await fetch(
-            `${BACKEND_API_URL}/organizations/me/programs?size=100`,
+          const publicSearchRes = await fetch(
+            `${BACKEND_API_URL}/programs?size=100`,
             {
               method: "GET",
-              headers: {
-                Accept: "application/json",
-                Authorization: `Bearer ${token}`,
-              },
+              headers: { Accept: "application/json" },
               cache: "no-store",
             }
           );
-          if (orgProgramsUpstream.ok) {
-            const rawOrg = await orgProgramsUpstream.text();
-            if (rawOrg) {
+          if (publicSearchRes.ok) {
+            const rawPublic = await publicSearchRes.text();
+            if (rawPublic) {
               try {
-                const parsed = JSON.parse(rawOrg);
-                const items: any[] = parsed.content ?? parsed ?? [];
-                const found = items.find(
-                  (item: any) => item.id === id || item.handle === id
+                const parsed: unknown = JSON.parse(rawPublic);
+                const found = programItemsFrom(parsed).find(
+                  (item) => item.id === id || item.handle === id
                 );
                 if (found) {
                   return NextResponse.json(found, { status: 200 });
                 }
               } catch {
-                // Ignore JSON parse error
+                // Ignore parse error
               }
             }
           }
-        }
-      } else if (token && idIsUuid) {
-        // Fall back to company organization programs endpoint if public program lookup returns 404
-        const orgMeUpstream = await fetch(
-          `${BACKEND_API_URL}/organizations/me/programs/${id}`,
-          {
-            method: "GET",
-            headers,
-            cache: "no-store",
+
+          if (token) {
+            const orgProgramsUpstream = await fetch(
+              `${BACKEND_API_URL}/organizations/me/programs?size=100`,
+              {
+                method: "GET",
+                headers: {
+                  Accept: "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                cache: "no-store",
+              }
+            );
+            if (orgProgramsUpstream.ok) {
+              const rawOrg = await orgProgramsUpstream.text();
+              if (rawOrg) {
+                try {
+                  const parsed: unknown = JSON.parse(rawOrg);
+                  const found = programItemsFrom(parsed).find(
+                    (item) => item.id === id || item.handle === id
+                  );
+                  if (found) {
+                    return NextResponse.json(found, { status: 200 });
+                  }
+                } catch {
+                  // Ignore JSON parse error
+                }
+              }
+            }
           }
-        );
-        if (orgMeUpstream.ok) {
-          upstream = orgMeUpstream;
         }
       }
     }
@@ -177,15 +223,32 @@ export async function DELETE(
     );
   }
 
+  const targetUrls = [
+    `${BACKEND_API_URL}/programs/${encodeURIComponent(id)}`,
+    `${BACKEND_API_URL}/organizations/me/programs/${encodeURIComponent(id)}`,
+    `${BACKEND_API_URL}/admin/programs/${encodeURIComponent(id)}`,
+  ];
+
   try {
-    const upstream = await fetch(`${BACKEND_API_URL}/programs/${id}`, {
-      method: "DELETE",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      cache: "no-store",
-    });
+    let upstream: Response | null = null;
+    for (const url of targetUrls) {
+      const res = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      });
+      upstream = res;
+      if (res.ok) {
+        break;
+      }
+    }
+
+    if (!upstream) {
+      return unreachable();
+    }
 
     if (!upstream.ok) {
       const raw = await upstream.text();
@@ -231,47 +294,20 @@ export async function PATCH(
     );
   }
 
-  const jsonHeaders = {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-    Authorization: `Bearer ${token}`,
-  };
-
-  const bodyStr = JSON.stringify(payload);
-
-  const candidates: Array<{ url: string; method: string }> = [
-    { url: `${BACKEND_API_URL}/organizations/me/programs/${id}`, method: "PUT" },
-    { url: `${BACKEND_API_URL}/programs/${id}`, method: "PUT" },
-    { url: `${BACKEND_API_URL}/programs/${id}`, method: "PATCH" },
-    { url: `${BACKEND_API_URL}/programs/${id}/state`, method: "PATCH" },
-    { url: `${BACKEND_API_URL}/programs/${id}/activate`, method: "POST" },
-    { url: `${BACKEND_API_URL}/organizations/me/programs/${id}/activate`, method: "POST" },
-    { url: `${BACKEND_API_URL}/organizations/me/programs/${id}`, method: "PATCH" },
-  ];
+  const encodedId = encodeURIComponent(id);
+  const targetUrl = `${BACKEND_API_URL}/programs/${encodedId}`;
 
   try {
-    let upstream: Response | null = null;
-
-    for (const candidate of candidates) {
-      const res = await fetch(candidate.url, {
-        method: candidate.method,
-        headers: jsonHeaders,
-        body: bodyStr,
-        cache: "no-store",
-      });
-
-      upstream = res;
-      if (res.ok) {
-        break;
-      }
-    }
-
-    if (!upstream) {
-      return NextResponse.json(
-        { message: "Failed to update program state." },
-        { status: 500 }
-      );
-    }
+    const upstream = await fetch(targetUrl, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+      cache: "no-store",
+    });
 
     const raw = await upstream.text();
     let body: unknown = null;
@@ -286,7 +322,7 @@ export async function PATCH(
     if (!upstream.ok) {
       const message =
         (body as { message?: string } | null)?.message ??
-        "Failed to update program state.";
+        "Failed to update program.";
       return NextResponse.json(
         { message, details: body },
         { status: upstream.status }

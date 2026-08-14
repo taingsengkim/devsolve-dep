@@ -13,11 +13,14 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const NotificationProvider: React.FC<{
+  children: React.ReactNode;
+  enableStream?: boolean;
+}> = ({ children, enableStream = true }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   // Mount real-time SSE listener
-  useNotificationStream();
+  useNotificationStream(enableStream);
 
   const openNotification = () => setIsOpen(true);
   const closeNotification = () => setIsOpen(false);
@@ -28,7 +31,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       value={{ isOpen, openNotification, closeNotification, toggleNotification }}
     >
       {children}
-      <NotificationModal isOpen={isOpen} onClose={closeNotification} />
+      <NotificationModal
+        isOpen={enableStream && isOpen}
+        onClose={closeNotification}
+      />
     </NotificationContext.Provider>
   );
 };

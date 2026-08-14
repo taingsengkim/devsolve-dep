@@ -134,7 +134,9 @@ function SidebarContent({
   const settingsLabel = isCompany ? "Organization settings" : "Settings";
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
+    /* `data-scroll-host` makes the whole sidebar the hover target for the
+       nav's scrollbar below, rather than the narrow strip the bar sits in. */
+    <div data-scroll-host className="flex h-full flex-col overflow-hidden">
       {/* Close control, drawer only. Desktop has no row here at all — its
           collapse toggle floats on the sidebar's edge, so the profile card
           starts flush with the top padding instead of after an empty band. */}
@@ -215,7 +217,7 @@ function SidebarContent({
       </Link>
 
       {/* Navigation */}
-      <nav className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+      <nav className="scrollbar-hover-only min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
         {categories.map((category, catIndex) => {
           const categoryItems = filteredNavItems.filter(
             (item) => (item.category || "Overview") === category,

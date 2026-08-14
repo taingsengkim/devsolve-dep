@@ -205,10 +205,7 @@ export default function AdminProfileView() {
                 <h2 className="text-xl sm:text-2xl font-bold text-foreground">
                   {displayName}
                 </h2>
-                <Badge className="bg-primary text-primary-foreground border-none font-semibold px-2.5 py-0.5 text-xs shadow-xs rounded-full">
-                  <ShieldCheck className="size-3.5 mr-1" />
-                  SYSTEM ADMIN
-                </Badge>
+
               </div>
 
               <p className="text-sm font-medium text-muted-foreground">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion } from "motion/react";
@@ -12,19 +12,15 @@ import {
   ArrowRight,
   Bookmark,
   CheckCircle2,
-  ChevronDown,
-  ChevronUp,
   CircleDot,
   Clock,
   Download,
   Eye,
   FolderGit2,
   ListOrdered,
-  MessageSquare,
   Pencil,
   Plus,
   RotateCcw,
-  Send,
   Server,
   Target,
   TerminalSquare,
@@ -34,8 +30,10 @@ import {
 
 import { SolutionCard } from "@/components/discussions/SolutionCard";
 import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
+import { VoteControl } from "@/components/ui/vote-control";
 import {
   useGetProblemByIdQuery,
+  useIncrementProblemViewsMutation,
   useRemoveAcceptedSolutionMutation,
   useSetAcceptedSolutionMutation,
   type ProblemResponse,
@@ -55,10 +53,7 @@ import {
   useAddBookmarkMutation,
   useRemoveBookmarkMutation,
 } from "@/lib/redux/services/bookmarksApi";
-import {
-  useCreateCommentMutation,
-  useGetCommentsQuery,
-} from "@/lib/redux/services/commentsApi";
+import { CommentsSection } from "@/components/comments/CommentsSection";
 import {
   PROBLEM_TYPE_LABELS,
   SDLC_LABELS,
@@ -95,7 +90,6 @@ const CARD =
   "rounded-2xl border border-slate-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs";
 
 const SOLUTION_PAGE_SIZE = 50;
-const COMMENT_PAGE_SIZE = 50;
 
 const SEVERITY_STYLES: Record<ProblemSeverity, string> = {
   LOW: "bg-slate-100 text-slate-700 dark:bg-neutral-800 dark:text-neutral-300",
@@ -163,6 +157,18 @@ function Loaded({
   sortOrder: "votes" | "newest";
   onSortChange: (order: "votes" | "newest") => void;
 }) {
+  const [incrementViews] = useIncrementProblemViewsMutation();
+  const countedProblemId = useRef<string | null>(null);
+
+  /* Record a view only after the problem has loaded successfully. Tracking the
+     id (rather than a boolean) also handles client navigation between problem
+     detail routes without double-counting effect replays in development. */
+  useEffect(() => {
+    if (countedProblemId.current === id) return;
+    countedProblemId.current = id;
+    void incrementViews(id);
+  }, [id, incrementViews]);
+
   const { data: solutionPage, isLoading: isLoadingSolutions } =
     useGetSolutionsByProblemQuery({
       problemId: id,
@@ -186,8 +192,7 @@ function Loaded({
   const [setVote, { isLoading: isSettingVote }] = useSetVoteMutation();
   const [removeVote, { isLoading: isRemovingVote }] = useRemoveVoteMutation();
   const isVoting = isSettingVote || isRemovingVote;
-  const hasUpvoted = votes?.currentUserVote === 1;
-  const hasDownvoted = votes?.currentUserVote === -1;
+  const upvoteCount = votes?.upvotes ?? 0;
 
   const { data: bookmarkStatus } = useGetBookmarkStatusQuery({
     type: "PROBLEM",
@@ -213,16 +218,6 @@ function Loaded({
     () => new Set(problem.acceptedSolutionIds ?? []),
     [problem.acceptedSolutionIds],
   );
-
-  const { data: commentPage } = useGetCommentsQuery({
-    commentableType: "PROBLEM",
-    commentableId: id,
-    pageSize: COMMENT_PAGE_SIZE,
-  });
-  const [createComment, { isLoading: isPostingComment }] =
-    useCreateCommentMutation();
-  const [draft, setDraft] = useState("");
-  const [commentError, setCommentError] = useState<string | null>(null);
 
   const isAcceptedSolution = (solutionId: string, flag?: boolean) =>
     acceptedIds.size > 0 ? acceptedIds.has(solutionId) : Boolean(flag);
@@ -274,7 +269,6 @@ function Loaded({
     });
   }, [isLoadingSolutions, solutions]);
 
-  const comments = commentPage?.content ?? [];
   const attachments = problem.attachments ?? [];
   const tags = problem.tags ?? [];
   const technologies = problem.technologies ?? [];
@@ -318,24 +312,6 @@ function Loaded({
       toast.success("Acceptance withdrawn");
     } catch (caught) {
       toast.error(messageOf(caught, "That answer could not be unaccepted."));
-    }
-  };
-
-  const onComment = async (event: React.FormEvent) => {
-    event.preventDefault();
-    const content = draft.trim();
-    if (!content || isPostingComment) return;
-
-    try {
-      await createComment({
-        commentableType: "PROBLEM",
-        commentableId: id,
-        content,
-      }).unwrap();
-      setDraft("");
-      setCommentError(null);
-    } catch (caught) {
-      setCommentError(messageOf(caught, "Your comment could not be posted."));
     }
   };
 
@@ -404,38 +380,15 @@ function Loaded({
                   {problem.title ?? "Untitled problem"}
                 </h1>
 
-                {/* Keep the vote actions available without surfacing an
-                    aggregate problem score on the detail page. */}
-                <div className="flex shrink-0 flex-col items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-neutral-700 dark:bg-neutral-800">
-                  <button
-                    type="button"
-                    onClick={() => void onVote(1)}
-                    disabled={isVoting}
-                    aria-pressed={hasUpvoted}
-                    aria-label={hasUpvoted ? "Remove upvote" : "Upvote"}
-                    className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
-                      hasUpvoted
-                        ? "bg-blue-600 text-white"
-                        : "text-slate-500 hover:bg-slate-200 dark:text-neutral-400 dark:hover:bg-neutral-700"
-                    }`}
-                  >
-                    <ChevronUp aria-hidden="true" className="size-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void onVote(-1)}
-                    disabled={isVoting}
-                    aria-pressed={hasDownvoted}
-                    aria-label={hasDownvoted ? "Remove downvote" : "Downvote"}
-                    className={`cursor-pointer rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
-                      hasDownvoted
-                        ? "bg-rose-600 text-white"
-                        : "text-slate-400 hover:bg-slate-200 dark:hover:bg-neutral-700"
-                    }`}
-                  >
-                    <ChevronDown aria-hidden="true" className="size-4" />
-                  </button>
-                </div>
+                <VoteControl
+                  voteCount={upvoteCount}
+                  currentVote={votes?.currentUserVote ?? 0}
+                  onVote={onVote}
+                  isLoading={isVoting}
+                  upvoteLabel="Upvote this problem"
+                  downvoteLabel="Downvote this problem"
+                  className="shrink-0"
+                />
               </div>
 
               {(tags.length > 0 || technologies.length > 0) && (
@@ -743,84 +696,11 @@ function Loaded({
               </div>
             )}
 
-            {/* ── Comments ── */}
-            <section className={`${CARD} p-4 sm:p-6`}>
-              <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-slate-900 dark:text-neutral-100">
-                <MessageSquare
-                  aria-hidden="true"
-                  className="size-4 text-slate-500"
-                />
-                Comments ({commentPage?.totalElements ?? comments.length})
-              </h2>
-
-              {comments.length > 0 && (
-                <div className="mb-4 space-y-3">
-                  {comments.map((comment) => (
-                    <div
-                      key={comment.id}
-                      className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm dark:border-neutral-800 dark:bg-neutral-800/60"
-                    >
-                      {comment.authorAvatarUrl ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
-                          src={comment.authorAvatarUrl}
-                          alt=""
-                          className="size-8 shrink-0 rounded-full bg-slate-200 object-cover dark:bg-neutral-700"
-                        />
-                      ) : (
-                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600 dark:bg-neutral-700 dark:text-neutral-200">
-                          {initialsOf(comment.authorName || "?")}
-                        </span>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1 flex items-center justify-between gap-3">
-                          <span className="truncate font-bold text-slate-800 dark:text-neutral-100">
-                            {comment.authorName || "Unknown"}
-                          </span>
-                          <span className="shrink-0 text-xs text-slate-400">
-                            {formatDate(comment.createdAt, "")}
-                          </span>
-                        </div>
-                        <p className="whitespace-pre-wrap wrap-break-word leading-relaxed text-slate-700 dark:text-neutral-300">
-                          {comment.content}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <form onSubmit={onComment} className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={draft}
-                  onChange={(event) => {
-                    setDraft(event.target.value);
-                    if (commentError) setCommentError(null);
-                  }}
-                  maxLength={5000}
-                  aria-label="Write a comment"
-                  placeholder="Add a comment…"
-                  className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
-                />
-                <button
-                  type="submit"
-                  disabled={isPostingComment || !draft.trim()}
-                  aria-label="Post comment"
-                  className="shrink-0 cursor-pointer rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-blue-700 disabled:opacity-50"
-                >
-                  <Send aria-hidden="true" className="size-4" />
-                </button>
-              </form>
-              {commentError && (
-                <p
-                  className="mt-2 text-sm font-medium text-rose-600 dark:text-rose-400"
-                  role="alert"
-                >
-                  {commentError}
-                </p>
-              )}
-            </section>
+            <CommentsSection
+              commentableType="PROBLEM"
+              commentableId={id}
+              className={`${CARD} p-4 sm:p-6`}
+            />
           </div>
 
           {/* ── Sidebar ── */}

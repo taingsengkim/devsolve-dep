@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
 import {
   Bookmark,
   CheckCircle2,
-  ChevronUp,
   CircleDot,
   Clock,
   Eye,
@@ -26,11 +25,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useVoteDiscussionMutation } from "@/lib/redux/services/discussionsApi";
+import { VoteControl } from "@/components/ui/vote-control";
 import {
   useAddBookmarkMutation,
+  useGetBookmarkStatusQuery,
   useRemoveBookmarkMutation,
 } from "@/lib/redux/services/bookmarksApi";
+import {
+  useGetVoteSummaryQuery,
+  useRemoveVoteMutation,
+  useSetVoteMutation,
+} from "@/lib/redux/services/votesApi";
 import type { DiscussionPost } from "@/lib/types/dicussion/types";
 import {
   MY_COMMUNITY_HREF,
@@ -63,66 +68,57 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
   const bookmarkableType =
     post.category === "Showcase" ? "SHOWCASE" : "PROBLEM";
 
-  const [voteDiscussion, { isLoading: isVoting }] = useVoteDiscussionMutation();
+  const { data: voteSummary } = useGetVoteSummaryQuery({
+    type: bookmarkableType,
+    targetId: post.id,
+  });
+  const [setVote, { isLoading: isSettingVote }] = useSetVoteMutation();
+  const [removeVote, { isLoading: isRemovingVote }] = useRemoveVoteMutation();
+  const { data: bookmarkStatus } = useGetBookmarkStatusQuery({
+    type: bookmarkableType,
+    targetId: post.id,
+  });
   const [addBookmark, { isLoading: isAddingBookmark }] =
     useAddBookmarkMutation();
   const [removeBookmark, { isLoading: isRemovingBookmark }] =
     useRemoveBookmarkMutation();
+  const isVoting = isSettingVote || isRemovingVote;
   const isBookmarking = isAddingBookmark || isRemovingBookmark;
 
-  const [localVotes, setLocalVotes] = useState(post.votes);
-  const [localUpvoted, setLocalUpvoted] = useState(post.isUpvoted ?? false);
-  const [localBookmarked, setLocalBookmarked] = useState(
-    post.isBookmarked ?? false,
-  );
-
-  // Optimistic values are held locally, so re-sync whenever the server sends new
-  // ones. Adjusting during render avoids a second visual pass after a refetch.
-  const [syncedPost, setSyncedPost] = useState(post);
-  if (
-    syncedPost.votes !== post.votes ||
-    syncedPost.isUpvoted !== post.isUpvoted ||
-    syncedPost.isBookmarked !== post.isBookmarked
-  ) {
-    setSyncedPost(post);
-    setLocalVotes(post.votes);
-    setLocalUpvoted(post.isUpvoted ?? false);
-    setLocalBookmarked(post.isBookmarked ?? false);
-  }
+  const currentUserVote = voteSummary
+    ? (voteSummary.currentUserVote ?? 0)
+    : (post.isUpvoted ? 1 : 0);
+  const upvoteCount = voteSummary?.upvotes ?? 0;
+  const localBookmarked = bookmarkStatus ?? post.isBookmarked ?? false;
 
   /* The mutations take where the card is moving to, not a toggle, so the
      optimistic state and the request can never disagree about direction. */
-  const handleVote = async () => {
+  const handleVote = async (value: 1 | -1) => {
     if (isVoting) return;
 
-    const upvote = !localUpvoted;
-    setLocalVotes((votes) => (upvote ? votes + 1 : votes - 1));
-    setLocalUpvoted(upvote);
-
-    const result = await voteDiscussion({
-      id: post.id,
-      type: bookmarkableType,
-      isUpvoted: upvote,
-    });
-
-    // Nothing else holds the true count, so a rejected vote is rolled back here.
-    if ("error" in result) {
-      setLocalVotes((votes) => (upvote ? votes - 1 : votes + 1));
-      setLocalUpvoted(!upvote);
+    if (currentUserVote === value) {
+      await removeVote({
+        type: bookmarkableType,
+        targetId: post.id,
+      }).unwrap();
+      return;
     }
+
+    await setVote({
+      type: bookmarkableType,
+      targetId: post.id,
+      value,
+    }).unwrap();
   };
 
   const handleBookmark = async () => {
     if (isBookmarking) return;
 
-    const bookmarked = !localBookmarked;
-    setLocalBookmarked(bookmarked);
+    const result = localBookmarked
+      ? await removeBookmark({ type: bookmarkableType, targetId: post.id })
+      : await addBookmark({ type: bookmarkableType, targetId: post.id });
 
-    const result = bookmarked
-      ? await addBookmark({ type: bookmarkableType, targetId: post.id })
-      : await removeBookmark({ type: bookmarkableType, targetId: post.id });
-
-    if ("error" in result) setLocalBookmarked(!bookmarked);
+    if ("error" in result) return;
   };
 
   const isShowcase = post.category === "Showcase";
@@ -278,19 +274,15 @@ export const DiscussionCard: React.FC<DiscussionCardProps> = ({
             </div>
 
             <div className="flex items-center gap-1.5">
-              <Button
-                type="button"
-                size="sm"
-                variant={localUpvoted ? "default" : "secondary"}
-                onClick={handleVote}
-                disabled={isVoting}
-                aria-pressed={localUpvoted}
-                aria-label={localUpvoted ? "Remove upvote" : "Upvote"}
-                className="pointer-events-auto min-w-16 rounded-xl"
-              >
-                <ChevronUp data-icon="inline-start" aria-hidden="true" />
-                <span className="tabular-nums">{localVotes}</span>
-              </Button>
+              <VoteControl
+                voteCount={upvoteCount}
+                currentVote={currentUserVote}
+                onVote={handleVote}
+                isLoading={isVoting}
+                upvoteLabel="Upvote this post"
+                downvoteLabel="Downvote this post"
+                className="pointer-events-auto"
+              />
               <Button
                 type="button"
                 size="icon-sm"

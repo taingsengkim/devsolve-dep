@@ -13,6 +13,8 @@ import {
   AccountStatus,
   FollowingCounts,
   FollowRecord,
+  FollowingUser,
+  FollowingUsersResponse,
 } from "@/lib/types/profile/types";
 import {
   mockProfile,
@@ -812,6 +814,37 @@ export const profileApi = baseApi.injectEndpoints({
       providesTags: ["Profile"],
     }),
 
+    getFollowingUsers: builder.query<
+      FollowingUsersResponse,
+      {
+        userId: string;
+        pageNumber?: number;
+        pageSize?: number;
+      }
+    >({
+      query: ({ userId, pageNumber = 0, pageSize = 20 }) => ({
+        url: `/follows/users/${userId}/following/users`,
+        params: {
+          pageNumber,
+          pageSize,
+        },
+      }),
+      transformResponse: (raw: FollowingUsersResponse): FollowingUsersResponse => ({
+        ...raw,
+        content: Array.isArray(raw.content)
+          ? raw.content.map((user) => ({
+              ...user,
+              fullName: user.fullName?.trim() || "Unknown user",
+              avatarUrl: user.avatarUrl || null,
+              biography: user.biography?.trim() || null,
+              followerCount: user.followerCount ?? 0,
+              following: Boolean(user.following),
+            }))
+          : ([] as FollowingUser[]),
+      }),
+      providesTags: ["Profile"],
+    }),
+
     // GET /api/v1/follows/{type}/{targetId}/summary — status & follower count
     getFollowSummary: builder.query<
       { followableType: string; followableId: string; followerCount: number; following: boolean },
@@ -871,6 +904,7 @@ export const {
   useGetMyFollowsQuery,
   useGetFollowersQuery,
   useGetUserFollowingQuery,
+  useGetFollowingUsersQuery,
   useGetFollowSummaryQuery,
   useFollowTargetMutation,
   useUnfollowTargetMutation,

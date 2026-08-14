@@ -59,7 +59,8 @@ function DashboardSkeleton() {
 
 export default function DashboardPage() {
   const { user, areRolesResolved } = useSidebarAuth();
-  const isAdminUser = user?.roles?.includes("ADMIN") || user?.role?.includes("ADMIN");
+  const isAdminUser =
+    user?.roles?.includes("ADMIN") || user?.role?.includes("ADMIN");
   const isCompanyUser = user?.roles?.includes("COMPANY") ?? false;
   const dashboardView = isCompanyUser ? "company" : "user";
 

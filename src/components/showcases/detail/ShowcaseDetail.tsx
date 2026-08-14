@@ -7,26 +7,20 @@ import { motion } from "motion/react";
 import {
   ArrowLeft,
   Bookmark,
-  ChevronDown,
-  ChevronUp,
   Code2,
   ExternalLink,
   Eye,
   Flag,
   Image as ImageIcon,
   LayoutTemplate,
-  MessageSquare,
   Network,
-  Send,
   Share2,
   Terminal,
 } from "lucide-react";
 
 import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
-import {
-  useCreateCommentMutation,
-  useGetCommentsQuery,
-} from "@/lib/redux/services/commentsApi";
+import { VoteControl } from "@/components/ui/vote-control";
+import { CommentsSection } from "@/components/comments/CommentsSection";
 import {
   useGetShowcaseByIdQuery,
   useGetShowcaseStepsQuery,
@@ -71,17 +65,6 @@ function formatDate(iso?: string) {
   });
 }
 
-function relativeTime(iso: string) {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "";
-
-  const minutes = Math.round((Date.now() - date.getTime()) / 60_000);
-  if (minutes < 1) return "Just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (minutes < 1440) return `${Math.round(minutes / 60)}h ago`;
-  return formatDate(iso);
-}
-
 function initialsOf(name: string) {
   return (
     name
@@ -115,12 +98,16 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
   });
   const [setVote] = useSetVoteMutation();
   const [removeVote] = useRemoveVoteMutation();
+  const [isVoting, setIsVoting] = useState(false);
 
-  const score = votes?.score ?? 0;
+  const upvoteCount = votes?.upvotes ?? 0;
   const myVote = votes?.currentUserVote ?? 0;
 
   const vote = async (value: 1 | -1) => {
+    if (isVoting) return;
+
     try {
+      setIsVoting(true);
       if (myVote === value) {
         await removeVote({ type: "SHOWCASE", targetId: id }).unwrap();
       } else {
@@ -129,43 +116,13 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
     } catch {
       /* Signed out, or the vote was rejected. The count stays as the server
          last reported it rather than drifting to an optimistic value. */
+    } finally {
+      setIsVoting(false);
     }
   };
 
-  /* ── Comments ── */
-  const { data: commentPage } = useGetCommentsQuery({
-    commentableType: "SHOWCASE",
-    commentableId: id,
-    pageSize: 50,
-  });
-  const [createComment, { isLoading: isPosting }] = useCreateCommentMutation();
-  const [draft, setDraft] = useState("");
-  const [commentError, setCommentError] = useState<string | null>(null);
-
-  const comments = commentPage?.content ?? [];
-
-  const submitComment = async (event: React.FormEvent) => {
-    event.preventDefault();
-    const content = draft.trim();
-    if (!content || isPosting) return;
-
-    try {
-      await createComment({
-        commentableType: "SHOWCASE",
-        commentableId: id,
-        content,
-      }).unwrap();
-      setDraft("");
-      setCommentError(null);
-    } catch (error) {
-      setCommentError(
-        messageOf(
-          error,
-          "Your comment could not be posted. Are you signed in?",
-        ),
-      );
-    }
-  };
+  /* Comments live in `CommentsSection`, which owns their fetching, threading,
+     composer and per-comment actions. */
 
   /* Counted once per mount, not per render. */
   const [incrementViews] = useIncrementShowcaseViewsMutation();
@@ -235,39 +192,15 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
                   {showcase.title}
                 </h1>
 
-                {/* Real votes: `PUT`/`DELETE /votes/SHOWCASE/{id}`, with the
-                    caller's own vote lighting the arrow it belongs to. */}
-                <div className="flex items-center space-x-1 rounded-xl border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800/60 p-1 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => void vote(1)}
-                    aria-label={myVote === 1 ? "Remove upvote" : "Upvote"}
-                    aria-pressed={myVote === 1}
-                    className={`rounded-lg p-1.5 transition-colors cursor-pointer ${
-                      myVote === 1
-                        ? "bg-blue-600 text-white"
-                        : "text-slate-500 hover:bg-slate-200 dark:text-neutral-400 dark:hover:bg-neutral-700"
-                    }`}
-                  >
-                    <ChevronUp className="h-4 w-4" />
-                  </button>
-                  <span className="text-sm font-bold text-slate-800 dark:text-neutral-100 px-1.5 tabular-nums">
-                    {score}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => void vote(-1)}
-                    aria-label={myVote === -1 ? "Remove downvote" : "Downvote"}
-                    aria-pressed={myVote === -1}
-                    className={`rounded-lg p-1.5 transition-colors cursor-pointer ${
-                      myVote === -1
-                        ? "bg-slate-800 text-white dark:bg-neutral-200 dark:text-neutral-900"
-                        : "text-slate-500 hover:bg-slate-200 dark:text-neutral-400 dark:hover:bg-neutral-700"
-                    }`}
-                  >
-                    <ChevronDown className="h-4 w-4" />
-                  </button>
-                </div>
+                <VoteControl
+                  voteCount={upvoteCount}
+                  currentVote={myVote}
+                  onVote={vote}
+                  isLoading={isVoting}
+                  upvoteLabel="Upvote this showcase"
+                  downvoteLabel="Downvote this showcase"
+                  className="shrink-0"
+                />
               </div>
 
               {showcase.coverImageUrl && (
@@ -408,76 +341,11 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
               )}
             </div>
 
-            {/* Comments Thread */}
-            <div className={`${CARD} p-6`}>
-              <h3 className="text-base font-bold text-slate-900 dark:text-neutral-100 mb-4 flex items-center space-x-2">
-                <MessageSquare className="h-4 w-4 text-slate-500" />
-                <span>Comments ({commentPage?.totalElements ?? 0})</span>
-              </h3>
-
-              <div className="space-y-3 mb-4">
-                {comments.length === 0 ? (
-                  <p className="text-sm text-slate-500 dark:text-neutral-400">
-                    No comments yet — be the first to give the author feedback.
-                  </p>
-                ) : (
-                  comments.map((comment) => (
-                    <div
-                      key={comment.id}
-                      className="text-sm text-slate-600 dark:text-neutral-300 flex items-start space-x-3 bg-slate-50 dark:bg-neutral-800/60 p-4 rounded-xl border border-slate-100 dark:border-neutral-800"
-                    >
-                      <CommentAvatar
-                        name={comment.authorName}
-                        url={comment.authorAvatarUrl}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-3 mb-1">
-                          <span className="font-bold text-slate-800 dark:text-neutral-100 truncate">
-                            {comment.authorName}
-                          </span>
-                          <span className="text-xs text-slate-400 shrink-0">
-                            {relativeTime(comment.createdAt)}
-                          </span>
-                        </div>
-                        <p className="text-slate-700 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
-                          {comment.content}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <form
-                onSubmit={(event) => void submitComment(event)}
-                className="flex items-center space-x-2"
-              >
-                <input
-                  type="text"
-                  value={draft}
-                  maxLength={5000}
-                  onChange={(event) => {
-                    setDraft(event.target.value);
-                    if (commentError) setCommentError(null);
-                  }}
-                  placeholder="Share feedback on this showcase..."
-                  className="flex-1 rounded-xl border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  disabled={isPosting || !draft.trim()}
-                  className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
-              </form>
-
-              {commentError && (
-                <p className="mt-2 text-sm font-medium text-rose-600">
-                  {commentError}
-                </p>
-              )}
-            </div>
+            <CommentsSection
+              commentableType="SHOWCASE"
+              commentableId={id}
+              className={`${CARD} p-6`}
+            />
           </div>
 
           {/* Right Sidebar */}
@@ -656,29 +524,6 @@ function ShowcaseImage({
   );
 }
 
-function CommentAvatar({ name, url }: { name: string; url?: string }) {
-  const [failed, setFailed] = useState(false);
-
-  if (url && !failed && isOptimizable(url)) {
-    return (
-      <Image
-        src={url}
-        alt={name}
-        width={32}
-        height={32}
-        onError={() => setFailed(true)}
-        className="h-8 w-8 shrink-0 rounded-full bg-slate-200 object-cover dark:bg-neutral-700"
-      />
-    );
-  }
-
-  return (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600 dark:bg-neutral-700 dark:text-neutral-200">
-      {initialsOf(name)}
-    </span>
-  );
-}
-
 function DetailSkeleton() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-16 dark:bg-neutral-950">
@@ -726,14 +571,3 @@ function DetailSkeleton() {
 }
 
 /** Pulls something readable out of an RTK Query error. */
-function messageOf(error: unknown, fallback: string): string {
-  if (typeof error === "object" && error !== null && "data" in error) {
-    const data = (error as { data?: unknown }).data;
-    if (typeof data === "string" && data) return data;
-    if (typeof data === "object" && data !== null && "message" in data) {
-      const message = (data as { message?: unknown }).message;
-      if (typeof message === "string" && message) return message;
-    }
-  }
-  return fallback;
-}

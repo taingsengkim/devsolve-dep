@@ -44,6 +44,7 @@ import {
 } from "@/lib/redux/services/admin/programAdminApi";
 import {
   useGetProgramByIdQuery,
+  useGetMyCompanyProgramByIdQuery,
   useUpdateProgramStateMutation,
   usePublishProgramMutation,
   useCloseProgramMutation,
@@ -97,14 +98,22 @@ function ProgramDetailPageContent({
     refetch: refetchPublic,
   } = useGetProgramByIdQuery(id);
 
+  // Company scope query fallback if public endpoint skips or returns undefined
+  const {
+    data: companyDetail,
+    isLoading: isCompanyLoading,
+    refetch: refetchCompany,
+  } = useGetMyCompanyProgramByIdQuery(id, { skip: !isCompanyUser || Boolean(publicDetail) });
+
   const refetch = () => {
     if (isAdminScope) refetchAdmin();
     refetchPublic();
+    if (isCompanyUser) refetchCompany();
   };
 
-  const program = adminDetail ?? publicDetail;
+  const program = adminDetail ?? publicDetail ?? companyDetail;
 
-  const isLoading = isAdminScope ? isAdminDetailLoading : (isPublicLoading && !program);
+  const isLoading = isAdminScope ? isAdminDetailLoading : ((isPublicLoading || isCompanyLoading) && !program);
   const isError = !isLoading && !program;
 
   const [approveProgram] = useApproveProgramMutation();

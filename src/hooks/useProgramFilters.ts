@@ -1,116 +1,137 @@
 import { useState } from "react";
 import {
-  GetProgramsParams,
-  ProgramState,
+  AssetType,
   ProgramType,
+  SeverityLevel,
 } from "@/lib/types/programs/types";
+
+export type ProgramAssetFilter = "All" | AssetType;
+export type ProgramSort = "newest" | "reward-high" | "name";
+export type ProgramSeverityFilter = "All" | SeverityLevel;
+export type ProgramIndustryFilter =
+  | "All"
+  | "TECHNOLOGY"
+  | "FINANCE"
+  | "HEALTHCARE"
+  | "ECOMMERCE"
+  | "GOVERNMENT"
+  | "EDUCATION"
+  | "OTHER";
 
 export function useProgramFilters() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeSearch, setActiveSearch] = useState("");
-  const [quickFilter, setQuickFilter] = useState("all");
-
-  // Typed with ProgramType ("All" | "Bounty" | "Response") to fix TS overlap error
   const [selectedType, setSelectedType] = useState<ProgramType>("All");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedStatus, setSelectedStatus] = useState<"All" | ProgramState>("All");
-
-  // Reward / Points Range State
+  const [selectedAsset, setSelectedAsset] =
+    useState<ProgramAssetFilter>("All");
+  const [selectedSeverity, setSelectedSeverity] =
+    useState<ProgramSeverityFilter>("All");
+  const [selectedIndustry, setSelectedIndustry] =
+    useState<ProgramIndustryFilter>("All");
+  const [country, setCountry] = useState("");
   const [minReward, setMinReward] = useState("");
   const [maxReward, setMaxReward] = useState("");
+  const [sort, setSort] = useState<ProgramSort>("newest");
 
-  const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(12);
 
-  const handleSearchSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    setActiveSearch(searchTerm.trim());
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
     setCurrentPage(1);
   };
 
   const handleClearSearch = () => {
     setSearchTerm("");
-    setActiveSearch("");
     setCurrentPage(1);
   };
 
-  const handleQuickFilterClick = (filterKey: string) => {
-    setQuickFilter(filterKey);
-    setSelectedType("All");
-    setCurrentPage(1);
-  };
-
-  const handleTypeChange = (type: ProgramType | "All") => {
+  const handleTypeChange = (type: ProgramType) => {
     setSelectedType(type);
-    setQuickFilter("all");
     setCurrentPage(1);
   };
 
-  const handleResetFilters = () => {
-    setSearchTerm("");
-    setActiveSearch("");
-    setQuickFilter("all");
-    setSelectedType("All");
-    setSelectedCategory("All");
-    setSelectedStatus("All");
+  const handleAssetChange = (asset: ProgramAssetFilter) => {
+    setSelectedAsset(asset);
+    setCurrentPage(1);
+  };
+
+  const handleSortChange = (value: ProgramSort) => {
+    setSort(value);
+    setCurrentPage(1);
+  };
+
+  const handleSeverityChange = (severity: ProgramSeverityFilter) => {
+    setSelectedSeverity(severity);
+    setCurrentPage(1);
+  };
+
+  const handleIndustryChange = (industry: ProgramIndustryFilter) => {
+    setSelectedIndustry(industry);
+    setCurrentPage(1);
+  };
+
+  const handleCountryChange = (value: string) => {
+    setCountry(value);
+    setCurrentPage(1);
+  };
+
+  const handleResetExploreFilters = () => {
+    setSelectedAsset("All");
+    setSelectedSeverity("All");
+    setSelectedIndustry("All");
+    setCountry("");
     setMinReward("");
     setMaxReward("");
     setCurrentPage(1);
   };
 
-  const isFilterActive =
-    activeSearch !== "" ||
-    quickFilter !== "all" ||
-    selectedType !== "All" ||
-    selectedCategory !== "All" ||
-    selectedStatus !== "All" ||
-    minReward !== "" ||
-    maxReward !== "";
-
-  // Map UI filter selections ("Bounty", "Response") to backend API params ("BOUNTY", "RESPONSE")
-  const getBackendEngagementType = (type: ProgramType): string | undefined => {
-    if (type === "Bounty") return "BOUNTY";
-    if (type === "Response") return "RESPONSE";
-    return undefined;
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setSelectedType("All");
+    setSelectedAsset("All");
+    setSelectedSeverity("All");
+    setSelectedIndustry("All");
+    setCountry("");
+    setMinReward("");
+    setMaxReward("");
+    setSort("newest");
+    setCurrentPage(1);
   };
 
-  // Build params matching GetProgramsParams interface
-  const queryProps: GetProgramsParams = {
-    page: currentPage,
-    size: rowsPerPage,
-    search: activeSearch || undefined,
-    engagementType: getBackendEngagementType(selectedType),
-    state: selectedStatus !== "All" ? selectedStatus : undefined,
-  };
+  const activeExploreFilterCount = [
+    selectedAsset !== "All",
+    selectedSeverity !== "All",
+    selectedIndustry !== "All",
+    country.trim() !== "",
+    minReward !== "" || maxReward !== "",
+  ].filter(Boolean).length;
 
   return {
     searchTerm,
-    setSearchTerm,
-    quickFilter,
-    setQuickFilter,
     selectedType,
-    setSelectedType,
-    selectedCategory,
-    setSelectedCategory,
-    selectedStatus,
-    setSelectedStatus,
+    selectedAsset,
+    selectedSeverity,
+    selectedIndustry,
+    country,
     minReward,
     setMinReward,
     maxReward,
     setMaxReward,
-    showMoreFilters,
-    setShowMoreFilters,
+    sort,
     currentPage,
     setCurrentPage,
     rowsPerPage,
     setRowsPerPage,
-    handleSearchSubmit,
+    handleSearchChange,
     handleClearSearch,
-    handleQuickFilterClick,
     handleTypeChange,
+    handleAssetChange,
+    handleSeverityChange,
+    handleIndustryChange,
+    handleCountryChange,
+    handleResetExploreFilters,
+    handleSortChange,
     handleResetFilters,
-    isFilterActive,
-    queryProps,
+    activeExploreFilterCount,
   };
 }

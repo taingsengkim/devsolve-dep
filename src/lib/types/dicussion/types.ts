@@ -30,6 +30,8 @@ export interface DiscussionPost {
     reputation?: number;
   };
   createdAt: string;
+  /** Raw API timestamp used for stable cross-resource sorting. */
+  sortTimestamp?: string;
   isBookmarked?: boolean;
   isUpvoted?: boolean;
 }
@@ -44,6 +46,8 @@ export type TopicName = TopicFilter | (string & {});
 export interface TopicCount {
   name: TopicName;
   count: number;
+  problemCategoryId?: string;
+  showcaseCategoryId?: string;
 }
 
 export interface CommentItem {

@@ -6,11 +6,9 @@ import { motion } from "motion/react";
 import { ChevronRight } from "lucide-react";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { CreateShowcaseForm } from "@/components/showcases/create/CreateShowcaseForm";
-import SectionBackdrop, { useInk } from "@/components/landing/SectionBackdrop";
+import SectionBackdrop from "@/components/landing/SectionBackdrop";
 
 export default function PublicCreateShowcasePage() {
-  const ink = useInk();
-
   return (
     /* The landing page's section shell — grid paper, drifting aurora, and the
        same slate ground the showcase section sits on. Motes and scan beams are
@@ -19,7 +17,7 @@ export default function PublicCreateShowcasePage() {
        Deliberately no `overflow-hidden`, unlike the landing sections: it would
        make this element the scroll container and the form's sticky sidebar
        would scroll away with the page. `SectionBackdrop` clips itself. */
-    <section className="relative min-h-[calc(100dvh-var(--navbar-height))] bg-slate-50 py-10 sm:py-14 dark:bg-neutral-950">
+    <section className="relative min-h-[calc(100dvh-var(--navbar-height))] bg-background py-10 text-foreground sm:py-14">
       <SectionBackdrop seed={5} gridSize={88} particles={false} beams={false} />
 
       <div className="relative mx-auto w-full max-w-7xl px-6 sm:px-12">
@@ -27,27 +25,27 @@ export default function PublicCreateShowcasePage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="border-b border-slate-200 pb-8 dark:border-neutral-800"
+          className="border-b border-border pb-8"
         >
           <nav
             aria-label="Breadcrumb"
-            className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-neutral-400"
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground"
           >
             <Link
               href="/community"
-              className="transition-colors hover:text-slate-900 dark:hover:text-neutral-200"
+              className="transition-colors hover:text-foreground"
             >
               Community
             </Link>
-            <ChevronRight className="size-3.5 text-slate-300 dark:text-neutral-600" />
+            <ChevronRight className="size-3.5 text-muted-foreground/60" />
             <Link
               href="/community/create"
-              className="transition-colors hover:text-slate-900 dark:hover:text-neutral-200"
+              className="transition-colors hover:text-foreground"
             >
               New post
             </Link>
-            <ChevronRight className="size-3.5 text-slate-300 dark:text-neutral-600" />
-            <span className="text-slate-900 dark:text-neutral-200">Showcase</span>
+            <ChevronRight className="size-3.5 text-muted-foreground/60" />
+            <span className="text-foreground">Showcase</span>
           </nav>
 
           <div className="mt-6 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
@@ -55,25 +53,19 @@ export default function PublicCreateShowcasePage() {
               {/* The landing header motif: a hairline rule, an eyebrow, then
                   the headline closed with a blue full stop. */}
               <div className="mb-4 flex items-center gap-2.5">
-                <span className="h-px w-8" style={{ backgroundColor: ink }} />
-                <span
-                  className="text-xs font-bold uppercase tracking-[0.22em]"
-                  style={{ color: ink }}
-                >
+                <span className="h-px w-8 bg-primary" />
+                <span className="text-sm font-bold uppercase tracking-[0.22em] text-primary">
                   New showcase
                 </span>
               </div>
 
-              <h1
-                className="text-3xl font-bold tracking-[-0.04em] sm:text-4xl lg:text-5xl"
-                style={{ color: ink }}
-              >
+              <h1 className="text-3xl font-bold tracking-[-0.04em] text-foreground sm:text-4xl lg:text-5xl">
                 Show what you built
-                <span className="text-[#2563EB] dark:text-blue-400">.</span>
+                <span className="text-primary">.</span>
               </h1>
             </div>
 
-            <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
+            <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
               Publish the project alongside the build guide that made it work.
               Steps, code and diagrams stay together, so anyone landing on it can
               follow the whole thing end to end.

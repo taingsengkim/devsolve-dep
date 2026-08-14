@@ -154,10 +154,10 @@ function CategoryFormBody({ category, onClose }: CategoryFormBodyProps) {
   return (
     <>
       <DialogHeader>
-        <DialogTitle className="text-xl font-bold tracking-tight">
+        <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
           {isEdit ? "Edit category" : "New category"}
         </DialogTitle>
-        <DialogDescription className="text-sm text-slate-500">
+        <DialogDescription className="text-sm text-muted-foreground">
           {isEdit
             ? "Changes apply everywhere this category is already used."
             : "Categories group problems and showcases on the public index."}
@@ -172,7 +172,7 @@ function CategoryFormBody({ category, onClose }: CategoryFormBodyProps) {
           <div className="space-y-2">
             <label
               htmlFor="category-name"
-              className="text-sm font-semibold text-slate-900 dark:text-slate-100"
+              className="text-sm font-semibold text-foreground"
             >
               Name
             </label>
@@ -181,10 +181,10 @@ function CategoryFormBody({ category, onClose }: CategoryFormBodyProps) {
               maxLength={50}
               placeholder="e.g. API Security"
               {...register("name")}
-              className="h-11 rounded-xl border-slate-300 bg-white text-base dark:border-slate-700"
+              className="h-11 rounded-xl border-border bg-background text-foreground text-sm focus-visible:ring-2 focus-visible:ring-primary"
             />
             {errors.name?.message && (
-              <p className="text-sm font-medium text-rose-600">
+              <p className="text-sm font-medium text-rose-600 dark:text-rose-400">
                 {errors.name.message}
               </p>
             )}
@@ -193,7 +193,7 @@ function CategoryFormBody({ category, onClose }: CategoryFormBodyProps) {
           <div className="space-y-2">
             <label
               htmlFor="category-scope"
-              className="text-sm font-semibold text-slate-900 dark:text-slate-100"
+              className="text-sm font-semibold text-foreground"
             >
               Scope
             </label>
@@ -207,16 +207,16 @@ function CategoryFormBody({ category, onClose }: CategoryFormBodyProps) {
                 >
                   <SelectTrigger
                     id="category-scope"
-                    className="h-11 w-full rounded-xl border-slate-300 bg-white text-base dark:border-slate-700"
+                    className="h-11 w-full rounded-xl border-border bg-background text-foreground text-sm focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <SelectValue placeholder="Scope" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-slate-200 bg-white p-1">
+                  <SelectContent className="rounded-xl border-border bg-popover text-popover-foreground p-1 shadow-lg">
                     {CATEGORY_SCOPES.map((scope) => (
                       <SelectItem
                         key={scope}
                         value={scope}
-                        className="cursor-pointer rounded-lg py-2 text-base font-medium capitalize"
+                        className="cursor-pointer rounded-lg py-2 text-sm font-medium capitalize hover:bg-muted"
                       >
                         {scope.toLowerCase()}
                       </SelectItem>
@@ -226,7 +226,7 @@ function CategoryFormBody({ category, onClose }: CategoryFormBodyProps) {
               )}
             />
             {errors.scope?.message && (
-              <p className="text-sm font-medium text-rose-600">
+              <p className="text-sm font-medium text-rose-600 dark:text-rose-400">
                 {errors.scope.message}
               </p>
             )}
@@ -236,7 +236,7 @@ function CategoryFormBody({ category, onClose }: CategoryFormBodyProps) {
         <div className="space-y-2">
           <label
             htmlFor="category-description"
-            className="text-sm font-semibold text-slate-900 dark:text-slate-100"
+            className="text-sm font-semibold text-foreground"
           >
             Description
           </label>
@@ -246,10 +246,10 @@ function CategoryFormBody({ category, onClose }: CategoryFormBodyProps) {
             maxLength={500}
             placeholder="What belongs in this category?"
             {...register("description")}
-            className="rounded-xl border-slate-300 bg-white text-base dark:border-slate-700"
+            className="rounded-xl border-border bg-background text-foreground text-sm focus-visible:ring-2 focus-visible:ring-primary"
           />
           {errors.description?.message && (
-            <p className="text-sm font-medium text-rose-600">
+            <p className="text-sm font-medium text-rose-600 dark:text-rose-400">
               {errors.description.message}
             </p>
           )}
@@ -265,7 +265,7 @@ function CategoryFormBody({ category, onClose }: CategoryFormBodyProps) {
           <div className="space-y-2">
             <label
               htmlFor="category-sort"
-              className="text-sm font-semibold text-slate-900 dark:text-slate-100"
+              className="text-sm font-semibold text-foreground"
             >
               Sort order
             </label>
@@ -274,10 +274,10 @@ function CategoryFormBody({ category, onClose }: CategoryFormBodyProps) {
               type="number"
               min={0}
               {...register("sortOrder")}
-              className="h-11 rounded-xl border-slate-300 bg-white text-base dark:border-slate-700"
+              className="h-11 rounded-xl border-border bg-background text-foreground text-sm focus-visible:ring-2 focus-visible:ring-primary"
             />
             {errors.sortOrder?.message && (
-              <p className="text-sm font-medium text-rose-600">
+              <p className="text-sm font-medium text-rose-600 dark:text-rose-400">
                 {errors.sortOrder.message}
               </p>
             )}
@@ -288,12 +288,12 @@ function CategoryFormBody({ category, onClose }: CategoryFormBodyProps) {
           control={control}
           name="isActive"
           render={({ field }) => (
-            <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/40 p-4">
               <div>
-                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                <p className="text-sm font-semibold text-foreground">
                   Active
                 </p>
-                <p className="text-sm text-slate-500">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Inactive categories stay on existing posts but disappear from
                   the pickers.
                 </p>
@@ -311,14 +311,14 @@ function CategoryFormBody({ category, onClose }: CategoryFormBodyProps) {
             type="button"
             variant="outline"
             onClick={onClose}
-            className="h-11 rounded-xl border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900"
+            className="h-11 rounded-xl border-border bg-card text-sm font-semibold text-foreground hover:bg-accent cursor-pointer"
           >
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={saving}
-            className="h-11 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white hover:bg-blue-700"
+            className="h-11 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground hover:bg-primary/90 cursor-pointer"
           >
             {saving && <Loader2 className="size-4 animate-spin" />}
             {isEdit ? "Save changes" : "Create category"}

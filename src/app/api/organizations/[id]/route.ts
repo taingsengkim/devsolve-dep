@@ -33,8 +33,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const token = await bearerTokenFor(request);
-  if (!token) return unauthorized();
-
   const { id } = await params;
   if (!id) {
     return NextResponse.json(
@@ -43,13 +41,17 @@ export async function GET(
     );
   }
 
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   try {
     const upstream = await fetch(`${BACKEND_API_URL}/organizations/${id}`, {
       method: "GET",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers,
       cache: "no-store",
     });
 

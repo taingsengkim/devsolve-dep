@@ -137,6 +137,7 @@ Shadow-as-border: box-shadow 0px 0px 0px 1px rgba(0,0,0,0.08) substituindo borda
 - No oversaturated accent colors (saturation cap: 80%)
 - No 3-column equal-width feature layouts — use zig-zag or asymmetric grid
 - No `h-screen` — use `min-h-[100dvh]`
+- No hardcoded hex colors or slate shades for themes (`bg-[#0b0f17]`, `bg-[#131926]`, `border-slate-800`, `text-slate-300`) — ALWAYS use dynamic theme tokens (`bg-background`, `bg-card`, `bg-muted`, `text-foreground`, `text-muted-foreground`, `border-border`, `ring-1 ring-foreground/5 dark:ring-foreground/10`)
 - No AI copywriting clichés: "Elevate", "Seamless", "Unleash", "Next-Gen"
 - No broken external image links — use picsum.photos or inline SVG
 - No generic lorem ipsum in demos

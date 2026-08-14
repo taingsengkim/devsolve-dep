@@ -866,6 +866,32 @@
         }
       }
     },
+    "/api/v1/recognitions": {
+      "post": {
+        "tags": ["recognition-controller"],
+        "operationId": "awardRecognition",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRecognitionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/RecognitionResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/programs/{programId}/reports": {
       "get": {
         "tags": ["report-controller"],
@@ -956,6 +982,30 @@
             "content": {
               "*/*": {
                 "schema": { "$ref": "#/components/schemas/ReportResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/programs/{id}/restore": {
+      "post": {
+        "tags": ["program-controller"],
+        "operationId": "restoreProgram",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProgramResponseDto" }
               }
             }
           }
@@ -1558,6 +1608,22 @@
             "content": {
               "*/*": {
                 "schema": { "$ref": "#/components/schemas/CategoryResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/social/sync": {
+      "post": {
+        "tags": ["auth-controller"],
+        "operationId": "syncSocialAccount",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/SocialSyncResponse" }
               }
             }
           }
@@ -2222,7 +2288,7 @@
       },
       "patch": {
         "tags": ["problem-controller"],
-        "operationId": "updateDraft",
+        "operationId": "update_2",
         "parameters": [
           {
             "name": "id",
@@ -2445,7 +2511,7 @@
       },
       "patch": {
         "tags": ["comment-controller"],
-        "operationId": "update_2",
+        "operationId": "update_3",
         "parameters": [
           {
             "name": "id",
@@ -3075,6 +3141,107 @@
         }
       }
     },
+    "/api/v1/user-profiles/{userId}/reputation": {
+      "get": {
+        "tags": ["user-controller"],
+        "operationId": "getReputation",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "type": "integer", "format": "int32" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user-profiles/{userId}/reports": {
+      "get": {
+        "tags": ["user-portfolio-controller"],
+        "operationId": "getReports",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/PageReportResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user-profiles/{userId}/recognitions": {
+      "get": {
+        "tags": ["recognition-controller"],
+        "operationId": "getRecognitionsByUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageRecognitionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/user-profiles/{userId}/problems": {
       "get": {
         "tags": ["user-portfolio-controller"],
@@ -3116,6 +3283,38 @@
             "content": {
               "*/*": {
                 "schema": { "$ref": "#/components/schemas/PageProblemResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user-profiles/{userId}/hacktivity": {
+      "get": {
+        "tags": ["hacktivity-controller"],
+        "operationId": "getUserHacktivity",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageHacktivityResponse"
+                }
               }
             }
           }
@@ -3261,6 +3460,49 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/PageShowCasesSummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reputation/leaderboard": {
+      "get": {
+        "tags": ["leaderboard-controller"],
+        "operationId": "getLeaderboard",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10,
+              "maximum": 100,
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLeaderboardResponse"
                 }
               }
             }
@@ -3626,6 +3868,38 @@
         }
       }
     },
+    "/api/v1/organizations/{orgId}/hacktivity": {
+      "get": {
+        "tags": ["hacktivity-controller"],
+        "operationId": "getOrganizationHacktivity",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageHacktivityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/organizations/{id}": {
       "get": {
         "tags": ["organization-controller"],
@@ -3645,6 +3919,35 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/OrganizationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/organizations/{id}/programs": {
+      "get": {
+        "tags": ["organization-controller"],
+        "operationId": "getOrganizationPrograms",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProgramSummaryResponseDto"
+                  }
                 }
               }
             }
@@ -3720,6 +4023,51 @@
         }
       }
     },
+    "/api/v1/organizations/me/programs/deleted": {
+      "get": {
+        "tags": ["program-controller"],
+        "operationId": "getMyDeletedPrograms",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "minimum": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "type": "integer", "default": 20, "minimum": 1 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "default": ["deletedAt,DESC"],
+              "items": { "type": "string" }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageProgramManagementSummaryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/organizations/me/members": {
       "get": {
         "tags": ["organization-controller"],
@@ -3732,6 +4080,32 @@
                 "schema": {
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/MemberResponse" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/organizations/me/hacktivity": {
+      "get": {
+        "tags": ["hacktivity-controller"],
+        "operationId": "getMyOrganizationHacktivity",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageHacktivityResponse"
                 }
               }
             }
@@ -3799,6 +4173,74 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/UnreadNotificationCountResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/stream": {
+      "get": {
+        "tags": ["sse-notification-controller"],
+        "operationId": "stream",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/event-stream": {
+                "schema": { "$ref": "#/components/schemas/SseEmitter" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hacktivity": {
+      "get": {
+        "tags": ["hacktivity-controller"],
+        "operationId": "getHacktivity",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageHacktivityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hacktivity/mine": {
+      "get": {
+        "tags": ["hacktivity-controller"],
+        "operationId": "getMyHacktivity",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageHacktivityResponse"
                 }
               }
             }
@@ -5767,6 +6209,36 @@
           "name": { "type": "string" }
         }
       },
+      "CreateRecognitionRequest": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string", "format": "uuid" },
+          "programId": { "type": "string", "format": "uuid" },
+          "reportId": { "type": "string", "format": "uuid" },
+          "title": { "type": "string", "maxLength": 255, "minLength": 0 },
+          "description": { "type": "string", "maxLength": 5000, "minLength": 0 }
+        },
+        "required": ["programId", "reportId", "title", "userId"]
+      },
+      "RecognitionResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "userId": { "type": "string", "format": "uuid" },
+          "programId": { "type": "string", "format": "uuid" },
+          "reportId": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "awardedBy": { "type": "string", "format": "uuid" },
+          "awardedAt": { "type": "string", "format": "date-time" },
+          "severity": {
+            "type": "string",
+            "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
       "CreateReportRequest": {
         "type": "object",
         "properties": {
@@ -5781,6 +6253,109 @@
           "assetId": { "type": "string", "format": "uuid" }
         },
         "required": ["reportedSeverity", "title", "vulnerabilityInformation"]
+      },
+      "ProgramAssetResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "assetType": {
+            "type": "string",
+            "enum": [
+              "URL",
+              "WILDCARD",
+              "IP_RANGE",
+              "MOBILE_APP",
+              "API",
+              "SOURCE_CODE",
+              "HARDWARE",
+              "OTHER"
+            ]
+          },
+          "identifier": { "type": "string" },
+          "description": { "type": "string" },
+          "isInScope": { "type": "boolean" },
+          "maxSeverity": {
+            "type": "string",
+            "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+          }
+        }
+      },
+      "ProgramGuidelinesDto": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 0
+          },
+          "rules": {
+            "type": "array",
+            "items": { "type": "string", "maxLength": 500, "minLength": 0 },
+            "maxItems": 50,
+            "minItems": 0
+          }
+        },
+        "required": ["description", "rules"]
+      },
+      "ProgramResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "organizationId": { "type": "string", "format": "uuid" },
+          "handle": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "engagementType": {
+            "type": "string",
+            "enum": ["BOUNTY", "RESPONSE"]
+          },
+          "state": {
+            "type": "string",
+            "enum": ["DRAFT", "ACTIVE", "PAUSED", "CLOSED"]
+          },
+          "submissionState": {
+            "type": "string",
+            "enum": ["PENDING_REVIEW", "APPROVED", "REJECTED"]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["PUBLIC", "PRIVATE", "INVITE_ONLY"]
+          },
+          "policy": { "type": "string" },
+          "proofOfConceptRequirements": {
+            "$ref": "#/components/schemas/ProgramGuidelinesDto"
+          },
+          "rulesOfEngagement": {
+            "$ref": "#/components/schemas/ProgramGuidelinesDto"
+          },
+          "exclusions": { "$ref": "#/components/schemas/ProgramGuidelinesDto" },
+          "offersBounties": { "type": "boolean" },
+          "minimumBounty": { "type": "number" },
+          "maximumBounty": { "type": "number" },
+          "assets": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProgramAssetResponseDto" }
+          },
+          "rewards": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProgramRewardResponseDto" }
+          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ProgramRewardResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "severity": {
+            "type": "string",
+            "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+          },
+          "minAmount": { "type": "number" },
+          "maxAmount": { "type": "number" },
+          "points": { "type": "integer", "format": "int32" }
+        }
       },
       "CreateProblemRequest": {
         "type": "object",
@@ -6071,23 +6646,6 @@
         },
         "required": ["assetType", "identifier", "isInScope"]
       },
-      "ProgramGuidelinesDto": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string",
-            "maxLength": 2000,
-            "minLength": 0
-          },
-          "rules": {
-            "type": "array",
-            "items": { "type": "string", "maxLength": 500, "minLength": 0 },
-            "maxItems": 50,
-            "minItems": 0
-          }
-        },
-        "required": ["description", "rules"]
-      },
       "ProgramRequestDto": {
         "type": "object",
         "properties": {
@@ -6107,11 +6665,13 @@
             "type": "string",
             "enum": ["PUBLIC", "PRIVATE", "INVITE_ONLY"]
           },
+          "state": {
+            "type": "string",
+            "enum": ["DRAFT", "ACTIVE", "PAUSED", "CLOSED"]
+          },
           "policy": { "type": "string", "minLength": 1 },
           "proofOfConceptRequirements": {
-            "type": "string",
-            "maxLength": 10000,
-            "minLength": 0
+            "$ref": "#/components/schemas/ProgramGuidelinesDto"
           },
           "rulesOfEngagement": {
             "$ref": "#/components/schemas/ProgramGuidelinesDto"
@@ -6154,90 +6714,6 @@
           "points": { "type": "integer", "format": "int32" }
         },
         "required": ["severity"]
-      },
-      "ProgramAssetResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "assetType": {
-            "type": "string",
-            "enum": [
-              "URL",
-              "WILDCARD",
-              "IP_RANGE",
-              "MOBILE_APP",
-              "API",
-              "SOURCE_CODE",
-              "HARDWARE",
-              "OTHER"
-            ]
-          },
-          "identifier": { "type": "string" },
-          "description": { "type": "string" },
-          "isInScope": { "type": "boolean" },
-          "maxSeverity": {
-            "type": "string",
-            "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
-          }
-        }
-      },
-      "ProgramResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "organizationId": { "type": "string", "format": "uuid" },
-          "handle": { "type": "string" },
-          "name": { "type": "string" },
-          "description": { "type": "string" },
-          "engagementType": {
-            "type": "string",
-            "enum": ["BOUNTY", "RESPONSE"]
-          },
-          "state": {
-            "type": "string",
-            "enum": ["DRAFT", "ACTIVE", "PAUSED", "CLOSED"]
-          },
-          "submissionState": {
-            "type": "string",
-            "enum": ["PENDING_REVIEW", "APPROVED", "REJECTED"]
-          },
-          "visibility": {
-            "type": "string",
-            "enum": ["PUBLIC", "PRIVATE", "INVITE_ONLY"]
-          },
-          "policy": { "type": "string" },
-          "proofOfConceptRequirements": { "type": "string" },
-          "rulesOfEngagement": {
-            "$ref": "#/components/schemas/ProgramGuidelinesDto"
-          },
-          "exclusions": { "$ref": "#/components/schemas/ProgramGuidelinesDto" },
-          "offersBounties": { "type": "boolean" },
-          "minimumBounty": { "type": "number" },
-          "maximumBounty": { "type": "number" },
-          "assets": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ProgramAssetResponseDto" }
-          },
-          "rewards": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ProgramRewardResponseDto" }
-          },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
-        }
-      },
-      "ProgramRewardResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "severity": {
-            "type": "string",
-            "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
-          },
-          "minAmount": { "type": "number" },
-          "maxAmount": { "type": "number" },
-          "points": { "type": "integer", "format": "int32" }
-        }
       },
       "InviteMemberRequest": {
         "type": "object",
@@ -6395,6 +6871,13 @@
           "isActive": { "type": "boolean" }
         },
         "required": ["name", "scope"]
+      },
+      "SocialSyncResponse": {
+        "type": "object",
+        "properties": {
+          "created": { "type": "boolean" },
+          "profile": { "$ref": "#/components/schemas/UserProfileResponse" }
+        }
       },
       "RegisterRequest": {
         "type": "object",
@@ -6674,10 +7157,7 @@
           },
           "policy": { "type": "string", "pattern": "(?s).*\\S.*" },
           "proofOfConceptRequirements": {
-            "type": "string",
-            "maxLength": 10000,
-            "minLength": 0,
-            "pattern": "(?s).*\\S.*"
+            "$ref": "#/components/schemas/ProgramGuidelinesDto"
           },
           "rulesOfEngagement": {
             "$ref": "#/components/schemas/ProgramGuidelinesDto"
@@ -7001,11 +7481,11 @@
             "items": { "$ref": "#/components/schemas/VoteResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7041,11 +7521,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7080,11 +7560,11 @@
             "items": { "$ref": "#/components/schemas/SolutionResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7099,11 +7579,11 @@
             "items": { "$ref": "#/components/schemas/ShowCasesSummaryResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7136,6 +7616,52 @@
           "updatedAt": { "type": "string", "format": "date-time" }
         }
       },
+      "PageReportResponse": {
+        "type": "object",
+        "properties": {
+          "totalElements": { "type": "integer", "format": "int64" },
+          "totalPages": { "type": "integer", "format": "int32" },
+          "size": { "type": "integer", "format": "int32" },
+          "content": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ReportResponse" }
+          },
+          "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "empty": { "type": "boolean" }
+        }
+      },
+      "Pageable": {
+        "type": "object",
+        "properties": {
+          "page": { "type": "integer", "format": "int32", "minimum": 0 },
+          "size": { "type": "integer", "format": "int32", "minimum": 1 },
+          "sort": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "PageRecognitionResponse": {
+        "type": "object",
+        "properties": {
+          "totalElements": { "type": "integer", "format": "int64" },
+          "totalPages": { "type": "integer", "format": "int32" },
+          "size": { "type": "integer", "format": "int32" },
+          "content": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RecognitionResponse" }
+          },
+          "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "empty": { "type": "boolean" }
+        }
+      },
       "PageProblemResponse": {
         "type": "object",
         "properties": {
@@ -7147,12 +7673,81 @@
             "items": { "$ref": "#/components/schemas/ProblemResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
+          "empty": { "type": "boolean" }
+        }
+      },
+      "HacktivityResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "user": { "$ref": "#/components/schemas/User" },
+          "organization": { "$ref": "#/components/schemas/Organization" },
+          "report": { "$ref": "#/components/schemas/Report" },
+          "recognition": { "$ref": "#/components/schemas/Recognition" },
+          "program": { "$ref": "#/components/schemas/Program" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Organization": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" }
+        }
+      },
+      "PageHacktivityResponse": {
+        "type": "object",
+        "properties": {
+          "totalElements": { "type": "integer", "format": "int64" },
+          "totalPages": { "type": "integer", "format": "int32" },
+          "size": { "type": "integer", "format": "int32" },
+          "content": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/HacktivityResponse" }
+          },
+          "number": { "type": "integer", "format": "int32" },
           "first": { "type": "boolean" },
           "last": { "type": "boolean" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
           "empty": { "type": "boolean" }
+        }
+      },
+      "Program": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" }
+        }
+      },
+      "Recognition": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      },
+      "Report": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "severity": { "type": "string" }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "username": { "type": "string" },
+          "avatarUrl": { "type": "string" }
         }
       },
       "PageShowCasesResponse": {
@@ -7166,11 +7761,11 @@
             "items": { "$ref": "#/components/schemas/ShowCasesResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7211,7 +7806,22 @@
           }
         }
       },
-      "PageReportResponse": {
+      "LeaderboardResponse": {
+        "type": "object",
+        "properties": {
+          "rank": { "type": "integer", "format": "int32" },
+          "id": { "type": "string", "format": "uuid" },
+          "fullName": { "type": "string" },
+          "avatarUrl": { "type": "string" },
+          "country": { "type": "string" },
+          "reputation": { "type": "integer", "format": "int32" },
+          "totalReports": { "type": "integer", "format": "int32" },
+          "validReports": { "type": "integer", "format": "int32" },
+          "criticalReports": { "type": "integer", "format": "int32" },
+          "recognitionCount": { "type": "integer", "format": "int32" }
+        }
+      },
+      "PageLeaderboardResponse": {
         "type": "object",
         "properties": {
           "totalElements": { "type": "integer", "format": "int64" },
@@ -7219,14 +7829,14 @@
           "size": { "type": "integer", "format": "int32" },
           "content": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ReportResponse" }
+            "items": { "$ref": "#/components/schemas/LeaderboardResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7243,12 +7853,37 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
+        }
+      },
+      "ProgramOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "logoUrl": { "type": "string" },
+          "websiteUrl": { "type": "string" },
+          "description": { "type": "string" },
+          "industry": {
+            "type": "string",
+            "enum": [
+              "TECHNOLOGY",
+              "FINANCE",
+              "HEALTHCARE",
+              "ECOMMERCE",
+              "GOVERNMENT",
+              "EDUCATION",
+              "OTHER"
+            ]
+          },
+          "country": { "type": "string" },
+          "verifiedAt": { "type": "string", "format": "date-time" }
         }
       },
       "ProgramSummaryResponseDto": {
@@ -7257,6 +7892,9 @@
           "id": { "type": "string", "format": "uuid" },
           "organizationId": { "type": "string", "format": "uuid" },
           "organizationName": { "type": "string" },
+          "organization": {
+            "$ref": "#/components/schemas/ProgramOrganizationDto"
+          },
           "handle": { "type": "string" },
           "name": { "type": "string" },
           "description": { "type": "string" },
@@ -7280,6 +7918,9 @@
           "id": { "type": "string", "format": "uuid" },
           "organizationId": { "type": "string", "format": "uuid" },
           "organizationName": { "type": "string" },
+          "organization": {
+            "$ref": "#/components/schemas/ProgramOrganizationDto"
+          },
           "handle": { "type": "string" },
           "name": { "type": "string" },
           "description": { "type": "string" },
@@ -7300,7 +7941,9 @@
             "enum": ["PUBLIC", "PRIVATE", "INVITE_ONLY"]
           },
           "policy": { "type": "string" },
-          "proofOfConceptRequirements": { "type": "string" },
+          "proofOfConceptRequirements": {
+            "$ref": "#/components/schemas/ProgramGuidelinesDto"
+          },
           "rulesOfEngagement": {
             "$ref": "#/components/schemas/ProgramGuidelinesDto"
           },
@@ -7335,11 +7978,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7389,11 +8032,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7436,7 +8079,8 @@
             "items": { "$ref": "#/components/schemas/ProgramAssetResponseDto" }
           },
           "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "deletedAt": { "type": "string", "format": "date-time" }
         }
       },
       "PageNotificationResponse": {
@@ -7450,11 +8094,11 @@
             "items": { "$ref": "#/components/schemas/NotificationResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7463,6 +8107,10 @@
         "properties": {
           "unreadCount": { "type": "integer", "format": "int64" }
         }
+      },
+      "SseEmitter": {
+        "type": "object",
+        "properties": { "timeout": { "type": "integer", "format": "int64" } }
       },
       "FollowSummaryResponse": {
         "type": "object",
@@ -7496,11 +8144,11 @@
             "items": { "$ref": "#/components/schemas/FollowerResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7515,11 +8163,11 @@
             "items": { "$ref": "#/components/schemas/FollowResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7534,11 +8182,11 @@
             "items": { "$ref": "#/components/schemas/FlagResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7553,11 +8201,11 @@
             "items": { "$ref": "#/components/schemas/CommentResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7583,11 +8231,11 @@
             "items": { "$ref": "#/components/schemas/BookmarkResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7623,11 +8271,11 @@
             "items": { "$ref": "#/components/schemas/AdminUserSummaryResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7644,11 +8292,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7695,11 +8343,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7844,11 +8492,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7919,11 +8567,11 @@
             }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       },
@@ -7938,11 +8586,11 @@
             "items": { "$ref": "#/components/schemas/ModerationActionResponse" }
           },
           "number": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
           "numberOfElements": { "type": "integer", "format": "int32" },
           "pageable": { "$ref": "#/components/schemas/PageableObject" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
-          "first": { "type": "boolean" },
-          "last": { "type": "boolean" },
           "empty": { "type": "boolean" }
         }
       }

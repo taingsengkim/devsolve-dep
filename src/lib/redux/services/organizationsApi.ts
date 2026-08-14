@@ -1,4 +1,5 @@
 import { proxyApi } from "./proxyApi";
+import { PaginatedResponse, Program } from "@/lib/types/programs/types";
 
 export type OrganizationStatus =
   | "PENDING"
@@ -256,6 +257,42 @@ export const organizationsApi = proxyApi.injectEndpoints({
       }),
       providesTags: (_result, _error, slug) => [{ type: "Organization", id: slug }],
     }),
+    getOrganizationProgramsById: builder.query<
+      PaginatedResponse<Program> | Program[],
+      {
+        id: string;
+        page?: number;
+        size?: number;
+        search?: string;
+        engagementType?: string;
+        state?: string;
+      }
+    >({
+      query: ({ id, ...params }) => {
+        const queryParams = new URLSearchParams();
+        if (params.page !== undefined) {
+          queryParams.append("page", (params.page - 1).toString());
+        }
+        if (params.size) {
+          queryParams.append("size", params.size.toString());
+        }
+        if (params.search && params.search.trim()) {
+          queryParams.append("search", params.search.trim());
+        }
+        if (params.engagementType && params.engagementType !== "All") {
+          queryParams.append("engagementType", params.engagementType);
+        }
+        if (params.state && params.state !== "All") {
+          queryParams.append("state", params.state);
+        }
+
+        const queryString = queryParams.toString();
+        return queryString
+          ? `/organizations/${id}/programs?${queryString}`
+          : `/organizations/${id}/programs`;
+      },
+      providesTags: ["Program"],
+    }),
     getOrganizationMembers: builder.query<
       OrganizationInvitationMember[],
       void
@@ -343,6 +380,7 @@ export const {
   useResubmitOrganizationMutation,
   useGetOrganizationByIdQuery,
   useGetOrganizationBySlugQuery,
+  useGetOrganizationProgramsByIdQuery,
   useGetOrganizationMembersQuery,
   useInviteOrganizationMemberMutation,
   useAcceptOrganizationInvitationMutation,

@@ -1,17 +1,14 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQueryWithReauth } from "./baseApi";
 
 /**
- * Endpoints that go through the Next route handlers under `src/app/api/*`
- * rather than straight to the backend origin.
- *
- * `baseApi` cannot be reused for these: its `baseUrl` is the backend, so a
- * relative `/categories` would be joined onto it and skip the proxy entirely.
- * Nothing here injects a bearer token — the route handler reads the session
- * cookie and attaches the JWT server-side, which is the whole point.
+ * Endpoints that go through the Next route handlers under `src/app/api/*`.
+ * Uses `baseQueryWithReauth` to dynamically inject the Keycloak JWT Bearer
+ * token via `getAccessToken()` and replay on 401.
  */
 export const proxyApi = createApi({
   reducerPath: "proxyApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
+  baseQuery: baseQueryWithReauth,
   tagTypes: [
     "Category",
     "Program",

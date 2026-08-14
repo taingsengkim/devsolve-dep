@@ -5,6 +5,7 @@ import {
   GetProgramsParams,
   ProgramDetail,
   CreateProgramRequest,
+  UpdateProgramRequest,
 } from "@/lib/types/programs/types";
 import { PageProgramManagementSummaryResponseDto } from "@/lib/types/admin/programAdminTypes";
 
@@ -27,20 +28,58 @@ export const programsApi = proxyApi.injectEndpoints({
         if (params?.size) {
           queryParams.append("size", params.size.toString());
         }
-        if (params?.search && params.search.trim() !== "") {
-          queryParams.append("search", params.search.trim());
-        }
-        if (params?.engagementType && params.engagementType !== "All") {
-          queryParams.append("engagementType", params.engagementType);
-        }
-        if (params?.state && params.state !== "All") {
-          queryParams.append("state", params.state);
+        for (const [key, value] of Object.entries(params ?? {})) {
+          if (key === "page" || key === "size") continue;
+          if (value !== undefined && value !== "") {
+            queryParams.append(key, String(value));
+          }
         }
 
         const queryString = queryParams.toString();
         return queryString ? `programs?${queryString}` : "programs";
       },
       providesTags: ["Program"],
+    }),
+
+    /** Exact country values present in published programs. The program API
+     * matches countries exactly, so these values are safer than guessing
+     * whether an organization stored an ISO code or a full country name. */
+    getProgramCountryValues: builder.query<string[], void>({
+      async queryFn(_arg, _api, _extraOptions, fetchWithBQ) {
+        const firstResult = await fetchWithBQ("programs?page=0&size=100");
+        if (firstResult.error) return { error: firstResult.error };
+
+        const firstPage = firstResult.data as PaginatedResponse<Program>;
+        const remainingPages = Array.from(
+          { length: Math.max(0, firstPage.totalPages - 1) },
+          (_, index) => index + 1,
+        );
+        const remainingResults = await Promise.all(
+          remainingPages.map((page) =>
+            fetchWithBQ(`programs?page=${page}&size=100`),
+          ),
+        );
+        const failedPage = remainingResults.find((result) => result.error);
+        if (failedPage?.error) return { error: failedPage.error };
+
+        const programs = [
+          ...firstPage.content,
+          ...remainingResults.flatMap(
+            (result) =>
+              (result.data as PaginatedResponse<Program>).content,
+          ),
+        ];
+        const values = Array.from(
+          new Set(
+            programs
+              .map((program) => program.organization?.country?.trim())
+              .filter((country): country is string => Boolean(country)),
+          ),
+        ).sort((a, b) => a.localeCompare(b));
+
+        return { data: values };
+      },
+      providesTags: [{ type: "Program", id: "COUNTRIES" }],
     }),
 
     // GET /organizations/me/programs (COMPANY role)
@@ -107,11 +146,11 @@ export const programsApi = proxyApi.injectEndpoints({
 
     updateProgram: builder.mutation<
       Program,
-      { id: string; body: Partial<CreateProgramRequest> & { state?: string } }
+      { id: string; body: UpdateProgramRequest }
     >({
       query: ({ id, body }) => ({
-        url: `/organizations/me/programs/${id}`,
-        method: "PUT",
+        url: `/programs/${id}`,
+        method: "PATCH",
         body,
       }),
       invalidatesTags: (_result, _error, { id }) => [
@@ -217,6 +256,7 @@ export const programsApi = proxyApi.injectEndpoints({
 
 export const {
   useGetProgramsQuery,
+  useGetProgramCountryValuesQuery,
   useGetMyCompanyProgramsQuery,
   useGetMyCompanyProgramByIdQuery,
   useGetProgramByIdQuery,

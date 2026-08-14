@@ -138,6 +138,28 @@ export interface FollowingCounts {
   topics: number;
 }
 
+export interface FollowingUser {
+  userId: string;
+  fullName: string;
+  avatarUrl: string | null;
+  biography: string | null;
+  followerCount: number;
+  following: boolean;
+  followedAt: string;
+}
+
+export interface FollowingUsersResponse {
+  content: FollowingUser[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  numberOfElements: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}
+
 // Edit Profile
 
 export interface SocialLinksForm {

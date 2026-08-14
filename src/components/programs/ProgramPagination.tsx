@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -30,9 +31,20 @@ export const ProgramPagination: React.FC<ProgramPaginationProps> = ({
   onRowsPerPageChange,
   onPageChange,
 }) => {
+  const pageNumbers = Array.from(
+    new Set(
+      [1, currentPage - 1, currentPage, currentPage + 1, totalPages].filter(
+        (page) => page >= 1 && page <= totalPages,
+      ),
+    ),
+  ).sort((a, b) => a - b);
+  const firstVisible =
+    displayedCount === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1;
+  const lastVisible = firstVisible + displayedCount - 1;
+
   return (
-    <footer className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-border">
-      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+    <footer className="flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
+      <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-muted-foreground sm:justify-start">
         <label htmlFor="rows-per-page" className="font-medium text-foreground">
           Rows per page
         </label>
@@ -42,67 +54,76 @@ export const ProgramPagination: React.FC<ProgramPaginationProps> = ({
         >
           <SelectTrigger
             id="rows-per-page"
-            className="h-9 px-3 rounded-xl bg-muted/60 text-sm font-semibold text-foreground shadow-2xs focus:ring-2 focus:ring-blue-600 cursor-pointer"
+            className="rounded-xl border-border bg-background text-foreground"
           >
             <SelectValue placeholder={String(rowsPerPage)} />
           </SelectTrigger>
-          <SelectContent className="rounded-xl shadow-lg min-w-[72px] p-1">
-            {[6, 10, 20, 50].map((num) => (
-              <SelectItem
-                key={num}
-                value={String(num)}
-                className="rounded-lg cursor-pointer py-1.5 px-2.5 text-sm font-medium hover:bg-muted"
-              >
-                {num}
-              </SelectItem>
-            ))}
+          <SelectContent>
+            <SelectGroup>
+              {[6, 12, 24, 48].map((num) => (
+                <SelectItem key={num} value={String(num)}>
+                  {num}
+                </SelectItem>
+              ))}
+            </SelectGroup>
           </SelectContent>
         </Select>
 
-        <span className="text-xs text-muted-foreground font-medium ml-2">
-          Showing {displayedCount} of {totalCount} programs
+        <span className="font-medium text-muted-foreground">
+          Showing {firstVisible}–{lastVisible} of {totalCount}
         </span>
       </div>
 
-      <nav className="flex items-center gap-1.5" aria-label="Pagination Navigation">
+      <nav
+        className="flex max-w-full items-center gap-1.5"
+        aria-label="Program pagination"
+      >
         <Button
           variant="outline"
-          size="sm"
+          size="icon-sm"
           disabled={currentPage <= 1}
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-          className="h-9 px-3 rounded-xl text-sm font-medium gap-1 cursor-pointer disabled:opacity-50"
+          aria-label="Previous page"
+          className="rounded-xl"
         >
-          <ChevronLeft className="w-4 h-4" />
-          Previous
+          <ChevronLeft />
         </Button>
 
-        {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pageNum) => (
-          <Button
-            key={pageNum}
-            variant={currentPage === pageNum ? "default" : "outline"}
-            size="sm"
-            onClick={() => onPageChange(pageNum)}
-            className={`h-9 w-9 rounded-xl text-sm font-semibold cursor-pointer ${
-              currentPage === pageNum ? "bg-blue-600 text-white shadow-2xs" : ""
-            }`}
-          >
-            {pageNum}
-          </Button>
-        ))}
+        {pageNumbers.map((pageNum, index) => {
+          const previousPage = pageNumbers[index - 1];
+          const hasGap = previousPage !== undefined && pageNum - previousPage > 1;
 
-        {totalPages > 3 && currentPage < totalPages - 1 && (
-          <span className="px-1 text-muted-foreground text-sm">...</span>
-        )}
+          return (
+            <React.Fragment key={pageNum}>
+              {hasGap ? (
+                <span aria-hidden="true" className="px-1 text-muted-foreground">
+                  …
+                </span>
+              ) : null}
+              <Button
+                type="button"
+                variant={currentPage === pageNum ? "default" : "outline"}
+                size="icon-sm"
+                onClick={() => onPageChange(pageNum)}
+                aria-label={`Page ${pageNum}`}
+                aria-current={currentPage === pageNum ? "page" : undefined}
+                className="rounded-xl"
+              >
+                {pageNum}
+              </Button>
+            </React.Fragment>
+          );
+        })}
 
         <Button
           variant="outline"
-          size="sm"
+          size="icon-sm"
           disabled={currentPage >= totalPages}
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-          className="h-9 px-3 rounded-xl text-sm font-medium gap-1 cursor-pointer disabled:opacity-50"
+          aria-label="Next page"
+          className="rounded-xl"
         >
-          Next
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight />
         </Button>
       </nav>
     </footer>

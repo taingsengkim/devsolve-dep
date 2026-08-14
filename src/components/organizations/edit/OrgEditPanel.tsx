@@ -1,0 +1,557 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
+import { toast } from "sonner";
+import { AlertCircle, Check, ImageUp, Loader2, Trash2, X } from "lucide-react";
+
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import CustomCountrySelect from "@/components/shared/CustomCountrySelect";
+import { useGetCountriesQuery } from "@/lib/redux/services/geoApi";
+import { DEFAULT_COUNTRIES } from "@/lib/constants/auth";
+import {
+  type Organization,
+  type OrganizationIndustry,
+  type UpdateOrganizationRequest,
+  useRemoveOrganizationLogoMutation,
+  useUpdateMyOrganizationMutation,
+  useUploadOrganizationLogoMutation,
+} from "@/lib/redux/services/organizationsApi";
+import {
+  ORGANIZATION_LOGO_ACCEPT_ATTR,
+  validateOrganizationLogoFile,
+} from "@/lib/validations/organization-logo";
+import { parseApiError, type ParsedApiError } from "@/lib/api/errors";
+import { cn } from "@/lib/utils";
+
+/**
+ * Editing the organization's details, as a page rather than the dialog this
+ * used to be — the same shape as the profile editor, and for the same reason:
+ * nine fields and a description box do not belong in a modal you can lose by
+ * clicking beside it.
+ *
+ * Country is the register flow's picker, on the register flow's data, so the
+ * value saved here is spelled the same way as the one saved at sign-up. What
+ * it does not do is auto-detect: the hook the register form uses fills the
+ * field from the visitor's IP, which on an edit screen would quietly replace
+ * a saved country with wherever the person happens to be sitting.
+ */
+
+const BACK_HREF = "/dashboard/organizations";
+
+const INDUSTRIES: { value: OrganizationIndustry; label: string }[] = [
+  { value: "TECHNOLOGY", label: "Technology & Software" },
+  { value: "FINANCE", label: "Financial Services & Fintech" },
+  { value: "HEALTHCARE", label: "Healthcare & Biotech" },
+  { value: "ECOMMERCE", label: "E-Commerce & Retail" },
+  { value: "GOVERNMENT", label: "Government & Public Sector" },
+  { value: "EDUCATION", label: "Education & Academia" },
+  { value: "OTHER", label: "Other Industry" },
+];
+
+const COMPANY_SIZES = ["1-10", "11-50", "51-200", "201-500", "501-1000", "1000+"];
+
+const inputClass =
+  "h-11 rounded-xl border-border bg-background text-base text-foreground shadow-2xs transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20";
+
+const errorInputClass =
+  "border-rose-400 focus-visible:ring-rose-500/30 dark:border-rose-700";
+
+const selectTriggerClass =
+  "h-11 w-full rounded-xl border-border bg-background text-base text-foreground shadow-2xs";
+
+type FormState = Required<
+  Pick<
+    UpdateOrganizationRequest,
+    |"name"
+    |"domain"
+    |"websiteUrl"
+    |"logoUrl"
+    |"description"
+    |"industry"
+    |"companySize"
+    |"country"
+  >
+>;
+
+function formStateFrom(organization: Organization): FormState {
+  return {
+    name: organization.name || "",
+    domain: organization.domain || "",
+    websiteUrl: organization.websiteUrl || "",
+    logoUrl: organization.logoUrl || "",
+    description: organization.description || "",
+    industry: (organization.industry || "TECHNOLOGY") as OrganizationIndustry,
+    companySize: organization.companySize || "11-50",
+    country: organization.country || "",
+  };
+}
+
+function Field({
+  label,
+  hint,
+  htmlFor,
+  error,
+  className,
+  children,
+}: {
+  label: string;
+  hint?: React.ReactNode;
+  htmlFor?: string;
+  error?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={cn("space-y-2", className)}>
+      <label
+        htmlFor={htmlFor}
+        className="block text-base font-semibold text-foreground"
+      >
+        {label}
+      </label>
+      {children}
+      {error ? (
+        <p className="text-sm font-medium text-rose-600 dark:text-rose-400">
+          {error}
+        </p>
+      ) : (
+        hint && (
+          <p className="text-sm text-muted-foreground">{hint}</p>
+        )
+      )}
+    </div>
+  );
+}
+
+export default function OrgEditPanel({
+  organization,
+}: {
+  organization: Organization;
+}) {
+  const router = useRouter();
+  const [updateOrg, { isLoading: isSaving }] = useUpdateMyOrganizationMutation();
+  const [uploadLogo, { isLoading: isUploadingLogo }] =
+    useUploadOrganizationLogoMutation();
+  const [removeLogo, { isLoading: isRemovingLogo }] =
+    useRemoveOrganizationLogoMutation();
+  const isLogoBusy = isUploadingLogo || isRemovingLogo;
+
+  const initial = useMemo(() => formStateFrom(organization), [organization]);
+  const [form, setForm] = useState<FormState>(initial);
+  const [saveError, setSaveError] = useState<ParsedApiError | null>(null);
+  const [logoError, setLogoError] = useState<string | null>(null);
+
+  /* The same list the register form shows. It resolves to `[]` rather than an
+     error when the CDN is unreachable, so the bundled shortlist stands in. */
+  const { data: fetchedCountries, isLoading: loadingCountries } =
+    useGetCountriesQuery();
+  const countries =
+    fetchedCountries && fetchedCountries.length > 0
+      ? fetchedCountries
+      : DEFAULT_COUNTRIES;
+
+  /* The organization stores a country name, not a code, and the flag needs a
+     code — so it is looked back up in the list. An unmatched name (a country
+     saved before this list, or a hand-typed one) simply shows no flag. */
+  const countryCode = useMemo(() => {
+    if (!form.country) return null;
+    const match = countries.find(
+      (c) => c.name.toLowerCase() === form.country.toLowerCase(),
+    );
+    return match?.code ?? null;
+  }, [countries, form.country]);
+
+  const isDirty = useMemo(
+    () => (Object.keys(initial) as (keyof FormState)[]).some(
+      (key) => form[key] !== initial[key],
+    ),
+    [form, initial],
+  );
+
+  const patch = (next: Partial<FormState>) =>
+    setForm((prev) => ({ ...prev, ...next }));
+
+  /* Field names go over the wire unchanged, so a server-side complaint about
+     `websiteUrl` lands on the websiteUrl input without a mapping table. */
+  const fieldError = (key: keyof FormState) => saveError?.fieldErrors[key];
+
+  /**
+   * Uploading writes the logo straight through its own endpoint, so the form's
+   * copy of `logoUrl` has to be brought along. Leaving it on the value the
+   * page loaded with would mean the next save PATCHes the old URL back and
+   * quietly undoes the upload.
+   */
+  const handleLogoPick = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    const reason = validateOrganizationLogoFile(file);
+    if (reason) {
+      setLogoError(reason);
+      return;
+    }
+
+    setLogoError(null);
+    try {
+      const updated = await uploadLogo(file).unwrap();
+      setForm((prev) => ({ ...prev, logoUrl: updated.logoUrl || "" }));
+      toast.success("Logo updated.");
+    } catch (error) {
+      setLogoError(
+        parseApiError(error, "The logo could not be uploaded.").message,
+      );
+    }
+  };
+
+  const handleLogoRemove = async () => {
+    setLogoError(null);
+    try {
+      await removeLogo().unwrap();
+      setForm((prev) => ({ ...prev, logoUrl: "" }));
+      toast.success("Logo removed.");
+    } catch (error) {
+      setLogoError(
+        parseApiError(error, "The logo could not be removed.").message,
+      );
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSaveError(null);
+
+    try {
+      await updateOrg(form).unwrap();
+      toast.success("Organization updated.", {
+        description: "Your changes have been saved.",
+      });
+      router.push(BACK_HREF);
+    } catch (error) {
+      const parsed = parseApiError(
+        error,
+        "Failed to update organization details.",
+      );
+      setSaveError(parsed);
+      toast.error(parsed.message);
+    }
+  };
+
+  return (
+    <motion.form
+      onSubmit={handleSubmit}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="w-full space-y-6"
+    >
+      <AnimatePresence>
+        {saveError && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            role="alert"
+            className="flex gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-900/60 dark:bg-rose-950/40"
+          >
+            <AlertCircle className="mt-0.5 size-5 shrink-0 text-rose-600 dark:text-rose-400" />
+            <div className="min-w-0 space-y-1">
+              <p className="text-base font-bold text-rose-800 dark:text-rose-200">
+                {saveError.status
+                  ? `Couldn't save (${saveError.status})`
+                  : "Couldn't save"}
+              </p>
+              <p className="text-base text-rose-700 dark:text-rose-300">
+                {saveError.message}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_300px] md:items-start lg:grid-cols-[1fr_340px]">
+        <div className="space-y-6 rounded-2xl border border-border bg-card p-5 shadow-xs sm:p-6">
+          <h2 className="border-b border-border pb-3 text-xl font-bold tracking-tight text-foreground">
+            Organization details
+          </h2>
+
+          <Field
+            label="Organization name"
+            htmlFor="org-name"
+            error={fieldError("name")}
+          >
+            <Input
+              id="org-name"
+              value={form.name}
+              onChange={(e) => patch({ name: e.target.value })}
+              placeholder="Acme Corp"
+              required
+              className={cn(inputClass, fieldError("name") && errorInputClass)}
+            />
+          </Field>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <Field
+              label="Domain"
+              htmlFor="org-domain"
+              hint="The domain your team's email addresses use."
+              error={fieldError("domain")}
+            >
+              <Input
+                id="org-domain"
+                value={form.domain}
+                onChange={(e) => patch({ domain: e.target.value })}
+                placeholder="acme.com"
+                className={cn(inputClass, fieldError("domain") && errorInputClass)}
+              />
+            </Field>
+
+            <Field
+              label="Website URL"
+              htmlFor="org-website"
+              error={fieldError("websiteUrl")}
+            >
+              <Input
+                id="org-website"
+                type="url"
+                value={form.websiteUrl}
+                onChange={(e) => patch({ websiteUrl: e.target.value })}
+                placeholder="https://acme.com"
+                className={cn(
+                  inputClass,
+                  fieldError("websiteUrl") && errorInputClass,
+                )}
+              />
+            </Field>
+
+            <Field label="Industry" error={fieldError("industry")}>
+              <Select
+                value={form.industry}
+                onValueChange={(value: string | null) => {
+                  if (value) patch({ industry: value as OrganizationIndustry });
+                }}
+              >
+                <SelectTrigger id="org-industry" className={selectTriggerClass}>
+                  <SelectValue placeholder="Select industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  {INDUSTRIES.map((industry) => (
+                    <SelectItem key={industry.value} value={industry.value}>
+                      {industry.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <Field label="Company size" error={fieldError("companySize")}>
+              <Select
+                value={form.companySize}
+                onValueChange={(value: string | null) => {
+                  if (value) patch({ companySize: value });
+                }}
+              >
+                <SelectTrigger id="org-size" className={selectTriggerClass}>
+                  <SelectValue placeholder="Select size" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COMPANY_SIZES.map((size) => (
+                    <SelectItem key={size} value={size}>
+                      {size} employees
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <Field
+              label="Country / region"
+              htmlFor="org-country"
+              error={fieldError("country")}
+            >
+              <CustomCountrySelect
+                id="org-country"
+                value={form.country}
+                countryCode={countryCode}
+                countries={countries}
+                isDetecting={loadingCountries}
+                error={Boolean(fieldError("country"))}
+                onSelect={(country) => patch({ country: country.name })}
+              />
+            </Field>
+
+          </div>
+
+          <Field
+            label="Description"
+            htmlFor="org-description"
+            hint="Shown to researchers browsing your programs."
+            error={fieldError("description")}
+          >
+            <Textarea
+              id="org-description"
+              rows={5}
+              value={form.description}
+              onChange={(e) => patch({ description: e.target.value })}
+              placeholder="Brief summary of your company's core mission and services..."
+              className={cn(
+                "rounded-xl border-border bg-background text-base text-foreground shadow-2xs transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20",
+                fieldError("description") && errorInputClass,
+              )}
+            />
+          </Field>
+        </div>
+
+        {/* Logo — the one place it can be changed, so the upload, the removal
+            and the URL field sit together rather than across two screens.
+            Upload and remove take effect on their own, without Save. */}
+        <div className="space-y-3 md:sticky md:top-6">
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-card p-6 shadow-xs">
+            <h2 className="w-full text-base font-bold text-foreground">
+              Organization logo
+            </h2>
+
+            <div className="relative aspect-square w-full max-w-[220px] overflow-hidden rounded-2xl border border-border bg-muted shadow-xs">
+              {form.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={form.logoUrl}
+                  alt=""
+                  className="size-full object-cover"
+                />
+              ) : (
+                <div className="flex size-full items-center justify-center bg-blue-500/10 text-4xl font-bold text-blue-600 dark:text-blue-400">
+                  {organization.name.substring(0, 2).toUpperCase()}
+                </div>
+              )}
+
+              {isLogoBusy && (
+                <div className="absolute inset-0 flex items-center justify-center bg-foreground/40 backdrop-blur-xs">
+                  <Loader2 className="size-7 animate-spin text-white" />
+                </div>
+              )}
+            </div>
+
+            <div className="flex w-full flex-col gap-2">
+              <label
+                htmlFor="organization-logo-upload"
+                className={cn(
+                  "flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-muted px-4 text-base font-semibold text-foreground shadow-2xs transition hover:bg-muted/70",
+                  isLogoBusy && "pointer-events-none opacity-60",
+                )}
+              >
+                <ImageUp size={18} />
+                <span>{isUploadingLogo ? "Uploading…" : "Upload new logo"}</span>
+                <input
+                  id="organization-logo-upload"
+                  type="file"
+                  accept={ORGANIZATION_LOGO_ACCEPT_ATTR}
+                  disabled={isLogoBusy}
+                  className="sr-only"
+                  onChange={handleLogoPick}
+                />
+              </label>
+
+              {form.logoUrl && (
+                <button
+                  type="button"
+                  onClick={() => void handleLogoRemove()}
+                  disabled={isLogoBusy}
+                  className="flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-4 text-base font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                >
+                  <Trash2 size={16} />
+                  {isRemovingLogo ? "Removing…" : "Remove logo"}
+                </button>
+              )}
+            </div>
+
+            <p className="text-center text-sm font-medium text-muted-foreground">
+              PNG, JPG or WebP · max 2 MB
+            </p>
+
+            {logoError && (
+              <p className="text-center text-sm font-medium text-rose-600 dark:text-rose-400">
+                {logoError}
+              </p>
+            )}
+
+            <div className="w-full border-t border-border pt-4">
+              <Field
+                label="Or link to one"
+                htmlFor="org-logo"
+                hint="Saved with the rest of the form."
+                error={fieldError("logoUrl")}
+              >
+                <Input
+                  id="org-logo"
+                  type="url"
+                  value={form.logoUrl}
+                  onChange={(e) => patch({ logoUrl: e.target.value })}
+                  placeholder="https://acme.com/logo.png"
+                  className={cn(
+                    inputClass,
+                    "text-sm",
+                    fieldError("logoUrl") && errorInputClass,
+                  )}
+                />
+              </Field>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="sticky bottom-4 z-20 flex flex-col gap-3.5 rounded-2xl border border-border bg-card/95 px-5 py-4 shadow-xl backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="flex items-center gap-2 text-base font-medium text-muted-foreground">
+          {isDirty ? (
+            <>
+              <span className="inline-block size-2.5 shrink-0 animate-pulse rounded-full bg-blue-600" />
+              <span>Careful — you have unsaved changes.</span>
+            </>
+          ) : (
+            <span className="text-muted-foreground">
+              No changes yet.
+            </span>
+          )}
+        </div>
+
+        <div className="flex shrink-0 items-center justify-end gap-3">
+          <Link
+            href={BACK_HREF}
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+                "h-11 rounded-xl border-border bg-card px-5 text-base font-semibold text-foreground shadow-2xs transition hover:bg-muted",
+            )}
+          >
+            <X size={15} />
+            Cancel
+          </Link>
+
+          <Button
+            type="submit"
+            disabled={isSaving || !isDirty}
+            className="h-11 rounded-xl bg-blue-600 px-6 text-base font-bold text-white shadow-md transition hover:bg-blue-700"
+          >
+            {isSaving ? (
+              <Loader2 size={15} className="animate-spin" />
+            ) : (
+              <Check size={15} />
+            )}
+            Save changes
+          </Button>
+        </div>
+      </div>
+    </motion.form>
+  );
+}

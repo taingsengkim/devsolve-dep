@@ -1,177 +1,346 @@
 "use client";
 
-import React from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { SlidersHorizontal, RotateCcw, DollarSign, Award } from "lucide-react";
+import { motion } from "motion/react";
+import { RotateCcw, SlidersHorizontal } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ProgramType } from "@/lib/types/programs/types";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type {
+  ProgramAssetFilter,
+  ProgramIndustryFilter,
+  ProgramSeverityFilter,
+} from "@/hooks/useProgramFilters";
+import { cn } from "@/lib/utils";
 
 interface ProgramFiltersBarProps {
-  selectedType: "All" | ProgramType;
-  onTypeChange: (type: "All" | ProgramType) => void;
-  selectedStatus: string;
-  // onStatusChange: (status: string) => void;
-  // Reward Range Props
-  minReward: string | number;
-  maxReward: string | number;
-  onMinRewardChange: (val: string) => void;
-  onMaxRewardChange: (val: string) => void;
-  // Panel Controls
-  showMoreFilters: boolean;
-  onToggleMoreFilters: () => void;
-  isFilterActive: boolean;
+  selectedAsset: ProgramAssetFilter;
+  onAssetChange: (asset: ProgramAssetFilter) => void;
+  selectedSeverity: ProgramSeverityFilter;
+  onSeverityChange: (severity: ProgramSeverityFilter) => void;
+  selectedIndustry: ProgramIndustryFilter;
+  onIndustryChange: (industry: ProgramIndustryFilter) => void;
+  country: string;
+  onCountryChange: (country: string) => void;
+  countryOptions: CountryFilterOption[];
+  isLoadingCountries?: boolean;
+  minReward: string;
+  maxReward: string;
+  onMinRewardChange: (value: string) => void;
+  onMaxRewardChange: (value: string) => void;
+  activeCount: number;
   onResetFilters: () => void;
+  className?: string;
+  showHeader?: boolean;
+  idPrefix?: string;
 }
 
-export const ProgramFiltersBar: React.FC<ProgramFiltersBarProps> = ({
-  selectedType,
-  onTypeChange,
-  selectedStatus,
-  // onStatusChange,
+export interface CountryFilterOption {
+  value: string;
+  label: string;
+  code?: string;
+}
+
+const ASSET_OPTIONS: Array<{
+  value: ProgramAssetFilter;
+  label: string;
+}> = [
+  { value: "All", label: "All asset types" },
+  { value: "URL", label: "Websites" },
+  { value: "WILDCARD", label: "Wildcard domains" },
+  { value: "API", label: "APIs" },
+  { value: "MOBILE_APP", label: "Mobile apps" },
+  { value: "SOURCE_CODE", label: "Source code" },
+  { value: "IP_RANGE", label: "IP ranges" },
+  { value: "HARDWARE", label: "Hardware" },
+  { value: "OTHER", label: "Other" },
+];
+
+const SEVERITY_OPTIONS: Array<{
+  value: ProgramSeverityFilter;
+  label: string;
+}> = [
+  { value: "All", label: "Any severity" },
+  { value: "CRITICAL", label: "Critical" },
+  { value: "HIGH", label: "High" },
+  { value: "MEDIUM", label: "Medium" },
+  { value: "LOW", label: "Low" },
+  { value: "NONE", label: "None" },
+];
+
+const INDUSTRY_OPTIONS: Array<{
+  value: ProgramIndustryFilter;
+  label: string;
+}> = [
+  { value: "All", label: "All industries" },
+  { value: "TECHNOLOGY", label: "Technology" },
+  { value: "FINANCE", label: "Finance" },
+  { value: "HEALTHCARE", label: "Healthcare" },
+  { value: "ECOMMERCE", label: "E-commerce" },
+  { value: "GOVERNMENT", label: "Government" },
+  { value: "EDUCATION", label: "Education" },
+  { value: "OTHER", label: "Other" },
+];
+
+export function ProgramFiltersBar({
+  selectedAsset,
+  onAssetChange,
+  selectedSeverity,
+  onSeverityChange,
+  selectedIndustry,
+  onIndustryChange,
+  country,
+  onCountryChange,
+  countryOptions,
+  isLoadingCountries,
   minReward,
   maxReward,
   onMinRewardChange,
   onMaxRewardChange,
-  showMoreFilters,
-  onToggleMoreFilters,
-  isFilterActive,
+  activeCount,
   onResetFilters,
-}) => {
-  const isPointsMode = selectedType === "Response";
+  className,
+  showHeader = true,
+  idPrefix = "desktop-program",
+}: ProgramFiltersBarProps) {
+  const minimum = minReward === "" ? null : Number(minReward);
+  const maximum = maxReward === "" ? null : Number(maxReward);
+  const rangeInvalid =
+    minimum !== null && maximum !== null && minimum > maximum;
+  const assetId = `${idPrefix}-asset`;
+  const severityId = `${idPrefix}-severity`;
+  const industryId = `${idPrefix}-industry`;
+  const countryId = `${idPrefix}-country`;
+  const minimumId = `${idPrefix}-minimum`;
+  const maximumId = `${idPrefix}-maximum`;
 
   return (
-    <>
-      <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 bg-card ring-1 ring-foreground/5 dark:ring-foreground/10 rounded-2xl">
-        <div className="flex flex-wrap items-center gap-4">
-          {/* Program Type Filter (All, Bounty, Response) */}
-          <div className="flex items-center bg-muted/60 p-1 rounded-xl">
-            {(["All", "Bounty", "Response"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => onTypeChange(t)}
-                className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                  selectedType === t
-                    ? "bg-blue-600 text-white shadow-2xs font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-
-          {/* Program Status Filter (Moved from More Filters to main bar) */}
-          {/* <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-2xs overflow-x-auto">
-            {(["All", "Open", "Done", "Archived"] as const).map((status) => (
-              <button
-                key={status}
-                onClick={() => onStatusChange(status)}
-                className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer whitespace-nowrap ${
-                  selectedStatus === status
-                    ? "bg-slate-900 text-white shadow-2xs font-semibold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
-                }`}
-              >
-                {status}
-              </button>
-            ))}
-          </div> */}
-        </div>
-
-        {/* More Filters Toggle */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={onToggleMoreFilters}
-            className={`h-10 px-4 rounded-xl border-transparent text-sm font-semibold cursor-pointer gap-2 ${
-              showMoreFilters || minReward !== "" || maxReward !== ""
-                ? "border-blue-600 bg-blue-50 text-blue-600 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-300"
-                : "bg-muted/60 text-foreground hover:bg-muted"
-            }`}
-          >
-            <SlidersHorizontal className="w-4 h-4" />
-            More Filters
-          </Button>
-
-          {isFilterActive && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onResetFilters}
-              title="Reset all filters"
-              className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
-      </section>
-
-      {/* EXPANDABLE MORE FILTERS PANEL (Only contains Reward Range) */}
-      <AnimatePresence>
-        {showMoreFilters && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden bg-card p-5 rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 shadow-sm space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-muted-foreground tracking-wider uppercase flex items-center gap-1.5">
-                {isPointsMode ? (
-                  <>
-                    <Award className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" /> Points Range (pts)
-                  </>
-                ) : (
-                  <>
-                    <DollarSign className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Reward Range ($ USD)
-                  </>
-                )}
-              </h4>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md">
-              {/* Min Input */}
-              <div className="space-y-1">
-                <label className="text-[11px] font-medium text-muted-foreground">
-                  Min {isPointsMode ? "Points" : "Amount"}
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-xs font-bold text-muted-foreground">
-                    {isPointsMode ? "pts" : "$"}
-                  </span>
-                  <input
-                    type="number"
-                    placeholder={isPointsMode ? "e.g. 20" : "e.g. 500"}
-                    value={minReward}
-                    onChange={(e) => onMinRewardChange(e.target.value)}
-                    className="w-full pl-9 pr-3 py-1.5 text-sm bg-muted/40 border border-transparent text-foreground rounded-xl focus:bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                  />
-                </div>
+    <motion.aside
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut", delay: 0.08 }}
+      aria-label="Program filters"
+      className={cn(
+        "lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start",
+        className,
+      )}
+    >
+      <Card className="gap-0 rounded-2xl py-0 shadow-xs ring-1 ring-foreground/5">
+        {showHeader ? (
+          <CardHeader className="px-5 pt-5 pb-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <span className="flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                  <SlidersHorizontal aria-hidden="true" className="size-4" />
+                </span>
+                <CardTitle className="text-base font-bold">Explore</CardTitle>
               </div>
-
-              {/* Max Input */}
-              <div className="space-y-1">
-                <label className="text-[11px] font-medium text-muted-foreground">
-                  Max {isPointsMode ? "Points" : "Amount"}
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-xs font-bold text-muted-foreground">
-                    {isPointsMode ? "pts" : "$"}
-                  </span>
-                  <input
-                    type="number"
-                    placeholder={isPointsMode ? "e.g. 100" : "e.g. 50000"}
-                    value={maxReward}
-                    onChange={(e) => onMaxRewardChange(e.target.value)}
-                    className="w-full pl-9 pr-3 py-1.5 text-sm bg-muted/40 border border-transparent text-foreground rounded-xl focus:bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                  />
-                </div>
-              </div>
+              {activeCount > 0 ? (
+                <Badge variant="secondary" className="tabular-nums">
+                  {activeCount} active
+                </Badge>
+              ) : null}
             </div>
-          </motion.div>
+            <CardDescription className="mt-1 text-sm">
+              Narrow programs by scope, organization, and reward.
+            </CardDescription>
+          </CardHeader>
+        ) : (
+          <CardHeader className="sr-only">
+            <CardTitle>Explore programs</CardTitle>
+            <CardDescription>
+              Narrow programs by scope, organization, and reward.
+            </CardDescription>
+          </CardHeader>
         )}
-      </AnimatePresence>
-    </>
+
+        <CardContent className={cn("px-5 pb-5", !showHeader && "pt-5")}>
+          <FieldGroup className="gap-4">
+            <FilterSelect
+              id={assetId}
+              label="Asset type"
+              value={selectedAsset}
+              options={ASSET_OPTIONS}
+              onChange={(value) => onAssetChange(value as ProgramAssetFilter)}
+            />
+            <FilterSelect
+              id={severityId}
+              label="Maximum severity"
+              value={selectedSeverity}
+              options={SEVERITY_OPTIONS}
+              onChange={(value) =>
+                onSeverityChange(value as ProgramSeverityFilter)
+              }
+            />
+            <FilterSelect
+              id={industryId}
+              label="Organization industry"
+              value={selectedIndustry}
+              options={INDUSTRY_OPTIONS}
+              onChange={(value) =>
+                onIndustryChange(value as ProgramIndustryFilter)
+              }
+            />
+
+            <Field>
+              <FieldLabel htmlFor={countryId}>Country</FieldLabel>
+              <Select
+                value={country || "All"}
+                onValueChange={(value) =>
+                  value && onCountryChange(value === "All" ? "" : value)
+                }
+                disabled={isLoadingCountries}
+              >
+                <SelectTrigger
+                  id={countryId}
+                  className="h-10 w-full rounded-xl border-border bg-background text-base"
+                >
+                  <SelectValue>
+                    {(value: string) => {
+                      if (isLoadingCountries) return "Loading countries...";
+                      if (value === "All") return "All countries";
+                      return (
+                        countryOptions.find((option) => option.value === value)
+                          ?.label ?? value
+                      );
+                    }}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent alignItemWithTrigger={false}>
+                  <SelectGroup>
+                    <SelectItem value="All" className="text-base">
+                      All countries
+                    </SelectItem>
+                    {countryOptions.map((option) => (
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                        className="text-base"
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field data-invalid={rangeInvalid}>
+                <FieldLabel htmlFor={minimumId}>Min reward</FieldLabel>
+                <Input
+                  id={minimumId}
+                  type="number"
+                  min="0"
+                  inputMode="numeric"
+                  value={minReward}
+                  onChange={(event) => onMinRewardChange(event.target.value)}
+                  placeholder="Any"
+                  aria-invalid={rangeInvalid}
+                  className="h-10 rounded-xl border-border bg-background text-base"
+                />
+              </Field>
+              <Field data-invalid={rangeInvalid}>
+                <FieldLabel htmlFor={maximumId}>Max reward</FieldLabel>
+                <Input
+                  id={maximumId}
+                  type="number"
+                  min="0"
+                  inputMode="numeric"
+                  value={maxReward}
+                  onChange={(event) => onMaxRewardChange(event.target.value)}
+                  placeholder="Any"
+                  aria-invalid={rangeInvalid}
+                  className="h-10 rounded-xl border-border bg-background text-base"
+                />
+              </Field>
+            </div>
+            {rangeInvalid ? (
+              <FieldError>Maximum must be at least the minimum.</FieldError>
+            ) : null}
+          </FieldGroup>
+        </CardContent>
+
+        {activeCount > 0 ? (
+          <CardFooter className="border-t border-border px-5 py-4">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onResetFilters}
+              className="w-full rounded-xl"
+            >
+              <RotateCcw data-icon="inline-start" aria-hidden="true" />
+              Clear explore filters
+            </Button>
+          </CardFooter>
+        ) : null}
+      </Card>
+    </motion.aside>
   );
-};
+}
+
+function FilterSelect({
+  id,
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  options: Array<{ value: string; label: string }>;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <Field>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Select
+        value={value}
+        onValueChange={(nextValue) => nextValue && onChange(nextValue)}
+      >
+        <SelectTrigger
+          id={id}
+          className="h-10 w-full rounded-xl border-border bg-background text-base"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent alignItemWithTrigger={false}>
+          <SelectGroup>
+            {options.map((option) => (
+              <SelectItem
+                key={option.value}
+                value={option.value}
+                className="text-base"
+              >
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </Field>
+  );
+}

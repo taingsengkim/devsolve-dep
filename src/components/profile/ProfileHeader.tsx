@@ -22,7 +22,7 @@ export default function ProfileHeader({ backHref }: ProfileHeaderProps) {
     <div className="flex items-center gap-4">
       <Link
         href={backHref}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-neutral-400 dark:hover:text-neutral-200"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft size={14} />
         Back to profile

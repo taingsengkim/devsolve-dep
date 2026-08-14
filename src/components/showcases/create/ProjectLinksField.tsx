@@ -61,9 +61,9 @@ export function ProjectLinksField() {
           <div key={link.name} className="space-y-2">
             <label
               htmlFor={link.name}
-              className="flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-slate-100"
+              className="flex items-center gap-1.5 text-sm font-semibold text-foreground"
             >
-              <Icon className="size-4 text-slate-400" />
+              <Icon className="size-4 text-muted-foreground" />
               {link.label}
             </label>
 
@@ -72,13 +72,13 @@ export function ProjectLinksField() {
               inputMode="url"
               placeholder={link.placeholder}
               {...register(link.name)}
-              className="h-11 rounded-xl border-slate-300 bg-white text-base dark:border-slate-700"
+              className="h-11 rounded-xl border-border bg-background text-base"
             />
 
             {error ? (
-              <p className="text-sm font-medium text-rose-600">{error}</p>
+              <p className="text-sm font-medium text-destructive">{error}</p>
             ) : host ? (
-              <span className="inline-flex max-w-full items-center gap-1 truncate rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <span className="inline-flex max-w-full items-center gap-1 truncate rounded-lg bg-muted px-2 py-0.5 text-sm font-medium text-muted-foreground">
                 {host}
               </span>
             ) : null}

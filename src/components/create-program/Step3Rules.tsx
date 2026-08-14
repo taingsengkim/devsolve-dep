@@ -28,6 +28,67 @@ export function Step3Rules({
   pocRequirements,
   setPocRequirements,
 }: Step3RulesProps) {
+  const handleBulletKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>,
+    value: string,
+    onChange: (val: string) => void
+  ) => {
+    const target = e.currentTarget;
+    const start = target.selectionStart;
+    const end = target.selectionEnd;
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const bullet = "\n• ";
+      const newValue = value.substring(0, start) + bullet + value.substring(end);
+      onChange(newValue);
+
+      setTimeout(() => {
+        target.selectionStart = target.selectionEnd = start + bullet.length;
+      }, 0);
+    } else if (e.key === "Backspace") {
+      if (start === end && start >= 2 && value.substring(start - 2, start) === "• ") {
+        e.preventDefault();
+        const newValue = value.substring(0, start - 2) + value.substring(end);
+        onChange(newValue);
+
+        setTimeout(() => {
+          target.selectionStart = target.selectionEnd = start - 2;
+        }, 0);
+      }
+    }
+  };
+
+  const handleBulletChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+    onChange: (val: string) => void
+  ) => {
+    const val = e.target.value;
+    if (!val) {
+      onChange("• ");
+      return;
+    }
+    const lines = val.split("\n");
+    const formatted = lines.map((line) => {
+      if (line.trim() === "") return line;
+      if (line.startsWith("• ")) return line;
+      if (line.startsWith("•")) return `• ${line.slice(1).trimStart()}`;
+      if (line.startsWith("- ")) return `• ${line.slice(2)}`;
+      if (line.startsWith("-")) return `• ${line.slice(1).trimStart()}`;
+      return `• ${line}`;
+    });
+    onChange(formatted.join("\n"));
+  };
+
+  const ensureBulletOnFocus = (
+    value: string,
+    onChange: (val: string) => void
+  ) => {
+    if (!value.trim()) {
+      onChange("• ");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-bold text-foreground">
@@ -42,7 +103,10 @@ export function Step3Rules({
         <Textarea
           rows={5}
           value={rulesOfEngagement}
-          onChange={(e) => setRulesOfEngagement(e.target.value)}
+          onChange={(e) => handleBulletChange(e, setRulesOfEngagement)}
+          onKeyDown={(e) => handleBulletKeyDown(e, rulesOfEngagement, setRulesOfEngagement)}
+          onFocus={() => ensureBulletOnFocus(rulesOfEngagement, setRulesOfEngagement)}
+          placeholder="• Enter rule..."
           className="rounded-xl border-border bg-card text-foreground text-base focus-visible:ring-blue-500 font-mono resize-none p-3.5"
         />
       </div>
@@ -106,7 +170,10 @@ export function Step3Rules({
         <Textarea
           rows={4}
           value={pocRequirements}
-          onChange={(e) => setPocRequirements(e.target.value)}
+          onChange={(e) => handleBulletChange(e, setPocRequirements)}
+          onKeyDown={(e) => handleBulletKeyDown(e, pocRequirements, setPocRequirements)}
+          onFocus={() => ensureBulletOnFocus(pocRequirements, setPocRequirements)}
+          placeholder="• Enter PoC requirement..."
           className="rounded-xl border-border bg-card text-foreground text-base focus-visible:ring-blue-500 font-mono resize-none p-3.5"
         />
       </div>

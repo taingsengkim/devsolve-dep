@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -28,6 +28,8 @@ import {
   NavbarUserMenu,
   type NavbarIdentity,
 } from "@/components/navbar/NavbarUserMenu";
+import { NotificationProvider } from "@/components/notifications/NotificationContext";
+import { NotificationTrigger } from "@/components/notifications/NotificationTrigger";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { authClient } from "@/lib/auth/auth-client";
@@ -45,6 +47,12 @@ type NavLink = {
   name: string;
   href?: string;
   items?: NavItem[];
+  /**
+   * Dropped from the bar once there is a session — an introduction to the
+   * platform is for people deciding whether to join, not for members who
+   * already have.
+   */
+  guestOnly?: boolean;
 };
 
 const navLinks: NavLink[] = [
@@ -75,7 +83,7 @@ const navLinks: NavLink[] = [
     ],
   },
   { name: "Leaderboard", href: "/leaderboard" },
-  { name: "About", href: "/about" },
+  { name: "About", href: "/about", guestOnly: true },
 ];
 
 // Scrolling down only retracts the island once the reader is past this much of
@@ -151,6 +159,13 @@ const Navbar = () => {
     displayName,
     handleSignOut,
   } = useSidebarAuth();
+  /* The session resolves on the client, so the guest-only links render on the
+     first pass and drop out once a session is known — the same beat on which
+     the sign-in buttons become the account menu. */
+  const visibleNavLinks = useMemo(
+    () => navLinks.filter((link) => !(link.guestOnly && sessionUser)),
+    [sessionUser],
+  );
   const isCompany = sessionUser?.roles?.includes("COMPANY") ?? false;
   const {
     data: organization,
@@ -439,9 +454,10 @@ const Navbar = () => {
   };
 
   return (
-    // Fixed and out of flow: no full-width band, just the island floating over
-    // the page. `--navbar-height` is what reserves room for it in the layout.
-    <motion.header
+    <NotificationProvider enableStream={Boolean(sessionUser)}>
+      {/* Fixed and out of flow: no full-width band, just the island floating
+          over the page. `--navbar-height` reserves room for it in the layout. */}
+      <motion.header
       initial={reduce ? false : { y: -24, opacity: 0 }}
       /* Retracting on scroll is motion for its own sake — with reduced motion
          the island simply stays put. */
@@ -550,7 +566,7 @@ const Navbar = () => {
                 className="hidden min-w-0 items-center justify-center lg:flex"
               >
                 <div className="flex min-w-0 items-center gap-0.5 xl:gap-1">
-                  {navLinks.map((link) => {
+                  {visibleNavLinks.map((link) => {
                     const isActive = isNavLinkActive(pathname, link);
 
                     if (link.items?.length) {
@@ -768,6 +784,8 @@ const Navbar = () => {
                   then Get Started, then Log in, and the theme toggle last —
                   it is the one control the mobile panel also offers. */}
               <div className="flex shrink-0 items-center justify-end gap-1.5 xl:gap-2.5">
+                {sessionUser && <NotificationTrigger />}
+
                 <ThemeToggle
                   variant="rectangle"
                   start="bottom-up"
@@ -870,7 +888,7 @@ const Navbar = () => {
                   aria-label="Mobile navigation"
                   className="flex flex-col gap-1"
                 >
-                  {navLinks.map((link) => {
+                  {visibleNavLinks.map((link) => {
                     const isActive = isNavLinkActive(pathname, link);
 
                     if (link.items?.length) {
@@ -1188,7 +1206,8 @@ const Navbar = () => {
           ) : null}
         </AnimatePresence>
       </div>
-    </motion.header>
+      </motion.header>
+    </NotificationProvider>
   );
 };
 

@@ -33,6 +33,8 @@ export interface MyPost {
   note?: string;
   /** A showcase with an edit queued behind the live version. */
   hasPendingEdit?: boolean;
+  /** A draft problem, which the author still has to send to review. */
+  canSubmit?: boolean;
   /** For a solution, the problem it answers — needed to delete it cleanly. */
   problemId?: string;
 }
@@ -54,7 +56,12 @@ interface MyProblem {
     | "CLOSED"
     | "REJECTED";
   viewCount?: number;
-  /** The backend's own gate on whether this problem may still be revised. */
+  /**
+   * Whether this problem may still be revised — but do not gate the edit link
+   * on it. `/problems/mine` answers `false` for problems that `/problems/{id}`
+   * answers `true` for, so trusting it here hides the button on posts the
+   * author can in fact edit. See `editHref` below.
+   */
   canEdit?: boolean;
   publishedAt?: string;
   createdAt?: string;
@@ -147,9 +154,15 @@ export const myCommunityApi = baseApi.injectEndpoints({
               problem.publishedAt ||
               problem.createdAt ||
               new Date().toISOString(),
-            /* `canEdit` is the backend's own gate — a published problem with
-               answers under it is not the same as an untouched draft. */
-            editHref: problem.canEdit ? `/community/${problem.id}/edit` : undefined,
+            /* Always linked, deliberately. Every problem in this list belongs
+               to the caller, and the edit screen re-reads `canEdit` off the
+               detail response before it shows a form — which is the copy of
+               the flag that is right. Gating here on the list's copy meant a
+               problem the author could edit showed a dead, greyed-out button
+               with no reason given. */
+            editHref: `/community/${problem.id}/edit`,
+            /* Only a draft has somewhere to be submitted to. */
+            canSubmit: problem.status === "DRAFT",
             views: problem.viewCount ?? 0,
             state: PROBLEM_STATE[problem.status],
           }),
