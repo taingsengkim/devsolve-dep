@@ -22,6 +22,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -172,7 +173,7 @@ function ContentManagement() {
   );
 
   const counts: Record<TabId, number | undefined> = {
-    queue: pendingReports,
+    queue: data?.totalElements ?? pendingReports,
     showcases: showcaseQueue?.totalElements ?? 0,
     problems: problemQueue?.totalElements ?? 0,
     solutions: solutionQueue?.totalElements ?? 0,
@@ -208,9 +209,17 @@ function ContentManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedFlagId, setSelectedFlagId] = useState<string | null>(null);
 
-  const handleAction = (id: string, action: "DISMISS" | "WARN" | "REMOVE") => {
+  const handleAction = async (
+    id: string,
+    action: "DISMISS" | "WARN" | "REMOVE",
+  ) => {
     if (action === "DISMISS") {
-      updateAction({ id, action: "DISMISS" });
+      try {
+        await updateAction({ id, action: "DISMISS" }).unwrap();
+        toast.success("Content flag dismissed successfully.");
+      } catch {
+        toast.error("Failed to dismiss content flag.");
+      }
     } else {
       const found = reportsList.find((r) => r.id === id);
       if (found) {
@@ -482,7 +491,7 @@ function ContentManagement() {
                   {[1, 2, 3].map((i) => (
                     <div
                       key={i}
-                      className="h-44 rounded-2xl bg-slate-200 dark:bg-slate-800"
+                      className="h-44 rounded-2xl bg-muted/60"
                     />
                   ))}
                 </div>
@@ -709,21 +718,21 @@ function PageSkeleton() {
     >
       <span className="sr-only">Loading content management…</span>
       <div className="space-y-2">
-        <div className="h-4 w-48 rounded-lg bg-slate-200 dark:bg-slate-800" />
-        <div className="h-8 w-72 rounded-lg bg-slate-200 dark:bg-slate-800" />
-        <div className="h-4 w-full max-w-2xl rounded-lg bg-slate-200 dark:bg-slate-800" />
+        <div className="h-4 w-48 rounded-lg bg-muted/60" />
+        <div className="h-8 w-72 rounded-lg bg-muted/60" />
+        <div className="h-4 w-full max-w-2xl rounded-lg bg-muted/60" />
       </div>
-      <div className="h-16 w-full rounded-2xl bg-slate-200 dark:bg-slate-800" />
+      <div className="h-16 w-full rounded-2xl bg-muted/60" />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="space-y-4 lg:col-span-8">
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="h-44 rounded-2xl bg-slate-200 dark:bg-slate-800"
+              className="h-44 rounded-2xl bg-muted/60"
             />
           ))}
         </div>
-        <div className="h-64 rounded-2xl bg-slate-200 lg:col-span-4 dark:bg-slate-800" />
+        <div className="h-64 rounded-2xl bg-muted/60 lg:col-span-4" />
       </div>
     </div>
   );
