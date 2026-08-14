@@ -137,7 +137,7 @@ export function ImageDropField({
       <div className="flex items-center justify-between gap-3">
         <span
           className={cn(
-            "font-semibold text-slate-900 dark:text-slate-100",
+            "font-semibold text-foreground",
             compact ? "text-sm" : "text-base",
           )}
         >
@@ -145,7 +145,7 @@ export function ImageDropField({
         </span>
 
         {!shown && (
-          <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-1 rounded-lg border border-border bg-muted p-0.5">
             {(["upload", "link"] as const).map((option) => (
               <button
                 key={option}
@@ -154,8 +154,8 @@ export function ImageDropField({
                 className={cn(
                   "rounded-md px-2.5 py-1 text-xs font-semibold capitalize transition-colors",
                   mode === option
-                    ? "bg-white text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-slate-100"
-                    : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300",
+                    ? "bg-background text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {option}
@@ -173,7 +173,7 @@ export function ImageDropField({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className={cn(
-              "group relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900",
+              "group relative overflow-hidden rounded-xl border border-border bg-muted",
               aspectClassName,
             )}
           >
@@ -186,8 +186,8 @@ export function ImageDropField({
             />
 
             {uploading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-slate-900/45 backdrop-blur-xs">
-                <span className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-700">
+              <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-xs">
+                <span className="inline-flex items-center gap-2 rounded-lg bg-card px-3 py-2 text-sm font-semibold text-foreground">
                   <Loader2 className="size-4 animate-spin" />
                   Uploading…
                 </span>
@@ -198,7 +198,7 @@ export function ImageDropField({
               type="button"
               onClick={clear}
               aria-label={`Remove ${label.toLowerCase()}`}
-              className="absolute right-2.5 top-2.5 inline-flex size-8 items-center justify-center rounded-lg bg-slate-900/75 text-white opacity-0 backdrop-blur transition-opacity hover:bg-rose-600 focus-visible:opacity-100 group-hover:opacity-100"
+              className="absolute right-2.5 top-2.5 inline-flex size-8 items-center justify-center rounded-lg bg-background/80 text-foreground opacity-0 backdrop-blur transition-opacity hover:bg-destructive hover:text-destructive-foreground focus-visible:opacity-100 group-hover:opacity-100"
             >
               <Trash2 className="size-4" />
             </button>
@@ -212,7 +212,7 @@ export function ImageDropField({
             className="flex gap-2"
           >
             <div className="relative flex-1">
-              <Link2 className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+              <Link2 className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={linkDraft}
                 onChange={(event) => setLinkDraft(event.target.value)}
@@ -223,13 +223,13 @@ export function ImageDropField({
                   }
                 }}
                 placeholder="https://…/cover.png"
-                className="h-11 rounded-xl border-slate-300 bg-white pl-9 text-sm dark:border-slate-700"
+                className="h-11 rounded-xl border-border bg-background pl-9 text-sm"
               />
             </div>
             <Button
               type="button"
               onClick={applyLink}
-              className="h-11 rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-800"
+              className="h-11 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
             >
               Use
             </Button>
@@ -252,16 +252,15 @@ export function ImageDropField({
               onDrop={onDrop}
               className={cn(
                 "flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed transition-colors",
-                /* The placeholder the author sees before choosing anything. */
-                "bg-linear-to-br from-slate-100 via-white to-blue-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800",
+                "bg-muted/60",
                 dragging
-                  ? "border-blue-500 bg-blue-50/60"
-                  : "border-slate-300 hover:border-blue-400 dark:border-slate-700",
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary/60",
                 aspectClassName,
                 compact && "min-h-32",
               )}
             >
-              <span className="flex size-11 items-center justify-center rounded-xl bg-white text-blue-600 shadow-2xs dark:bg-slate-800">
+              <span className="flex size-11 items-center justify-center rounded-xl bg-background text-primary shadow-2xs">
                 {dragging ? (
                   <Upload className="size-5" />
                 ) : (
@@ -269,10 +268,10 @@ export function ImageDropField({
                 )}
               </span>
 
-              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+              <span className="text-sm font-semibold text-foreground">
                 Drop an image or click to browse
               </span>
-              <span className="text-xs text-slate-500">
+              <span className="text-sm text-muted-foreground">
                 {hint ?? "PNG, JPG or WebP · up to 5MB · 16:9 works best"}
               </span>
             </button>
@@ -296,7 +295,7 @@ export function ImageDropField({
       {/* Says plainly that the bytes have not left the browser yet — the
           upload route needs the row this image hangs off to exist first. */}
       {file && !uploading && (
-        <p className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+        <p className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
           <Clock className="size-3.5 shrink-0" />
           <span className="truncate">
             {file.name} · uploads when you publish
@@ -305,7 +304,7 @@ export function ImageDropField({
       )}
 
       {message && (
-        <p className="flex items-start gap-1.5 text-sm font-medium text-rose-600">
+        <p className="flex items-start gap-1.5 text-sm font-medium text-destructive">
           <X className="mt-0.5 size-3.5 shrink-0" />
           {message}
         </p>

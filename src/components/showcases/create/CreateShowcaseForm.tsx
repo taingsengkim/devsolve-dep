@@ -9,6 +9,7 @@ import { AlertCircle, Check, Loader2, Send } from "lucide-react";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -16,7 +17,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MarkdownEditor } from "@/components/reports/MarkdownEditor";
-import { ACCENT, PRIMARY } from "@/components/landing/SectionBackdrop";
 import { ImageDropField } from "./ImageDropField";
 import { TechStackField } from "./TechStackField";
 import { BuildStepsField, createEmptyStep } from "./BuildStepsField";
@@ -67,7 +67,7 @@ const CARD =
   "rounded-2xl bg-card text-card-foreground border border-border shadow-xs transition-shadow";
 
 const CARD_ACTIVE =
-  "focus-within:border-blue-500/50";
+  "focus-within:border-ring";
 
 interface FormSectionProps {
   n: string;
@@ -97,14 +97,14 @@ function FormSection({
       transition={{ duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] }}
       className={cn(CARD, CARD_ACTIVE, "p-5 sm:p-6")}
     >
-      <header className="mb-5 flex items-start gap-3.5 border-b border-slate-100 pb-4 dark:border-slate-800">
+      <header className="mb-5 flex items-start gap-3.5 border-b border-border pb-4">
         <span
           aria-hidden
           className={cn(
             "flex size-9 shrink-0 items-center justify-center rounded-xl font-mono text-sm font-bold tabular-nums transition-colors duration-300",
             done
-              ? "bg-emerald-500 text-white"
-              : "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500",
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground",
           )}
         >
           {done ? <Check className="size-4.5" /> : n}
@@ -112,17 +112,17 @@ function FormSection({
 
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            <h2 className="text-lg font-bold tracking-tight text-foreground">
               {title}
             </h2>
             {optional && (
-              <span className="rounded-full border border-slate-200 px-2 py-0.5 text-xs font-bold uppercase tracking-[0.14em] text-slate-400 dark:border-slate-700 dark:text-slate-500">
+              <span className="rounded-full border border-border px-2 py-0.5 text-sm font-bold uppercase tracking-[0.14em] text-muted-foreground">
                 Optional
               </span>
             )}
           </div>
           {description && (
-            <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 text-sm text-muted-foreground">
               {description}
             </p>
           )}
@@ -151,8 +151,8 @@ function RequirementRow({ label, done, hint }: Requirement) {
         className={cn(
           "mt-px flex size-5 shrink-0 items-center justify-center rounded-full transition-colors duration-300",
           done
-            ? "bg-emerald-500 text-white"
-            : "border-2 border-dashed border-slate-300 dark:border-slate-700",
+            ? "bg-primary text-primary-foreground"
+            : "border-2 border-dashed border-border",
         )}
       >
         {done && <Check className="size-3" strokeWidth={3.5} />}
@@ -163,14 +163,14 @@ function RequirementRow({ label, done, hint }: Requirement) {
           className={cn(
             "block text-sm font-semibold transition-colors",
             done
-              ? "text-slate-400 line-through decoration-slate-300 dark:text-slate-500"
-              : "text-slate-700 dark:text-slate-200",
+              ? "text-muted-foreground line-through decoration-border"
+              : "text-foreground",
           )}
         >
           {label}
         </span>
         {hint && (
-          <span className="block text-sm text-slate-400 dark:text-slate-500">
+          <span className="block text-sm text-muted-foreground">
             {hint}
           </span>
         )}
@@ -606,11 +606,11 @@ export function CreateShowcaseForm({
                   <div className="flex items-baseline justify-between gap-3">
                     <label
                       htmlFor="showcase-title"
-                      className="text-base font-semibold text-slate-900 dark:text-slate-100"
+                      className="text-base font-semibold text-foreground"
                     >
                       Project title
                     </label>
-                    <span className="text-sm font-medium text-slate-400 tabular-nums">
+                    <span className="text-sm font-medium text-muted-foreground tabular-nums">
                       {title.length}/255
                     </span>
                   </div>
@@ -619,10 +619,10 @@ export function CreateShowcaseForm({
                     maxLength={255}
                     placeholder="e.g. A self-hosted OAuth gateway with per-tenant key rotation"
                     {...register("title")}
-                    className="h-12 rounded-xl border-slate-300 bg-white text-base dark:border-slate-700"
+                    className="h-12 rounded-xl border-border bg-background text-base"
                   />
                   {errors.title?.message && (
-                    <p className="text-sm font-medium text-rose-600">
+                    <p className="text-sm font-medium text-destructive">
                       {errors.title.message}
                     </p>
                   )}
@@ -630,10 +630,10 @@ export function CreateShowcaseForm({
 
                 <div className="space-y-2">
                   <div className="flex items-baseline justify-between gap-3">
-                    <label className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                    <label className="text-base font-semibold text-foreground">
                       Overview
                     </label>
-                    <span className="text-sm text-slate-400">
+                    <span className="text-sm text-muted-foreground">
                       Two to four sentences reads best
                     </span>
                   </div>
@@ -647,7 +647,7 @@ export function CreateShowcaseForm({
                     error={Boolean(errors.overview)}
                   />
                   {errors.overview?.message && (
-                    <p className="text-sm font-medium text-rose-600">
+                    <p className="text-sm font-medium text-destructive">
                       {errors.overview.message}
                     </p>
                   )}
@@ -675,11 +675,11 @@ export function CreateShowcaseForm({
               <div className="space-y-6">
                 <ProjectLinksField />
 
-                <div className="space-y-2 border-t border-slate-100 pt-5 dark:border-slate-800">
-                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                <div className="space-y-2 border-t border-border pt-5">
+                  <h3 className="text-base font-semibold text-foreground">
                     Resource links
                   </h3>
-                  <p className="pb-1 text-sm text-slate-500 dark:text-slate-400">
+                  <p className="pb-1 text-sm text-muted-foreground">
                     Figma files, API docs, a Postman collection — anything that
                     lives elsewhere.
                   </p>
@@ -710,7 +710,7 @@ export function CreateShowcaseForm({
               <div className="space-y-2">
                 <label
                   htmlFor="showcase-category"
-                  className="text-base font-semibold text-slate-900 dark:text-slate-100"
+                  className="text-base font-semibold text-foreground"
                 >
                   Category
                 </label>
@@ -726,7 +726,7 @@ export function CreateShowcaseForm({
                     >
                       <SelectTrigger
                         id="showcase-category"
-                        className="h-12 w-full rounded-xl border-slate-300 bg-white text-base dark:border-slate-700"
+                        className="h-12 w-full rounded-xl border-border bg-background text-base"
                       >
                         <SelectValue
                           placeholder={
@@ -736,32 +736,34 @@ export function CreateShowcaseForm({
                           }
                         />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl border-slate-200 bg-white p-1">
-                        {/* The value is the id, not the name: `categoryId` is
-                            a UUID upstream and the proxy rejects anything
-                            else. */}
-                        {categories.map((category) => (
-                          <SelectItem
-                            key={category.id}
-                            value={category.id}
-                            className="cursor-pointer rounded-lg py-2.5 text-base font-medium"
-                          >
-                            {category.name}
-                          </SelectItem>
-                        ))}
+                      <SelectContent className="rounded-xl">
+                        <SelectGroup>
+                          {/* The value is the id, not the name: `categoryId` is
+                              a UUID upstream and the proxy rejects anything
+                              else. */}
+                          {categories.map((category) => (
+                            <SelectItem
+                              key={category.id}
+                              value={category.id}
+                              className="cursor-pointer rounded-lg py-2.5 text-base font-medium"
+                            >
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
                       </SelectContent>
                     </Select>
                   )}
                 />
 
                 {errors.categoryId?.message && (
-                  <p className="text-sm font-medium text-rose-600">
+                  <p className="text-sm font-medium text-destructive">
                     {errors.categoryId.message}
                   </p>
                 )}
               </div>
 
-              <div className="border-t border-slate-100 pt-5 dark:border-slate-800">
+              <div className="border-t border-border pt-5">
                 <Controller
                   control={control}
                   name="techStack"
@@ -788,29 +790,26 @@ export function CreateShowcaseForm({
               {/* The landing page's eyebrow rule, so the panel reads as part
                   of the same system as the sections behind it. */}
               <div className="mb-3 flex items-center gap-2.5">
-                <span className="h-px w-6 bg-slate-900 dark:bg-slate-100" />
-                <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-900 dark:text-slate-100">
+                <span className="h-px w-6 bg-foreground" />
+                <span className="text-sm font-bold uppercase tracking-[0.22em] text-foreground">
                   {isEdit ? "Update" : "Publish"}
                 </span>
               </div>
 
               <div className="flex items-baseline justify-between gap-3">
-                <p className="text-sm text-slate-500 dark:text-slate-400">
+                <p className="text-sm text-muted-foreground">
                   {ready ? "Everything's in place." : "Still needed"}
                 </p>
-                <span className="text-sm font-bold text-slate-900 tabular-nums dark:text-slate-100">
+                <span className="text-sm font-bold text-foreground tabular-nums">
                   {metCount}/{requirements.length}
                 </span>
               </div>
 
               {/* Blue→green, the same ramp the landing page's lifecycle rail
                   runs on: in progress on the left, done on the right. */}
-              <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+              <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <motion.div
-                  className="h-full rounded-full"
-                  style={{
-                    background: `linear-gradient(to right, ${PRIMARY}, ${ACCENT})`,
-                  }}
+                  className="h-full rounded-full bg-primary"
                   initial={false}
                   animate={{
                     width: `${(metCount / requirements.length) * 100}%`,
@@ -829,7 +828,7 @@ export function CreateShowcaseForm({
                 <motion.div
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 flex gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-medium text-amber-800 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200"
+                  className="mt-4 flex gap-2.5 rounded-xl border border-border bg-muted p-3 text-sm font-medium text-foreground"
                 >
                   <AlertCircle className="mt-0.5 size-4 shrink-0" />
                   <span>
@@ -843,14 +842,14 @@ export function CreateShowcaseForm({
                 <motion.div
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 flex gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-200"
+                  className="mt-4 flex gap-2.5 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
                 >
                   <AlertCircle className="mt-0.5 size-4 shrink-0" />
                   <span>{submitError}</span>
                 </motion.div>
               )}
 
-              <div className="mt-4 space-y-2.5 border-t border-slate-100 pt-4 dark:border-slate-800">
+              <div className="mt-4 space-y-2.5 border-t border-border pt-4">
                 {/* The hero's pill and its brand glow. Never disabled on an
                     incomplete form — the field-level errors are what explain
                     the problem, and a dead button explains nothing. */}
@@ -861,20 +860,16 @@ export function CreateShowcaseForm({
                   <Button
                     type="submit"
                     disabled={submitting}
-                    style={{
-                      backgroundColor: PRIMARY,
-                      boxShadow: "0 14px 30px -12px rgba(37,99,235,0.85)",
-                    }}
-                    className="h-12 w-full rounded-full text-base font-bold text-white transition-[filter] hover:brightness-110"
+                    className="h-12 w-full rounded-full bg-primary text-base font-bold text-primary-foreground shadow-sm hover:bg-primary/90"
                   >
                     {submitting ? (
                       <>
-                        <Loader2 className="size-5 animate-spin" />
+                        <Loader2 data-icon="inline-start" className="animate-spin" />
                         {isEdit ? "Saving…" : "Publishing…"}
                       </>
                     ) : (
                       <>
-                        <Send className="size-4.5" />
+                        <Send data-icon="inline-start" />
                         {isEdit ? "Save changes" : "Publish showcase"}
                       </>
                     )}
@@ -885,13 +880,13 @@ export function CreateShowcaseForm({
                   type="button"
                   variant="outline"
                   onClick={() => router.push(cancelHref)}
-                  className="h-11 w-full rounded-full border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                  className="h-11 w-full rounded-full text-sm font-semibold"
                 >
                   Cancel
                 </Button>
               </div>
 
-              <p className="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                 {isEdit
                   ? "Edits to an approved showcase go back through review. What is live stays as it is until yours is approved."
                   : "Showcases are published for review before they appear on the index."}
@@ -917,12 +912,12 @@ function EditFormSkeleton({ stickyTop }: { stickyTop: string }) {
       <div className="space-y-6 lg:col-span-2">
         {[0, 1, 2].map((section) => (
           <div key={section} className={cn(CARD, "space-y-4 p-5 sm:p-6")}>
-            <div className="flex items-center gap-3.5 border-b border-slate-100 pb-4 dark:border-slate-800">
-              <div className="size-9 rounded-xl bg-slate-200 dark:bg-slate-800" />
-              <div className="h-6 w-40 rounded-lg bg-slate-200 dark:bg-slate-800" />
+            <div className="flex items-center gap-3.5 border-b border-border pb-4">
+              <div className="size-9 rounded-xl bg-muted" />
+              <div className="h-6 w-40 rounded-lg bg-muted" />
             </div>
-            <div className="aspect-video w-full rounded-xl bg-slate-200 dark:bg-slate-800" />
-            <div className="h-11 w-full rounded-xl bg-slate-200 dark:bg-slate-800" />
+            <div className="aspect-video w-full rounded-xl bg-muted" />
+            <div className="h-11 w-full rounded-xl bg-muted" />
           </div>
         ))}
       </div>
@@ -933,9 +928,9 @@ function EditFormSkeleton({ stickyTop }: { stickyTop: string }) {
       >
         {[0, 1].map((panel) => (
           <div key={panel} className={cn(CARD, "space-y-4 p-5")}>
-            <div className="h-5 w-24 rounded bg-slate-200 dark:bg-slate-800" />
-            <div className="h-12 w-full rounded-xl bg-slate-200 dark:bg-slate-800" />
-            <div className="h-12 w-full rounded-xl bg-slate-200 dark:bg-slate-800" />
+            <div className="h-5 w-24 rounded bg-muted" />
+            <div className="h-12 w-full rounded-xl bg-muted" />
+            <div className="h-12 w-full rounded-xl bg-muted" />
           </div>
         ))}
       </div>

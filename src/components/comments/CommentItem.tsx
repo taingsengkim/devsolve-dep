@@ -79,6 +79,7 @@ export function CommentItem({
   onEdit,
   onDelete,
   isBusy,
+  omitAnchor,
   children,
 }: {
   comment: CommentResponse;
@@ -96,6 +97,8 @@ export function CommentItem({
   onEdit: (content: string) => Promise<void>;
   onDelete: () => Promise<void>;
   isBusy?: boolean;
+  /** Used by the focused preview so a later-loaded thread cannot duplicate an id. */
+  omitAnchor?: boolean;
   /** Answers to this comment. */
   children?: React.ReactNode;
 }) {
@@ -157,11 +160,12 @@ export function CommentItem({
 
   return (
     <motion.div
+      id={omitAnchor ? undefined : `comment-${comment.id}`}
       layout="position"
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="flex gap-3"
+      className="flex scroll-mt-24 gap-3 rounded-2xl target:bg-primary/5 target:ring-2 target:ring-primary/30"
     >
       {comment.authorAvatarUrl ? (
         // eslint-disable-next-line @next/next/no-img-element

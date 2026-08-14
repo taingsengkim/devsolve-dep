@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence } from "motion/react";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import {
 import {
   useCreateCommentMutation,
   useDeleteCommentMutation,
+  useGetCommentByIdQuery,
   useGetCommentThreadQuery,
   useGetCommentsQuery,
   useUpdateCommentMutation,
@@ -71,6 +72,20 @@ export function CommentsSection({
   /** Parents whose full reply list the reader has asked for. */
   const [expanded, setExpanded] = useState<string[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [focusedCommentId, setFocusedCommentId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const syncFocusedComment = () => {
+      const hash = decodeURIComponent(window.location.hash.slice(1));
+      setFocusedCommentId(
+        hash.startsWith("comment-") ? hash.slice("comment-".length) : null,
+      );
+    };
+
+    syncFocusedComment();
+    window.addEventListener("hashchange", syncFocusedComment);
+    return () => window.removeEventListener("hashchange", syncFocusedComment);
+  }, []);
 
   /* Posting is attributed to a session, so a signed-out reader is offered the
      way in rather than a box that only fails once they have typed into it. */
@@ -92,9 +107,34 @@ export function CommentsSection({
   const [updateComment] = useUpdateCommentMutation();
   const [deleteComment] = useDeleteCommentMutation();
 
+  const { data: focusedComment } = useGetCommentByIdQuery(
+    focusedCommentId ?? "",
+    { skip: !focusedCommentId },
+  );
+
   const threads = useMemo(() => data?.content ?? [], [data]);
   const total = data?.totalElements ?? 0;
   const hasMorePages = data ? !data.last : false;
+  const focusedCommentIsVisible = focusedCommentId
+    ? threads.some(
+        (thread) =>
+          thread.comment.id === focusedCommentId ||
+          thread.replies.some((reply) => reply.id === focusedCommentId),
+      )
+    : false;
+
+  useEffect(() => {
+    if (!focusedCommentId) return;
+
+    const target =
+      document.getElementById(`comment-${focusedCommentId}`) ??
+      document.getElementById(`focused-comment-${focusedCommentId}`);
+    if (!target) return;
+
+    window.requestAnimationFrame(() => {
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, [focusedCommentId, focusedComment, threads]);
 
   const report = (error: unknown, fallback: string) =>
     toast.error(parseApiError(error, fallback).message);
@@ -218,6 +258,26 @@ export function CommentsSection({
       )}
 
       <div className="mt-6">
+        {focusedComment && !focusedCommentIsVisible && (
+          <div
+            id={`focused-comment-${focusedComment.id}`}
+            className="mb-6 scroll-mt-24 rounded-2xl border border-primary/30 bg-primary/5 p-4"
+          >
+            <p className="mb-3 text-sm font-semibold text-primary">
+              Comment from notification
+            </p>
+            <CommentItem
+              comment={focusedComment}
+              omitAnchor
+              isSignedIn={canPost}
+              isBusy={busyId === focusedComment.id}
+              onReply={(content) => reply(focusedComment.id, content)}
+              onEdit={(content) => edit(focusedComment.id, content)}
+              onDelete={() => remove(focusedComment.id)}
+            />
+          </div>
+        )}
+
         {isLoading ? (
           <ThreadSkeleton />
         ) : isError ? (
