@@ -62,18 +62,18 @@ export function TechStackField({ value, onChange }: TechStackFieldProps) {
       <div className="flex items-baseline justify-between gap-3">
         <label
           htmlFor="tech-stack-input"
-          className="text-base font-semibold text-slate-900 dark:text-slate-100"
+          className="text-base font-semibold text-foreground"
         >
           Tech stack
         </label>
-        <span className="text-sm font-medium text-slate-400 tabular-nums">
+        <span className="text-sm font-medium text-muted-foreground tabular-nums">
           {value.length}/{MAX_TECH}
         </span>
       </div>
 
       <div
         className={cn(
-          "rounded-xl border border-slate-300 bg-white p-2.5 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-600/15 dark:border-slate-700 dark:bg-slate-900",
+          "rounded-xl border border-border bg-background p-2.5 transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20",
         )}
       >
         {value.length > 0 && (
@@ -87,14 +87,14 @@ export function TechStackField({ value, onChange }: TechStackFieldProps) {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.92 }}
                   transition={{ duration: 0.15 }}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 py-1 text-sm font-semibold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary"
                 >
                   {tech}
                   <button
                     type="button"
                     onClick={() => remove(tech)}
                     aria-label={`Remove ${tech}`}
-                    className="text-blue-500 transition-colors hover:text-rose-600"
+                    className="text-primary transition-colors hover:text-destructive"
                   >
                     <X className="size-3.5" />
                   </button>
@@ -105,7 +105,7 @@ export function TechStackField({ value, onChange }: TechStackFieldProps) {
         )}
 
         <div className="relative flex items-center gap-2">
-          <Search className="size-4 shrink-0 text-slate-400" />
+          <Search className="size-4 shrink-0 text-muted-foreground" />
           <input
             id="tech-stack-input"
             ref={inputRef}
@@ -134,20 +134,20 @@ export function TechStackField({ value, onChange }: TechStackFieldProps) {
                 ? `Limit of ${MAX_TECH} reached`
                 : "Search or add a technology…"
             }
-            className="w-full bg-transparent text-base text-slate-800 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed dark:text-slate-200"
+            className="w-full bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
           />
         </div>
 
         {open && !full && (matches.length > 0 || showCustom) && (
           <div className="relative">
-            <div className="absolute inset-x-0 top-2 z-20 max-h-56 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+            <div className="absolute inset-x-0 top-2 z-20 max-h-56 overflow-y-auto rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-lg">
               {matches.map((tech) => (
                 <button
                   key={tech}
                   type="button"
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => add(tech)}
-                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-primary"
                 >
                   {tech}
                   <Plus className="size-3.5" />
@@ -159,7 +159,7 @@ export function TechStackField({ value, onChange }: TechStackFieldProps) {
                   type="button"
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => add(draft)}
-                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50 dark:hover:bg-slate-800"
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-primary transition-colors hover:bg-muted"
                 >
                   Add “{canonicalDraft}”
                   <Plus className="size-3.5" />

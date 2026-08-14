@@ -141,7 +141,10 @@ export function CommentItem({
      parent to hang from, but nothing of what it said survives. */
   if (comment.removed) {
     return (
-      <div className={cn("flex gap-3", isReply && "pl-3")}>
+      <div
+        id={`comment-${comment.id}`}
+        className={cn("flex scroll-mt-24 gap-3", isReply && "pl-3")}
+      >
         <span className="mt-1 size-8 shrink-0 rounded-full bg-muted" />
         <div className="min-w-0 flex-1">
           <p className="rounded-xl bg-muted/50 px-4 py-3 text-sm italic text-muted-foreground">
@@ -157,11 +160,12 @@ export function CommentItem({
 
   return (
     <motion.div
+      id={`comment-${comment.id}`}
       layout="position"
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="flex gap-3"
+      className="flex scroll-mt-24 gap-3 rounded-2xl target:bg-primary/5 target:ring-2 target:ring-primary/30"
     >
       {comment.authorAvatarUrl ? (
         // eslint-disable-next-line @next/next/no-img-element

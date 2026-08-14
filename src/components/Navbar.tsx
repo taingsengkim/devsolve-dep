@@ -28,6 +28,8 @@ import {
   NavbarUserMenu,
   type NavbarIdentity,
 } from "@/components/navbar/NavbarUserMenu";
+import { NotificationProvider } from "@/components/notifications/NotificationContext";
+import { NotificationTrigger } from "@/components/notifications/NotificationTrigger";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { authClient } from "@/lib/auth/auth-client";
@@ -452,9 +454,10 @@ const Navbar = () => {
   };
 
   return (
-    // Fixed and out of flow: no full-width band, just the island floating over
-    // the page. `--navbar-height` is what reserves room for it in the layout.
-    <motion.header
+    <NotificationProvider enableStream={Boolean(sessionUser)}>
+      {/* Fixed and out of flow: no full-width band, just the island floating
+          over the page. `--navbar-height` reserves room for it in the layout. */}
+      <motion.header
       initial={reduce ? false : { y: -24, opacity: 0 }}
       /* Retracting on scroll is motion for its own sake — with reduced motion
          the island simply stays put. */
@@ -781,6 +784,8 @@ const Navbar = () => {
                   then Get Started, then Log in, and the theme toggle last —
                   it is the one control the mobile panel also offers. */}
               <div className="flex shrink-0 items-center justify-end gap-1.5 xl:gap-2.5">
+                {sessionUser && <NotificationTrigger />}
+
                 <ThemeToggle
                   variant="rectangle"
                   start="bottom-up"
@@ -1201,7 +1206,8 @@ const Navbar = () => {
           ) : null}
         </AnimatePresence>
       </div>
-    </motion.header>
+      </motion.header>
+    </NotificationProvider>
   );
 };
 

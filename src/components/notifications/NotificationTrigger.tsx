@@ -5,6 +5,8 @@ import { Bell } from "lucide-react";
 import { useNotification } from "./NotificationContext";
 import { useGetUnreadCountQuery } from "@/lib/redux/services/notificationsApi";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export const NotificationTrigger: React.FC<{ className?: string }> = ({ className }) => {
   const { openNotification } = useNotification();
@@ -18,16 +20,19 @@ export const NotificationTrigger: React.FC<{ className?: string }> = ({ classNam
       onClick={openNotification}
       aria-label="Notifications"
       title="Notifications"
-      className={`relative w-10 h-10 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer shrink-0 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 ${className || ""}`}
+      className={cn(
+        "relative size-10 shrink-0 cursor-pointer rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+        className,
+      )}
     >
-      <Bell className="w-5 h-5 text-slate-700 dark:text-neutral-300" />
+      <Bell />
       {unreadCount > 0 && (
-        <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-4 w-4 bg-rose-500 text-[10px] font-bold text-white items-center justify-center shadow-xs">
-            {unreadCount > 9 ? "9+" : unreadCount}
-          </span>
-        </span>
+        <Badge
+          variant="destructive"
+          className="absolute -right-0.5 -top-0.5 min-w-4 justify-center rounded-full px-1 py-0 text-[10px] font-bold tabular-nums shadow-xs"
+        >
+          {unreadCount > 9 ? "9+" : unreadCount}
+        </Badge>
       )}
     </Button>
   );

@@ -98,6 +98,15 @@ const tagFor = (type: CommentableType, id: string) =>
 
 export const commentsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    /** GET /api/v1/comments/{id} — resolves a notification to its owner. */
+    getCommentById: builder.query<CommentResponse, string>({
+      query: (id) => `/comments/${id}`,
+      providesTags: (result) =>
+        result
+          ? [tagFor(result.commentableType, result.commentableId)]
+          : [],
+    }),
+
     /**
      * GET /api/v1/comments/thread — the whole visible thread in one request.
      *
@@ -169,6 +178,8 @@ export const commentsApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetCommentByIdQuery,
+  useLazyGetCommentByIdQuery,
   useGetCommentThreadQuery,
   useGetCommentsQuery,
   useCreateCommentMutation,

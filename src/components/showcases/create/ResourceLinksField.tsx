@@ -66,17 +66,17 @@ export function ResourceLinksField() {
                       }
                       aria-label={`Resource ${index + 1} label`}
                       {...register(`resourceLinks.${index}.label`)}
-                      className="h-11 w-40 shrink-0 rounded-xl border-slate-300 bg-white text-base dark:border-slate-700"
+                      className="h-11 w-40 shrink-0 rounded-xl border-border bg-background text-base"
                     />
 
                     <div className="relative flex-1">
-                      <Link2 className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                      <Link2 className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         inputMode="url"
                         placeholder="figma.com/file/…"
                         aria-label={`Resource ${index + 1} URL`}
                         {...register(`resourceLinks.${index}.url`)}
-                        className="h-11 rounded-xl border-slate-300 bg-white pl-9 text-base dark:border-slate-700"
+                        className="h-11 rounded-xl border-border bg-background pl-9 text-base"
                       />
                     </div>
 
@@ -84,18 +84,18 @@ export function ResourceLinksField() {
                       type="button"
                       onClick={() => remove(index)}
                       aria-label={`Remove resource ${index + 1}`}
-                      className="mt-1.5 rounded-lg p-2 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                      className="mt-1.5 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                     >
                       <Trash2 className="size-4" />
                     </button>
                   </div>
 
                   {error ? (
-                    <p className="pl-1 text-sm font-medium text-rose-600">
+                    <p className="pl-1 text-sm font-medium text-destructive">
                       {error}
                     </p>
                   ) : host ? (
-                    <span className="ml-42 inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    <span className="ml-42 inline-flex items-center rounded-lg bg-muted px-2 py-0.5 text-sm font-medium text-muted-foreground">
                       {host}
                     </span>
                   ) : null}
@@ -110,9 +110,9 @@ export function ResourceLinksField() {
         type="button"
         variant="outline"
         onClick={() => append({ key: `res-${Date.now()}`, label: "", url: "" })}
-        className="h-11 rounded-xl border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900"
+        className="h-11 rounded-xl text-sm font-semibold"
       >
-        <Plus className="size-4" />
+        <Plus data-icon="inline-start" />
         Add resource link
       </Button>
     </div>

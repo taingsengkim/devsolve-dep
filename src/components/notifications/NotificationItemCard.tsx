@@ -2,7 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
+import { toast } from "sonner";
 import {
   AlertTriangle,
   Award,
@@ -14,12 +16,23 @@ import {
   ChevronRight,
   Gavel,
   Gift,
+  Loader2,
   Mail,
   MessageSquare,
   Sparkles,
   UserPlus,
 } from "lucide-react";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
 import type { Notification, NotificationType } from "@/lib/types/notifications/types";
+import {
+  useLazyGetCommentByIdQuery,
+  type CommentResponse,
+} from "@/lib/redux/services/commentsApi";
+import { cn } from "@/lib/utils";
 
 interface NotificationItemCardProps {
   item: Notification;
@@ -78,33 +91,63 @@ function getNotificationLink(type: NotificationType, id: string): string {
 function getNotificationIcon(type: NotificationType) {
   switch (type) {
     case "PROBLEM":
-      return <BookOpen className="w-4 h-4 text-blue-500" />;
+      return <BookOpen className="size-4" />;
     case "SOLUTION":
-      return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
+      return <CheckCircle2 className="size-4" />;
     case "PROGRAM":
-      return <Building2 className="w-4 h-4 text-indigo-500" />;
+      return <Building2 className="size-4" />;
     case "SHOWCASE":
-      return <Sparkles className="w-4 h-4 text-amber-500" />;
+      return <Sparkles className="size-4" />;
     case "ORGANIZATION":
-      return <Building className="w-4 h-4 text-cyan-500" />;
+      return <Building className="size-4" />;
     case "REPORT":
-      return <AlertTriangle className="w-4 h-4 text-rose-500" />;
+      return <AlertTriangle className="size-4" />;
     case "INVITATION":
-      return <Mail className="w-4 h-4 text-violet-500" />;
+      return <Mail className="size-4" />;
     case "KYC":
-      return <BadgeCheck className="w-4 h-4 text-emerald-600" />;
+      return <BadgeCheck className="size-4" />;
     case "DISPUTE":
-      return <Gavel className="w-4 h-4 text-orange-500" />;
+      return <Gavel className="size-4" />;
     case "RECOGNITION":
-      return <Award className="w-4 h-4 text-yellow-500" />;
+      return <Award className="size-4" />;
     case "REWARD":
-      return <Gift className="w-4 h-4 text-emerald-500" />;
+      return <Gift className="size-4" />;
     case "USER":
-      return <UserPlus className="w-4 h-4 text-blue-500" />;
+      return <UserPlus className="size-4" />;
     case "COMMENT":
     default:
-      return <MessageSquare className="w-4 h-4 text-slate-500" />;
+      return <MessageSquare className="size-4" />;
   }
+}
+
+function getCommentLink(comment: CommentResponse): string {
+  const anchor = `#comment-${comment.id}`;
+
+  switch (comment.commentableType) {
+    case "PROBLEM":
+      return `/community/${comment.commentableId}${anchor}`;
+    case "SHOWCASE":
+      return `/showcases/${comment.commentableId}${anchor}`;
+    case "PROGRAM":
+      return `/dashboard/programs/${comment.commentableId}${anchor}`;
+    case "REPORT":
+      return `/dashboard/my-reports/${comment.commentableId}${anchor}`;
+    case "SOLUTION":
+    default:
+      return "/dashboard/my-community";
+  }
+}
+
+function getInitials(name?: string | null): string {
+  if (!name?.trim()) return "?";
+
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
 }
 
 function formatNotificationTime(dateStr: string): string {
@@ -133,10 +176,36 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
   onMarkRead,
   onCloseModal,
 }) => {
+  const router = useRouter();
+  const [resolveComment, { isFetching: isResolvingComment }] =
+    useLazyGetCommentByIdQuery();
   const targetHref = getNotificationLink(item.notifiableType, item.notifiableId);
   const isUnread = !item.read;
+  const hasCommentAuthor =
+    item.notifiableType === "COMMENT" &&
+    Boolean(item.authorName || item.authorAvatarUrl);
 
-  const handleClick = () => {
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (item.notifiableType === "COMMENT") {
+      event.preventDefault();
+      if (isResolvingComment) return;
+
+      if (isUnread && item.id && onMarkRead) {
+        onMarkRead(item.id);
+      }
+
+      void resolveComment(item.notifiableId)
+        .unwrap()
+        .then((comment) => {
+          onCloseModal?.();
+          router.push(getCommentLink(comment));
+        })
+        .catch(() => {
+          toast.error("That comment could not be opened.");
+        });
+      return;
+    }
+
     if (isUnread && item.id && onMarkRead) {
       onMarkRead(item.id);
     }
@@ -152,16 +221,30 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ duration: 0.2 }}
-      className={`group relative flex items-start gap-3.5 p-3.5 sm:p-4 rounded-2xl transition-all border ${
+      className={cn(
+        "group relative flex items-start gap-3.5 rounded-2xl border p-3.5 transition-colors sm:p-4",
         isUnread
-          ? "bg-slate-50/80 hover:bg-slate-100/80 dark:bg-slate-900/60 dark:hover:bg-slate-800/60 border-blue-500/20"
-          : "bg-white hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-900/50 border-slate-200/60 dark:border-slate-800/60"
-      }`}
+          ? "border-primary/20 bg-muted/70 hover:bg-muted"
+          : "border-border bg-card hover:bg-muted/40",
+      )}
     >
-      {/* Icon Avatar */}
-      <div className="flex size-10 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 shrink-0 shadow-2xs border border-slate-200/50 dark:border-slate-700/50">
-        {getNotificationIcon(item.notifiableType)}
-      </div>
+      {hasCommentAuthor ? (
+        <Avatar size="lg" aria-label={item.authorName || "Comment author"}>
+          {item.authorAvatarUrl && (
+            <AvatarImage
+              src={item.authorAvatarUrl}
+              alt={item.authorName || "Comment author"}
+            />
+          )}
+          <AvatarFallback className="font-semibold">
+            {getInitials(item.authorName)}
+          </AvatarFallback>
+        </Avatar>
+      ) : (
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border bg-muted text-muted-foreground shadow-2xs">
+          {getNotificationIcon(item.notifiableType)}
+        </div>
+      )}
 
       {/* Main Content Area */}
       <div className="flex-1 min-w-0">
@@ -169,9 +252,10 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
           <Link
             href={targetHref}
             onClick={handleClick}
+            aria-disabled={isResolvingComment}
             className="group/title block min-w-0"
           >
-            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover/title:text-blue-600 dark:group-hover/title:text-blue-400 transition-colors leading-snug truncate">
+            <h3 className="truncate text-base font-semibold leading-snug text-foreground transition-colors group-hover/title:text-primary">
               {item.title}
             </h3>
           </Link>
@@ -184,27 +268,40 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
                 if (onMarkRead && item.id) onMarkRead(item.id);
               }}
               title="Mark as read"
-              className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0 mt-1 shadow-xs hover:scale-125 transition-transform cursor-pointer"
+              className="mt-1 size-2.5 shrink-0 cursor-pointer rounded-full bg-primary shadow-xs transition-transform hover:scale-125"
             />
           )}
         </div>
 
         {/* Content Details */}
-        <p className="text-sm text-slate-600 dark:text-slate-400 font-normal mt-1 leading-relaxed break-words">
+        <p className="mt-1 break-words text-sm font-normal leading-relaxed text-muted-foreground">
           {item.content}
         </p>
 
         {/* Footer info & Link */}
-        <div className="mt-2.5 flex items-center justify-between gap-2 text-xs font-medium text-slate-400 dark:text-slate-500">
-          <span>{formatNotificationTime(item.createdAt)}</span>
+        <div className="mt-2.5 flex items-center justify-between gap-2 text-sm font-medium text-muted-foreground">
+          <span className="min-w-0 truncate">
+            {hasCommentAuthor && item.authorName ? `${item.authorName} · ` : ""}
+            {formatNotificationTime(item.createdAt)}
+          </span>
 
           <Link
             href={targetHref}
             onClick={handleClick}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+            aria-disabled={isResolvingComment}
+            className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-primary transition-colors hover:text-primary/80 aria-disabled:pointer-events-none aria-disabled:opacity-60"
           >
-            <span>View details</span>
-            <ChevronRight className="w-3.5 h-3.5" />
+            {isResolvingComment ? (
+              <>
+                <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
+                <span>Opening…</span>
+              </>
+            ) : (
+              <>
+                <span>View details</span>
+                <ChevronRight className="size-3.5" />
+              </>
+            )}
           </Link>
         </div>
       </div>

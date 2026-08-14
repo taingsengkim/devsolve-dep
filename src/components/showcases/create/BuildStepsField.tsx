@@ -111,15 +111,15 @@ export function BuildStepsField() {
       {/* The section header above already names this, so the toolbar carries
           progress instead of repeating the title. */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-sm text-muted-foreground">
           Walk through how it was built. At least one step is required.
         </p>
         <span
           className={cn(
             "shrink-0 rounded-lg px-2.5 py-1 text-sm font-semibold tabular-nums transition-colors",
             readyCount === fields.length
-              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
-              : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+              ? "bg-primary/10 text-primary"
+              : "bg-muted text-muted-foreground",
           )}
         >
           {readyCount}/{fields.length} ready
@@ -127,7 +127,7 @@ export function BuildStepsField() {
       </div>
 
       {typeof stepErrors?.message === "string" && (
-        <p className="text-sm font-medium text-rose-600">{stepErrors.message}</p>
+        <p className="text-sm font-medium text-destructive">{stepErrors.message}</p>
       )}
 
       <div className="space-y-3">
@@ -149,12 +149,12 @@ export function BuildStepsField() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               className={cn(
-                "overflow-hidden rounded-xl border bg-white transition-colors dark:bg-slate-900",
+                "overflow-hidden rounded-xl border bg-card text-card-foreground transition-colors",
                 rowError
-                  ? "border-rose-300 dark:border-rose-900"
+                  ? "border-destructive/50"
                   : isOpen
-                    ? "border-blue-300 dark:border-blue-500/40"
-                    : "border-slate-200 dark:border-slate-800",
+                    ? "border-primary/40"
+                    : "border-border",
               )}
             >
               {/* ── Card header ── */}
@@ -164,10 +164,10 @@ export function BuildStepsField() {
                 <span className="relative shrink-0">
                   <span
                     className={cn(
-                      "flex size-8 items-center justify-center rounded-lg text-sm font-bold text-white tabular-nums transition-colors duration-300",
+                      "flex size-8 items-center justify-center rounded-lg text-sm font-bold tabular-nums transition-colors duration-300",
                       isReady
-                        ? "bg-emerald-500"
-                        : "bg-slate-900 dark:bg-slate-700",
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground",
                     )}
                   >
                     {index + 1}
@@ -179,7 +179,7 @@ export function BuildStepsField() {
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 500, damping: 22 }}
-                      className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-white text-emerald-600 ring-1 ring-emerald-500/30 dark:bg-slate-900"
+                      className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-background text-primary ring-1 ring-primary/30"
                     >
                       <Check className="size-2.5" strokeWidth={4} />
                     </motion.span>
@@ -196,15 +196,15 @@ export function BuildStepsField() {
                     className={cn(
                       "truncate text-base font-semibold",
                       step?.title
-                        ? "text-slate-900 dark:text-slate-100"
-                        : "text-slate-400",
+                        ? "text-foreground"
+                        : "text-muted-foreground",
                     )}
                   >
                     {step?.title || "Untitled step"}
                   </span>
                   <ChevronDown
                     className={cn(
-                      "size-4 shrink-0 text-slate-400 transition-transform duration-200",
+                      "size-4 shrink-0 text-muted-foreground transition-transform duration-200",
                       isOpen && "rotate-180",
                     )}
                   />
@@ -213,20 +213,20 @@ export function BuildStepsField() {
                 <div className="flex shrink-0 items-center gap-0.5">
                   {/* Attachment hints, so a collapsed card still says what it holds */}
                   {step?.codeSnippet ? (
-                    <Code2 className="hidden size-4 text-slate-400 sm:block" />
+                    <Code2 className="hidden size-4 text-muted-foreground sm:block" />
                   ) : null}
                   {step?.imageUrl || step?.imageFile ? (
-                    <ImageIcon className="size-4 text-slate-400" />
+                    <ImageIcon className="size-4 text-muted-foreground" />
                   ) : null}
                   {step?.diagramUrl || step?.diagramFile ? (
-                    <Network className="size-4 text-slate-400" />
+                    <Network className="size-4 text-muted-foreground" />
                   ) : null}
 
                   <button
                     type="button"
                     onClick={() => duplicateStep(index)}
                     aria-label={`Duplicate step ${index + 1}`}
-                    className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
+                    className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   >
                     <Copy className="size-4" />
                   </button>
@@ -236,7 +236,7 @@ export function BuildStepsField() {
                     onClick={() => remove(index)}
                     disabled={fields.length <= 1}
                     aria-label={`Delete step ${index + 1}`}
-                    className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+                    className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
                   >
                     <Trash2 className="size-4" />
                   </button>
@@ -252,11 +252,11 @@ export function BuildStepsField() {
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.22, ease: "easeOut" }}
                   >
-                    <div className="space-y-5 border-t border-slate-100 p-4 dark:border-slate-800 sm:p-5">
+                    <div className="space-y-5 border-t border-border p-4 sm:p-5">
                       <div className="space-y-2">
                         <label
                           htmlFor={`step-title-${field.id}`}
-                          className="text-sm font-semibold text-slate-900 dark:text-slate-100"
+                          className="text-sm font-semibold text-foreground"
                         >
                           Step title
                         </label>
@@ -265,17 +265,17 @@ export function BuildStepsField() {
                           maxLength={255}
                           placeholder="e.g. Wire the OAuth callback"
                           {...register(`steps.${index}.title`)}
-                          className="h-11 rounded-xl border-slate-300 bg-white text-base dark:border-slate-700"
+                          className="h-11 rounded-xl border-border bg-background text-base"
                         />
                         {rowError?.title?.message && (
-                          <p className="text-sm font-medium text-rose-600">
+                          <p className="text-sm font-medium text-destructive">
                             {rowError.title.message}
                           </p>
                         )}
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <label className="text-sm font-semibold text-foreground">
                           Description
                         </label>
                         <MarkdownEditor
@@ -290,7 +290,7 @@ export function BuildStepsField() {
                           error={Boolean(rowError?.description)}
                         />
                         {rowError?.description?.message && (
-                          <p className="text-sm font-medium text-rose-600">
+                          <p className="text-sm font-medium text-destructive">
                             {rowError.description.message}
                           </p>
                         )}
@@ -353,9 +353,9 @@ export function BuildStepsField() {
         type="button"
         variant="outline"
         onClick={addStep}
-        className="h-12 w-full rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/60 text-base font-semibold text-slate-600 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900/60"
+        className="h-12 w-full rounded-xl border-2 border-dashed border-border bg-background text-base font-semibold text-foreground transition-colors hover:border-primary/50 hover:bg-muted hover:text-primary"
       >
-        <Plus className="size-4" />
+        <Plus data-icon="inline-start" />
         Add step
       </Button>
     </div>

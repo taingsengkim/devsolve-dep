@@ -6,10 +6,12 @@ import { toast } from "sonner";
 import { notificationsApi } from "@/lib/redux/services/notificationsApi";
 import type { Notification } from "@/lib/types/notifications/types";
 
-export function useNotificationStream() {
+export function useNotificationStream(enabled = true) {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    if (!enabled) return;
+
     let eventSource: EventSource | null = null;
     let reconnectTimer: NodeJS.Timeout | null = null;
 
@@ -50,5 +52,5 @@ export function useNotificationStream() {
       if (eventSource) eventSource.close();
       if (reconnectTimer) clearTimeout(reconnectTimer);
     };
-  }, [dispatch]);
+  }, [dispatch, enabled]);
 }
