@@ -5,6 +5,7 @@ import {
   GetProgramsParams,
   ProgramDetail,
   CreateProgramRequest,
+  UpdateProgramRequest,
 } from "@/lib/types/programs/types";
 import { PageProgramManagementSummaryResponseDto } from "@/lib/types/admin/programAdminTypes";
 
@@ -145,11 +146,11 @@ export const programsApi = proxyApi.injectEndpoints({
 
     updateProgram: builder.mutation<
       Program,
-      { id: string; body: Partial<CreateProgramRequest> & { state?: string } }
+      { id: string; body: UpdateProgramRequest }
     >({
       query: ({ id, body }) => ({
-        url: `/organizations/me/programs/${id}`,
-        method: "PUT",
+        url: `/programs/${id}`,
+        method: "PATCH",
         body,
       }),
       invalidatesTags: (_result, _error, { id }) => [

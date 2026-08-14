@@ -34,13 +34,11 @@ export function Step1BasicInfo({
   description,
   programType,
   visibility,
-  policy,
   onNameChange,
   setHandle,
   setDescription,
   setProgramType,
   setVisibility,
-  setPolicy,
   formatHandle,
 }: Step1BasicInfoProps) {
   return (
@@ -131,6 +129,7 @@ export function Step1BasicInfo({
             <SelectContent>
               <SelectItem value="PUBLIC">Public</SelectItem>
               <SelectItem value="PRIVATE">Private</SelectItem>
+              <SelectItem value="INVITE_ONLY">Invite only</SelectItem>
             </SelectContent>
           </Select>
         </div>

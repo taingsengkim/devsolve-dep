@@ -38,6 +38,7 @@ export interface ProgramReward {
 }
 
 export interface Asset {
+  id?: string;
   assetType: AssetType;
   identifier: string;
   description: string;
@@ -46,6 +47,7 @@ export interface Asset {
 }
 
 export interface RewardTier {
+  id?: string;
   severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "NONE";
   minAmount: number;
   maxAmount: number;
@@ -69,6 +71,10 @@ export interface CreateProgramRequest {
   assets: Asset[];
   rewards: RewardTier[];
 }
+
+export type UpdateProgramRequest = Partial<
+  Omit<CreateProgramRequest, "state">
+>;
 
 export interface OrganizationSummary {
   id?: string;

@@ -33,6 +33,20 @@ const isUuid = (value: string) =>
     value
   );
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const programItemsFrom = (value: unknown): Record<string, unknown>[] => {
+  const items =
+    isRecord(value) && Array.isArray(value.content)
+      ? value.content
+      : Array.isArray(value)
+        ? value
+        : [];
+
+  return items.filter(isRecord);
+};
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -122,10 +136,9 @@ export async function GET(
             const rawPublic = await publicSearchRes.text();
             if (rawPublic) {
               try {
-                const parsed = JSON.parse(rawPublic);
-                const items: any[] = parsed.content ?? (Array.isArray(parsed) ? parsed : []);
-                const found = items.find(
-                  (item: any) => item.id === id || item.handle === id
+                const parsed: unknown = JSON.parse(rawPublic);
+                const found = programItemsFrom(parsed).find(
+                  (item) => item.id === id || item.handle === id
                 );
                 if (found) {
                   return NextResponse.json(found, { status: 200 });
@@ -152,10 +165,9 @@ export async function GET(
               const rawOrg = await orgProgramsUpstream.text();
               if (rawOrg) {
                 try {
-                  const parsed = JSON.parse(rawOrg);
-                  const items: any[] = parsed.content ?? parsed ?? [];
-                  const found = items.find(
-                    (item: any) => item.id === id || item.handle === id
+                  const parsed: unknown = JSON.parse(rawOrg);
+                  const found = programItemsFrom(parsed).find(
+                    (item) => item.id === id || item.handle === id
                   );
                   if (found) {
                     return NextResponse.json(found, { status: 200 });
@@ -282,47 +294,20 @@ export async function PATCH(
     );
   }
 
-  const jsonHeaders = {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-    Authorization: `Bearer ${token}`,
-  };
-
-  const bodyStr = JSON.stringify(payload);
-
-  const candidates: Array<{ url: string; method: string }> = [
-    { url: `${BACKEND_API_URL}/organizations/me/programs/${id}`, method: "PUT" },
-    { url: `${BACKEND_API_URL}/programs/${id}`, method: "PUT" },
-    { url: `${BACKEND_API_URL}/programs/${id}`, method: "PATCH" },
-    { url: `${BACKEND_API_URL}/programs/${id}/state`, method: "PATCH" },
-    { url: `${BACKEND_API_URL}/programs/${id}/activate`, method: "POST" },
-    { url: `${BACKEND_API_URL}/organizations/me/programs/${id}/activate`, method: "POST" },
-    { url: `${BACKEND_API_URL}/organizations/me/programs/${id}`, method: "PATCH" },
-  ];
+  const encodedId = encodeURIComponent(id);
+  const targetUrl = `${BACKEND_API_URL}/programs/${encodedId}`;
 
   try {
-    let upstream: Response | null = null;
-
-    for (const candidate of candidates) {
-      const res = await fetch(candidate.url, {
-        method: candidate.method,
-        headers: jsonHeaders,
-        body: bodyStr,
-        cache: "no-store",
-      });
-
-      upstream = res;
-      if (res.ok) {
-        break;
-      }
-    }
-
-    if (!upstream) {
-      return NextResponse.json(
-        { message: "Failed to update program state." },
-        { status: 500 }
-      );
-    }
+    const upstream = await fetch(targetUrl, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+      cache: "no-store",
+    });
 
     const raw = await upstream.text();
     let body: unknown = null;
@@ -337,7 +322,7 @@ export async function PATCH(
     if (!upstream.ok) {
       const message =
         (body as { message?: string } | null)?.message ??
-        "Failed to update program state.";
+        "Failed to update program.";
       return NextResponse.json(
         { message, details: body },
         { status: upstream.status }
