@@ -230,13 +230,6 @@ function ContentManagement() {
     }
   };
 
-  const handleConfirmModalAction = (
-    id: string,
-    action: ModerationActionType,
-  ) => {
-    updateAction({ id, action });
-  };
-
   const contentTypeOptions = [
     { label: "All Types", value: "ALL" },
     { label: "Solutions", value: "SOLUTION" },
@@ -657,7 +650,6 @@ function ContentManagement() {
               setDialogReport(null);
               setDialogActionType(null);
             }}
-            onConfirm={handleConfirmModalAction}
           />
 
           {/* Flag Detail Side Drawer */}

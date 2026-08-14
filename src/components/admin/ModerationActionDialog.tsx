@@ -199,29 +199,30 @@ function ModerationActionForm({
           ? new Date(expiresAt).toISOString()
           : undefined;
 
-      const targetType = report
-        ? (report.type as ModerationActionTargetType)
-        : (target?.type as ModerationActionTargetType) || "USER";
-
-      // 1. Create moderation action audit log
-      await createModerationAction({
-        id: targetId,
-        body: {
-          targetType,
-          targetId,
-          action,
-          reason: reason.trim(),
-          expiresAt: formattedExpiresAt,
-        },
-      }).unwrap();
-
-      // 2. If this was triggered from a content report flag, resolve the flag too
       if (report) {
+        // A report ID is a content-flag ID, not a user-profile ID. The backend
+        // resolves flagged content through /admin/flags/{flagId}/resolve and
+        // removes the underlying target when removeContent is true.
         await updateContentReport({
           id: report.id,
           action,
           resolutionNote: reason.trim(),
           removeContent: action === "REMOVE",
+        }).unwrap();
+      } else {
+        const targetType =
+          (target?.type as ModerationActionTargetType) || "USER";
+
+        // Direct moderation from the Users page still targets a user profile.
+        await createModerationAction({
+          id: targetId,
+          body: {
+            targetType,
+            targetId,
+            action,
+            reason: reason.trim(),
+            expiresAt: formattedExpiresAt,
+          },
         }).unwrap();
       }
 
