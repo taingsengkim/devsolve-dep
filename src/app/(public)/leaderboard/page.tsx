@@ -2,12 +2,16 @@ import type { Metadata } from "next";
 import SectionBackdrop from "@/components/landing/SectionBackdrop";
 import LeaderboardClient from "@/components/Leaderboard/LeaderboardClient";
 import PointsLegend from "@/components/Leaderboard/PointsLegend";
+import { pageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
-  title: "Leaderboard · DevSolve",
+/* The site name comes from the root layout's title template, so it is not
+   repeated here — spelling it out produced `Leaderboard · DevSolve · DevSolve`. */
+export const metadata: Metadata = pageMetadata({
+  title: "Leaderboard",
   description:
     "Researchers ranked by reputation points earned from valid, critical and recognized reports.",
-};
+  path: "/leaderboard",
+});
 
 export default function LeaderboardPage() {
   return (
