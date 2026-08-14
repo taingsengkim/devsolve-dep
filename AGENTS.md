@@ -68,6 +68,21 @@ ALL API communication and data fetching across the application MUST strictly fol
 - **Registration Flow (`POST /api/auth/register`)**: UI → `useRegisterUserMutation()` → Proxy route `src/app/api/auth/register/route.ts` → `${BACKEND_API_URL}/auth/register`.
 - **Authenticated Endpoint Flow (`/me`)**: UI → `useGetProfileByUsernameQuery()` → `baseApi` injects Bearer token → Proxy route `src/app/api/user-profiles/me/route.ts` → `${BACKEND_API_URL}/user-profiles/me`.
 
+# SEO (Mandatory for every new route)
+
+The SEO layer lives in `src/lib/seo`. **Every new page under `src/app` must declare its metadata** — a route that ships without it inherits the site defaults and competes with the home page in search results.
+
+1. **Describe the page**: export `metadata` (static) or `generateMetadata` (data-driven) built with `pageMetadata()` from `src/lib/seo/metadata.ts`. It derives the canonical URL, Open Graph and Twitter cards from one title/description/path, so never hand-write those tags.
+2. **Client pages cannot export metadata**. When a page is `"use client"`, make `page.tsx` a server component that renders the client component (see `/community`, `/company`, `/profile/[username]`). A pass-through `layout.tsx` carrying the metadata is acceptable **only for a leaf route with no child routes** (see `/about`) — see the next rule for why.
+3. **Never set a `title` on a layout that has child routes** — a title in a layout, plain or `absolute`, replaces the root title template for everything beneath it, and those children lose their `· DevSolve` suffix. Layouts that only need `robots: NO_INDEX` must set only that.
+4. **Private, transactional and duplicate routes**: apply `robots: NO_INDEX` (from `src/lib/seo/metadata.ts`) to anything behind sign-in, any form/composer, and any thin listing. For a page that genuinely duplicates another URL, do not noindex it — pass the *primary* route as `path` to `pageMetadata()` so its canonical points there (see `/company/programs/[id]`).
+5. **Server-side reads for metadata** go through `src/lib/seo/content.ts`, never RTK Query — it has no store during `generateMetadata`. Those fetches are deliberately anonymous, so metadata reflects what a crawler can actually see, and they return `null` rather than throwing.
+6. **Structured data**: emit schema.org JSON-LD with `<JsonLd>` and the builders in `src/lib/seo/jsonld.tsx`. Only describe what is visibly on the page — overstating it is a manual-action risk for the whole domain.
+7. **Social cards**: use the `opengraph-image.tsx` file convention with `ogCard()` from `src/lib/seo/og-card.tsx`. Do **not** also set `openGraph.images` in metadata — file-based metadata outranks it, so the two would fight.
+8. **Descriptions from user Markdown** must go through `describe()` in `src/lib/seo/text.ts`, which strips Markdown without mangling identifiers like `invalid_grant`.
+9. **`NEXT_PUBLIC_SITE_URL` must be the real public origin in production.** A loopback value is ignored by `src/lib/seo/site.ts` in production builds, which then falls back to the deployment domain.
+10. **`sitemap.ts` / `robots.ts`**: any new public route type must be added to `src/app/sitemap.ts`, and any new private or transactional prefix to `src/app/robots.ts`.
+
 
 
 ***
