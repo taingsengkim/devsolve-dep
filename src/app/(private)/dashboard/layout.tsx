@@ -1,10 +1,24 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import Sidebar from "@/components/Sidebar";
 import { ProfileProvisioningGate } from "@/components/auth/ProfileProvisioningGate";
 import { NotificationProvider } from "@/components/notifications/NotificationContext";
 import { NotificationTrigger } from "@/components/notifications/NotificationTrigger";
 import { ThemeToggle } from "@/components/motion/theme-toggle";
+import { NO_INDEX } from "@/lib/seo/metadata";
+
+/**
+ * Everything under `/dashboard` is signed-in only — the session middleware
+ * bounces anonymous visitors to `/`, so a crawler never sees a page here
+ * anyway. Declaring it keeps that true if a route is ever opened up, and the
+ * title template gives every dashboard screen a sensible tab label.
+ */
+export const metadata: Metadata = {
+  // The root template adds `· DevSolve` on top of whatever this produces.
+  title: { default: "Dashboard", template: "%s · Dashboard" },
+  robots: NO_INDEX,
+};
 
 export default function DashboardLayout({
   children,
