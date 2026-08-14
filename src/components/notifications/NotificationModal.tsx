@@ -18,6 +18,7 @@ import {
 } from "@/lib/redux/services/notificationsApi";
 import { NotificationItemCard } from "./NotificationItemCard";
 import { Button } from "@/components/ui/button";
+import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 
 interface NotificationModalProps {
   isOpen?: boolean;
@@ -33,6 +34,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [pageNumber, setPageNumber] = useState(0);
+  const { user } = useSidebarAuth();
+  const isAdmin = user?.roles?.includes("ADMIN") ?? false;
 
   const { data, isLoading, isError, refetch } = useGetNotificationsQuery({
     pageNumber,
@@ -196,6 +199,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             <NotificationItemCard
               key={item.id ?? `notification-${index}`}
               item={item}
+              isAdmin={isAdmin}
               onMarkRead={handleMarkSingleRead}
               onCloseModal={onClose}
             />

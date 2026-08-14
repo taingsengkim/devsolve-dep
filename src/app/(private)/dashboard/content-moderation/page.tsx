@@ -242,6 +242,7 @@ function ContentManagement() {
     { label: "Solutions", value: "SOLUTION" },
     { label: "Problems", value: "PROBLEM" },
     { label: "Comments", value: "COMMENT" },
+    { label: "Showcases", value: "SHOWCASE" },
     { label: "Programs", value: "PROGRAM" },
   ];
 
