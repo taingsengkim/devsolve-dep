@@ -16,6 +16,7 @@ import {
   Clock,
   Download,
   Eye,
+  Flag,
   FolderGit2,
   ListOrdered,
   Pencil,
@@ -29,6 +30,8 @@ import {
 } from "lucide-react";
 
 import { SolutionCard } from "@/components/discussions/SolutionCard";
+import { ReportContentDialog } from "@/components/comments/ReportCommentDialog";
+import { Button } from "@/components/ui/button";
 import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
 import { VoteControl } from "@/components/ui/vote-control";
 import {
@@ -181,6 +184,7 @@ function Loaded({
   const isSignedIn = Boolean(me?.id);
   const isOwnProblem = Boolean(me?.id && problem.author?.id === me.id);
   const canAnswer = isSignedIn && !isOwnProblem;
+  const [reportingProblem, setReportingProblem] = useState(false);
   /* The backend decides who may accept; `canAcceptSolution` is that decision.
      Ownership is the fallback for a response that predates the field. */
   const canAccept = problem.canAcceptSolution ?? isOwnProblem;
@@ -585,6 +589,17 @@ function Loaded({
                   </Link>
                 )}
 
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setReportingProblem(true)}
+                  className="rounded-xl text-muted-foreground"
+                >
+                  <Flag data-icon="inline-start" />
+                  Report
+                </Button>
+
                 {problem.repositoryUrl?.startsWith("https://") && (
                   <a
                     href={problem.repositoryUrl}
@@ -684,6 +699,9 @@ function Loaded({
                     index={index}
                     canAccept={canAccept}
                     isMine={Boolean(me?.id && solution.author?.id === me.id)}
+                    canReport={Boolean(
+                      me?.id && solution.author?.id !== me.id,
+                    )}
                     accepted={isAcceptedSolution(
                       solution.id,
                       solution.isAccepted,
@@ -789,6 +807,14 @@ function Loaded({
           </aside>
         </div>
       </main>
+
+      <ReportContentDialog
+        contentId={id}
+        contentType="PROBLEM"
+        authorName={authorNameOf(problem.author)}
+        open={reportingProblem}
+        onOpenChange={setReportingProblem}
+      />
     </motion.div>
   );
 }

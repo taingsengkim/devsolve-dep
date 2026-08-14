@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 
 import { MarkdownView } from "@/components/showcases/detail/MarkdownView";
+import { ReportContentDialog } from "@/components/comments/ReportCommentDialog";
+import { Button } from "@/components/ui/button";
 import { VoteControl } from "@/components/ui/vote-control";
 import { CommentsSection } from "@/components/comments/CommentsSection";
 import {
@@ -79,6 +81,7 @@ function initialsOf(name: string) {
 
 export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
   const { data: showcase, isLoading } = useGetShowcaseByIdQuery(id);
+  const [reporting, setReporting] = useState(false);
 
   /* The showcase response carries its steps; the dedicated endpoint is the
      fallback for when it comes back without them. */
@@ -241,12 +244,16 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
                     <Share2 className="h-4 w-4" />
                     <span>Share</span>
                   </button>
-                  <button
+                  <Button
                     type="button"
-                    className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300 rounded-lg"
+                    variant="ghost"
+                    size="lg"
+                    onClick={() => setReporting(true)}
+                    className="rounded-xl text-muted-foreground"
                   >
-                    <Flag className="h-4 w-4" />
-                  </button>
+                    <Flag data-icon="inline-start" />
+                    Report
+                  </Button>
                 </div>
               </div>
             </div>
@@ -406,6 +413,14 @@ export function ShowcaseDetail({ id }: ShowcaseDetailProps) {
           </div>
         </div>
       </main>
+
+      <ReportContentDialog
+        contentId={id}
+        contentType="SHOWCASE"
+        authorName={showcase.authorName}
+        open={reporting}
+        onOpenChange={setReporting}
+      />
     </motion.div>
   );
 }

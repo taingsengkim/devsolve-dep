@@ -186,6 +186,18 @@ export const programsApi = proxyApi.injectEndpoints({
       ],
     }),
 
+    // PATCH /programs/{id}/submit (company sends a draft for admin review)
+    submitProgram: builder.mutation<Program, string>({
+      query: (id) => ({
+        url: `/programs/${id}/submit`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        "Program",
+        { type: "Program", id },
+      ],
+    }),
+
     // PATCH /programs/{id}/publish (publish / set to ACTIVE)
     publishProgram: builder.mutation<Program, string>({
       query: (id) => ({
@@ -264,6 +276,7 @@ export const {
   useUpdateProgramMutation,
   useDeleteProgramMutation,
   useUpdateProgramStateMutation,
+  useSubmitProgramMutation,
   usePublishProgramMutation,
   useCloseProgramMutation,
   usePauseProgramMutation,
