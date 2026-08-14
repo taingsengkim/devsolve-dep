@@ -211,15 +211,32 @@ export async function DELETE(
     );
   }
 
+  const targetUrls = [
+    `${BACKEND_API_URL}/programs/${encodeURIComponent(id)}`,
+    `${BACKEND_API_URL}/organizations/me/programs/${encodeURIComponent(id)}`,
+    `${BACKEND_API_URL}/admin/programs/${encodeURIComponent(id)}`,
+  ];
+
   try {
-    const upstream = await fetch(`${BACKEND_API_URL}/programs/${id}`, {
-      method: "DELETE",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      cache: "no-store",
-    });
+    let upstream: Response | null = null;
+    for (const url of targetUrls) {
+      const res = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      });
+      upstream = res;
+      if (res.ok) {
+        break;
+      }
+    }
+
+    if (!upstream) {
+      return unreachable();
+    }
 
     if (!upstream.ok) {
       const raw = await upstream.text();

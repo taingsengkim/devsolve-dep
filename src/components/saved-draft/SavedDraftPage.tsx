@@ -16,6 +16,7 @@ import {
 import type { DraftCategory, SavedDraftItem } from "@/components/saved-draft/types";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { useGetMyCompanyProgramsQuery, useDeleteProgramMutation } from "@/lib/redux/services/program/programsApi";
+import { useGetMyOrganizationQuery } from "@/lib/redux/services/organizationsApi";
 import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 6;
@@ -66,6 +67,9 @@ export function SavedDraftPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "title">("recent");
 
+  // Fetch real company organization profile for real logo
+  const { data: companyOrg } = useGetMyOrganizationQuery(undefined, { skip: !isCompany });
+
   // Fetch real company programs (filter by state: DRAFT)
   const { data: companyProgramsData, isLoading } =
     useGetMyCompanyProgramsQuery({ size: 100 }, { skip: !isCompany });
@@ -90,6 +94,8 @@ export function SavedDraftPage() {
                 ?.map((a: { identifier?: string; target?: string }) => a.identifier || a.target || "")
                 .filter(Boolean) ?? [];
 
+          const realLogo = companyOrg?.logoUrl || "";
+
           items.push({
             id: p.id,
             title: p.name || "Untitled Program Draft",
@@ -105,14 +111,14 @@ export function SavedDraftPage() {
               : "Recently",
             tags: inScopeTags,
             initials: (p.name || "PR").slice(0, 2).toUpperCase(),
-            logoSrc: "https://media.wired.com/photos/5926ffe47034dc5f91bed4e8/3:2/w_2560%2Cc_limit/google-logo.jpg",
+            logoSrc: realLogo,
             logoAlt: p.name || "Program Logo",
           });
         });
     }
 
     return items;
-  }, [companyProgramsData]);
+  }, [companyProgramsData, companyOrg]);
 
   // Reset activeTab if it is no longer visible
   useEffect(() => {
