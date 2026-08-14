@@ -79,7 +79,6 @@ export function CommentItem({
   onEdit,
   onDelete,
   isBusy,
-  omitAnchor,
   children,
 }: {
   comment: CommentResponse;
@@ -97,8 +96,6 @@ export function CommentItem({
   onEdit: (content: string) => Promise<void>;
   onDelete: () => Promise<void>;
   isBusy?: boolean;
-  /** Used by the focused preview so a later-loaded thread cannot duplicate an id. */
-  omitAnchor?: boolean;
   /** Answers to this comment. */
   children?: React.ReactNode;
 }) {
@@ -144,7 +141,10 @@ export function CommentItem({
      parent to hang from, but nothing of what it said survives. */
   if (comment.removed) {
     return (
-      <div className={cn("flex gap-3", isReply && "pl-3")}>
+      <div
+        id={`comment-${comment.id}`}
+        className={cn("flex scroll-mt-24 gap-3", isReply && "pl-3")}
+      >
         <span className="mt-1 size-8 shrink-0 rounded-full bg-muted" />
         <div className="min-w-0 flex-1">
           <p className="rounded-xl bg-muted/50 px-4 py-3 text-sm italic text-muted-foreground">
@@ -160,7 +160,7 @@ export function CommentItem({
 
   return (
     <motion.div
-      id={omitAnchor ? undefined : `comment-${comment.id}`}
+      id={`comment-${comment.id}`}
       layout="position"
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}

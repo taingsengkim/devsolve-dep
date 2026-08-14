@@ -7,10 +7,12 @@ import { toast } from "sonner";
 import { AlertCircle, MessageSquare, RotateCcw } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -107,34 +109,59 @@ export function CommentsSection({
   const [updateComment] = useUpdateCommentMutation();
   const [deleteComment] = useDeleteCommentMutation();
 
-  const { data: focusedComment } = useGetCommentByIdQuery(
-    focusedCommentId ?? "",
-    { skip: !focusedCommentId },
-  );
+  const {
+    data: focusedComment,
+    isLoading: isLoadingFocusedComment,
+    isError: isFocusedCommentError,
+    refetch: refetchFocusedComment,
+  } = useGetCommentByIdQuery(focusedCommentId ?? "", {
+    skip: !focusedCommentId,
+  });
+  const focusedParentId = focusedComment?.parentCommentId ?? "";
+  const {
+    data: focusedParent,
+    isLoading: isLoadingFocusedParent,
+    isError: isFocusedParentError,
+    refetch: refetchFocusedParent,
+  } = useGetCommentByIdQuery(focusedParentId, {
+    skip: !focusedParentId,
+  });
 
   const threads = useMemo(() => data?.content ?? [], [data]);
   const total = data?.totalElements ?? 0;
   const hasMorePages = data ? !data.last : false;
-  const focusedCommentIsVisible = focusedCommentId
-    ? threads.some(
-        (thread) =>
-          thread.comment.id === focusedCommentId ||
-          thread.replies.some((reply) => reply.id === focusedCommentId),
-      )
-    : false;
+  const isFocusedMode = Boolean(focusedCommentId);
+  const focusedCommentBelongsHere = Boolean(
+    focusedComment &&
+      focusedComment.commentableType === commentableType &&
+      focusedComment.commentableId === commentableId,
+  );
 
   useEffect(() => {
     if (!focusedCommentId) return;
 
-    const target =
-      document.getElementById(`comment-${focusedCommentId}`) ??
-      document.getElementById(`focused-comment-${focusedCommentId}`);
+    const target = document.getElementById(`comment-${focusedCommentId}`);
     if (!target) return;
 
     window.requestAnimationFrame(() => {
       target.scrollIntoView({ behavior: "smooth", block: "center" });
     });
-  }, [focusedCommentId, focusedComment, threads]);
+  }, [focusedCommentId, focusedComment, focusedParent]);
+
+  const showAllComments = () => {
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${window.location.search}`,
+    );
+    setFocusedCommentId(null);
+    window.requestAnimationFrame(() => {
+      document.getElementById("comments")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  };
 
   const report = (error: unknown, fallback: string) =>
     toast.error(parseApiError(error, fallback).message);
@@ -190,7 +217,7 @@ export function CommentsSection({
   };
 
   return (
-    <section className={className} aria-label="Comments">
+    <section id="comments" className={className} aria-label="Comments">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
           <MessageSquare aria-hidden="true" className="size-4.5" />
@@ -202,7 +229,7 @@ export function CommentsSection({
           )}
         </h2>
 
-        {total > 1 && (
+        {!isFocusedMode && total > 1 && (
           <Select
             value={sort}
             onValueChange={(value: string | null) => {
@@ -219,11 +246,13 @@ export function CommentsSection({
               <SelectValue placeholder="Sort" />
             </SelectTrigger>
             <SelectContent>
-              {SORTS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
+              <SelectGroup>
+                {SORTS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             </SelectContent>
           </Select>
         )}
@@ -258,27 +287,98 @@ export function CommentsSection({
       )}
 
       <div className="mt-6">
-        {focusedComment && !focusedCommentIsVisible && (
-          <div
-            id={`focused-comment-${focusedComment.id}`}
-            className="mb-6 scroll-mt-24 rounded-2xl border border-primary/30 bg-primary/5 p-4"
-          >
-            <p className="mb-3 text-sm font-semibold text-primary">
-              Comment from notification
-            </p>
-            <CommentItem
-              comment={focusedComment}
-              omitAnchor
-              isSignedIn={canPost}
-              isBusy={busyId === focusedComment.id}
-              onReply={(content) => reply(focusedComment.id, content)}
-              onEdit={(content) => edit(focusedComment.id, content)}
-              onDelete={() => remove(focusedComment.id)}
-            />
-          </div>
-        )}
+        {isFocusedMode ? (
+          <div className="flex flex-col gap-4 rounded-2xl border border-primary/30 bg-primary/5 p-4 sm:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">
+                  {focusedComment?.parentCommentId
+                    ? "Reply from notification"
+                    : "Parent comment from notification"}
+                </Badge>
+                {focusedComment?.parentCommentId && (
+                  <span className="text-sm text-muted-foreground">
+                    Shown beneath its direct parent
+                  </span>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={showAllComments}
+              >
+                View all comments
+              </Button>
+            </div>
 
-        {isLoading ? (
+            {isLoadingFocusedComment ||
+            (Boolean(focusedParentId) && isLoadingFocusedParent) ? (
+              <ThreadSkeleton count={2} />
+            ) : isFocusedCommentError ||
+              isFocusedParentError ||
+              !focusedCommentBelongsHere ||
+              (Boolean(focusedParentId) && !focusedParent) ? (
+              <div
+                role="alert"
+                className="flex flex-col items-center gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-6 text-center"
+              >
+                <AlertCircle className="size-5 text-destructive" />
+                <p className="text-base font-medium text-destructive">
+                  This comment thread could not be loaded.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    void refetchFocusedComment();
+                    if (focusedParentId) void refetchFocusedParent();
+                  }}
+                >
+                  <RotateCcw data-icon="inline-start" />
+                  Try again
+                </Button>
+              </div>
+            ) : focusedComment && focusedParent ? (
+              <div className="flex flex-col gap-3">
+                <p className="text-sm font-semibold text-muted-foreground">
+                  Direct parent
+                </p>
+                <CommentItem
+                  comment={focusedParent}
+                  isSignedIn={canPost}
+                  isBusy={busyId === focusedParent.id}
+                  onReply={(content) => reply(focusedParent.id, content)}
+                  onEdit={(content) => edit(focusedParent.id, content)}
+                  onDelete={() => remove(focusedParent.id)}
+                >
+                  <div className="mt-3 border-l-2 border-primary/30 pl-4">
+                    <CommentItem
+                      comment={focusedComment}
+                      isReply
+                      replyingTo={focusedParent.authorName}
+                      isSignedIn={canPost}
+                      isBusy={busyId === focusedComment.id}
+                      onReply={(content) => reply(focusedComment.id, content)}
+                      onEdit={(content) => edit(focusedComment.id, content)}
+                      onDelete={() => remove(focusedComment.id)}
+                    />
+                  </div>
+                </CommentItem>
+              </div>
+            ) : focusedComment ? (
+              <CommentItem
+                comment={focusedComment}
+                isSignedIn={canPost}
+                isBusy={busyId === focusedComment.id}
+                onReply={(content) => reply(focusedComment.id, content)}
+                onEdit={(content) => edit(focusedComment.id, content)}
+                onDelete={() => remove(focusedComment.id)}
+              />
+            ) : null}
+          </div>
+        ) : isLoading ? (
           <ThreadSkeleton />
         ) : isError ? (
           <div
@@ -513,7 +613,7 @@ function Descendants({
   );
 }
 
-function ThreadSkeleton() {
+function ThreadSkeleton({ count = 3 }: { count?: number }) {
   return (
     <div
       role="status"
@@ -521,7 +621,7 @@ function ThreadSkeleton() {
       className="animate-pulse space-y-6"
     >
       <span className="sr-only">Loading comments…</span>
-      {[0, 1, 2].map((index) => (
+      {Array.from({ length: count }, (_, index) => (
         <div key={index} className="flex gap-3">
           <span className="size-9 shrink-0 rounded-full bg-muted" />
           <div className="flex-1 space-y-2">
