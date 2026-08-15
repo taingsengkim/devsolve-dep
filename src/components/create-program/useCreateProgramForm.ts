@@ -5,6 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
+  isEditableDraft,
+  isUnderReview as isProgramUnderReview,
+} from "@/lib/programs/draft-status";
+import {
   useCreateProgramMutation,
   useGetProgramByIdQuery,
   useGetMyCompanyProgramByIdQuery,
@@ -127,7 +131,20 @@ export function useCreateProgramForm() {
   const [updateProgram, { isLoading: isUpdating }] = useUpdateProgramMutation();
   const [submitProgramForReview, { isLoading: isSubmitting }] =
     useSubmitProgramMutation();
-  const isExistingDraft = existingProgram?.state === "DRAFT";
+  /* What is being edited decides what every save on this screen means. The
+     test lives in `@/lib/programs/draft-status` because the Saved drafts list
+     has to draw exactly the same line — a program this screen treats as a
+     draft and that one does not is how a save ends with the author staring at
+     a list their program was never going to appear in. */
+  const isUnderReview = isProgramUnderReview(existingProgram);
+
+  /** A new program is a draft by definition; an existing one has to qualify. */
+  const isDraftProgram = existingProgram
+    ? isEditableDraft(existingProgram)
+    : true;
+
+  /** An existing program still awaiting its first submission. */
+  const isExistingDraft = Boolean(programId) && isDraftProgram;
 
   // Populate form fields with existing draft data when opened via SavedDraftCard
   /* eslint-disable react-hooks/set-state-in-effect -- The controlled multi-step form must hydrate when the async draft query resolves. */
@@ -170,7 +187,18 @@ export function useCreateProgramForm() {
       setExcludedTypes(existingProgram.exclusions.rules);
     }
 
-    if (typeof existingProgram.offersBounties === "boolean") {
+    /* The step 4 checkbox is read two ways: cash on a bounty program, and
+       reputation points on a response one. `offersBounties` upstream only ever
+       means cash, so a response program's box is restored from whether its
+       reward tiers carry points — reading the cash flag there would clear the
+       box, and with it hide the points matrix, on every program that pays in
+       points rather than money. */
+    if (existingProgram.engagementType === "RESPONSE") {
+      const rewards = existingProgram.rewards ?? [];
+      setOfferBounties(
+        rewards.length === 0 || rewards.some((reward) => (reward.points ?? 0) > 0),
+      );
+    } else if (typeof existingProgram.offersBounties === "boolean") {
       setOfferBounties(existingProgram.offersBounties);
     }
 
@@ -266,6 +294,18 @@ export function useCreateProgramForm() {
     setHandle(formatHandle(val));
   };
 
+  /**
+   * Whether this program pays money.
+   *
+   * `offersBounties` upstream means cash and nothing else, but the step 4
+   * checkbox it was wired to reads "offer reputation points" on a response
+   * program, whose amounts are carried by `rewards[].points` instead. Sending
+   * the checkbox straight through therefore declared that a response program
+   * paid bounties while every cash figure in the payload was 0 — a combination
+   * the backend has never stored, and the one it answered with a 500.
+   */
+  const paysCashBounties = programType !== "RESPONSE" && offerBounties;
+
   const buildRuleSection = (text: string, description: string) => ({
     description,
     rules: text
@@ -314,8 +354,11 @@ export function useCreateProgramForm() {
     return levels.map(({ key, severity }) => ({
       ...(rewardIds[key] ? { id: rewardIds[key] } : {}),
       severity,
-      minAmount: offerBounties ? parseInt(bountyMatrix[key].min || "0", 10) : 0,
-      maxAmount: offerBounties ? parseInt(bountyMatrix[key].max || "0", 10) : 0,
+      /* Gated on the same flag as the program-level figures: a response
+         program that was started as a bounty one would otherwise keep the cash
+         typed into the matrix before the switch. */
+      minAmount: paysCashBounties ? parseInt(bountyMatrix[key].min || "0", 10) : 0,
+      maxAmount: paysCashBounties ? parseInt(bountyMatrix[key].max || "0", 10) : 0,
       points: parseInt(pointsMatrix[key].max || "0", 10),
     }));
   };
@@ -360,6 +403,25 @@ export function useCreateProgramForm() {
     return nameValid && isHandleValid && descValid;
   }, [programName, isHandleValid, description]);
 
+  /**
+   * The least a draft needs to exist.
+   *
+   * Everything else on this form can be finished later, but a name and a
+   * handle cannot: the name is the only thing distinguishing one row from
+   * another under Saved drafts, and the handle becomes the program's URL for
+   * the rest of its life. Saving without them used to substitute
+   * "Untitled Draft Program" and the handle "draft-program", which claimed
+   * that name for the first draft saved and then collided on the next.
+   */
+  const canSaveDraft = useMemo(
+    () =>
+      !isUnderReview &&
+      programName.trim().length >= 2 &&
+      programName.trim().length <= 255 &&
+      isHandleValid,
+    [isUnderReview, programName, isHandleValid],
+  );
+
   const isStep2Valid = useMemo(() => {
     return buildAssets().length > 0;
   }, [buildAssets]);
@@ -385,27 +447,41 @@ export function useCreateProgramForm() {
     const trimmedName = programName.trim();
     const formattedHandle = formatHandle(handle);
 
+    /* Nothing is saved while the reviewers hold it. Both buttons are disabled
+       in that state, so this catches the paths that do not go through them —
+       and it is the rule the rest of the screen is built on, which makes it
+       worth stating once here rather than trusting the UI to enforce it. */
+    if (isUnderReview) {
+      toast.error(
+        "This program is being reviewed. You can edit it again once the review is decided.",
+      );
+      return;
+    }
+
+    /* Identity first, and for a draft too — see `canSaveDraft`. The button is
+       disabled without these, so reaching them means the form was submitted
+       some other way. */
+    if (trimmedName.length < 2 || trimmedName.length > 255) {
+      toast.error("Program name must be between 2 and 255 characters.");
+      setActiveTab(1);
+      return;
+    }
+
+    if (formattedHandle.length < 2 || formattedHandle.length > 100) {
+      toast.error("Program handle must be between 2 and 100 characters.");
+      setActiveTab(1);
+      return;
+    }
+
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(formattedHandle)) {
+      toast.error(
+        "Program handle must contain only lowercase letters, numbers, and single hyphens.",
+      );
+      setActiveTab(1);
+      return;
+    }
+
     if (!isDraft) {
-      if (trimmedName.length < 2 || trimmedName.length > 255) {
-        toast.error("Program name must be between 2 and 255 characters.");
-        setActiveTab(1);
-        return;
-      }
-
-      if (formattedHandle.length < 2 || formattedHandle.length > 100) {
-        toast.error("Program handle must be between 2 and 100 characters.");
-        setActiveTab(1);
-        return;
-      }
-
-      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(formattedHandle)) {
-        toast.error(
-          "Program handle must contain only lowercase letters, numbers, and single hyphens.",
-        );
-        setActiveTab(1);
-        return;
-      }
-
       if (!description.trim()) {
         toast.error("Program description is required.");
         setActiveTab(1);
@@ -433,10 +509,31 @@ export function useCreateProgramForm() {
       ? [...excludedTypes, newExcludedInput.trim()]
       : excludedTypes;
 
+    const minimumBounty = paysCashBounties
+      ? parseInt(bountyMatrix.low.min || "0", 10)
+      : 0;
+    const maximumBounty = paysCashBounties
+      ? parseInt(bountyMatrix.critical.max || "0", 10)
+      : 0;
+
+    /* Claiming bounties while naming no amount is the same contradiction the
+       response programs hit, so a finished submission is stopped here with the
+       step to fix rather than sent for the backend to fail on. A draft is left
+       alone — `offersBounties` below simply follows the numbers until the
+       matrix is filled in. */
+    if (!isDraft && paysCashBounties && maximumBounty <= 0) {
+      toast.error(
+        "Add a maximum bounty amount, or turn off financial bounties for this program.",
+      );
+      setActiveTab(4);
+      return;
+    }
+
     try {
       const payload = {
-        handle: formattedHandle || "draft-program",
-        name: trimmedName || "Untitled Draft Program",
+        // Both are guaranteed by the checks above, placeholders included.
+        handle: formattedHandle,
+        name: trimmedName,
         description: description || "Draft program description",
         engagementType:
           programType === "RESPONSE" ? ("RESPONSE" as const) : ("BOUNTY" as const),
@@ -456,13 +553,9 @@ export function useCreateProgramForm() {
           description: "The following issue types are considered out-of-scope and non-rewardable:",
           rules: effectiveExcludedTypes.length > 0 ? effectiveExcludedTypes : ["DoS"],
         },
-        offersBounties: offerBounties,
-        minimumBounty: offerBounties
-          ? parseInt(bountyMatrix.low.min || "0", 10)
-          : 0,
-        maximumBounty: offerBounties
-          ? parseInt(bountyMatrix.critical.max || "0", 10)
-          : 0,
+        offersBounties: paysCashBounties && maximumBounty > 0,
+        minimumBounty,
+        maximumBounty,
         assets: buildAssets(),
         rewards: buildRewards(),
       };
@@ -474,8 +567,12 @@ export function useCreateProgramForm() {
           await submitProgramForReview(programId).unwrap();
           toast.success("Program submitted for review!");
         } else {
+          /* Only a program that is still a draft can be saved as one. On an
+             approved or live program the same button is an ordinary edit, and
+             saying "draft saved" there described something that had not
+             happened — the update carries no state change with it. */
           toast.success(
-            isDraft
+            isDraft && isDraftProgram
               ? "Draft saved successfully!"
               : "Program updated successfully!",
           );
@@ -494,7 +591,11 @@ export function useCreateProgramForm() {
         }
       }
 
-      if (isDraft) {
+      /* Land on the screen that actually lists what was just saved. Saved
+         drafts only shows unsubmitted drafts, so sending an edit of a live or
+         approved program there left the author staring at a list their program
+         was never going to appear in. */
+      if (isDraft && isDraftProgram) {
         router.push("/dashboard/saved-draft");
       } else {
         router.push("/dashboard/program-management");
@@ -633,6 +734,9 @@ export function useCreateProgramForm() {
     isExistingDraft,
     isFormValid,
     isNextDisabled,
+    canSaveDraft,
+    isDraftProgram,
+    isUnderReview,
     formatHandle,
     handleNameChange,
     addInScope,

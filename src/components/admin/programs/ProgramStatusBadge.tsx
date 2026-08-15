@@ -17,6 +17,10 @@ interface StatusConfig {
 }
 
 const SUBMISSION_CONFIG: Record<string, StatusConfig> = {
+  // What a program carries before it is ever sent for review. Without an entry
+  // it fell through to the raw enum name below, so every unsubmitted draft in
+  // the list read "NOT_SUBMITTED".
+  NOT_SUBMITTED: { label: "Not Submitted", dotColor: "bg-slate-400" },
   PENDING_REVIEW: { label: "Pending Review", dotColor: "bg-amber-500" },
   APPROVED: { label: "Approved", dotColor: "bg-emerald-500" },
   REJECTED: { label: "Rejected", dotColor: "bg-rose-500" },
