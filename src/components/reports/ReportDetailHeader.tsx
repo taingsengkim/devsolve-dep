@@ -23,24 +23,24 @@ export function ReportDetailHeader({
   return (
     <div className="space-y-4">
       {/* Top Bar */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
               My Reports
             </h1>
-            <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200/80 font-bold text-xs px-2.5 py-0.5 rounded-md">
+            <Badge variant="outline" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20 font-bold text-xs px-2.5 py-0.5 rounded-md">
               {reportId}
             </Badge>
           </div>
-          <p className="text-base text-slate-500 font-medium">
+          <p className="text-base text-muted-foreground font-medium">
             {program} &bull; Submitted {submittedAgo}
           </p>
         </div>
         <Button
           variant="outline"
           onClick={onBack}
-          className="self-start sm:self-auto cursor-pointer rounded-xl border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-all gap-2 px-4 shadow-xs"
+          className="self-start sm:self-auto cursor-pointer rounded-xl bg-card text-foreground hover:bg-muted transition-all gap-2 px-4 shadow-xs"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back</span>
@@ -48,9 +48,9 @@ export function ReportDetailHeader({
       </header>
 
       {/* Demo View Toggle Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs text-xs">
-        <span className="font-bold text-slate-700 flex items-center gap-1.5">
-          <Info className="w-4 h-4 text-blue-600" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 border border-border shadow-xs text-xs">
+        <span className="font-bold text-foreground flex items-center gap-1.5">
+          <Info className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           <span>Report Status Demo View:</span>
         </span>
         <div className="flex items-center gap-2">
@@ -59,7 +59,7 @@ export function ReportDetailHeader({
             className={`px-3.5 py-1.5 rounded-xl font-semibold text-xs transition-all cursor-pointer ${
               !isRejected
                 ? "bg-blue-600 text-white shadow-xs"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200/70"
+                : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80"
             }`}
           >
             Accepted View
@@ -69,7 +69,7 @@ export function ReportDetailHeader({
             className={`px-3.5 py-1.5 rounded-xl font-semibold text-xs transition-all cursor-pointer ${
               isRejected
                 ? "bg-rose-600 text-white shadow-xs"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200/70"
+                : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80"
             }`}
           >
             Rejected View
