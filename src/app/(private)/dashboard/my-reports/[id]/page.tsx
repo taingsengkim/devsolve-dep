@@ -34,8 +34,8 @@ export default function ReportDetailPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3 animate-pulse">
-          <div className="w-10 h-10 rounded-full bg-blue-200" />
-          <span className="text-sm font-medium text-slate-500">Loading report details...</span>
+          <div className="w-10 h-10 rounded-full bg-primary/20" />
+          <span className="text-sm font-medium text-muted-foreground">Loading report details...</span>
         </div>
       </div>
     );
@@ -69,21 +69,21 @@ export default function ReportDetailPage() {
         /* STANDARD ACCEPTED/TRIAGING REPORT DETAIL VIEW */
         <div className="space-y-6">
           {/* Report Title & Status Stepper Card */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-6 space-y-4 shadow-xs">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+          <div className="bg-card rounded-2xl ring-1 ring-foreground/5 dark:ring-foreground/10 border border-border p-4 sm:p-6 space-y-4 shadow-xs">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
               {report.title}
             </h2>
             <ReportStatusTracker />
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex items-center p-1 bg-slate-100/80 rounded-xl gap-1 border border-slate-200/50 w-full sm:w-auto self-start">
+          <div className="flex items-center p-1 bg-muted/60 rounded-xl gap-1 border border-border w-full sm:w-auto self-start">
             <button
               onClick={() => setActiveTab("summary")}
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer text-center ${
                 activeTab === "summary"
-                  ? "bg-white text-blue-600 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
+                  ? "bg-card text-blue-600 dark:text-blue-400 shadow-xs ring-1 ring-foreground/5 dark:ring-foreground/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
               Summary
@@ -92,8 +92,8 @@ export default function ReportDetailPage() {
               onClick={() => setActiveTab("retest")}
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer text-center ${
                 activeTab === "retest"
-                  ? "bg-white text-blue-600 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
+                  ? "bg-card text-blue-600 dark:text-blue-400 shadow-xs ring-1 ring-foreground/5 dark:ring-foreground/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
               Retest History ({retestHistory.length})
