@@ -1,20 +1,22 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion } from "motion/react";
-import { ChevronRight, UserX } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useGetProfileByUsernameQuery } from "@/lib/redux/services/profileApi";
 import ProfileSidebar from "@/components/profile/ProfileSidebar";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileTabsContainer from "@/components/profile/ProfileTabsContainer";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
+import ProfileNotFound from "@/components/profile/ProfileNotFound";
 import ProfileEditPanel from "@/components/profile/edit/ProfileEditPanel";
+import { isNotFoundError } from "@/lib/profile/query-error";
 
 export default function ProfilePage() {
   const { username } = useParams<{ username: string }>();
-  const { data, isLoading, isError } = useGetProfileByUsernameQuery(username);
+  const { data, isLoading, isError, error, refetch } =
+    useGetProfileByUsernameQuery(username);
   const [isEditing, setIsEditing] = useState(false);
 
   if (isLoading) {
@@ -23,32 +25,12 @@ export default function ProfilePage() {
 
   if (isError || !data) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        className="w-full pb-12"
-      >
-        <div className="mx-auto max-w-lg space-y-4 rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
-          <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-neutral-800">
-            <UserX className="size-6" />
-          </span>
-          <h1 className="text-xl font-bold text-slate-800 dark:text-neutral-100">
-            Profile unavailable
-          </h1>
-          <p className="text-base text-slate-500 dark:text-neutral-400">
-            We couldn&apos;t load{" "}
-            <span className="font-semibold">@{username}</span> right now. The
-            profile may not exist, or the connection dropped.
-          </p>
-          <Link
-            href="/dashboard"
-            className="inline-flex h-11 items-center rounded-xl bg-blue-600 px-5 text-sm font-bold text-white transition-colors hover:bg-blue-700"
-          >
-            Back to dashboard
-          </Link>
-        </div>
-      </motion.div>
+      <ProfileNotFound
+        identifier={username}
+        notFound={isNotFoundError(error)}
+        onRetry={refetch}
+        scope="dashboard"
+      />
     );
   }
 

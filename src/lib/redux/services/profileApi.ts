@@ -18,9 +18,6 @@ import {
 } from "@/lib/types/profile/types";
 import {
   mockProfile,
-  mockStats,
-  mockSeverity,
-  mockBadges,
   mockEditProfileFormData,
 } from "@/lib/types/profile/mock-data";
 
@@ -364,30 +361,6 @@ function toProfileOverview(
   return { profile, stats, severity, badges: [] };
 }
 
-function fallbackProfileOverview(usernameArg?: string): ProfileOverviewResponse {
-  const targetUsername = usernameArg && usernameArg !== "me" ? usernameArg : mockProfile.username;
-  const displayName = targetUsername
-    .split(/[-_.]/)
-    .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : ""))
-    .join(" ")
-    .trim() || mockProfile.displayName;
-
-  const profile: Profile = {
-    ...mockProfile,
-    id: `usr_${targetUsername}`,
-    username: targetUsername,
-    displayName,
-    avatarInitials: initialsOf(displayName),
-  };
-
-  return {
-    profile,
-    stats: mockStats,
-    severity: mockSeverity,
-    badges: mockBadges,
-  };
-}
-
 export const profileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     /**
@@ -410,8 +383,14 @@ export const profileApi = baseApi.injectEndpoints({
           isUserId ? `/user-profiles/${username}` : `/user-profiles/me`,
         );
 
+        /* Errors are passed through rather than answered with a stand-in
+           profile. A 404 here means the backend has no record for that id, and
+           filling the page with mock reputation, badges and severity stats
+           attributed it all to a person who does not exist — a reader had no
+           way to tell invented numbers from real ones. The screens tell the
+           two cases apart from this status. */
         if (profileResult.error) {
-          return { data: fallbackProfileOverview(username) };
+          return { error: profileResult.error };
         }
 
         const raw = profileResult.data as UserProfileApiResponse;
@@ -424,7 +403,12 @@ export const profileApi = baseApi.injectEndpoints({
           !isUserId &&
           usernameOf(raw, "").toLowerCase() !== username.toLowerCase()
         ) {
-          return { data: fallbackProfileOverview(username) };
+          return {
+            error: {
+              status: 404,
+              data: { message: "Public user profile not found" },
+            },
+          };
         }
 
         // Either the `me` route, or a derived name that just matched it.
