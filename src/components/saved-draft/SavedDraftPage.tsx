@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { motion } from "motion/react";
+import { Clock3 } from "lucide-react";
 
 import { SavedDraftEmptyState } from "@/components/saved-draft/SavedDraftEmptyState";
 import { SavedDraftGrid } from "@/components/saved-draft/SavedDraftGrid";
@@ -16,6 +18,7 @@ import {
 import type { DraftCategory, SavedDraftItem } from "@/components/saved-draft/types";
 import { useSidebarAuth } from "@/hooks/useSidebarAuth";
 import { useGetMyCompanyProgramsQuery, useDeleteProgramMutation } from "@/lib/redux/services/program/programsApi";
+import { isEditableDraft, isUnderReview } from "@/lib/programs/draft-status";
 import { useGetMyOrganizationQuery } from "@/lib/redux/services/organizationsApi";
 import { toast } from "sonner";
 
@@ -82,7 +85,7 @@ export function SavedDraftPage() {
 
     if (companyProgramsData?.content) {
       companyProgramsData.content
-        .filter((p) => p.state === "DRAFT")
+        .filter(isEditableDraft)
         .forEach((p) => {
           const isResponse = p.engagementType === "RESPONSE";
           const inScopeTags = p.assets
@@ -119,6 +122,20 @@ export function SavedDraftPage() {
 
     return items;
   }, [companyProgramsData, companyOrg]);
+
+  /**
+   * Programs the reviewers are holding.
+   *
+   * They are deliberately absent from the list below, but an absence explains
+   * nothing: saving a draft on a program already under review and then finding
+   * this screen empty reads as a save that failed. Stating the count, and
+   * where those programs actually are, is the difference between a rule and a
+   * bug from where the reader sits.
+   */
+  const underReviewCount = useMemo(
+    () => (companyProgramsData?.content ?? []).filter(isUnderReview).length,
+    [companyProgramsData],
+  );
 
   // Reset activeTab if it is no longer visible
   useEffect(() => {
@@ -226,6 +243,29 @@ export function SavedDraftPage() {
           />
         </div>
       </motion.div>
+
+      {!isLoading && underReviewCount > 0 ? (
+        <motion.div
+          variants={pageEnterItem}
+          className="flex items-start gap-3 rounded-[20px] bg-card p-4 ring-1 ring-foreground/5 dark:ring-foreground/10 sm:items-center"
+        >
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
+            <Clock3 className="size-4.5" />
+          </span>
+          <p className="text-sm leading-6 text-muted-foreground">
+            {underReviewCount === 1
+              ? "1 program is awaiting review and is not listed here."
+              : `${underReviewCount} programs are awaiting review and are not listed here.`}{" "}
+            <Link
+              href="/dashboard/program-management"
+              className="font-semibold text-blue-600 hover:underline dark:text-blue-400"
+            >
+              Open program management
+            </Link>{" "}
+            to track them.
+          </p>
+        </motion.div>
+      ) : null}
 
       {isLoading ? (
         <motion.div variants={pageEnterItem}>

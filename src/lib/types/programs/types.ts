@@ -1,7 +1,11 @@
 export type EngagementType = "RESPONSE" | "BOUNTY";
 export type ProgramState = "DRAFT" | "PUBLISHED" | "ARCHIVED" | "ACTIVE" | "PAUSED" | "CLOSED";
 export type ProgramType = "All" | "Bounty" | "Response";
-export type SubmissionState = "PENDING_REVIEW" | "APPROVED" | "REJECTED";
+export type SubmissionState =
+  | "NOT_SUBMITTED"
+  | "PENDING_REVIEW"
+  | "APPROVED"
+  | "REJECTED";
 export type ProgramVisibility = "PUBLIC" | "PRIVATE" | "INVITE_ONLY";
 export type AssetType =
   | "URL"

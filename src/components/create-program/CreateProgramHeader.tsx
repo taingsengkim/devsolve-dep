@@ -4,7 +4,15 @@ import React from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-export function CreateProgramHeader() {
+/**
+ * The page heading. `isEditing` is what the route already knows from its `id`
+ * parameter — the screen is reused to edit an existing program, and titling
+ * that "Create New Program" told the author they were about to make a second
+ * one.
+ */
+export function CreateProgramHeader({ isEditing = false }: { isEditing?: boolean }) {
+  const title = isEditing ? "Edit Program" : "Create New Program";
+
   return (
     <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
       <div className="flex flex-col gap-1.5">
@@ -17,15 +25,15 @@ export function CreateProgramHeader() {
             <span>Program Management</span>
           </Link>
           <span className="text-muted-foreground/60">/</span>
-          <span className="font-semibold text-foreground">
-            Create New Program
-          </span>
+          <span className="font-semibold text-foreground">{title}</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-          Create New Program
+          {title}
         </h1>
         <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-          Configure and launch a new security bug bounty or vulnerability disclosure program for your organization.
+          {isEditing
+            ? "Update the scope, rules and rewards of this program for your organization."
+            : "Configure and launch a new security bug bounty or vulnerability disclosure program for your organization."}
         </p>
       </div>
     </header>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Suspense } from "react";
+import Link from "next/link";
 import { motion } from "motion/react";
 import {
   FileText,
@@ -9,6 +10,7 @@ import {
   DollarSign,
   ChevronLeft,
   ChevronRight,
+  Clock3,
   Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -58,10 +60,14 @@ function CreateProgramContent() {
     setPointsMatrix,
     isCreating,
     isSubmitting,
+    isFetchingDraft,
     isEditingDraft,
     isExistingDraft,
     isFormValid,
     isNextDisabled,
+    canSaveDraft,
+    isDraftProgram,
+    isUnderReview,
     formatHandle,
     handleNameChange,
     addInScope,
@@ -91,7 +97,30 @@ function CreateProgramContent() {
       className="space-y-6 w-full pb-12"
     >
       {/* PAGE HEADER & BREADCRUMB */}
-      <CreateProgramHeader />
+      <CreateProgramHeader isEditing={isEditingDraft} />
+
+      {/* A program with the reviewers is read-only until they answer: saving
+          over it would change what is being reviewed underneath them. Both
+          save buttons are disabled, so the reason is stated once here rather
+          than left to a tooltip nobody hovers. */}
+      {isUnderReview ? (
+        <div className="flex items-start gap-3 rounded-2xl bg-card p-4 ring-1 ring-foreground/5 dark:ring-foreground/10 sm:items-center">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
+            <Clock3 className="size-4.5" />
+          </span>
+          <p className="text-sm leading-6 text-muted-foreground">
+            This program has been submitted and is awaiting review, so it cannot
+            be edited right now.{" "}
+            <Link
+              href="/dashboard/program-management"
+              className="font-semibold text-blue-600 hover:underline dark:text-blue-400"
+            >
+              Track its review
+            </Link>{" "}
+            in program management.
+          </p>
+        </div>
+      ) : null}
 
       {/* STEPPER TABS */}
       <CreateProgramStepper
@@ -179,11 +208,24 @@ function CreateProgramContent() {
                 type="button"
                 variant="outline"
                 onClick={handleSaveDraft}
-                disabled={isCreating}
-                className="rounded-xl border-border bg-card text-foreground font-semibold text-sm h-11 px-5 gap-2 cursor-pointer hover:bg-muted"
+                /* Saving while the program is still loading would write the
+                   form's empty defaults over it. */
+                disabled={isCreating || isFetchingDraft || !canSaveDraft}
+                /* Disabled buttons cannot say why on their own, and there are
+                   two separate reasons to be disabled here. */
+                title={
+                  isUnderReview
+                    ? "This program is being reviewed and cannot be edited"
+                    : canSaveDraft
+                      ? undefined
+                      : "Add a program name and handle before saving a draft"
+                }
+                className="rounded-xl border-border bg-card text-foreground font-semibold text-sm h-11 px-5 gap-2 cursor-pointer hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Save className="w-4 h-4 text-muted-foreground" />
-                Save as Draft
+                {/* An approved or live program is no longer a draft, so saving
+                    it is an edit and says so. */}
+                {isDraftProgram ? "Save as Draft" : "Save Changes"}
               </Button>
 
               {activeTab < 4 ? (
@@ -200,7 +242,14 @@ function CreateProgramContent() {
                 <Button
                   type="button"
                   onClick={handleCreateProgram}
-                  disabled={!isFormValid || isCreating}
+                  disabled={
+                    !isFormValid || isCreating || isFetchingDraft || isUnderReview
+                  }
+                  title={
+                    isUnderReview
+                      ? "This program is being reviewed and cannot be edited"
+                      : undefined
+                  }
                   size="lg"
                   className="rounded-xl"
                 >

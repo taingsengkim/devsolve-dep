@@ -1,6 +1,15 @@
 import { PaginatedResponse } from "./types";
 
-export type ProgramSubmissionState = "PENDING_REVIEW" | "APPROVED" | "REJECTED";
+/**
+ * `NOT_SUBMITTED` is what a program carries before it is ever sent for review.
+ * It was missing here while the checked-in OpenAPI snapshot still predated it,
+ * which made a never-submitted draft look like it had no review status at all.
+ */
+export type ProgramSubmissionState =
+  | "NOT_SUBMITTED"
+  | "PENDING_REVIEW"
+  | "APPROVED"
+  | "REJECTED";
 export type ProgramState = "DRAFT" | "ACTIVE" | "PAUSED" | "CLOSED";
 export type ProgramEngagementType = "BOUNTY" | "RESPONSE";
 export type ProgramVisibility = "PUBLIC" | "PRIVATE" | "INVITE_ONLY";

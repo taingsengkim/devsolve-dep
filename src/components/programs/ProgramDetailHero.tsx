@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Program, ProgramDetail } from "@/lib/types/programs/types";
+import { isPublished } from "@/lib/programs/draft-status";
 import { Button } from "@/components/ui/button";
 import {
   useGetBookmarkStatusQuery,
@@ -36,7 +37,16 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
       .join("")
       .toUpperCase() || "OR";
 
-  const { data: isSaved } = useGetBookmarkStatusQuery({ type: "PROGRAM", targetId: program.id });
+  /* Saving is for programs a researcher can come back to. A draft has no
+     public page to return to — this hero is also what the owner previews from
+     Saved drafts — so the control is left out rather than shown against
+     something nobody else can open. The status request goes with it. */
+  const canBookmark = isPublished(program);
+
+  const { data: isSaved } = useGetBookmarkStatusQuery(
+    { type: "PROGRAM", targetId: program.id },
+    { skip: !canBookmark },
+  );
   const [addBookmark, { isLoading: isSaving }] = useAddBookmarkMutation();
   const [removeBookmark, { isLoading: isRemoving }] = useRemoveBookmarkMutation();
   const isToggling = isSaving || isRemoving;
@@ -121,24 +131,26 @@ export function ProgramDetailHero({ program }: ProgramDetailHeroProps) {
           </Link>
 
           {/* TOP RIGHT BUTTONS */}
-          <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
-            <Button
-              onClick={handleToggleSave}
-              disabled={isToggling}
-              variant="outline"
-              size="sm"
-              className={`rounded-lg h-9 border-transparent text-xs font-semibold gap-1.5 transition-all ${
-                isSaved
-                  ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30"
-                  : "bg-card text-foreground hover:bg-muted"
-              }`}
-            >
-              <Bookmark
-                className={`w-3.5 h-3.5 ${isSaved ? "fill-blue-600 text-blue-600 dark:fill-blue-400 dark:text-blue-400" : "text-muted-foreground"}`}
-              />
-              {isSaved ? "Saved" : "Save"}
-            </Button>
-          </div>
+          {canBookmark && (
+            <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
+              <Button
+                onClick={handleToggleSave}
+                disabled={isToggling}
+                variant="outline"
+                size="sm"
+                className={`rounded-lg h-9 border-transparent text-xs font-semibold gap-1.5 transition-all ${
+                  isSaved
+                    ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30"
+                    : "bg-card text-foreground hover:bg-muted"
+                }`}
+              >
+                <Bookmark
+                  className={`w-3.5 h-3.5 ${isSaved ? "fill-blue-600 text-blue-600 dark:fill-blue-400 dark:text-blue-400" : "text-muted-foreground"}`}
+                />
+                {isSaved ? "Saved" : "Save"}
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* PROGRAM NAME – responsive size */}

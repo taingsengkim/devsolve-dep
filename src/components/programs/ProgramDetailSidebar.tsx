@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Zap, Calendar, FileText, Loader2 } from "lucide-react";
 import { Program, ProgramDetail } from "@/lib/types/programs/types";
+import { isPublished } from "@/lib/programs/draft-status";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/auth-client";
 import { useKeycloakLogin } from "@/hooks/useKeycloakLogin";
@@ -87,31 +88,37 @@ export const ProgramDetailSidebar: React.FC<ProgramDetailSidebarProps> = ({
         </dl>
       </section>
 
-      {/* Widget 3: CTA Card */}
-      <section className="bg-gradient-to-br from-blue-900 via-slate-900 to-slate-900 text-white p-6 rounded-2xl shadow-md space-y-4 relative overflow-hidden">
-        <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-600/20 rounded-full blur-2xl" />
-        <div className="space-y-2 relative z-10">
-          <h3 className="text-lg font-bold tracking-tight">Ready to start?</h3>
-          <p className="text-sm text-slate-300 leading-relaxed">
-            Read the scope and rules carefully before testing.
-          </p>
-        </div>
+      {/* Widget 3: CTA Card — researchers only, and only once the program is
+          live. This sidebar is also what the owner previews from Saved drafts,
+          where inviting someone to start testing against an unpublished
+          program, and deep-linking a report form at it, has nothing behind
+          it. */}
+      {isPublished(program) && (
+        <section className="bg-gradient-to-br from-blue-900 via-slate-900 to-slate-900 text-white p-6 rounded-2xl shadow-md space-y-4 relative overflow-hidden">
+          <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-600/20 rounded-full blur-2xl" />
+          <div className="space-y-2 relative z-10">
+            <h3 className="text-lg font-bold tracking-tight">Ready to start?</h3>
+            <p className="text-sm text-slate-300 leading-relaxed">
+              Read the scope and rules carefully before testing.
+            </p>
+          </div>
 
-        <div className="block relative z-10">
-          <Button
-            onClick={handleSubmitReport}
-            disabled={isLoggingIn}
-            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold gap-2 shadow-sm cursor-pointer"
-          >
-            {isLoggingIn ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Zap className="w-4 h-4" />
-            )}
-            Submit a Report
-          </Button>
-        </div>
-      </section>
+          <div className="block relative z-10">
+            <Button
+              onClick={handleSubmitReport}
+              disabled={isLoggingIn}
+              className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold gap-2 shadow-sm cursor-pointer"
+            >
+              {isLoggingIn ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Zap className="w-4 h-4" />
+              )}
+              Submit a Report
+            </Button>
+          </div>
+        </section>
+      )}
     </aside>
   );
 };
