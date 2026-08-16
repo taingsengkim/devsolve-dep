@@ -51,14 +51,24 @@ export interface ReportDetail extends ReportItem {
   submittedAgo: string;
   claimedSeverity: string;
   confirmedSeverity: string;
-  cvssScore: string;
+  /** As the reporter scored it, or `null` when they gave no score. */
+  cvssScore: string | null;
+  cvssVector: string | null;
   rewardStatus: string;
   assetType: string;
-  environment: string;
+  /** Display label for the environment, or `null` when unreported. */
+  environment: string | null;
   policyUrl: string;
   description: string;
   impact: string;
   reproduceSteps: string[];
+  /** The remaining `ReportResponse` fields, each absent rather than invented. */
+  proofOfConcept: string | null;
+  remediation: string | null;
+  targetEndpoint: string | null;
+  discoveredAt: string | null;
+  referenceLinks: string[];
+  weakness: string | null;
   attachments: { name: string; size?: string; type: string }[];
   comments: CommentItem[];
   updates: ActivityUpdate[];
@@ -72,7 +82,10 @@ export interface SubmitReportPayload {
   targetAsset: string;
   httpMethod?: string;
   vulnerableParameter?: string;
+  /** One of `CreateReportRequest.environment`'s values, not a display label. */
   environment?: string;
+  /** `YYYY-MM-DD` from the form; sent as an ISO instant. */
+  discoveredAt?: string;
   category: string;
   severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO";
   cweIdentifier?: string;

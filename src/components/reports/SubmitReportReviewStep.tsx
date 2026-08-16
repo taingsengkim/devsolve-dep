@@ -3,7 +3,7 @@
 import React from "react";
 import { UseFormRegister, UseFormWatch } from "react-hook-form";
 import { Send, Lock, AlertTriangle, Check, CheckCircle2, BookmarkCheck } from "lucide-react";
-import { SubmitReportFormValues } from "@/lib/validations/report";
+import { SubmitReportFormValues, environmentLabel } from "@/lib/validations/report";
 import { AttachedFile } from "@/components/reports/FileUploadDropzone";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -155,7 +155,7 @@ export function SubmitReportReviewStep({
               {values.httpMethod || "GET"}
             </Badge>
             <Badge variant="outline" className="bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border-red-200 text-xs font-semibold rounded-md px-2.5 py-0.5">
-              {values.environment || "Production"}
+              {environmentLabel(values.environment)}
             </Badge>
           </div>
         </div>

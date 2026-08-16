@@ -1,19 +1,15 @@
+import { toDate } from "@/lib/format/datetime";
+
 /**
- * Timestamps as machines read them.
+ * Timestamps as machines read them — `lastmod` in the sitemap,
+ * `datePublished` in structured data.
  *
- * Upstream sends two shapes: `2026-08-12T08:27:58.476348Z` on some fields and
- * `2026-08-12T08:23:39.513952` on others. The second is UTC with the marker
- * left off, so it is added rather than letting `Date` read it as local time —
- * which would shift every `lastmod` and `datePublished` by the rendering
- * server's offset.
+ * The parsing rule (a missing zone marker means UTC, not local time) lives in
+ * `@/lib/format/datetime` so the dates crawlers are given and the dates
+ * readers are shown can never disagree about what an hour is.
  */
 export function isoDateTime(
   value: string | null | undefined,
 ): string | undefined {
-  if (!value) return undefined;
-
-  const normalized = /(Z|[+-]\d{2}:?\d{2})$/.test(value) ? value : `${value}Z`;
-  const parsed = new Date(normalized);
-
-  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+  return toDate(value)?.toISOString();
 }

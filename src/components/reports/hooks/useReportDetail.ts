@@ -5,7 +5,6 @@ import {
   useAddReportCommentMutation,
   RetestItem,
   MOCK_RETEST_HISTORY,
-  MOCK_REJECTED_REPORT_DETAIL,
 } from "@/lib/redux/services/reportsApi";
 
 export type ReportTab = "summary" | "retest";
@@ -15,7 +14,13 @@ export function useReportDetail() {
   const router = useRouter();
   const reportId = (params?.id as string) || "1";
 
-  const { data: initialReport, isLoading } = useGetReportByIdQuery(reportId);
+  const {
+    data: initialReport,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useGetReportByIdQuery(reportId);
   const [addComment, { isLoading: isSubmitting }] = useAddReportCommentMutation();
 
   // Mode state: allow toggling between Accepted/Triaging view and Rejected view
@@ -49,23 +54,35 @@ export function useReportDetail() {
     setRetestHistory([]);
   };
 
+  /* Copies this report's proof of concept. It used to copy one hardcoded XSS
+     string, so every report handed over the same payload regardless of what
+     was actually reported. */
   const handleCopyPayload = () => {
-    navigator.clipboard.writeText("/search?q=%3Cscript%3Ealert(document.domain)%3C/script%3E");
+    const payload = initialReport?.proofOfConcept;
+    if (!payload) return;
+
+    navigator.clipboard.writeText(payload);
     setCopiedPayload(true);
     setTimeout(() => setCopiedPayload(false), 2000);
   };
 
+  /* Read from the report itself. `reportId === "5"` used to force the rejected
+     view for one hardcoded id, a leftover from the mock data. */
   const isRejected =
-    isForceRejected !== null
-      ? isForceRejected
-      : initialReport?.status === "REJECTED" || reportId === "5";
+    isForceRejected !== null ? isForceRejected : initialReport?.status === "REJECTED";
 
-  const report = isRejected ? MOCK_REJECTED_REPORT_DETAIL : initialReport;
+  /* The real report, whatever its state. A rejected one used to be swapped for
+     `MOCK_REJECTED_REPORT_DETAIL` wholesale, so every rejected report in the
+     system displayed the same invented finding and rejection reason. */
+  const report = initialReport;
 
   return {
     reportId,
     report,
     isLoading,
+    isError,
+    error,
+    refetch,
     isRejected,
     setIsForceRejected,
     activeTab,

@@ -80,7 +80,7 @@ export function SubmitReportTargetSection({
   isLoading,
   selectedProgram,
 }: SubmitReportTargetSectionProps) {
-  const selectedEnvironment = watch("environment") || "Production";
+  const selectedEnvironment = watch("environment") || "PRODUCTION";
   const selectedHttpMethod = watch("httpMethod") || "GET";
   const selectedProgramId = watch("programId");
 
@@ -317,20 +317,22 @@ export function SubmitReportTargetSection({
             Environment <span className="text-red-500">*</span>
           </label>
 
-          <div className="grid grid-cols-3 gap-3">
+          {/* Five now, matching the API's enum, so they wrap at two rows on a
+              narrow screen rather than being squeezed into three columns. */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {ENVIRONMENTS.map((env) => {
-              const isSelected = selectedEnvironment === env;
-              const isProduction = env === "Production";
+              const isSelected = selectedEnvironment === env.value;
+              const isProduction = env.value === "PRODUCTION";
 
               return (
                 <button
-                  key={env}
+                  key={env.value}
                   type="button"
                   onClick={() =>
-                    setValue(
-                      "environment",
-                      env as "Production" | "Staging" | "Development",
-                    )
+                    setValue("environment", env.value, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
                   }
                   className={`h-11 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                     isSelected
@@ -340,15 +342,47 @@ export function SubmitReportTargetSection({
                       : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700"
                   }`}
                 >
-                  {env}
+                  {env.label}
                 </button>
               );
             })}
           </div>
         </div>
 
+        {/* Discovery date */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <label
+              htmlFor="discoveredAt"
+              className="text-sm font-semibold text-slate-900 dark:text-slate-100"
+            >
+              Date discovered
+            </label>
+            <span className="text-xs text-slate-500 font-medium">optional</span>
+          </div>
+          <Input
+            id="discoveredAt"
+            type="date"
+            /* Today is the last day that can be selected — a discovery cannot
+               have happened yet, and the browser enforces it before the schema
+               has to. */
+            max={new Date().toISOString().slice(0, 10)}
+            {...register("discoveredAt")}
+            className="bg-white dark:bg-slate-900 h-11 text-sm border-slate-300 dark:border-slate-700 sm:max-w-56"
+          />
+          <p className="text-xs text-slate-500 font-medium">
+            When you first observed the issue. Helps a triager establish how
+            long the exposure has been live.
+          </p>
+          {errors.discoveredAt && (
+            <p className="text-xs text-red-500 font-medium">
+              {errors.discoveredAt.message}
+            </p>
+          )}
+        </div>
+
         {/* Production Warning Callout */}
-        {selectedEnvironment === "Production" && (
+        {selectedEnvironment === "PRODUCTION" && (
           <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-sm font-medium text-amber-900 dark:text-amber-300 leading-relaxed">
             <AlertTriangle className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
             <div>

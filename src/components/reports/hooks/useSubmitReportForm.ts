@@ -25,12 +25,11 @@ export function useSubmitReportForm() {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [externalLinks, setExternalLinks] = useState<string[]>([""]);
-  const [reproduceStepsList, setReproduceStepsList] = useState<string[]>([
-    "Send a GET request to /api/v1/invoices/1337 with valid user JWT.",
-    "Observe successful 200 OK response with billing details.",
-    "Change the invoice ID parameter to another user's invoice ID (e.g. 1338).",
-    "Send request again and verify response status code.",
-  ]);
+  /* One empty row to write in. These used to be four sentences describing an
+     invented IDOR against an invoice endpoint, which submitted as the
+     reporter's own reproduction steps whenever they were not cleared out by
+     hand — the examples belong in placeholders, not in the payload. */
+  const [reproduceStepsList, setReproduceStepsList] = useState<string[]>([""]);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isDraftSaved, setIsDraftSaved] = useState<boolean>(false);
   const [successModalData, setSuccessModalData] =
@@ -52,27 +51,31 @@ export function useSubmitReportForm() {
 
   const form = useForm<SubmitReportFormValues>({
     resolver: zodResolver(submitReportSchema),
+    /* Empty by design. Every text field here used to arrive filled with a
+       worked example — a target URL, a CWE, a CVSS vector and score, an
+       expected and actual result — and anything the reporter did not overwrite
+       was submitted as their own finding. A triager had no way to tell the
+       leftovers from the report. */
     defaultValues: {
       programId: preselectedProgramId,
-      targetAsset: "https://api.nexacloud.com/v1/invoices/1337",
+      targetAsset: "",
       httpMethod: "GET",
       vulnerableParameter: "",
-      environment: "Production",
+      environment: "PRODUCTION",
+      discoveredAt: "",
       title: "",
-      category: "Insecure Direct Object Reference (IDOR)",
-      severity: "CRITICAL",
-      cweIdentifier: "CWE-639",
-      cvssScore: "8.1",
-      cvssVector: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+      category: "",
+      severity: "MEDIUM",
+      cweIdentifier: "",
+      cvssScore: "",
+      cvssVector: "",
       summaryPoC: "",
       reproduceStepsList: [],
       impact: "",
       remediation: "",
       pocPayload: "",
-      expectedResult:
-        "Server returns 403 Forbidden for invoice IDs belonging to other users.",
-      actualResult:
-        "Server returns 200 OK with full billing data of the victim user.",
+      expectedResult: "",
+      actualResult: "",
       externalLinks: [],
       checklistInScope: false,
       checklistNotDuplicate: false,
@@ -103,26 +106,12 @@ export function useSubmitReportForm() {
     }
   }, [preselectedProgramId, programs, setValue, selectedProgramId]);
 
-  // Sync default target asset when selected program changes if using placeholder
-  useEffect(() => {
-    const scopeAssets = selectedProgram?.inScopeAssets || selectedProgram?.assets || [];
-    if (selectedProgram && scopeAssets.length > 0) {
-      const currentAsset = watch("targetAsset");
-      const firstAsset = scopeAssets[0];
-      const rawDomain =
-        typeof firstAsset === "string"
-          ? firstAsset
-          : (firstAsset as any)?.identifier || (firstAsset as any)?.name || "example.com";
-      const defaultDomain =
-        typeof rawDomain === "string" ? rawDomain.replace("*.", "api.") : "api.example.com";
-      if (
-        !currentAsset ||
-        currentAsset === "https://api.nexacloud.com/v1/invoices/1337"
-      ) {
-        setValue("targetAsset", `https://${defaultDomain}/v1/endpoint`);
-      }
-    }
-  }, [selectedProgram?.id, setValue, watch, selectedProgram]);
+  /* The affected URL is typed, not guessed. This used to be filled in from the
+     program's first in-scope asset with `/v1/endpoint` appended — an address
+     that generally does not exist — and it landed in `targetEndpoint`, the
+     field a triager uses to find the vulnerability. The program's scope is
+     already listed above the input, which is the part that was actually
+     useful. */
 
   // Handle Step Navigation & Validation
   const validateCurrentStep = async (): Promise<boolean> => {
@@ -253,6 +242,7 @@ export function useSubmitReportForm() {
         httpMethod: values.httpMethod,
         vulnerableParameter: values.vulnerableParameter,
         environment: values.environment,
+        discoveredAt: values.discoveredAt,
         category: values.category,
         severity: values.severity,
         cweIdentifier: values.cweIdentifier,

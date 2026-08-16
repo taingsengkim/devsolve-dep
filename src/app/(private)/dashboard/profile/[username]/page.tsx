@@ -11,7 +11,7 @@ import ProfileTabsContainer from "@/components/profile/ProfileTabsContainer";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
 import ProfileNotFound from "@/components/profile/ProfileNotFound";
 import ProfileEditPanel from "@/components/profile/edit/ProfileEditPanel";
-import { isNotFoundError } from "@/lib/profile/query-error";
+import { isNotFoundError } from "@/lib/api/query-error";
 
 export default function ProfilePage() {
   const { username } = useParams<{ username: string }>();

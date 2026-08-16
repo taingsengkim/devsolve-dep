@@ -9,7 +9,7 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileTabsContainer from "@/components/profile/ProfileTabsContainer";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
 import ProfileNotFound from "@/components/profile/ProfileNotFound";
-import { isNotFoundError } from "@/lib/profile/query-error";
+import { isNotFoundError } from "@/lib/api/query-error";
 
 /**
  * A member's public profile.
