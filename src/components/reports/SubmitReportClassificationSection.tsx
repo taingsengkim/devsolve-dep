@@ -3,7 +3,13 @@
 import React, { useEffect } from "react";
 import { UseFormRegister, FieldErrors, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { Shield, AlertTriangle } from "lucide-react";
-import { SubmitReportFormValues, VULNERABILITY_CATEGORIES } from "@/lib/validations/report";
+import {
+  SubmitReportFormValues,
+  VULNERABILITY_CATEGORIES,
+  SEVERITY_LABELS,
+  parseCvssScore,
+  severityForCvss,
+} from "@/lib/validations/report";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -70,15 +76,37 @@ export function SubmitReportClassificationSection({
   const selectedSeverity = watch("severity") || "CRITICAL";
   const selectedCategory = watch("category");
 
-  // Auto suggest CWE when category changes
+  /* Auto-suggest the CWE and CVSS for the chosen category — and the severity
+     that score implies. Setting the score alone is what produced reports
+     claiming, say, LOW severity with an 8.6 attached: the backend rates that
+     score HIGH and rejects the pair outright. */
   useEffect(() => {
     if (selectedCategory && CWE_MAP[selectedCategory]) {
       const info = CWE_MAP[selectedCategory];
       setValue("cweIdentifier", info.cwe);
       setValue("cvssScore", info.score);
       setValue("cvssVector", info.vector);
+
+      const score = parseCvssScore(info.score);
+      if (score !== null) {
+        setValue("severity", severityForCvss(score), { shouldValidate: true });
+      }
     }
   }, [selectedCategory, setValue]);
+
+  /* The score is the authority on severity, so editing it moves the severity
+     with it. The two cannot be set independently without one of them being
+     wrong, and the backend refuses the combination rather than picking. */
+  const handleScoreChange = (value: string) => {
+    setValue("cvssScore", value, { shouldValidate: true, shouldDirty: true });
+
+    const score = parseCvssScore(value);
+    if (score !== null) {
+      setValue("severity", severityForCvss(score), { shouldValidate: true });
+    }
+  };
+
+  const scoreDrivenSeverity = parseCvssScore(watch("cvssScore"));
 
   return (
     <div className="space-y-6 font-sans">
@@ -239,9 +267,26 @@ export function SubmitReportClassificationSection({
             <Input
               id="cvssScore"
               placeholder="8.1"
-              {...register("cvssScore")}
+              inputMode="decimal"
+              {...register("cvssScore", {
+                onChange: (event) => handleScoreChange(event.target.value),
+              })}
               className="bg-white dark:bg-slate-900 h-11 text-sm border-slate-300 dark:border-slate-700"
             />
+            {scoreDrivenSeverity !== null ? (
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Rated{" "}
+                <span className="font-bold text-slate-700 dark:text-slate-300">
+                  {SEVERITY_LABELS[severityForCvss(scoreDrivenSeverity)]}
+                </span>{" "}
+                — severity above follows this score.
+              </p>
+            ) : null}
+            {errors.cvssScore && (
+              <p className="text-xs text-red-500 font-medium">
+                {errors.cvssScore.message}
+              </p>
+            )}
           </div>
         </div>
 

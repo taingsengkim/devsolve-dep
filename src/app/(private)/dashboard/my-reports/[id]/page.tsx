@@ -1,7 +1,10 @@
 "use client";
 
 import { motion } from "motion/react";
+import { ArrowLeft, FileWarning, RotateCcw } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import { isNotFoundError } from "@/lib/api/query-error";
 import { useReportDetail } from "@/components/reports/hooks/useReportDetail";
 import { ReportDetailHeader } from "@/components/reports/ReportDetailHeader";
 import { RejectedReportView } from "@/components/reports/RejectedReportView";
@@ -14,23 +17,22 @@ export default function ReportDetailPage() {
     reportId,
     report,
     isLoading,
+    isError,
+    error,
+    refetch,
     isRejected,
     setIsForceRejected,
     activeTab,
     setActiveTab,
-    commentText,
-    setCommentText,
-    isSubmitting,
     copiedPayload,
     retestHistory,
     handleBack,
-    handleSendComment,
     handleInitiateRetest,
     handleResetRetest,
     handleCopyPayload,
   } = useReportDetail();
 
-  if (isLoading || !report) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3 animate-pulse">
@@ -38,6 +40,56 @@ export default function ReportDetailPage() {
           <span className="text-sm font-medium text-muted-foreground">Loading report details...</span>
         </div>
       </div>
+    );
+  }
+
+  /* A report that cannot be loaded says so. This used to be indistinguishable
+     from loading — the query answered a failure with a mock report, and on the
+     paths where it did not, the page sat on its spinner for ever. */
+  if (isError || !report) {
+    const notFound = isNotFoundError(error);
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="mx-auto flex max-w-xl flex-col items-center rounded-[24px] bg-card px-6 py-12 text-center ring-1 ring-foreground/5 dark:ring-foreground/10 sm:px-12"
+      >
+        <span
+          aria-hidden="true"
+          className="flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground"
+        >
+          <FileWarning className="size-7" />
+        </span>
+
+        <h1 className="mt-6 text-2xl font-bold tracking-tight text-foreground">
+          {notFound ? "Report not found" : "We couldn't load this report"}
+        </h1>
+
+        <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
+          {notFound
+            ? "No report exists at this address. It may have been withdrawn, or the link may be out of date."
+            : "The report service did not respond. Nothing is wrong with your report — this is on our side."}
+        </p>
+
+        <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+          {!notFound && (
+            <Button onClick={() => refetch()} className="h-11 rounded-xl px-5 font-semibold">
+              <RotateCcw data-icon="inline-start" />
+              Try again
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            onClick={handleBack}
+            className="h-11 rounded-xl px-5 font-semibold"
+          >
+            <ArrowLeft data-icon="inline-start" />
+            Back to my reports
+          </Button>
+        </div>
+      </motion.div>
     );
   }
 
@@ -102,13 +154,7 @@ export default function ReportDetailPage() {
 
           {/* Tab Content Render */}
           {activeTab === "summary" ? (
-            <ReportSummaryTab
-              severity={report.severity || "HIGH"}
-              commentText={commentText}
-              isSubmitting={isSubmitting}
-              onCommentTextChange={setCommentText}
-              onSendComment={handleSendComment}
-            />
+            <ReportSummaryTab report={report} />
           ) : (
             <ReportRetestTab
               retestHistory={retestHistory}

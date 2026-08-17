@@ -3,7 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { UseFormRegister, FieldErrors, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { Target, CheckCircle2, Building2 } from "lucide-react";
-import { SubmitReportFormValues, VULNERABILITY_CATEGORIES, ENVIRONMENTS } from "@/lib/validations/report";
+import {
+  SubmitReportFormValues,
+  VULNERABILITY_CATEGORIES,
+  ENVIRONMENTS,
+  SEVERITY_LABELS,
+  parseCvssScore,
+  severityForCvss,
+} from "@/lib/validations/report";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -77,17 +84,48 @@ export function SubmitReportStep1Basics({
   const selectedProgramId = watch("programId");
   const selectedSeverity = watch("severity") || "CRITICAL";
   const selectedCategory = watch("category");
-  const selectedEnvironment = watch("environment") || "Production";
+  const selectedEnvironment = watch("environment") || "PRODUCTION";
 
-  // Auto-suggest CWE info when category changes
+  /* Auto-suggest the CWE and CVSS for the chosen category — and the severity
+     that score implies.
+     Setting the score without the severity is what produced reports the
+     backend refuses outright: picking SSRF filled in 8.6 while the severity
+     stayed wherever it was, and "a CVSS score of 8.6 is rated HIGH, which does
+     not match the reported severity LOW" came back as a 400 at submit. */
   useEffect(() => {
     if (selectedCategory && CWE_MAP[selectedCategory]) {
       const info = CWE_MAP[selectedCategory];
       setValue("cweIdentifier", info.cwe);
       setValue("cvssScore", info.score);
       setValue("cvssVector", info.vector);
+
+      const score = parseCvssScore(info.score);
+      if (score !== null) {
+        setValue("severity", severityForCvss(score), { shouldValidate: true });
+      }
     }
   }, [selectedCategory, setValue]);
+
+  const suggestedScore = parseCvssScore(watch("cvssScore"));
+
+  /**
+   * Choosing a severity by hand wins over the score a category suggested.
+   *
+   * The score is not shown on this step — it arrives silently with the
+   * category — so the severity buttons are the only thing the reader sees, and
+   * their choice has to be the one that stands. A suggestion left behind that
+   * rates differently is dropped along with its vector, since a vector implies
+   * the score it produces. The CWE stays: it describes the class of bug, not
+   * how bad this instance is.
+   */
+  const handleSeverityChange = (severity: SubmitReportFormValues["severity"]) => {
+    setValue("severity", severity, { shouldValidate: true });
+
+    if (suggestedScore !== null && severityForCvss(suggestedScore) !== severity) {
+      setValue("cvssScore", "", { shouldValidate: true });
+      setValue("cvssVector", "");
+    }
+  };
 
   const programTitle =
     selectedProgram?.name ||
@@ -209,7 +247,13 @@ export function SubmitReportStep1Basics({
           <Select
             value={selectedEnvironment}
             onValueChange={(val) => {
-              if (val) setValue("environment", val as "Production" | "Staging" | "Development");
+              if (val) {
+                setValue(
+                  "environment",
+                  val as SubmitReportFormValues["environment"],
+                  { shouldValidate: true, shouldDirty: true },
+                );
+              }
             }}
           >
             <SelectTrigger className="h-12 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100">
@@ -217,13 +261,42 @@ export function SubmitReportStep1Basics({
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
               {ENVIRONMENTS.map((env) => (
-                <SelectItem key={env} value={env}>
-                  {env}
+                <SelectItem key={env.value} value={env.value}>
+                  {env.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      {/* Discovery date */}
+      <div className="space-y-2">
+        <label
+          htmlFor="discoveredAt"
+          className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center justify-between"
+        >
+          <span>Date discovered</span>
+          <span className="text-xs text-slate-500 font-normal">optional</span>
+        </label>
+        <Input
+          id="discoveredAt"
+          type="date"
+          /* Today is the last selectable day — a discovery cannot have happened
+             yet, and the browser refuses it before the schema has to. */
+          max={new Date().toISOString().slice(0, 10)}
+          {...register("discoveredAt")}
+          className="h-12 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm sm:max-w-64"
+        />
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          When you first observed the issue. Helps triage judge how long the
+          exposure has been live.
+        </p>
+        {errors.discoveredAt && (
+          <p className="text-xs text-red-500 font-medium">
+            {errors.discoveredAt.message}
+          </p>
+        )}
       </div>
 
       {/* Vulnerability Title */}
@@ -248,8 +321,12 @@ export function SubmitReportStep1Basics({
         <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">
           Vulnerability Category / Weakness <span className="text-red-500">*</span>
         </label>
+        {/* Undefined rather than the first category when nothing is chosen, so
+            the trigger shows its placeholder and the reader picks a class
+            deliberately — falling back to the top of the list quietly filed
+            every unattended report as SQL injection. */}
         <Select
-          value={watch("category") || VULNERABILITY_CATEGORIES[0]}
+          value={watch("category") || undefined}
           onValueChange={(val) => {
             if (val) setValue("category", val, { shouldValidate: true });
           }}
@@ -284,7 +361,7 @@ export function SubmitReportStep1Basics({
               <button
                 key={opt.id}
                 type="button"
-                onClick={() => setValue("severity", opt.id as any, { shouldValidate: true })}
+                onClick={() => handleSeverityChange(opt.id)}
                 className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                   isSelected
                     ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 shadow-sm"
@@ -303,6 +380,29 @@ export function SubmitReportStep1Basics({
             );
           })}
         </div>
+
+        {/* The score reaches the report either way, so it is stated rather than
+            applied behind the reader's back — it is what the severity is
+            checked against on the way in. */}
+        {suggestedScore !== null && (
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            Submitting with{" "}
+            <span className="font-bold text-slate-700 dark:text-slate-300">
+              CVSS {suggestedScore.toFixed(1)}
+            </span>
+            , suggested for this category and rated{" "}
+            <span className="font-bold text-slate-700 dark:text-slate-300">
+              {SEVERITY_LABELS[severityForCvss(suggestedScore)]}
+            </span>
+            . Picking a different severity above clears it.
+          </p>
+        )}
+
+        {errors.cvssScore && (
+          <p className="text-sm font-medium text-red-500">
+            {errors.cvssScore.message}
+          </p>
+        )}
       </div>
     </div>
   );

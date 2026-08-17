@@ -39,6 +39,7 @@ import {
   useIncrementProblemViewsMutation,
   useRemoveAcceptedSolutionMutation,
   useSetAcceptedSolutionMutation,
+  type AuthorSummary,
   type ProblemResponse,
   type ProblemSeverity,
 } from "@/lib/redux/services/problemsApi";
@@ -766,29 +767,7 @@ function Loaded({
               <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
                 Posted by
               </h2>
-              <div className="flex items-center gap-3">
-                {problem.author?.avatarUrl ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={problem.author.avatarUrl}
-                    alt=""
-                    className="size-10 shrink-0 rounded-full border border-slate-200 bg-slate-100 object-cover dark:border-neutral-700 dark:bg-neutral-800"
-                  />
-                ) : (
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500 dark:bg-neutral-800 dark:text-neutral-300">
-                    {initialsOf(authorNameOf(problem.author, "?"))}
-                  </span>
-                )}
-                <div className="min-w-0">
-                  <p className="truncate text-base font-bold text-slate-900 dark:text-neutral-100">
-                    {authorNameOf(problem.author)}
-                  </p>
-                  <p className="text-xs font-medium text-slate-500 dark:text-neutral-400">
-                    {(problem.author?.reputation ?? 0).toLocaleString()}{" "}
-                    reputation
-                  </p>
-                </div>
-              </div>
+              <PostedBy author={problem.author} />
             </section>
 
             {problem.contentWarnings && problem.contentWarnings.length > 0 && (
@@ -929,6 +908,59 @@ function MyAnswerNotice({
 }
 
 /** A titled block inside the problem card, with its own rule above it. */
+/**
+ * The author card in the sidebar.
+ *
+ * It leads to the poster's profile, which is where a reader decides how much
+ * weight to give an answer — who they are, what else they have solved, what
+ * their reputation was earned on. The card falls back to plain markup when the
+ * response carries no author id: `/profile` is keyed by user id, so a link
+ * without one would land on a page that cannot resolve.
+ */
+function PostedBy({ author }: { author?: AuthorSummary }) {
+  const name = authorNameOf(author);
+  const reputation = (author?.reputation ?? 0).toLocaleString();
+
+  const identity = (
+    <>
+      {author?.avatarUrl ? (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
+          src={author.avatarUrl}
+          alt=""
+          className="size-10 shrink-0 rounded-full border border-slate-200 bg-slate-100 object-cover dark:border-neutral-700 dark:bg-neutral-800"
+        />
+      ) : (
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500 dark:bg-neutral-800 dark:text-neutral-300">
+          {initialsOf(authorNameOf(author, "?"))}
+        </span>
+      )}
+      <div className="min-w-0">
+        <p className="truncate text-base font-bold text-slate-900 group-hover:text-blue-600 dark:text-neutral-100 dark:group-hover:text-blue-400">
+          {name}
+        </p>
+        <p className="text-xs font-medium text-slate-500 dark:text-neutral-400">
+          {reputation} reputation
+        </p>
+      </div>
+    </>
+  );
+
+  if (!author?.id) {
+    return <div className="flex items-center gap-3">{identity}</div>;
+  }
+
+  return (
+    <Link
+      href={`/profile/${author.id}`}
+      className="group flex items-center gap-3 rounded-xl transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+    >
+      {identity}
+      <span className="sr-only">View profile</span>
+    </Link>
+  );
+}
+
 function Section({
   title,
   icon,

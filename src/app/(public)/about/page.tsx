@@ -836,7 +836,7 @@ function TechConstellation({
         >
           <span className="relative size-24 overflow-hidden rounded-full bg-white shadow-[0_10px_20px_-8px_rgba(23,37,84,0.5)]">
             <Image
-              src="/devsolve.png"
+              src="/devsolve-logo.png"
               alt=""
               fill
               sizes="96px"

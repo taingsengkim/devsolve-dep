@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { isCleanText, profanityMessage } from "@/lib/moderation/profanity";
 
 /* ─── URL handling ──────────────────────────────────────────────────────
    Authors type `github.com/me/repo` far more often than they type the
@@ -201,9 +202,14 @@ export const createShowcaseSchema = z
       .string()
       .trim()
       .min(1, "Project title is required")
-      .max(255, "Title must not exceed 255 characters"),
+      .max(255, "Title must not exceed 255 characters")
+      .refine(isCleanText, profanityMessage("Title")),
     categoryId: z.string().min(1, "Pick a category"),
-    overview: z.string().trim().min(1, "An overview is required"),
+    overview: z
+      .string()
+      .trim()
+      .min(1, "An overview is required")
+      .refine(isCleanText, profanityMessage("The overview")),
     techStack: z
       .array(z.string())
       .max(MAX_TECH, `Up to ${MAX_TECH} technologies`),

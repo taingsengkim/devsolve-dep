@@ -223,25 +223,35 @@ const Navbar = () => {
   // The header is a fixed island with no backdrop band, so it always overlaps
   // page content. To keep the screen clear it retracts while the reader moves
   // down the page and springs back the moment they scroll up.
+  /* Re-armed on every navigation rather than installed once, so each page
+     starts measuring from where it opens. Sharing one listener across pages
+     meant the first reading on a new page was compared against the last offset
+     of the old one, and that difference is not a movement the reader made. */
   useEffect(() => {
-    let previousY = window.scrollY;
+    let previousY: number | null = null;
     let frame = 0;
 
     const update = () => {
       frame = 0;
 
       const currentY = window.scrollY;
-      const delta = currentY - previousY;
 
       setScrolled(currentY > 4);
+
+      // The first reading of a page establishes the baseline, nothing more.
+      if (previousY === null) {
+        previousY = currentY;
+        return;
+      }
+
+      const delta = currentY - previousY;
+      previousY = currentY;
 
       // Ignore sub-pixel jitter and rubber-band overscroll, and never retract
       // over the first screenful — the island should be there on arrival.
       if (Math.abs(delta) > 4 && currentY > 0) {
         setHidden(delta > 0 && currentY > HIDE_AFTER);
       }
-
-      previousY = currentY;
     };
 
     const handleScroll = () => {
@@ -260,7 +270,7 @@ const Navbar = () => {
         window.cancelAnimationFrame(frame);
       }
     };
-  }, []);
+  }, [pathname]);
 
   // An open menu must never be dragged off-screen with the island. Derived
   // rather than pushed back into `hidden` from an effect — that spent a whole
@@ -340,6 +350,15 @@ const Navbar = () => {
     setCommunityMenuOpen(false);
     setMobileMenuOpen(false);
     setMobileCommunityOpen(false);
+
+    /* The island retracts on the way down a page and is released by scrolling
+       back up — but a new page opens at the top, where there is no up. Carrying
+       the retracted state across a navigation is how the header went missing:
+       the reader arrives, finds no navigation, and nothing they can do at the
+       top of the page brings it back. Opening the mobile menu made it worse,
+       since the menu forces the island visible and closing it on navigate let
+       the stale state snap it away again. */
+    setHidden(false);
   }
 
   // An open panel covers the page, so the page must not scroll underneath it —

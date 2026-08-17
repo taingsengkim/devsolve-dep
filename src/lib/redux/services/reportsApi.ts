@@ -1,18 +1,21 @@
 import { baseApi } from "./baseApi";
 import {
+  environmentLabel,
+  parseCvssScore,
+  severityForCvss,
+} from "@/lib/validations/report";
+import { formatDate, formatDateTime, toDate } from "@/lib/format/datetime";
+import {
   ReportItem,
   ReportsFilterParams,
   ReportDetail,
+  ActivityUpdate,
   CommentItem,
   SubmitReportPayload,
   SubmitReportResponse,
 } from "@/lib/types/reports/types";
 import type { ManagedReport } from "@/components/report-management/types";
-import {
-  MOCK_REPORTS,
-  MOCK_REPORT_DETAIL,
-  MOCK_REJECTED_REPORT_DETAIL,
-} from "@/lib/types/reports/mock-data";
+import { MOCK_REPORTS } from "@/lib/types/reports/mock-data";
 
 export * from "@/lib/types/reports/types";
 export * from "@/lib/types/reports/mock-data";
@@ -74,6 +77,21 @@ interface ReportApiResponse {
     type?: string;
     createdAt?: string;
   }>;
+  /* The fields `ReportResponse` grew when the submission form stopped folding
+     everything into one write-up. The detail screen filled these in with
+     invented values while they had nowhere to come from. */
+  stepsToReproduce?: string;
+  proofOfConcept?: string;
+  remediationRecommendation?: string;
+  targetEndpoint?: string;
+  environment?: string;
+  discoveredAt?: string;
+  referenceLinks?: string[];
+  cvssScore?: number;
+  cvssVector?: string;
+  weakness?: { id?: string; cweId?: string; name?: string };
+  asset?: { id?: string; assetType?: string; identifier?: string };
+  disclosureStatus?: string;
 }
 
 interface ProgramApiResponse {
@@ -152,11 +170,16 @@ function toBountyDisplay(
   return { bountyOrRep: "Pending Triage" };
 }
 
+/* Down to the second. Two reports touched on the same day are a common sight
+   on this list, and the date alone left no way to tell which moved last. */
 function toLastActivityDate(report: ReportApiResponse): string {
-  const iso = report.updatedAt || report.resolvedAt || report.triagedAt || report.submittedAt || report.createdAt;
-  const date = iso ? new Date(iso) : null;
-  if (!date || Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+  return formatDateTime(
+    report.updatedAt ||
+      report.resolvedAt ||
+      report.triagedAt ||
+      report.submittedAt ||
+      report.createdAt,
+  );
 }
 
 // The backend identifies reports by UUID with no separate human-readable
@@ -177,47 +200,42 @@ function extractReports(
 }
 
 
-// CreateReportRequest (POST /programs/{programId}/reports) only exposes one
-// free-text field for the write-up — no dedicated fields for target asset,
-// HTTP method, reproduction steps, PoC payload, remediation, etc. — so the
-// rest of the multi-step submit-report form is folded into one structured
-// write-up here instead of being silently dropped. Attachments have no
-// upload endpoint in the spec, so only their metadata is noted as text.
+/**
+ * The write-up, carrying only what `CreateReportRequest` has no field for.
+ *
+ * It used to carry everything: the request exposed one free-text field, so the
+ * whole multi-step form was flattened into a single Markdown document —
+ * reproduction steps, PoC, remediation and all. The request now has real
+ * fields for those, and they are sent as themselves, which is what lets a
+ * triager read, filter and act on them instead of parsing prose.
+ *
+ * What is left here has genuinely nowhere else to go: the HTTP method and
+ * parameter that qualify the endpoint, and the classification. Classification
+ * stays as text because `weaknessId` is a UUID into a weakness catalogue the
+ * API publishes no endpoint to read — there is no id to look up, so the CWE
+ * the reporter typed is preserved as prose rather than dropped.
+ */
 function composeVulnerabilityInformation(payload: SubmitReportPayload): string {
   const sections: string[] = [`## Summary\n${payload.summaryPoC}`];
 
   const targetLines = [
-    `Target: ${payload.targetAsset}`,
     payload.httpMethod ? `HTTP Method: ${payload.httpMethod}` : null,
     payload.vulnerableParameter ? `Vulnerable Parameter: ${payload.vulnerableParameter}` : null,
-    payload.environment ? `Environment: ${payload.environment}` : null,
   ].filter((line): line is string => Boolean(line));
-  sections.push(`## Target\n${targetLines.join("\n")}`);
+  if (targetLines.length) sections.push(`## Request\n${targetLines.join("\n")}`);
 
   const classificationLines = [
     `Category: ${payload.category}`,
     payload.cweIdentifier ? `CWE: ${payload.cweIdentifier}` : null,
-    payload.cvssScore ? `CVSS Score: ${payload.cvssScore}` : null,
-    payload.cvssVector ? `CVSS Vector: ${payload.cvssVector}` : null,
   ].filter((line): line is string => Boolean(line));
   sections.push(`## Classification\n${classificationLines.join("\n")}`);
 
-  if (payload.reproduceStepsList?.length) {
-    sections.push(`## Steps to Reproduce\n${payload.reproduceStepsList.map((s, i) => `${i + 1}. ${s}`).join("\n")}`);
-  }
-
-  const resultLines = [
-    payload.expectedResult ? `Expected: ${payload.expectedResult}` : null,
-    payload.actualResult ? `Actual: ${payload.actualResult}` : null,
-  ].filter((line): line is string => Boolean(line));
-  if (resultLines.length) sections.push(`## Expected vs Actual\n${resultLines.join("\n")}`);
-
-  if (payload.pocPayload) sections.push(`## PoC Payload\n\`\`\`\n${payload.pocPayload}\n\`\`\``);
-  if (payload.remediation) sections.push(`## Suggested Remediation\n${payload.remediation}`);
-  if (payload.externalLinks?.length) sections.push(`## External Links\n${payload.externalLinks.join("\n")}`);
+  /* Attachment bytes need `POST /reports/{id}/attachments`, which happens
+     after the report exists and is not wired yet — so what the reader picked
+     is at least named, rather than vanishing without a word. */
   if (payload.attachments?.length) {
     sections.push(
-      `## Attachments (metadata only — no upload endpoint wired)\n${payload.attachments
+      `## Attachments the reporter prepared\n${payload.attachments
         .map((a) => `- ${a.name} (${a.size}, ${a.type})`)
         .join("\n")}`
     );
@@ -225,6 +243,38 @@ function composeVulnerabilityInformation(payload: SubmitReportPayload): string {
 
   return sections.join("\n\n");
 }
+
+/** The numbered steps, with the outcome they were meant to produce. */
+function composeStepsToReproduce(payload: SubmitReportPayload): string | undefined {
+  const steps = (payload.reproduceStepsList ?? [])
+    .map((step) => step.trim())
+    .filter(Boolean);
+
+  const sections: string[] = [];
+  if (steps.length) {
+    sections.push(steps.map((step, index) => `${index + 1}. ${step}`).join("\n"));
+  }
+
+  const outcome = [
+    payload.expectedResult ? `Expected: ${payload.expectedResult}` : null,
+    payload.actualResult ? `Actual: ${payload.actualResult}` : null,
+  ].filter((line): line is string => Boolean(line));
+  if (outcome.length) sections.push(outcome.join("\n"));
+
+  return sections.length ? sections.join("\n\n") : undefined;
+}
+
+/** A date input gives `YYYY-MM-DD`; the field is an instant. */
+function toInstant(day?: string): string | undefined {
+  if (!day) return undefined;
+  const parsed = new Date(day);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+}
+
+const blankToUndefined = (value?: string) => {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+};
 
 function toReportItem(report: ReportApiResponse, programName: string): ReportItem {
   const status = toStatus(report.state);
@@ -246,60 +296,109 @@ function toReportItem(report: ReportApiResponse, programName: string): ReportIte
 function toReportDetail(report: ReportApiResponse, programName: string): ReportDetail {
   const item = toReportItem(report, programName);
 
-  const submittedDate = report.submittedAt || report.createdAt ? new Date(report.submittedAt || report.createdAt!) : null;
-  const submittedAgo = submittedDate && !isNaN(submittedDate.getTime())
+  /* Parsed through `toDate` so a timestamp without a zone marker is read as
+     the UTC it is; `new Date` alone treated it as local time, which moved the
+     age of a report by the reader's own offset — and rounded a report filed
+     hours ago up to a whole day. */
+  const submittedDate = toDate(report.submittedAt || report.createdAt);
+  const submittedAgo = submittedDate
     ? `${Math.max(1, Math.floor((Date.now() - submittedDate.getTime()) / (1000 * 60 * 60 * 24)))} days ago`
     : "Recently";
 
-  const rawAttachments = report.attachments || [];
-  const attachments = rawAttachments.map((att: any) => ({
-    name: att.filename || att.name || "attachment.png",
-    size: att.fileSize ? `${Math.round(att.fileSize / 1024)} KB` : "1.2 MB",
-    type: att.contentType || "image/png",
+  /* No stand-in file. An attachment list that invents "poc-evidence.png,
+     1.8 MB" on every report with none tells the reader there is evidence to
+     open, and there is not. Sizes and types are only stated when the response
+     carries them. */
+  const attachments = (report.attachments ?? []).map((att) => ({
+    name: att.filename || att.name || "Attachment",
+    size: att.fileSize ? `${Math.round(att.fileSize / 1024)} KB` : undefined,
+    type: att.contentType || att.type || "file",
   }));
 
-  const description = report.vulnerabilityInformation || report.summary || "No detailed description provided.";
-  const impact = report.impact || "Impact information has not been explicitly provided for this report.";
+  const description =
+    report.vulnerabilityInformation || report.summary || "No detailed description provided.";
+  const impact =
+    report.impact || "Impact information has not been explicitly provided for this report.";
+
+  /* The steps arrive as one block of text, numbered by whoever wrote them.
+     Splitting on lines keeps that numbering intact instead of renumbering
+     someone else's list. */
+  const reproduceSteps = (report.stepsToReproduce ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  /* Built from the timestamps the report actually carries. This was a single
+     hardcoded "submitted report to triage queue" line regardless of how far
+     the report had travelled. */
+  const updates: ActivityUpdate[] = [];
+
+  if (report.submittedAt || report.createdAt) {
+    updates.push({
+      id: "submitted",
+      actor: "Reporter",
+      actionText: "submitted this report",
+      statusBadge: "SUBMITTED",
+      timestamp: formatDateTime(report.submittedAt || report.createdAt),
+    });
+  }
+
+  if (report.triagedAt) {
+    updates.push({
+      id: "triaged",
+      actor: "Triage",
+      actionText: "reviewed the report",
+      statusBadge: "TRIAGED",
+      timestamp: formatDateTime(report.triagedAt),
+    });
+  }
+
+  if (report.resolvedAt) {
+    updates.push({
+      id: "resolved",
+      actor: "Program",
+      actionText: "resolved the report",
+      statusBadge: "RESOLVED",
+      timestamp: formatDateTime(report.resolvedAt),
+    });
+  }
+
+  const weakness = report.weakness
+    ? [report.weakness.cweId, report.weakness.name].filter(Boolean).join(" · ")
+    : "";
 
   return {
     ...item,
     submittedAgo,
     claimedSeverity: report.reportedSeverity ?? report.severity ?? item.severity,
     confirmedSeverity: report.triageSeverity ?? report.severity ?? item.severity,
-    cvssScore: item.severity === "CRITICAL" ? "9.8" : item.severity === "HIGH" ? "8.1" : item.severity === "MEDIUM" ? "5.4" : "3.1",
+    /* The reporter's own score. It used to be derived from the severity band
+       with a fixed ladder — 9.8 for anything Critical, 8.1 for High — so every
+       report of a given severity displayed the same invented number. */
+    cvssScore: typeof report.cvssScore === "number" ? report.cvssScore.toFixed(1) : null,
+    cvssVector: report.cvssVector || null,
     rewardStatus: item.bountyOrRep,
-    assetType: report.assetName || report.assetIdentifier || "Target Endpoint",
-    environment: "Production",
+    assetType:
+      report.asset?.identifier ||
+      report.assetName ||
+      report.assetIdentifier ||
+      "Not specified",
+    environment: report.environment ? environmentLabel(report.environment) : null,
     policyUrl: `/dashboard/programs/${report.programId || ""}`,
     description,
     impact,
-    reproduceSteps: [
-      "Review the vulnerability summary and proof-of-concept description provided above.",
-      "Send request with payload to the target endpoint in an isolated test environment.",
-      "Verify response status and payload execution.",
-    ],
-    attachments: attachments.length > 0 ? attachments : [
-      { name: "poc-evidence.png", size: "1.8 MB", type: "image/png" }
-    ],
-    comments: [
-      {
-        id: "c_system_1",
-        author: "DevSolve Triage Bot",
-        avatar: "DS",
-        isAdmin: true,
-        timestamp: "System Notice",
-        text: "Report received and routed to security triage queue.",
-      },
-    ],
-    updates: [
-      {
-        id: "u_system_1",
-        actor: "Security Researcher",
-        actionText: "submitted report to triage queue",
-        statusBadge: "SUBMITTED",
-        timestamp: item.lastActivityDate,
-      },
-    ],
+    reproduceSteps,
+    proofOfConcept: report.proofOfConcept || null,
+    remediation: report.remediationRecommendation || null,
+    targetEndpoint: report.targetEndpoint || null,
+    discoveredAt: report.discoveredAt ? formatDate(report.discoveredAt) : null,
+    referenceLinks: report.referenceLinks ?? [],
+    weakness: weakness || null,
+    attachments,
+    /* The API has no comments endpoint, so there is no discussion to show. It
+       used to render a "DevSolve Triage Bot" notice that no one had written. */
+    comments: [],
+    updates,
     retestHistory: [],
   };
 }
@@ -373,37 +472,25 @@ export const reportsApi = baseApi.injectEndpoints({
     getReportById: builder.query<ReportDetail, string>({
       async queryFn(id, _api, _extraOptions, fetchWithBQ) {
         const reportResult = await fetchWithBQ(`/reports/${id}`);
-        if (!reportResult.error && reportResult.data) {
-          const reportData = reportResult.data as ReportApiResponse;
-          let programName = reportData.programName || "Security Program";
-          if (reportData.programId && !reportData.programName) {
-            const progResult = await fetchWithBQ(`/programs/${reportData.programId}`);
-            if (!progResult.error && progResult.data) {
-              programName = (progResult.data as ProgramApiResponse).name || programName;
-            }
+
+        /* The error is passed on rather than answered with a stand-in report.
+           A failed fetch used to fall through to `MOCK_REPORT_DETAIL` — a
+           complete, plausible "Broken Access Control on User Profile API"
+           filed against "Global Enterprise VDP" — so a reader opening a report
+           that could not be loaded was shown someone else's fiction and had no
+           way to know. */
+        if (reportResult.error) return { error: reportResult.error };
+
+        const reportData = reportResult.data as ReportApiResponse;
+        let programName = reportData.programName || "Security Program";
+        if (reportData.programId && !reportData.programName) {
+          const progResult = await fetchWithBQ(`/programs/${reportData.programId}`);
+          if (!progResult.error && progResult.data) {
+            programName = (progResult.data as ProgramApiResponse).name || programName;
           }
-          return { data: toReportDetail(reportData, programName) };
         }
 
-        const found = MOCK_REPORTS.find((r) => r.id === id || r.reportId.toLowerCase() === id.toLowerCase());
-        if (found?.status === "REJECTED" || id === "5") {
-          return { data: MOCK_REJECTED_REPORT_DETAIL };
-        }
-        if (found) {
-          return {
-            data: {
-              ...MOCK_REPORT_DETAIL,
-              id: found.id,
-              reportId: found.reportId,
-              title: found.title,
-              program: found.program,
-              severity: found.severity,
-              status: found.status,
-              bountyOrRep: found.bountyOrRep,
-            },
-          };
-        }
-        return { data: MOCK_REPORT_DETAIL };
+        return { data: toReportDetail(reportData, programName) };
       },
       providesTags: (_result, _error, id) => [{ type: "Report", id }],
     }),
@@ -429,16 +516,44 @@ export const reportsApi = baseApi.injectEndpoints({
           typeof str === "string" &&
           /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
+        /* The backend refuses a report whose CVSS score is rated differently
+           from its severity ("A CVSS score of 8.6 is rated HIGH, which does
+           not match the reported severity LOW"). The severity is what the
+           reporter chose on screen, so a score that contradicts it is dropped
+           here rather than failing the whole submission — this is the last
+           point every path passes through, whichever screen set what. */
+        const reportedSeverity =
+          payload.severity === "INFO" ? "NONE" : payload.severity;
+        const parsedScore = parseCvssScore(payload.cvssScore);
+        const scoreAgreesWithSeverity =
+          parsedScore !== null && severityForCvss(parsedScore) === payload.severity;
+
         const result = await fetchWithBQ({
           url: `/programs/${payload.programId}/reports`,
           method: "POST",
           body: {
             title: payload.title,
             vulnerabilityInformation: composeVulnerabilityInformation(payload),
-            impact: payload.impact || undefined,
+            impact: blankToUndefined(payload.impact),
+            stepsToReproduce: composeStepsToReproduce(payload),
+            proofOfConcept: blankToUndefined(payload.pocPayload),
+            remediationRecommendation: blankToUndefined(payload.remediation),
+            targetEndpoint: blankToUndefined(payload.targetAsset),
+            environment: blankToUndefined(payload.environment),
+            discoveredAt: toInstant(payload.discoveredAt),
+            /* The field is capped at ten, and an empty row is something the
+               reader left behind rather than a link. */
+            referenceLinks: payload.externalLinks?.length
+              ? payload.externalLinks.map((link) => link.trim()).filter(Boolean).slice(0, 10)
+              : undefined,
             // Backend has no "INFO" tier — the closest real equivalent is
             // NONE (see CreateReportRequest.reportedSeverity enum).
-            reportedSeverity: payload.severity === "INFO" ? "NONE" : payload.severity,
+            reportedSeverity,
+            // A vector implies the score it produces, so the two travel together.
+            cvssVector: scoreAgreesWithSeverity
+              ? blankToUndefined(payload.cvssVector)
+              : undefined,
+            cvssScore: scoreAgreesWithSeverity ? parsedScore ?? undefined : undefined,
             assetId: isUuid(payload.assetId) ? payload.assetId : undefined,
           },
         });
