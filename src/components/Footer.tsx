@@ -14,7 +14,6 @@ import cbrdDark from "../../public/crbd-darkmode.png";
 import SectionBackdrop, {
   useIsDark,
 } from "@/components/landing/SectionBackdrop";
-import { cn } from "@/lib/utils";
 
 /**
  * Site footer for the public pages.
@@ -79,11 +78,13 @@ const partners = [
 ];
 
 export default function Footer() {
-  /* The wordmark is theme-dependent and next-themes only knows the theme
-     after hydration, so the server render has to commit to the light file or
-     the two disagree. `useIsDark` is the codebase's guard for exactly this:
-     it reports `false` for one frame, then the real value. */
-  const isDarkLogo = useIsDark();
+  /* The partner artwork is theme-dependent — each backer ships a separate
+     light and dark file — and next-themes only knows the theme after
+     hydration, so the server render has to commit to the light files or the
+     two disagree. `useIsDark` is the codebase's guard for exactly this: it
+     reports `false` for one frame, then the real value. The DevSolve wordmark
+     no longer needs it; that one is a single file recoloured in CSS. */
+  const isDarkTheme = useIsDark();
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -115,23 +116,28 @@ export default function Footer() {
           className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12"
         >
           <div className="flex flex-col items-start gap-5 lg:col-span-5">
-            {/* The navbar's wordmark, rendered the same way in both places —
-                `mix-blend-multiply` drops the light file's white box. It is
-                2.5:1, so the box has to be wide enough for the height to be
-                reached: at the old h-11/w-40 the art fit to 44px and left the
-                rest of the box empty. */}
+            {/* `/devsolve-logo.png` is the logo as drawn: navy wordmark,
+                #0059FC bulb, transparent background. It is used as-is on light
+                surfaces — no blend mode, since there is no white box to hide
+                and multiplying only muddied it against the backdrop.
+
+                Dark mode needs the other file rather than a filter. The navy
+                in this one sits at about 1.1:1 against the neutral-950 footer,
+                so the wordmark disappears while the bright bulb stays — half a
+                logo. Recolouring it in CSS (`brightness-0 invert`) fixes the
+                contrast by flattening every colour to white, which throws away
+                the two blues and the bug. The dark file is the same lockup
+                with the wordmark redrawn in white, so the design survives. */}
             <Link href="/" aria-label="DevSolve home" className="group block">
               <span className="relative block h-16 w-44 sm:h-20 sm:w-56">
                 <Image
-                  src={"/devsolve-logo.png"}
+                  key={isDarkTheme ? "dark-logo" : "light-logo"}
+                  src={isDarkTheme ? darkModeLogo : "/devsolve-logo.png"}
                   alt="DevSolve"
                   fill
                   quality={95}
                   sizes="(min-width: 640px) 224px, 176px"
-                  className={cn(
-                    "object-contain object-left transition-transform duration-200 group-hover:scale-[1.03]",
-                    !isDarkLogo && "mix-blend-multiply",
-                  )}
+                  className="object-contain object-left transition-transform duration-200 group-hover:scale-[1.03]"
                 />
               </span>
             </Link>
@@ -210,7 +216,7 @@ export default function Footer() {
               50px with it while the 2.7:1 logos kept the full 64. */}
           <div className="flex flex-wrap items-center justify-center gap-10 sm:gap-16">
             {partners.map((partner) => {
-              const art = isDarkLogo ? partner.dark : partner.light;
+              const art = isDarkTheme ? partner.dark : partner.light;
 
               return (
                 <div

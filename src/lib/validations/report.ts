@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { isCleanText, profanityMessage } from "@/lib/moderation/profanity";
 
 export const VULNERABILITY_CATEGORIES = [
   "SQL Injection (SQLi)",
@@ -119,7 +120,8 @@ export const submitReportSchema = z.object({
   title: z
     .string()
     .min(10, "Title must be at least 10 characters long.")
-    .max(MAX_TITLE, `Title cannot exceed ${MAX_TITLE} characters.`),
+    .max(MAX_TITLE, `Title cannot exceed ${MAX_TITLE} characters.`)
+    .refine(isCleanText, profanityMessage("Title")),
   category: z.string().min(1, "Please select a vulnerability type/category."),
   severity: z.enum(["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]),
   cweIdentifier: z.string().optional(),
@@ -137,7 +139,10 @@ export const submitReportSchema = z.object({
   cvssVector: z.string().max(255, "CVSS vector cannot exceed 255 characters.").optional(),
 
   // Step 3: Report Details
-  summaryPoC: z.string().min(20, "Please provide a description/summary (at least 20 characters)."),
+  summaryPoC: z
+    .string()
+    .min(20, "Please provide a description/summary (at least 20 characters).")
+    .refine(isCleanText, profanityMessage("The summary")),
   reproduceStepsList: z.array(z.string()),
   impact: z.string().optional(),
   remediation: z

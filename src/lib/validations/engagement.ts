@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { isCleanText, profanityMessage } from "@/lib/moderation/profanity";
 
 /**
  * Votes and comments hang off several kinds of content, so their schemas live
@@ -55,7 +56,8 @@ export const commentCreateSchema = z.object({
     .string()
     .trim()
     .min(1, "A comment cannot be empty")
-    .max(5000, "A comment must not exceed 5000 characters"),
+    .max(5000, "A comment must not exceed 5000 characters")
+    .refine(isCleanText, profanityMessage("Your comment")),
   /* Defaulted rather than optional so `parsed.data` — which is what the proxy
      forwards — always carries every field the backend binds. Omitting
      `internal` makes its non-nullable boolean fail to deserialize, and Spring
@@ -74,7 +76,8 @@ export const commentUpdateSchema = z.object({
     .string()
     .trim()
     .min(1, "A comment cannot be empty")
-    .max(5000, "A comment must not exceed 5000 characters"),
+    .max(5000, "A comment must not exceed 5000 characters")
+    .refine(isCleanText, profanityMessage("Your comment")),
 });
 
 /** How `/comments/thread` and `/comments` order a page. */

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Loader2, Send } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AlertCircle, Loader2, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { findProfanity } from "@/lib/moderation/profanity";
 import { cn } from "@/lib/utils";
 
 const MAX_LENGTH = 5000;
@@ -50,8 +51,15 @@ export function CommentComposer({
   }, [value]);
 
   const trimmed = value.trim();
-  const canSubmit = trimmed.length > 0 && !isSubmitting;
   const remaining = MAX_LENGTH - value.length;
+
+  /* The same check the comment schema applies on the way out, run here so the
+     writer is told while the sentence is still in front of them rather than
+     after posting fails. Recomputed per keystroke, which is cheap: the word
+     list is compiled once for the process. */
+  const flagged = useMemo(() => findProfanity(value), [value]);
+
+  const canSubmit = trimmed.length > 0 && !isSubmitting && flagged.length === 0;
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     /* Enter alone inserts a newline — people write paragraphs here. */
@@ -86,6 +94,20 @@ export function CommentComposer({
         aria-label={placeholder}
         className="block w-full resize-none bg-transparent px-4 pt-3 text-base leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
       />
+
+      {flagged.length > 0 && (
+        <p
+          role="status"
+          className="flex items-start gap-2 px-4 pb-1 pt-1 text-sm font-medium text-rose-600 dark:text-rose-400"
+        >
+          <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <span>
+            Please reword this — {flagged.slice(0, 3).join(", ")}
+            {flagged.length > 3 ? " and others" : ""}{" "}
+            {flagged.length === 1 ? "is" : "are"} not allowed here.
+          </span>
+        </p>
+      )}
 
       <div className="flex items-center justify-between gap-3 px-3 pb-3">
         <span

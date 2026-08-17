@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { isCleanText, profanityMessage } from "@/lib/moderation/profanity";
 
 /** Values accepted by `CreateProblemRequest.sdlcPhase`. */
 export const SDLC_PHASES = [
@@ -148,7 +149,8 @@ export const problemCreateSchema = z.object({
   title: z
     .string()
     .min(10, "Title must be at least 10 characters")
-    .max(180, "Title must not exceed 180 characters"),
+    .max(180, "Title must not exceed 180 characters")
+    .refine(isCleanText, profanityMessage("Title")),
   problemType: z.enum(PROBLEM_TYPES, {
     message: `problemType must be one of ${PROBLEM_TYPES.join(", ")}`,
   }),
@@ -160,7 +162,8 @@ export const problemCreateSchema = z.object({
   description: z
     .string()
     .min(30, "Description must be at least 30 characters")
-    .max(20_000, "Description must not exceed 20000 characters"),
+    .max(20_000, "Description must not exceed 20000 characters")
+    .refine(isCleanText, profanityMessage("Description")),
   severity: z
     .enum(PROBLEM_SEVERITIES, {
       message: `severity must be one of ${PROBLEM_SEVERITIES.join(", ")}`,
@@ -254,13 +257,15 @@ export const createProblemFormSchema = problemCreateSchema.extend({
     .string()
     .trim()
     .min(10, "Title must be at least 10 characters")
-    .max(180, "Title must not exceed 180 characters"),
+    .max(180, "Title must not exceed 180 characters")
+    .refine(isCleanText, profanityMessage("Title")),
   categoryId: z.uuid("Choose a category"),
   description: z
     .string()
     .trim()
     .min(30, "Description must be at least 30 characters")
-    .max(20_000, "Description must not exceed 20000 characters"),
+    .max(20_000, "Description must not exceed 20000 characters")
+    .refine(isCleanText, profanityMessage("Description")),
   technologies: z
     .array(problemTechnologyFormSchema)
     .max(20, "Up to 20 technologies are allowed")
