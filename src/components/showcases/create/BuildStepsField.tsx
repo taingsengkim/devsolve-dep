@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { MarkdownEditor } from "@/components/reports/MarkdownEditor";
 import { CodeSnippetField } from "./CodeSnippetField";
 import { ImageDropField } from "./ImageDropField";
+import { DiagramBuilderModal } from "@/components/showcases/diagram/DiagramBuilderModal";
 import type { CreateShowcaseFormValues } from "@/lib/validations/showcase";
 import { cn } from "@/lib/utils";
 
@@ -67,6 +68,7 @@ export function BuildStepsField() {
   const [open, setOpen] = useState<string[]>(() =>
     fields.length ? [fields[0].key] : [],
   );
+  const [diagramModalStepIndex, setDiagramModalStepIndex] = useState<number | null>(null);
 
   const toggle = (key: string) =>
     setOpen((current) =>
@@ -327,6 +329,8 @@ export function BuildStepsField() {
                           label="Diagram"
                           hint="Optional · architecture or flow"
                           aspectClassName="aspect-video"
+                          allowDraw
+                          onOpenDraw={() => setDiagramModalStepIndex(index)}
                           value={step?.diagramUrl}
                           onChange={(url) =>
                             setValue(`steps.${index}.diagramUrl`, url)
@@ -358,6 +362,30 @@ export function BuildStepsField() {
         <Plus data-icon="inline-start" />
         Add step
       </Button>
+
+      <DiagramBuilderModal
+        open={diagramModalStepIndex !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setDiagramModalStepIndex(null);
+        }}
+        stepTitle={
+          diagramModalStepIndex !== null
+            ? steps[diagramModalStepIndex]?.title ||
+              `Step ${diagramModalStepIndex + 1}`
+            : undefined
+        }
+        onSaveDiagram={(file) => {
+          if (diagramModalStepIndex !== null) {
+            setValue(`steps.${diagramModalStepIndex}.diagramFile`, file, {
+              shouldDirty: true,
+              shouldValidate: true,
+            });
+            setValue(`steps.${diagramModalStepIndex}.diagramUrl`, "", {
+              shouldDirty: true,
+            });
+          }
+        }}
+      />
     </div>
   );
 }
