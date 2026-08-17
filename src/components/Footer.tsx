@@ -11,7 +11,9 @@ import istadLight from "../../public/istad-lightmode.png";
 import istadDark from "../../public/istad-darkmode.png";
 import cbrdLight from "../../public/crbd-lightmode.png";
 import cbrdDark from "../../public/crbd-darkmode.png";
-import { useIsDark } from "@/components/landing/SectionBackdrop";
+import SectionBackdrop, {
+  useIsDark,
+} from "@/components/landing/SectionBackdrop";
 import { cn } from "@/lib/utils";
 
 /**
@@ -72,8 +74,8 @@ const partners = [
     light: mptcLight,
     dark: mptcDark,
   },
-  { alt: "iSTAD", light: istadLight, dark: istadDark },
   { alt: "CBRD Fund", light: cbrdLight, dark: cbrdDark },
+  { alt: "iSTAD", light: istadLight, dark: istadDark },
 ];
 
 export default function Footer() {
@@ -90,16 +92,26 @@ export default function Footer() {
   return (
     /* The brand rule along the top is the colour: a flat 4px band of the
        primary, which design.md allows where a gradient would not be. The page
-       itself stays white. */
-    <footer className="w-full border-t-4 border-blue-600 bg-white font-sans text-slate-700 dark:bg-neutral-950 dark:text-neutral-300">
-      <div className="mx-auto max-w-7xl px-4 pb-8 pt-12 sm:px-6 sm:pt-16 lg:px-8">
+       itself stays white.
+
+       Everything below is dressed the way the landing sections are — the same
+       grid-paper backdrop, the same rule-and-eyebrow headings, the same easing
+       — so the page does not change language at the fold. The layout is
+       untouched: brand and blurb left, three link columns right, backers, then
+       the legal line. */
+    <footer className="relative w-full overflow-hidden border-t-4 border-blue-600 bg-white font-sans text-slate-700 dark:bg-neutral-950 dark:text-neutral-300">
+      {/* Calmer than a landing section: the paper and its drifting fields, but
+          no motes or scan beams rising behind the small print. */}
+      <SectionBackdrop seed={7} gridSize={88} particles={false} beams={false} />
+
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-8 pt-12 sm:px-6 sm:pt-16 lg:px-8">
         {/* Navigation leads, since that is what a footer is for: brand on the
             left, links on the right. The backers moved below it. */}
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12"
         >
           <div className="flex flex-col items-start gap-5 lg:col-span-5">
@@ -111,8 +123,7 @@ export default function Footer() {
             <Link href="/" aria-label="DevSolve home" className="group block">
               <span className="relative block h-16 w-44 sm:h-20 sm:w-56">
                 <Image
-                  key={isDarkLogo ? "dark-logo" : "light-logo"}
-                  src={isDarkLogo ? darkModeLogo : "/devsolve-logo.png"}
+                  src={"/devsolve-logo.png"}
                   alt="DevSolve"
                   fill
                   quality={95}
@@ -125,7 +136,9 @@ export default function Footer() {
               </span>
             </Link>
 
-            <p className="max-w-md text-sm leading-relaxed text-slate-600 dark:text-neutral-400">
+            {/* The landing's lede treatment: a size up from small print, with
+                the same slightly tightened tracking its body copy carries. */}
+            <p className="max-w-md text-base leading-relaxed tracking-[-0.01em] text-slate-600 dark:text-neutral-400">
               Bug bounty and vulnerability disclosure platform for developers,
               security engineers, and organizations. Built to find
               vulnerabilities before attackers do.
@@ -134,20 +147,27 @@ export default function Footer() {
 
           <div className="grid grid-cols-2 gap-8 text-left sm:grid-cols-3 lg:col-span-7">
             {footerNavSections.map((section) => (
-              <div key={section.title} className="flex flex-col gap-3">
-                <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-neutral-100">
+              <div key={section.title} className="flex flex-col gap-4">
+                {/* The landing's section label: a hairline rule, then the word
+                    spaced out in primary. It replaces the upright tick that was
+                    this footer's own invention. */}
+                <h3 className="flex items-center gap-2.5">
                   <span
                     aria-hidden="true"
-                    className="h-3 w-0.5 rounded-full bg-blue-600"
+                    className="h-px w-6 shrink-0 bg-blue-600 dark:bg-blue-400"
                   />
-                  {section.title}
+                  <span className="text-xs font-bold uppercase tracking-[0.22em] text-blue-600 dark:text-blue-400">
+                    {section.title}
+                  </span>
                 </h3>
-                <ul className="space-y-2.5">
+                <ul className="space-y-3">
                   {section.links.map((link) => (
                     <li key={link.name}>
+                      {/* Nudges toward the reader on hover, the way the
+                          landing's list links do. */}
                       <Link
                         href={link.href}
-                        className="text-sm font-normal text-slate-600 transition-colors hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
+                        className="inline-block text-sm font-medium tracking-[-0.01em] text-slate-600 transition-all duration-200 hover:translate-x-0.5 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
                       >
                         {link.name}
                       </Link>
@@ -162,14 +182,26 @@ export default function Footer() {
         {/* Backers sit under the navigation, near the legal line, instead of
             heading the whole footer as a banner. */}
         <motion.section
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.1 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
           className="mt-12 border-t border-slate-200/70 pt-10 dark:border-neutral-800/80"
         >
-          <h2 className="mb-8 text-center text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-            Sponsors and organizers
+          {/* The same eyebrow as the columns, centred — rules on both sides so
+              it reads as a divider rather than a heading with a stray dash. */}
+          <h2 className="mb-8 flex items-center justify-center gap-3">
+            <span
+              aria-hidden="true"
+              className="h-px w-6 bg-blue-600 dark:bg-blue-400"
+            />
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-blue-600 dark:text-blue-400">
+              Sponsors and organizers
+            </span>
+            <span
+              aria-hidden="true"
+              className="h-px w-6 bg-blue-600 dark:bg-blue-400"
+            />
           </h2>
 
           {/* Sized by height alone. A `max-w` cap here is what shrank MPTC:
@@ -200,14 +232,19 @@ export default function Footer() {
         </motion.section>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-slate-200/70 pt-6 text-sm text-slate-500 sm:flex-row dark:border-neutral-800/80 dark:text-neutral-500">
-          <p>© {new Date().getFullYear()} DevSolve. All rights reserved.</p>
+          {/* The blue full stop the landing puts after its headings. */}
+          <p className="tracking-[-0.01em]">
+            © {new Date().getFullYear()} DevSolve
+            <span className="text-blue-600 dark:text-blue-400">.</span> All
+            rights reserved.
+          </p>
 
           <motion.button
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.95 }}
             onClick={scrollToTop}
             aria-label="Back to top"
-            className="flex size-9 cursor-pointer items-center justify-center rounded-full bg-blue-600 text-white shadow-xs transition-colors hover:bg-blue-700"
+            className="flex size-10 cursor-pointer items-center justify-center rounded-full bg-blue-600 text-white shadow-[0_8px_20px_-6px_rgba(37,99,235,0.6)] transition-colors hover:bg-blue-700"
           >
             <ArrowUp className="size-4" />
           </motion.button>
