@@ -19,6 +19,8 @@ import { MarkdownEditor } from "@/components/reports/MarkdownEditor";
 import { CodeSnippetField } from "./CodeSnippetField";
 import { ImageDropField } from "./ImageDropField";
 import { DiagramBuilderModal } from "@/components/showcases/diagram/DiagramBuilderModal";
+import type { AppNode } from "@/components/showcases/diagram/types";
+import type { Edge } from "@xyflow/react";
 import type { CreateShowcaseFormValues } from "@/lib/validations/showcase";
 import { cn } from "@/lib/utils";
 
@@ -69,6 +71,9 @@ export function BuildStepsField() {
     fields.length ? [fields[0].key] : [],
   );
   const [diagramModalStepIndex, setDiagramModalStepIndex] = useState<number | null>(null);
+  const [stepDiagrams, setStepDiagrams] = useState<
+    Record<string, { nodes: AppNode[]; edges: Edge[] }>
+  >({});
 
   const toggle = (key: string) =>
     setOpen((current) =>
@@ -374,8 +379,25 @@ export function BuildStepsField() {
               `Step ${diagramModalStepIndex + 1}`
             : undefined
         }
-        onSaveDiagram={(file) => {
+        initialNodes={
+          diagramModalStepIndex !== null && fields[diagramModalStepIndex]
+            ? stepDiagrams[fields[diagramModalStepIndex].key]?.nodes ?? []
+            : []
+        }
+        initialEdges={
+          diagramModalStepIndex !== null && fields[diagramModalStepIndex]
+            ? stepDiagrams[fields[diagramModalStepIndex].key]?.edges ?? []
+            : []
+        }
+        onSaveDiagram={(file, previewUrl, nodes, edges) => {
           if (diagramModalStepIndex !== null) {
+            const currentKey = fields[diagramModalStepIndex]?.key;
+            if (currentKey) {
+              setStepDiagrams((prev) => ({
+                ...prev,
+                [currentKey]: { nodes, edges },
+              }));
+            }
             setValue(`steps.${diagramModalStepIndex}.diagramFile`, file, {
               shouldDirty: true,
               shouldValidate: true,

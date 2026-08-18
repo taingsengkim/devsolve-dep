@@ -1,33 +1,33 @@
 "use client";
 
 import React, { useState } from "react";
-import { ReactFlowProvider } from "@xyflow/react";
+import { ReactFlowProvider, type Edge } from "@xyflow/react";
 import { toPng } from "html-to-image";
+import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import {
   Check,
-  Download,
   Loader2,
-  Maximize2,
   Network,
-  Sparkles,
   X,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { DiagramCanvas } from "./DiagramCanvas";
+import type { AppNode } from "./types";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface DiagramBuilderModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSaveDiagram: (file: File, previewUrl: string) => void;
+  onSaveDiagram: (
+    file: File,
+    previewUrl: string,
+    nodes: AppNode[],
+    edges: Edge[],
+  ) => void;
   stepTitle?: string;
+  initialNodes?: AppNode[];
+  initialEdges?: Edge[];
 }
 
 export function DiagramBuilderModal({
@@ -35,8 +35,20 @@ export function DiagramBuilderModal({
   onOpenChange,
   onSaveDiagram,
   stepTitle,
+  initialNodes = [],
+  initialEdges = [],
 }: DiagramBuilderModalProps) {
   const [isExporting, setIsExporting] = useState(false);
+  const [currentNodes, setCurrentNodes] = useState<AppNode[]>(initialNodes);
+  const [currentEdges, setCurrentEdges] = useState<Edge[]>(initialEdges);
+
+  // Sync state when initialNodes change on open
+  React.useEffect(() => {
+    if (open) {
+      setCurrentNodes(initialNodes);
+      setCurrentEdges(initialEdges);
+    }
+  }, [open, initialNodes, initialEdges]);
 
   const handleExportAndAttach = async () => {
     try {
@@ -80,7 +92,7 @@ export function DiagramBuilderModal({
       const filename = `diagram-${Date.now()}.png`;
       const file = new File([blob], filename, { type: "image/png" });
 
-      onSaveDiagram(file, dataUrl);
+      onSaveDiagram(file, dataUrl, currentNodes, currentEdges);
       toast.success("Diagram attached to step!");
       onOpenChange(false);
     } catch (err) {
@@ -92,69 +104,103 @@ export function DiagramBuilderModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        showCloseButton={false}
-        className="fixed top-1/2 left-1/2 z-50 flex h-[90vh] max-h-[90vh] w-[95vw] max-w-[95vw] -translate-x-1/2 -translate-y-1/2 flex-col gap-0 overflow-hidden rounded-3xl border border-border bg-background p-0 shadow-2xl outline-none sm:max-w-[95vw] lg:max-w-[1400px]"
-      >
-        {/* ── Modal Header ── */}
-        <div className="flex shrink-0 items-center justify-between border-b border-border bg-card/95 px-5 py-3.5 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Network className="size-5" />
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+        {/* Full screen backdrop */}
+        <DialogPrimitive.Backdrop
+          className={cn(
+            "fixed inset-0 z-[240] bg-black/60 backdrop-blur-xs duration-150",
+            "data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+          )}
+        />
+
+        {/* Full screen page container (above navbar z-[100]) */}
+        <DialogPrimitive.Popup
+          className={cn(
+            "fixed inset-0 z-[250] flex h-screen w-screen flex-col overflow-hidden bg-background p-0 text-foreground outline-none duration-150",
+            "data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.99] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.99]",
+          )}
+        >
+          {/* ── Top Full-Width Header Bar ── */}
+          <div className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-5 sm:px-6">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Network className="size-5" />
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-foreground leading-tight">
+                  React Flow Diagram Builder
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  {stepTitle
+                    ? `Step: "${stepTitle}" · Design system architecture and flows`
+                    : "Design an architecture or flow diagram and attach it directly"}
+                </p>
+              </div>
             </div>
-            <div>
-              <DialogTitle className="text-base font-bold text-foreground">
-                React Flow Diagram Builder
-              </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
-                {stepTitle
-                  ? `Designing diagram for step: "${stepTitle}"`
-                  : "Design an architecture or flow diagram and attach it directly"}
-              </DialogDescription>
+
+            <div className="flex items-center gap-2.5">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onOpenChange(false)}
+                className="h-9 rounded-xl border-border bg-background px-4 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                Cancel
+              </Button>
+
+              <Button
+                type="button"
+                size="sm"
+                disabled={isExporting}
+                onClick={handleExportAndAttach}
+                className="h-9 gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+              >
+                {isExporting ? (
+                  <>
+                    <Loader2 className="size-3.5 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Check className="size-3.5" />
+                    Attach to Step
+                  </>
+                )}
+              </Button>
+
+              <DialogPrimitive.Close
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="size-9 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+                  />
+                }
+              >
+                <X className="size-4.5" />
+                <span className="sr-only">Close diagram builder</span>
+              </DialogPrimitive.Close>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-              className="h-9 rounded-xl border-border bg-background text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              Cancel
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              disabled={isExporting}
-              onClick={handleExportAndAttach}
-              className="h-9 gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-            >
-              {isExporting ? (
-                <>
-                  <Loader2 className="size-3.5 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Check className="size-3.5" />
-                  Attach to Step
-                </>
-              )}
-            </Button>
+          {/* ── Edge-to-Edge Canvas ── */}
+          <div className="relative flex-1 w-full h-full min-h-0 overflow-hidden bg-background">
+            <ReactFlowProvider>
+              <DiagramCanvas
+                key={open ? "open" : "closed"}
+                initialNodes={initialNodes}
+                initialEdges={initialEdges}
+                onStateChange={(nodes, edges) => {
+                  setCurrentNodes(nodes);
+                  setCurrentEdges(edges);
+                }}
+              />
+            </ReactFlowProvider>
           </div>
-        </div>
-
-        {/* ── Canvas Provider & Body ── */}
-        <div className="relative flex-1 w-full h-full min-h-0 overflow-hidden">
-          <ReactFlowProvider>
-            <DiagramCanvas />
-          </ReactFlowProvider>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogPrimitive.Popup>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }

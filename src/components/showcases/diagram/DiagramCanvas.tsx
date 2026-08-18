@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -50,18 +50,23 @@ import { cn } from "@/lib/utils";
 interface DiagramCanvasProps {
   initialNodes?: AppNode[];
   initialEdges?: Edge[];
-  onNodesChangeParent?: (nodes: AppNode[]) => void;
-  onEdgesChangeParent?: (edges: Edge[]) => void;
+  onStateChange?: (nodes: AppNode[], edges: Edge[]) => void;
 }
 
 export function DiagramCanvas({
-  initialNodes = DIAGRAM_TEMPLATES[0].nodes,
-  initialEdges = DIAGRAM_TEMPLATES[0].edges,
+  initialNodes = [],
+  initialEdges = [],
+  onStateChange,
 }: DiagramCanvasProps) {
   const { fitView } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+  // Sync state changes to parent if callback provided
+  useEffect(() => {
+    onStateChange?.(nodes, edges);
+  }, [nodes, edges, onStateChange]);
 
   const selectedNode = useMemo(
     () => nodes.find((n) => n.id === selectedNodeId) ?? null,
@@ -129,8 +134,8 @@ export function DiagramCanvas({
       id,
       type,
       position: {
-        x: 200 + Math.random() * 80,
-        y: 150 + Math.random() * 80,
+        x: 250 + Math.random() * 60,
+        y: 180 + Math.random() * 60,
       },
       data: {
         label: config.label,
@@ -174,6 +179,10 @@ export function DiagramCanvas({
 
   const applyTemplate = (templateId: string | null) => {
     if (!templateId) return;
+    if (templateId === "blank") {
+      clearCanvas();
+      return;
+    }
     const tpl = DIAGRAM_TEMPLATES.find((t) => t.id === templateId);
     if (tpl) {
       setNodes(tpl.nodes);
@@ -277,6 +286,9 @@ export function DiagramCanvas({
                 <SelectValue placeholder="Load template..." />
               </SelectTrigger>
               <SelectContent className="border-border bg-popover">
+                <SelectItem value="blank" className="text-xs font-medium text-muted-foreground">
+                  Blank Canvas (Clean)
+                </SelectItem>
                 {DIAGRAM_TEMPLATES.map((tpl) => (
                   <SelectItem key={tpl.id} value={tpl.id} className="text-xs">
                     {tpl.name}
@@ -323,7 +335,7 @@ export function DiagramCanvas({
           onConnect={onConnect}
           onNodeClick={(_, node) => setSelectedNodeId(node.id)}
           onPaneClick={() => setSelectedNodeId(null)}
-          fitView
+          fitView={nodes.length > 0}
           className="bg-background"
           defaultEdgeOptions={{
             type: "smoothstep",
@@ -350,6 +362,39 @@ export function DiagramCanvas({
             }}
           />
         </ReactFlow>
+
+        {/* ── Empty State Watermark & Quick Actions ── */}
+        {nodes.length === 0 && (
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+            <div className="pointer-events-auto flex max-w-md flex-col items-center gap-3 rounded-3xl border border-border/80 bg-card/85 p-6 shadow-xl backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-200">
+              <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <Sparkles className="size-6" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-foreground">
+                  Blank Diagram Canvas
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Add nodes using the toolbar above, or load a pre-built architecture template to get started:
+                </p>
+              </div>
+              <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
+                {DIAGRAM_TEMPLATES.map((tpl) => (
+                  <Button
+                    key={tpl.id}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => applyTemplate(tpl.id)}
+                    className="h-8 rounded-xl border-border bg-background px-3 text-xs font-semibold text-foreground hover:border-primary/50 hover:bg-muted"
+                  >
+                    {tpl.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Floating Node Inspector ── */}
         {selectedNode && (
