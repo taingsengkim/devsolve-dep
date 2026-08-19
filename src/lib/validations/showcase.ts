@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { isCleanText, profanityMessage } from "@/lib/moderation/profanity";
+import { isReadableText, readabilityMessage } from "@/lib/moderation/readability";
 
 /* ─── URL handling ──────────────────────────────────────────────────────
    Authors type `github.com/me/repo` far more often than they type the
@@ -140,8 +141,15 @@ export const buildStepSchema = z.object({
     .string()
     .trim()
     .min(1, "Step title is required")
-    .max(255, "Step title must not exceed 255 characters"),
-  description: z.string().trim().min(1, "Step description is required"),
+    .max(255, "Step title must not exceed 255 characters")
+    .refine(isCleanText, profanityMessage("Step title"))
+    .refine(isReadableText, readabilityMessage("Step title")),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Step description is required")
+    .refine(isCleanText, profanityMessage("Step description"))
+    .refine(isReadableText, readabilityMessage("Step description")),
   codeSnippet: z.string().optional(),
   /** Highlighting hint for the editor — the API has no column for it. */
   codeLanguage: z.string().optional(),
@@ -203,13 +211,15 @@ export const createShowcaseSchema = z
       .trim()
       .min(1, "Project title is required")
       .max(255, "Title must not exceed 255 characters")
-      .refine(isCleanText, profanityMessage("Title")),
+      .refine(isCleanText, profanityMessage("Title"))
+      .refine(isReadableText, readabilityMessage("Title")),
     categoryId: z.string().min(1, "Pick a category"),
     overview: z
       .string()
       .trim()
       .min(1, "An overview is required")
-      .refine(isCleanText, profanityMessage("The overview")),
+      .refine(isCleanText, profanityMessage("The overview"))
+      .refine(isReadableText, readabilityMessage("The overview")),
     techStack: z
       .array(z.string())
       .max(MAX_TECH, `Up to ${MAX_TECH} technologies`),
@@ -263,8 +273,15 @@ export const showcaseCreateSchema = z.object({
     .string()
     .trim()
     .min(1, "Title is required")
-    .max(255, "Title must not exceed 255 characters"),
-  overview: z.string().trim().min(1, "An overview is required"),
+    .max(255, "Title must not exceed 255 characters")
+    .refine(isCleanText, profanityMessage("Title"))
+    .refine(isReadableText, readabilityMessage("Title")),
+  overview: z
+    .string()
+    .trim()
+    .min(1, "An overview is required")
+    .refine(isCleanText, profanityMessage("The overview"))
+    .refine(isReadableText, readabilityMessage("The overview")),
   coverImageUrl: wireText(500, "Cover image URL"),
   liveUrl: wireText(500, "Live URL"),
   repoUrl: wireText(500, "Repository URL"),
@@ -284,8 +301,15 @@ export const showcaseStepCreateSchema = z.object({
     .string()
     .trim()
     .min(1, "Step title is required")
-    .max(255, "Step title must not exceed 255 characters"),
-  description: z.string().trim().min(1, "Step description is required"),
+    .max(255, "Step title must not exceed 255 characters")
+    .refine(isCleanText, profanityMessage("Step title"))
+    .refine(isReadableText, readabilityMessage("Step title")),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Step description is required")
+    .refine(isCleanText, profanityMessage("Step description"))
+    .refine(isReadableText, readabilityMessage("Step description")),
   codeSnippet: z.string().optional(),
   imageUrl: wireText(500, "Image URL"),
   diagramUrl: wireText(500, "Diagram URL"),

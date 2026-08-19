@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { isCleanText, profanityMessage } from "@/lib/moderation/profanity";
+import { isReadableText, readabilityMessage } from "@/lib/moderation/readability";
 
 /** Values accepted by `CreateProblemRequest.sdlcPhase`. */
 export const SDLC_PHASES = [
@@ -150,7 +151,8 @@ export const problemCreateSchema = z.object({
     .string()
     .min(10, "Title must be at least 10 characters")
     .max(180, "Title must not exceed 180 characters")
-    .refine(isCleanText, profanityMessage("Title")),
+    .refine(isCleanText, profanityMessage("Title"))
+    .refine(isReadableText, readabilityMessage("Title")),
   problemType: z.enum(PROBLEM_TYPES, {
     message: `problemType must be one of ${PROBLEM_TYPES.join(", ")}`,
   }),
@@ -163,7 +165,8 @@ export const problemCreateSchema = z.object({
     .string()
     .min(30, "Description must be at least 30 characters")
     .max(20_000, "Description must not exceed 20000 characters")
-    .refine(isCleanText, profanityMessage("Description")),
+    .refine(isCleanText, profanityMessage("Description"))
+    .refine(isReadableText, readabilityMessage("Description")),
   severity: z
     .enum(PROBLEM_SEVERITIES, {
       message: `severity must be one of ${PROBLEM_SEVERITIES.join(", ")}`,
@@ -258,14 +261,16 @@ export const createProblemFormSchema = problemCreateSchema.extend({
     .trim()
     .min(10, "Title must be at least 10 characters")
     .max(180, "Title must not exceed 180 characters")
-    .refine(isCleanText, profanityMessage("Title")),
+    .refine(isCleanText, profanityMessage("Title"))
+    .refine(isReadableText, readabilityMessage("Title")),
   categoryId: z.uuid("Choose a category"),
   description: z
     .string()
     .trim()
     .min(30, "Description must be at least 30 characters")
     .max(20_000, "Description must not exceed 20000 characters")
-    .refine(isCleanText, profanityMessage("Description")),
+    .refine(isCleanText, profanityMessage("Description"))
+    .refine(isReadableText, readabilityMessage("Description")),
   technologies: z
     .array(problemTechnologyFormSchema)
     .max(20, "Up to 20 technologies are allowed")

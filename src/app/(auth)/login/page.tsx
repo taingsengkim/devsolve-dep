@@ -9,6 +9,7 @@ import {
   Eye,
   EyeOff,
   Key,
+  Loader2,
   LogIn,
   ShieldCheck,
   Sparkles,
@@ -18,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useKeycloakLogin, type IdpHint } from "@/hooks/useKeycloakLogin";
 
 /**
  * /login — presentation only.
@@ -52,20 +54,36 @@ const HERO_BADGES = [
 ];
 
 export default function LoginPage() {
-  // UI affordance only — reveals the field, nothing to do with signing in.
+  // UI affordance only — reveals the field
   const [showPassword, setShowPassword] = useState(false);
+  const { isLoggingIn, pendingIdpHint, handleLogin } = useKeycloakLogin();
+
+  const getRedirectUrl = () => {
+    if (typeof window === "undefined") return "/dashboard";
+    const params = new URLSearchParams(window.location.search);
+    return params.get("redirect") || "/dashboard";
+  };
+
+  const handleSocialSignIn = (provider: IdpHint) => {
+    void handleLogin(getRedirectUrl(), provider);
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    void handleLogin(getRedirectUrl());
+  };
 
   return (
-    <div className="grid min-h-[100dvh] w-full grid-cols-1 overflow-x-hidden bg-white font-sans antialiased lg:grid-cols-2">
+    <div className="grid min-h-dvh w-full grid-cols-1 overflow-x-hidden bg-white font-sans antialiased lg:grid-cols-2">
       {/* ── Left: hero ── */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative flex min-h-[420px] flex-col items-center justify-between overflow-hidden border-b border-slate-200/80 bg-[#EFF4FF] p-6 text-center sm:p-10 lg:min-h-[100dvh] lg:border-b-0 lg:border-r xl:p-14"
+        className="relative flex min-h-[420px] flex-col items-center justify-between overflow-hidden border-b border-slate-200/80 bg-[#EFF4FF] p-6 text-center sm:p-10 lg:min-h-dvh lg:border-b-0 lg:border-r xl:p-14"
       >
-        <div className="pointer-events-none absolute -left-24 -top-24 -z-0 size-96 rounded-full bg-blue-400/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -right-24 -z-0 size-96 rounded-full bg-emerald-400/20 blur-3xl" />
+        <div className="pointer-events-none absolute -left-24 -top-24 z-0 size-96 rounded-full bg-blue-400/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -right-24 z-0 size-96 rounded-full bg-emerald-400/20 blur-3xl" />
 
         <div className="relative z-10 flex h-full w-full flex-col items-center justify-between">
           <div className="mb-4 flex w-full items-center justify-start">
@@ -141,41 +159,53 @@ export default function LoginPage() {
             <Button
               type="button"
               variant="outline"
+              disabled={isLoggingIn}
+              onClick={() => handleSocialSignIn("google")}
               className="flex h-11 w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-800 shadow-2xs transition-all hover:bg-slate-50 sm:h-12 sm:text-sm"
             >
-              <svg className="size-4" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  fill="#4285F4"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                />
-              </svg>
+              {pendingIdpHint === "google" ? (
+                <Loader2 className="size-4 animate-spin text-blue-600" />
+              ) : (
+                <svg className="size-4" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                  />
+                </svg>
+              )}
               <span>Google</span>
             </Button>
 
             <Button
               type="button"
               variant="outline"
+              disabled={isLoggingIn}
+              onClick={() => handleSocialSignIn("github")}
               className="flex h-11 w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-800 shadow-2xs transition-all hover:bg-slate-50 sm:h-12 sm:text-sm"
             >
-              <svg
-                className="size-4 fill-current text-slate-900"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-              </svg>
+              {pendingIdpHint === "github" ? (
+                <Loader2 className="size-4 animate-spin text-slate-900" />
+              ) : (
+                <svg
+                  className="size-4 fill-current text-slate-900"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                </svg>
+              )}
               <span>GitHub</span>
             </Button>
           </div>
@@ -186,12 +216,11 @@ export default function LoginPage() {
               <div className="w-full border-t border-slate-200" />
             </div>
             <span className="relative z-10 bg-white px-3.5 text-xs font-medium text-slate-400">
-              or sign in with email
+              or sign in with Keycloak
             </span>
           </div>
 
-          {/* No onSubmit: this screen is presentation only. */}
-          <form onSubmit={(event) => event.preventDefault()} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label
                 htmlFor="identifier"
@@ -269,10 +298,20 @@ export default function LoginPage() {
 
             <Button
               type="submit"
+              disabled={isLoggingIn}
               className="mt-2 flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-600 text-sm font-bold text-white shadow-xs transition-all hover:bg-blue-700 sm:text-base"
             >
-              <LogIn className="size-4" />
-              Sign in
+              {isLoggingIn && !pendingIdpHint ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Connecting...
+                </>
+              ) : (
+                <>
+                  <LogIn className="size-4" />
+                  Sign in
+                </>
+              )}
             </Button>
           </form>
 
