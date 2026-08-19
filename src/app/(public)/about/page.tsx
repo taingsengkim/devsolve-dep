@@ -21,6 +21,7 @@ import {
   MapPin,
   MessageSquare,
   Phone,
+  Play,
   Search,
   Send,
   ShieldAlert,
@@ -40,6 +41,7 @@ import {
 } from "react-icons/fa6";
 import type { IconType } from "react-icons";
 
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import SectionBackdrop, { useInk } from "@/components/landing/SectionBackdrop";
 import {
   SUPERVISORS,
@@ -146,143 +148,67 @@ const HERO_STATS = [
 ];
 
 function AboutHero() {
-  const ink = useInk();
-
   return (
-    // The negative margin cancels the layout's navbar padding so the backdrop
-    // runs to the very top and the nav island floats over it — same trick the
-    // landing hero uses.
-    <section className="relative -mt-(--navbar-height) overflow-hidden bg-[#F7F8FB] pt-(--navbar-height) dark:bg-neutral-950">
-      <SectionBackdrop seed={1} gridSize={88} />
+    <section className="relative -mt-(--navbar-height) overflow-hidden bg-background pt-(--navbar-height)">
+      <div className="relative mx-auto max-w-7xl px-6 pt-12 sm:px-12 sm:pt-16 lg:px-16">
+        {/* ─── Top Header: Editorial Split Layout ─── */}
+        <div className="grid grid-cols-1 items-start justify-between gap-8 pb-8 sm:pb-12 lg:grid-cols-12 lg:gap-12">
+          {/* Left Column: Kicker + Main Heading */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EASE_OUT }}
+            className="lg:col-span-7"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+              ABOUT DEVSOLVE
+            </p>
+            <h1 className="mt-4 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl leading-[1.08]">
+              The team that turns
+              <br />
+              findings into fixes
+              <span className={BRAND_INK}>.</span>
+            </h1>
+          </motion.div>
 
-      <div className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-6 py-16 sm:px-12 sm:py-20 lg:grid-cols-12 lg:gap-10">
+          {/* Right Column: Paragraph + CTA Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.15, ease: EASE_OUT }}
+            className="flex flex-col items-start justify-between gap-6 pt-1 lg:col-span-5"
+          >
+            <p className="max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
+              DevSolve connects organizations with security researchers and developers to solve real technical problems, close vulnerabilities responsibly, and build software that holds up in production.
+            </p>
+
+            <Link
+              href="/programs"
+              className="inline-flex items-center justify-center rounded-md bg-foreground px-5 py-2.5 text-xs font-semibold text-background shadow-xs transition-all hover:opacity-90 active:scale-98"
+            >
+              Explore programs
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* ─── Hero Image Container: Framed Inside Max-Width Bounds ─── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: EASE_OUT }}
-          className="lg:col-span-6"
+          transition={{ duration: 0.7, delay: 0.2, ease: EASE_OUT }}
+          className="relative pb-16 sm:pb-24"
         >
-          <div className="mb-5 flex items-center gap-2.5">
-            <span className="h-px w-8 bg-[#2563EB] dark:bg-blue-400" />
-            <span
-              className={`text-xs font-bold uppercase tracking-[0.22em] ${BRAND_INK}`}
-            >
-              About DevSolve
-            </span>
-            <span className="text-xs font-medium text-slate-400 dark:text-neutral-500">
-              Est. 2026
-            </span>
-          </div>
-
-          <h1
-            className="text-4xl font-bold leading-[1.06] tracking-[-0.045em] sm:text-5xl lg:text-6xl"
-            style={{ color: ink }}
-          >
-            The team that turns
-            <br />
-            findings into fixes
-            <span className={BRAND_INK}>.</span>
-          </h1>
-
-          <p className="mt-5 max-w-xl text-base leading-relaxed text-slate-500 dark:text-neutral-400">
-            DevSolve connects organizations with security researchers and
-            developers to solve real technical problems, close vulnerabilities
-            responsibly, and build software that holds up in production.
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0, scale: 0.98 }}>
-              <Link
-                href="/programs"
-                className="inline-flex items-center rounded-full bg-[#2563EB] px-6 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_-12px_rgba(37,99,235,0.85)] transition-[filter] hover:brightness-110"
-              >
-                Explore programs
-              </Link>
-            </motion.div>
-
-            <motion.div whileHover={{ y: -2 }} whileTap={{ y: 0, scale: 0.98 }}>
-              <Link
-                href="#team"
-                className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-[0_6px_18px_-10px_rgba(15,23,42,0.4)] transition-colors hover:bg-slate-50 dark:border-neutral-700/80 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800"
-              >
-                Meet the team
-                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-              </Link>
-            </motion.div>
-          </div>
-
-          {/* Hairline-separated figures rather than boxed tiles — the same
-              de-emphasised treatment the stats section uses.
-
-              Column-reverse, not a reordered list: the figure has to sit on
-              a shared top edge or a label that wraps to two lines drops its
-              number below the others, while `dt` still precedes `dd` in the
-              DOM the way a definition list requires. */}
-          <dl className="mt-10 grid max-w-lg grid-cols-3">
-            {HERO_STATS.map((stat, i) => (
-              <div
-                key={stat.label}
-                className={`flex flex-col-reverse gap-2 ${
-                  i > 0
-                    ? "border-l border-slate-200 pl-4 dark:border-neutral-800 sm:pl-6"
-                    : ""
-                } ${i < HERO_STATS.length - 1 ? "pr-4 sm:pr-6" : ""}`}
-              >
-                <dt className="text-xs font-medium uppercase leading-normal tracking-[0.14em] text-slate-400 dark:text-neutral-500">
-                  {stat.label}
-                </dt>
-                <dd
-                  className="text-4xl font-bold leading-none tracking-[-0.04em] tabular-nums"
-                  style={{ color: ink }}
-                >
-                  {stat.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.15, ease: EASE_OUT }}
-          className="relative lg:col-span-6"
-        >
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100 shadow-[0_0_0_1px_rgba(30,41,59,0.08),0_24px_60px_-30px_rgba(15,23,42,0.55)] sm:aspect-[3/2] dark:bg-neutral-800 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.10),0_24px_60px_-30px_rgba(0,0,0,0.9)]">
+          <div className="relative aspect-16/10 sm:aspect-video lg:aspect-21/10 w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-muted shadow-xl ring-1 ring-foreground/10">
             <Image
               src="/teams/team.jpg"
               alt="The DevSolve engineering and security team"
               fill
               priority
-              quality={90}
-              sizes="(max-width: 1024px) 100vw, 620px"
-              className="object-cover object-top"
+              quality={95}
+              sizes="(max-width: 1280px) 100vw, 1280px"
+              className="object-cover object-top sm:object-center"
             />
           </div>
-
-          {/* One floating chip, anchored to the frame — enough to give the
-              photo depth without decorating it. */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.55, ease: EASE_OUT }}
-            className={`absolute -bottom-5 left-5 flex items-center gap-3 px-4 py-3 sm:left-8 ${CARD}`}
-          >
-            <span className="flex size-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-500/15">
-              <Trophy className="size-4 text-[#2563EB] dark:text-blue-400" />
-            </span>
-            <div>
-              <p
-                className="text-sm font-bold tracking-tight"
-                style={{ color: ink }}
-              >
-                One team, one platform
-              </p>
-              <p className="text-xs text-slate-400 dark:text-neutral-500">
-                Bounties, challenges and community in one place
-              </p>
-            </div>
-          </motion.div>
         </motion.div>
       </div>
     </section>
