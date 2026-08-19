@@ -111,12 +111,10 @@ export function SystemArchitectureDiagram() {
       className="relative w-full overflow-hidden bg-transparent py-6 select-none"
     >
       {/* ─── Top Header: Clean & Borderless ─── */}
-      <div className="flex items-center justify-end pb-4 mb-6 sm:mb-10">
-        <div className="text-right">
-          <h2 className="arch-title text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#2563EB] dark:text-blue-400">
-            System Architecture
-          </h2>
-        </div>
+      <div className="flex items-center pb-4 mb-6 sm:mb-10">
+        <h2 className="arch-title text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#2563EB] dark:text-blue-400">
+          System Architecture
+        </h2>
       </div>
 
       {/* ─── DESKTOP DIAGRAM CANVAS (>= 1024px) ─── */}

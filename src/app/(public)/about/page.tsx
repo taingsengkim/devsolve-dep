@@ -92,7 +92,7 @@ function SectionHeading({
 }: {
   kicker: string;
   title: string;
-  lede: string;
+  lede?: string;
   inView: boolean;
 }) {
   const ink = useInk();
@@ -123,9 +123,11 @@ function SectionHeading({
         </h2>
       </div>
 
-      <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
-        {lede}
-      </p>
+      {lede && (
+        <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
+          {lede}
+        </p>
+      )}
     </motion.div>
   );
 }
@@ -426,7 +428,6 @@ function TeamSection() {
         <SectionHeading
           kicker="Our team"
           title="Meet the people behind DevSolve"
-          lede="Mentors and developers working together to build secure, scalable software — and to learn the craft while doing it."
           inView={inView}
         />
 
