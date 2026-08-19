@@ -324,9 +324,9 @@ function MemberCard({
       initial={{ opacity: 0, y: 24 }}
       animate={inView ? { opacity: 1, y: 0 } : undefined}
       transition={{ duration: 0.5, delay, ease: EASE_OUT }}
-      className={`group flex h-full w-full flex-col overflow-hidden ${CARD} ${CARD_HOVER}`}
+      className={`group flex h-full w-full flex-col overflow-hidden rounded-3xl ${CARD} ${CARD_HOVER}`}
     >
-      <div className="relative aspect-4/5 overflow-hidden bg-slate-100 dark:bg-neutral-800">
+      <div className="relative aspect-6/7 overflow-hidden bg-slate-100 dark:bg-neutral-800">
         <Image
           src={member.image}
           alt={member.name}
@@ -335,39 +335,38 @@ function MemberCard({
           className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
         />
 
-        {/* Scrim exists to keep the role legible over whatever is behind it,
-            not for decoration — so it only covers the strip that carries it. */}
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-slate-950/70 to-transparent" />
+        {/* Scrim */}
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-slate-950/75 to-transparent" />
 
-        <span className="absolute bottom-3 left-3 rounded-lg bg-white/95 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-700 backdrop-blur-sm dark:bg-neutral-900/90 dark:text-neutral-200">
+        <span className="absolute bottom-3.5 left-3.5 rounded-xl bg-white/95 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-700 backdrop-blur-md shadow-sm dark:bg-neutral-900/90 dark:text-neutral-200">
           {member.subRole ?? "Full Stack"}
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
         <div className="flex items-start justify-between gap-2">
           <h4
-            className="min-w-0 flex-1 truncate text-base font-bold tracking-tight"
+            className="min-w-0 flex-1 truncate text-lg font-bold tracking-tight sm:text-xl"
             style={{ color: ink }}
           >
             {member.name}
           </h4>
 
           <span
-            className={`shrink-0 rounded-lg px-2 py-0.5 text-xs font-bold ${chip}`}
+            className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-bold ${chip}`}
           >
             {member.badge ?? "Member"}
           </span>
         </div>
 
         {member.quote && (
-          <p className="mt-2 line-clamp-2 text-sm italic leading-relaxed text-slate-500 dark:text-neutral-400">
+          <p className="mt-3 line-clamp-2 text-sm italic leading-relaxed text-slate-500 dark:text-neutral-400">
             &ldquo;{member.quote.replace(/^["'“”]+|["'“”]+$/g, "")}&rdquo;
           </p>
         )}
 
         {socials.length > 0 && (
-          <div className="mt-auto flex items-center gap-1.5 border-t border-slate-200 pt-4 dark:border-neutral-800">
+          <div className="mt-auto flex items-center gap-2 border-t border-slate-200 pt-5 dark:border-neutral-800">
             {socials.map((social) => {
               const Icon = social.icon;
               const isMail = social.href.startsWith("mailto:");
@@ -379,9 +378,9 @@ function MemberCard({
                   target={isMail ? undefined : "_blank"}
                   rel={isMail ? undefined : "noopener noreferrer"}
                   aria-label={social.label}
-                  className="flex size-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors hover:bg-[#2563EB] hover:text-white dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-blue-500 dark:hover:text-white"
+                  className="flex size-9 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors hover:bg-[#2563EB] hover:text-white dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-blue-500 dark:hover:text-white"
                 >
-                  <Icon className="size-3.5" aria-hidden />
+                  <Icon className="size-4" aria-hidden />
                 </a>
               );
             })}
@@ -431,13 +430,13 @@ function TeamSection() {
           inView={inView}
         />
 
-        {/* Mentors — a centred row, as before */}
-        <div className="mt-12">
+        {/* Mentors */}
+        <div className="mt-14">
           <GroupLabel label="Mentors" count={SUPERVISORS.length} />
 
-          <div className="mt-7 flex flex-wrap justify-center gap-5 sm:gap-6">
+          <div className="mt-8 flex flex-wrap justify-center gap-8 sm:gap-10">
             {SUPERVISORS.map((mentor, i) => (
-              <div key={mentor.name} className="w-56 sm:w-60 md:w-64">
+              <div key={mentor.name} className="w-full max-w-85 sm:max-w-90 lg:max-w-95">
                 <MemberCard
                   member={mentor}
                   inView={inView}
@@ -448,15 +447,15 @@ function TeamSection() {
           </div>
         </div>
 
-        {/* Developers — the same three-up grid */}
-        <div className="mt-16">
+        {/* Developers */}
+        <div className="mt-20">
           <GroupLabel label="Developers" count={STUDENT_DEVELOPERS.length} />
 
-          <div className="mt-7 grid grid-cols-1 justify-items-center gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+          <div className="mt-8 grid grid-cols-1 justify-items-center gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-3">
             {STUDENT_DEVELOPERS.map((member, i) => (
               <div
                 key={member.name}
-                className="w-full max-w-[300px] sm:max-w-[280px]"
+                className="w-full max-w-85 sm:max-w-90 lg:max-w-95"
               >
                 <MemberCard
                   member={member}
