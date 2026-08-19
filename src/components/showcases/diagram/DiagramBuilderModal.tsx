@@ -69,9 +69,13 @@ export function DiagramBuilderModal({
         return;
       }
 
+      // Determine canvas background style dynamically from theme
+      const isDark = document.documentElement.classList.contains("dark");
+      const exportBgColor = isDark ? "#0b0f17" : "#ffffff";
+
       // Hide controls/minimap temporarily or style properly if capturing container
       const dataUrl = await toPng(targetEl, {
-        backgroundColor: "#0b0f17",
+        backgroundColor: exportBgColor,
         quality: 0.95,
         pixelRatio: 2,
         filter: (node) => {
@@ -129,12 +133,12 @@ export function DiagramBuilderModal({
               </div>
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-foreground leading-tight">
-                  React Flow Diagram Builder
+                  Diagram & ERD Builder
                 </h2>
                 <p className="text-xs text-muted-foreground">
                   {stepTitle
-                    ? `Step: "${stepTitle}" · Design system architecture and flows`
-                    : "Design an architecture or flow diagram and attach it directly"}
+                    ? `Step: "${stepTitle}" · Draw architecture flows and ERD database tables`
+                    : "Design database schemas (ERD) or architecture flows and attach directly"}
                 </p>
               </div>
             </div>
