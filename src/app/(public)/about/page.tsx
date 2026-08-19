@@ -43,6 +43,7 @@ import type { IconType } from "react-icons";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import SectionBackdrop, { useInk } from "@/components/landing/SectionBackdrop";
+import { SystemArchitectureDiagram } from "@/components/public-about/SystemArchitectureDiagram";
 import {
   SUPERVISORS,
   STUDENT_DEVELOPERS,
@@ -220,254 +221,29 @@ function AboutHero() {
 
 
 /* ════════════════════════════════════════════════════════════════════
-   TECH STACK
+   TECH STACK & SYSTEM ARCHITECTURE
    ════════════════════════════════════════════════════════════════════ */
 
-const TECH_ICONS: Record<string, LucideIcon> = {
-  Triangle,
-  Leaf,
-  Database,
-  Zap,
-  HardDrive,
-  Search,
-  KeyRound,
-  ShieldAlert,
-  Waypoints,
-};
-
-/** One node of the stack — the same card in the constellation and the grid. */
-function TechCard({ tech }: { tech: Technology }) {
-  const ink = useInk();
-  const Icon = TECH_ICONS[tech.iconName] ?? Layers;
-
-  return (
-    <div
-      className={`flex h-full items-start gap-3.5 p-4 ${CARD} ${CARD_HOVER}`}
-    >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-500/15">
-        <Icon
-          className="size-4.5 text-[#2563EB] dark:text-blue-400"
-          aria-hidden
-        />
-      </span>
-
-      <div className="min-w-0">
-        <h3
-          className="truncate text-sm font-bold tracking-tight"
-          style={{ color: ink }}
-        >
-          {tech.name}
-        </h3>
-        <p className="mt-0.5 text-xs leading-snug text-slate-500 dark:text-neutral-400">
-          {tech.description}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-/* ─── The constellation ─────────────────────────────────────────────────
-   A fixed canvas rather than a responsive one: the composition is hand
-   placed, so letting it reflow would only produce a different, worse
-   arrangement. It renders at xl and up, where the container is wide enough
-   to hold it at 1:1 — every narrower viewport gets the grid instead, since
-   scaling this down would take the captions past readability.
-   ──────────────────────────────────────────────────────────────────── */
-const SCENE_W = 1120;
-const SCENE_H = 640;
-const HUB = { x: 560, y: 320 };
-const NODE_W = 244;
-
-/* Concentric rounded squares, echoing the shape of the hub tile. The outer
-   two run past the canvas and are clipped, which is what stops the field
-   from reading as a closed badge. */
-const RINGS = [190, 290, 400, 520, 650, 790];
-
-/* Keyed by name, not by index, so the data file can be reordered without
-   silently scrambling the layout. */
-const NODE_SPOTS: Record<string, { x: number; y: number; drift: number }> = {
-  "Next.js": { x: 380, y: 18, drift: -8 },
-  "Spring Boot": { x: 720, y: 84, drift: 9 },
-  PostgreSQL: { x: 856, y: 208, drift: -7 },
-  Redis: { x: 846, y: 336, drift: 8 },
-  MinIO: { x: 716, y: 462, drift: -9 },
-  Meilisearch: { x: 410, y: 552, drift: 7 },
-  Keycloak: { x: 110, y: 462, drift: -8 },
-  VirusTotal: { x: 24, y: 330, drift: 9 },
-  "Reverse proxy": { x: 96, y: 150, drift: -7 },
-};
-
-function TechConstellation({
-  technologies,
-  inView,
-}: {
-  technologies: Technology[];
-  inView: boolean;
-}) {
-  const reduce = useReducedMotion();
-
-  return (
-    <div
-      className="relative overflow-hidden"
-      style={{ width: SCENE_W, height: SCENE_H }}
-      aria-hidden
-    >
-      {RINGS.map((size, i) => (
-        <motion.div
-          key={size}
-          /* Full opacity on dark: neutral-800 at 80% over neutral-950 is below
-             the point where a 1px rule still reads as a ring. */
-          className="absolute rounded-[28%] border border-slate-200/80 dark:border-neutral-800"
-          style={{
-            left: HUB.x - size / 2,
-            top: HUB.y - size / 2,
-            width: size,
-            height: size,
-          }}
-          initial={{ opacity: 0, scale: 0.92 }}
-          animate={inView ? { opacity: 1, scale: 1 } : undefined}
-          transition={{ duration: 0.7, delay: 0.1 + i * 0.06, ease: EASE_OUT }}
-        />
-      ))}
-
-      {/* Rings that keep pulsing outward — the same signal the landing hub
-          sends, in the shape this section uses. */}
-      {!reduce &&
-        [0, 1, 2].map((i) => (
-          <motion.span
-            key={i}
-            className="absolute rounded-[28%] border border-[#2563EB]/40 dark:border-blue-400/40"
-            style={{
-              left: HUB.x - RINGS[0] / 2,
-              top: HUB.y - RINGS[0] / 2,
-              width: RINGS[0],
-              height: RINGS[0],
-            }}
-            animate={{
-              scale: [1, RINGS[RINGS.length - 1] / RINGS[0]],
-              opacity: [0.55, 0],
-            }}
-            transition={{
-              duration: 5.4,
-              repeat: Infinity,
-              delay: i * 1.8,
-              ease: "easeOut",
-            }}
-          />
-        ))}
-
-      {/* The hub */}
-      <motion.div
-        className="absolute"
-        style={{ left: HUB.x - 74, top: HUB.y - 74, width: 148, height: 148 }}
-        initial={{ opacity: 0, scale: 0.6 }}
-        animate={inView ? { opacity: 1, scale: 1 } : undefined}
-        transition={{
-          type: "spring",
-          stiffness: 190,
-          damping: 17,
-          delay: 0.15,
-        }}
-      >
-        <span className="absolute -inset-8 rounded-full bg-[#2563EB]/25 blur-2xl" />
-
-        <motion.div
-          className="relative flex size-full items-center justify-center rounded-[28%] bg-[#2563EB] shadow-[0_26px_54px_-18px_rgba(37,99,235,0.85)]"
-          animate={reduce ? undefined : { y: [0, -9, 0] }}
-          transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <span className="relative size-24 overflow-hidden rounded-full bg-white shadow-[0_10px_20px_-8px_rgba(23,37,84,0.5)]">
-            <Image
-              src="/devsolve-logo.png"
-              alt=""
-              fill
-              sizes="96px"
-              quality={100}
-              className="object-contain p-1.5"
-            />
-          </span>
-        </motion.div>
-      </motion.div>
-
-      {technologies.map((tech, i) => {
-        const spot = NODE_SPOTS[tech.name];
-        if (!spot) return null;
-
-        return (
-          <motion.div
-            key={tech.name}
-            className="absolute"
-            style={{ left: spot.x, top: spot.y, width: NODE_W }}
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={inView ? { opacity: 1, scale: 1 } : undefined}
-            transition={{
-              delay: 0.3 + i * 0.07,
-              type: "spring",
-              stiffness: 320,
-              damping: 22,
-            }}
-          >
-            <motion.div
-              animate={reduce ? undefined : { y: [0, spot.drift, 0] }}
-              transition={{
-                duration: 5.5 + Math.abs(spot.drift) * 0.2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            >
-              <TechCard tech={tech} />
-            </motion.div>
-          </motion.div>
-        );
-      })}
-    </div>
-  );
-}
-
-function TechStack({
-  technologies = TECHNOLOGIES,
-}: {
-  technologies?: Technology[];
-}) {
+function TechStack() {
   const ref = useRef<HTMLElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const inView = useInView(ref, { once: true, margin: "-60px" });
 
   return (
     <section
       ref={ref}
-      className={`relative overflow-hidden py-20 sm:py-24 ${SECTION_LIFTED}`}
+      className={`relative overflow-hidden py-16 sm:py-24 ${SECTION_LIFTED}`}
     >
       <SectionBackdrop seed={4} gridSize={88} />
 
       <div className="relative mx-auto w-full max-w-7xl px-6 sm:px-12">
-        <SectionHeading
-          kicker="Tech stack"
-          title="What it runs on"
-          lede="An end-to-end architecture picked for security and predictable operations rather than novelty — every piece feeding one platform."
-          inView={inView}
-        />
-
-        <div className="mt-8 hidden justify-center xl:flex">
-          <TechConstellation technologies={technologies} inView={inView} />
-        </div>
-
-        {/* The same nodes, laid out plainly for anything narrower. */}
-        <ul className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:hidden">
-          {technologies.map((tech, i) => (
-            <motion.li
-              key={tech.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : undefined}
-              transition={{
-                duration: 0.5,
-                delay: 0.15 + i * 0.06,
-                ease: EASE_OUT,
-              }}
-            >
-              <TechCard tech={tech} />
-            </motion.li>
-          ))}
-        </ul>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : undefined}
+          transition={{ duration: 0.6, ease: EASE_OUT }}
+          className="w-full"
+        >
+          <SystemArchitectureDiagram />
+        </motion.div>
       </div>
     </section>
   );
