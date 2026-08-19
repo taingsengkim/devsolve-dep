@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { isCleanText, profanityMessage } from "@/lib/moderation/profanity";
+import { isReadableText, readabilityMessage } from "@/lib/moderation/readability";
 
 /** Values accepted by `SolutionRequest.approachType`. */
 export const APPROACH_TYPES = [
@@ -101,12 +102,14 @@ export const solutionCreateSchema = z.object({
     .string()
     .min(10, "The summary must be at least 10 characters")
     .max(250, "The summary must not exceed 250 characters")
-    .refine(isCleanText, profanityMessage("The summary")),
+    .refine(isCleanText, profanityMessage("The summary"))
+    .refine(isReadableText, readabilityMessage("The summary")),
   bodyMarkdown: z
     .string()
     .min(30, "Explain the answer in at least 30 characters")
     .max(30_000, "The answer must not exceed 30000 characters")
-    .refine(isCleanText, profanityMessage("The answer")),
+    .refine(isCleanText, profanityMessage("The answer"))
+    .refine(isReadableText, readabilityMessage("The answer")),
   approachType: z.enum(APPROACH_TYPES, {
     message: `approachType must be one of ${APPROACH_TYPES.join(", ")}`,
   }),
