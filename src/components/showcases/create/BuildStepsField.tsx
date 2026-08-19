@@ -397,6 +397,9 @@ export function BuildStepsField() {
                 ...prev,
                 [currentKey]: { nodes, edges },
               }));
+              setOpen((cur) =>
+                cur.includes(currentKey) ? cur : [...cur, currentKey],
+              );
             }
             setValue(`steps.${diagramModalStepIndex}.diagramFile`, file, {
               shouldDirty: true,

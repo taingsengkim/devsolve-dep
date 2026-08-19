@@ -1,9 +1,377 @@
 import type { DiagramTemplate } from "./types";
 
 export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
+  // ── 1. Conceptual & Domain Maps ──
+  {
+    id: "concept-ddd",
+    name: "DDD Concept & Bounded Contexts",
+    category: "concept",
+    description: "Domain-Driven Design conceptual architecture with Bounded Contexts & Aggregate Roots",
+    nodes: [
+      {
+        id: "ctx-auth",
+        type: "groupNode",
+        position: { x: 40, y: 40 },
+        data: {
+          label: "Identity & Access Context",
+          groupTitle: "Identity & Access Context",
+          subtext: "Authentication & User Management boundary",
+          badge: "BOUNDED CONTEXT",
+          borderStyle: "dashed",
+        },
+      },
+      {
+        id: "concept-user-agg",
+        type: "conceptNode",
+        position: { x: 70, y: 110 },
+        data: {
+          label: "User Aggregate",
+          subtext: "Root entity holding credentials, profile, and roles",
+          badge: "AGGREGATE ROOT",
+          colorTheme: "blue",
+        },
+      },
+      {
+        id: "concept-session-vo",
+        type: "conceptNode",
+        position: { x: 70, y: 260 },
+        data: {
+          label: "Session Token",
+          subtext: "Immutable OIDC JWT principal and claims",
+          badge: "VALUE OBJECT",
+          colorTheme: "indigo",
+        },
+      },
+      {
+        id: "ctx-order",
+        type: "groupNode",
+        position: { x: 400, y: 40 },
+        data: {
+          label: "Order & Checkout Context",
+          groupTitle: "Order & Checkout Context",
+          subtext: "Transaction processing and fulfillment lifecycle",
+          badge: "CORE DOMAIN",
+          borderStyle: "solid",
+        },
+      },
+      {
+        id: "concept-order-agg",
+        type: "conceptNode",
+        position: { x: 430, y: 110 },
+        data: {
+          label: "Order Aggregate Root",
+          subtext: "Coordinates order status, line items, and payment state",
+          badge: "AGGREGATE ROOT",
+          colorTheme: "emerald",
+        },
+      },
+      {
+        id: "concept-payment-vo",
+        type: "conceptNode",
+        position: { x: 430, y: 260 },
+        data: {
+          label: "Payment Intent",
+          subtext: "Stripe/Gateway transactional reference",
+          badge: "VALUE OBJECT",
+          colorTheme: "purple",
+        },
+      },
+      {
+        id: "ctx-catalog",
+        type: "groupNode",
+        position: { x: 760, y: 40 },
+        data: {
+          label: "Inventory & Catalog Context",
+          groupTitle: "Inventory & Catalog Context",
+          subtext: "Product catalog and stock management",
+          badge: "SUPPORTING DOMAIN",
+          borderStyle: "dashed",
+        },
+      },
+      {
+        id: "concept-product-agg",
+        type: "conceptNode",
+        position: { x: 790, y: 110 },
+        data: {
+          label: "Product Entity",
+          subtext: "SKU, pricing model, variants, and descriptions",
+          badge: "ENTITY",
+          colorTheme: "amber",
+        },
+      },
+      {
+        id: "concept-stock-vo",
+        type: "conceptNode",
+        position: { x: 790, y: 260 },
+        data: {
+          label: "Stock Allocation",
+          subtext: "Warehouse inventory reservation lock",
+          badge: "DOMAIN SERVICE",
+          colorTheme: "cyan",
+        },
+      },
+    ],
+    edges: [
+      {
+        id: "e-user-session",
+        source: "concept-user-agg",
+        target: "concept-session-vo",
+        label: "issues principal",
+        animated: false,
+      },
+      {
+        id: "e-user-order",
+        source: "concept-user-agg",
+        target: "concept-order-agg",
+        label: "places order (Customer ID)",
+        animated: true,
+      },
+      {
+        id: "e-order-payment",
+        source: "concept-order-agg",
+        target: "concept-payment-vo",
+        label: "captures payment",
+        animated: false,
+      },
+      {
+        id: "e-order-product",
+        source: "concept-order-agg",
+        target: "concept-product-agg",
+        label: "references SKU",
+        animated: false,
+      },
+      {
+        id: "e-product-stock",
+        source: "concept-product-agg",
+        target: "concept-stock-vo",
+        label: "reserves inventory",
+        animated: false,
+      },
+    ],
+  },
+
+  // ── 2. Flowchart & Business Process ──
+  {
+    id: "flow-checkout",
+    name: "User Checkout Flowchart",
+    category: "flowchart",
+    description: "Step-by-step process flow with decisions, event triggers, and documents",
+    nodes: [
+      {
+        id: "flow-start",
+        type: "terminalNode",
+        position: { x: 50, y: 180 },
+        data: {
+          label: "Start Checkout",
+          terminalType: "start",
+        },
+      },
+      {
+        id: "flow-action-cart",
+        type: "actionNode",
+        position: { x: 260, y: 165 },
+        data: {
+          label: "Review Shopping Cart",
+          actor: "Customer",
+          subtext: "Verify quantities and items",
+        },
+      },
+      {
+        id: "flow-decision-promo",
+        type: "decisionNode",
+        position: { x: 520, y: 165 },
+        data: {
+          label: "Apply promo discount?",
+          badge: "Promo Check",
+        },
+      },
+      {
+        id: "flow-event-stripe",
+        type: "eventNode",
+        position: { x: 760, y: 80 },
+        data: {
+          label: "Stripe Webhook Received",
+          triggerType: "webhook",
+        },
+      },
+      {
+        id: "flow-action-pay",
+        type: "actionNode",
+        position: { x: 760, y: 220 },
+        data: {
+          label: "Authorize Payment Card",
+          actor: "Payment Gateway",
+          subtext: "3D Secure verification",
+        },
+      },
+      {
+        id: "flow-data-invoice",
+        type: "dataNode",
+        position: { x: 1040, y: 130 },
+        data: {
+          label: "Order Invoice PDF",
+          badge: "DOCUMENT",
+          subtext: "Generated JSON payload & receipt",
+        },
+      },
+      {
+        id: "flow-end",
+        type: "terminalNode",
+        position: { x: 1060, y: 260 },
+        data: {
+          label: "Order Fulfilled",
+          terminalType: "end",
+        },
+      },
+    ],
+    edges: [
+      {
+        id: "ef-1",
+        source: "flow-start",
+        target: "flow-action-cart",
+        animated: true,
+      },
+      {
+        id: "ef-2",
+        source: "flow-action-cart",
+        target: "flow-decision-promo",
+      },
+      {
+        id: "ef-3",
+        source: "flow-decision-promo",
+        target: "flow-action-pay",
+        label: "Proceed to Payment",
+        animated: true,
+      },
+      {
+        id: "ef-4",
+        source: "flow-event-stripe",
+        target: "flow-action-pay",
+        label: "Charge Succeeded",
+      },
+      {
+        id: "ef-5",
+        source: "flow-action-pay",
+        target: "flow-data-invoice",
+        label: "Generate Receipt",
+      },
+      {
+        id: "ef-6",
+        source: "flow-action-pay",
+        target: "flow-end",
+        label: "Success",
+        animated: true,
+      },
+    ],
+  },
+
+  // ── 3. UML Class Diagram ──
+  {
+    id: "uml-ecommerce",
+    name: "UML Class Architecture",
+    category: "uml",
+    description: "Object-oriented class structures, interfaces, fields, and method contracts",
+    nodes: [
+      {
+        id: "uml-orderable",
+        type: "classNode",
+        position: { x: 60, y: 60 },
+        data: {
+          label: "Orderable",
+          isInterface: true,
+          attributes: [
+            { id: "a1", visibility: "+", name: "id", type: "UUID" },
+            { id: "a2", visibility: "+", name: "unitPrice", type: "BigDecimal" },
+          ],
+          methods: [
+            { id: "m1", visibility: "+", name: "calculateTax()", type: "BigDecimal" },
+            { id: "m2", visibility: "+", name: "getSKU()", type: "String" },
+          ],
+        },
+      },
+      {
+        id: "uml-product",
+        type: "classNode",
+        position: { x: 60, y: 280 },
+        data: {
+          label: "Product",
+          attributes: [
+            { id: "ap1", visibility: "-", name: "sku", type: "String" },
+            { id: "ap2", visibility: "-", name: "stock", type: "int" },
+            { id: "ap3", visibility: "+", name: "title", type: "String" },
+          ],
+          methods: [
+            { id: "mp1", visibility: "+", name: "reserveStock(qty)", type: "boolean" },
+            { id: "mp2", visibility: "+", name: "applyDiscount(pct)", type: "void" },
+          ],
+        },
+      },
+      {
+        id: "uml-order",
+        type: "classNode",
+        position: { x: 420, y: 150 },
+        data: {
+          label: "Order",
+          attributes: [
+            { id: "ao1", visibility: "-", name: "orderId", type: "UUID" },
+            { id: "ao2", visibility: "-", name: "status", type: "OrderStatus" },
+            { id: "ao3", visibility: "+", name: "items", type: "List<OrderItem>" },
+          ],
+          methods: [
+            { id: "mo1", visibility: "+", name: "addItem(product, qty)", type: "void" },
+            { id: "mo2", visibility: "+", name: "calculateTotal()", type: "BigDecimal" },
+            { id: "mo3", visibility: "+", name: "checkout(gateway)", type: "PaymentResult" },
+          ],
+        },
+      },
+      {
+        id: "uml-customer",
+        type: "classNode",
+        position: { x: 780, y: 150 },
+        data: {
+          label: "Customer",
+          attributes: [
+            { id: "ac1", visibility: "-", name: "customerId", type: "UUID" },
+            { id: "ac2", visibility: "+", name: "email", type: "String" },
+            { id: "ac3", visibility: "-", name: "tier", type: "LoyaltyTier" },
+          ],
+          methods: [
+            { id: "mc1", visibility: "+", name: "getOrders()", type: "List<Order>" },
+            { id: "mc2", visibility: "+", name: "upgradeTier()", type: "void" },
+          ],
+        },
+      },
+    ],
+    edges: [
+      {
+        id: "eu-1",
+        source: "uml-orderable",
+        target: "uml-product",
+        label: "«implements»",
+        animated: false,
+      },
+      {
+        id: "eu-2",
+        source: "uml-order",
+        target: "uml-product",
+        label: "1 : * (has products)",
+        animated: false,
+      },
+      {
+        id: "eu-3",
+        source: "uml-customer",
+        target: "uml-order",
+        label: "1 : * (places)",
+        animated: false,
+      },
+    ],
+  },
+
+  // ── 4. ERD Relational Database Schemas ──
   {
     id: "erd-ecommerce",
     name: "E-Commerce Schema (ERD)",
+    category: "erd",
     description: "Relational database schema: Users, Products, Categories, Orders, and Order Items",
     nodes: [
       {
@@ -144,6 +512,7 @@ export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
   {
     id: "erd-devsolve",
     name: "DevSolve Platform Schema (ERD)",
+    category: "erd",
     description: "Entities for problems, solutions, comments, tags, and profiles",
     nodes: [
       {
@@ -283,9 +652,12 @@ export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
       },
     ],
   },
+
+  // ── 5. System Architecture ──
   {
     id: "system-architecture",
     name: "System Architecture",
+    category: "architecture",
     description: "Standard web app stack: Client → API Gateway → Server → DB & Cache",
     nodes: [
       {
@@ -371,6 +743,7 @@ export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
   {
     id: "auth-oauth-flow",
     name: "Auth & OAuth Flow",
+    category: "architecture",
     description: "PKCE OIDC sequence: User → Better Auth → Keycloak → Protected API",
     nodes: [
       {
@@ -445,6 +818,7 @@ export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
   {
     id: "microservices-pipeline",
     name: "Microservices & Queue",
+    category: "architecture",
     description: "Event-driven workflow with Message Queue & Async Workers",
     nodes: [
       {
@@ -529,4 +903,5 @@ export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
     ],
   },
 ];
+
 

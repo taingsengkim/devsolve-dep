@@ -19,20 +19,29 @@ import "@xyflow/react/dist/style.css";
 
 import {
   AppWindow,
+  Boxes,
+  Brain,
+  CircleDot,
   Cloud,
   Database,
+  FileText,
   GitFork,
   Key,
+  Layers,
   Link2,
   Maximize2,
+  Play,
   Plus,
   RotateCcw,
   Server,
   Sparkles,
+  Square,
   StickyNote,
   Table2,
   Trash2,
+  User,
   Workflow,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,7 +54,7 @@ import {
 } from "@/components/ui/select";
 import { nodeTypes } from "./CustomNodes";
 import { DIAGRAM_TEMPLATES } from "./templates";
-import type { AppNode, CustomNodeType, ErdColumn } from "./types";
+import type { AppNode, CustomNodeType, DiagramCategory, ErdColumn, UmlMember } from "./types";
 import { cn } from "@/lib/utils";
 
 const SQL_DATA_TYPES = [
@@ -61,16 +70,18 @@ const SQL_DATA_TYPES = [
   "DATE",
 ];
 
+const UML_VISIBILITY = ["+", "-", "#", "~"] as const;
+
 const COLOR_THEMES: Array<{
   id: "emerald" | "blue" | "purple" | "amber" | "indigo" | "cyan" | "rose" | "slate";
   label: string;
   bgClass: string;
 }> = [
+  { id: "indigo", label: "Indigo", bgClass: "bg-indigo-500" },
   { id: "emerald", label: "Emerald", bgClass: "bg-emerald-500" },
   { id: "blue", label: "Blue", bgClass: "bg-blue-500" },
   { id: "purple", label: "Purple", bgClass: "bg-purple-500" },
   { id: "amber", label: "Amber", bgClass: "bg-amber-500" },
-  { id: "indigo", label: "Indigo", bgClass: "bg-indigo-500" },
   { id: "cyan", label: "Cyan", bgClass: "bg-cyan-500" },
   { id: "rose", label: "Rose", bgClass: "bg-rose-500" },
   { id: "slate", label: "Slate", bgClass: "bg-slate-500" },
@@ -92,6 +103,7 @@ export function DiagramCanvas({
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<DiagramCategory>("all");
 
   // Sync state changes to parent if callback provided
   useEffect(() => {
@@ -129,9 +141,9 @@ export function DiagramCanvas({
 
   const addNode = (type: CustomNodeType) => {
     const id = `node-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-    const defaultLabels: Record<
+    const defaultConfigs: Record<
       CustomNodeType,
-      { label: string; subtext: string; badge: string }
+      Partial<AppNode["data"]> & { label: string }
     > = {
       clientNode: {
         label: "Client App",
@@ -165,100 +177,69 @@ export function DiagramCanvas({
       },
       tableNode: {
         label: "new_table",
+        tableName: "new_table",
         subtext: "Database table entity",
         badge: "TABLE",
+        colorTheme: "emerald",
+        columns: [
+          { id: `col-${Date.now()}-1`, name: "id", type: "UUID", isPk: true },
+          { id: `col-${Date.now()}-2`, name: "created_at", type: "TIMESTAMP" },
+        ],
+      },
+      conceptNode: {
+        label: "Core Domain Concept",
+        subtext: "Domain model representing key business rules",
+        badge: "AGGREGATE ROOT",
+        colorTheme: "indigo",
+      },
+      groupNode: {
+        label: "Bounded Context",
+        groupTitle: "Bounded Context Boundary",
+        subtext: "Subsystem domain boundary",
+        badge: "DOMAIN",
+        borderStyle: "dashed",
+      },
+      terminalNode: {
+        label: "Start Process",
+        terminalType: "start",
+      },
+      actionNode: {
+        label: "Execute Workflow Step",
+        actor: "Service Worker",
+        subtext: "Perform business logic transaction",
+      },
+      eventNode: {
+        label: "Webhook Event Trigger",
+        triggerType: "webhook",
+        badge: "EVENT",
+      },
+      dataNode: {
+        label: "Payload Document",
+        subtext: "application/json response",
+        badge: "I/O",
+      },
+      classNode: {
+        label: "UserEntity",
+        attributes: [
+          { id: "a1", visibility: "-", name: "id", type: "UUID" },
+          { id: "a2", visibility: "+", name: "status", type: "String" },
+        ],
+        methods: [
+          { id: "m1", visibility: "+", name: "save()", type: "void" },
+          { id: "m2", visibility: "+", name: "getId()", type: "UUID" },
+        ],
       },
     };
 
-    const config = defaultLabels[type];
+    const config = defaultConfigs[type];
     const newNode: AppNode = {
       id,
       type,
       position: {
-        x: 250 + Math.random() * 60,
-        y: 180 + Math.random() * 60,
+        x: 240 + Math.random() * 60,
+        y: 160 + Math.random() * 60,
       },
-      data: {
-        label: config.label,
-        subtext: config.subtext,
-        badge: config.badge,
-        ...(type === "tableNode"
-          ? {
-              tableName: config.label,
-              colorTheme: "emerald",
-              columns: [
-                { id: `col-${Date.now()}-1`, name: "id", type: "UUID", isPk: true },
-                { id: `col-${Date.now()}-2`, name: "created_at", type: "TIMESTAMP" },
-              ],
-            }
-          : {}),
-      },
-    };
-
-    setNodes((nds) => [...nds, newNode]);
-    setSelectedNodeId(id);
-    setSelectedEdgeId(null);
-  };
-
-  const addErdTable = (preset?: "users" | "orders" | "products" | "custom") => {
-    const id = `tbl-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-    let tableName = "new_table";
-    let subtext = "Entity schema table";
-    let colorTheme: "emerald" | "blue" | "purple" | "amber" | "indigo" | "cyan" = "emerald";
-    let columns: ErdColumn[] = [
-      { id: `c-${Date.now()}-1`, name: "id", type: "UUID", isPk: true },
-      { id: `c-${Date.now()}-2`, name: "created_at", type: "TIMESTAMP" },
-    ];
-
-    if (preset === "users") {
-      tableName = "users";
-      subtext = "User authentication and profile entity";
-      colorTheme = "blue";
-      columns = [
-        { id: `c-${Date.now()}-1`, name: "id", type: "UUID", isPk: true },
-        { id: `c-${Date.now()}-2`, name: "email", type: "VARCHAR(255)", isUnique: true },
-        { id: `c-${Date.now()}-3`, name: "username", type: "VARCHAR(60)", isUnique: true },
-        { id: `c-${Date.now()}-4`, name: "created_at", type: "TIMESTAMP" },
-      ];
-    } else if (preset === "orders") {
-      tableName = "orders";
-      subtext = "Customer checkout orders";
-      colorTheme = "indigo";
-      columns = [
-        { id: `c-${Date.now()}-1`, name: "id", type: "UUID", isPk: true },
-        { id: `c-${Date.now()}-2`, name: "user_id", type: "UUID", isFk: true },
-        { id: `c-${Date.now()}-3`, name: "total_amount", type: "NUMERIC(12,2)" },
-        { id: `c-${Date.now()}-4`, name: "status", type: "VARCHAR(50)" },
-        { id: `c-${Date.now()}-5`, name: "created_at", type: "TIMESTAMP" },
-      ];
-    } else if (preset === "products") {
-      tableName = "products";
-      subtext = "Store catalog items";
-      colorTheme = "emerald";
-      columns = [
-        { id: `c-${Date.now()}-1`, name: "id", type: "UUID", isPk: true },
-        { id: `c-${Date.now()}-2`, name: "title", type: "VARCHAR(200)" },
-        { id: `c-${Date.now()}-3`, name: "price", type: "NUMERIC(10,2)" },
-        { id: `c-${Date.now()}-4`, name: "stock_quantity", type: "INTEGER" },
-        { id: `c-${Date.now()}-5`, name: "created_at", type: "TIMESTAMP" },
-      ];
-    }
-
-    const newNode: AppNode = {
-      id,
-      type: "tableNode",
-      position: {
-        x: 220 + Math.random() * 80,
-        y: 150 + Math.random() * 80,
-      },
-      data: {
-        label: tableName,
-        tableName,
-        subtext,
-        badge: "TABLE",
-        colorTheme,
-        columns,
-      },
+      data: config as AppNode["data"],
     };
 
     setNodes((nds) => [...nds, newNode]);
@@ -278,6 +259,9 @@ export function DiagramCanvas({
           if (key === "tableName" && typeof value === "string") {
             updatedData.label = value;
           }
+          if (key === "groupTitle" && typeof value === "string") {
+            updatedData.label = value;
+          }
           return {
             ...node,
             data: updatedData,
@@ -288,20 +272,18 @@ export function DiagramCanvas({
     );
   };
 
+  // ── ERD Column Management ──
   const updateColumn = (colId: string, patch: Partial<ErdColumn>) => {
     if (!selectedNodeId) return;
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === selectedNodeId) {
           const cols = node.data.columns || [];
-          const nextCols = cols.map((col) =>
-            col.id === colId ? { ...col, ...patch } : col,
-          );
           return {
             ...node,
             data: {
               ...node.data,
-              columns: nextCols,
+              columns: cols.map((col) => (col.id === colId ? { ...col, ...patch } : col)),
             },
           };
         }
@@ -310,7 +292,7 @@ export function DiagramCanvas({
     );
   };
 
-  const addColumnToSelectedNode = () => {
+  const addColumn = () => {
     if (!selectedNodeId) return;
     const newCol: ErdColumn = {
       id: `col-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`,
@@ -321,39 +303,7 @@ export function DiagramCanvas({
       nds.map((node) => {
         if (node.id === selectedNodeId) {
           const cols = node.data.columns || [];
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              columns: [...cols, newCol],
-            },
-          };
-        }
-        return node;
-      }),
-    );
-  };
-
-  const addPresetColumn = (preset: { name: string; type: string; isPk?: boolean; isFk?: boolean }) => {
-    if (!selectedNodeId) return;
-    const newCol: ErdColumn = {
-      id: `col-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`,
-      name: preset.name,
-      type: preset.type,
-      isPk: preset.isPk,
-      isFk: preset.isFk,
-    };
-    setNodes((nds) =>
-      nds.map((node) => {
-        if (node.id === selectedNodeId) {
-          const cols = node.data.columns || [];
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              columns: [...cols, newCol],
-            },
-          };
+          return { ...node, data: { ...node.data, columns: [...cols, newCol] } };
         }
         return node;
       }),
@@ -366,11 +316,67 @@ export function DiagramCanvas({
       nds.map((node) => {
         if (node.id === selectedNodeId) {
           const cols = node.data.columns || [];
+          return { ...node, data: { ...node.data, columns: cols.filter((c) => c.id !== colId) } };
+        }
+        return node;
+      }),
+    );
+  };
+
+  // ── UML Member Management ──
+  const addUmlMember = (kind: "attributes" | "methods") => {
+    if (!selectedNodeId) return;
+    const newMember: UmlMember = {
+      id: `${kind[0]}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`,
+      visibility: "+",
+      name: kind === "attributes" ? "newField" : "newMethod()",
+      type: kind === "attributes" ? "String" : "void",
+    };
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === selectedNodeId) {
+          const list = (node.data[kind] as UmlMember[]) || [];
+          return { ...node, data: { ...node.data, [kind]: [...list, newMember] } };
+        }
+        return node;
+      }),
+    );
+  };
+
+  const updateUmlMember = (
+    kind: "attributes" | "methods",
+    memberId: string,
+    patch: Partial<UmlMember>,
+  ) => {
+    if (!selectedNodeId) return;
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === selectedNodeId) {
+          const list = (node.data[kind] as UmlMember[]) || [];
           return {
             ...node,
             data: {
               ...node.data,
-              columns: cols.filter((c) => c.id !== colId),
+              [kind]: list.map((m) => (m.id === memberId ? { ...m, ...patch } : m)),
+            },
+          };
+        }
+        return node;
+      }),
+    );
+  };
+
+  const removeUmlMember = (kind: "attributes" | "methods", memberId: string) => {
+    if (!selectedNodeId) return;
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === selectedNodeId) {
+          const list = (node.data[kind] as UmlMember[]) || [];
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              [kind]: list.filter((m) => m.id !== memberId),
             },
           };
         }
@@ -433,148 +439,293 @@ export function DiagramCanvas({
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-background">
-      {/* ── Top Toolbar ── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-card/90 px-4 py-2.5 backdrop-blur-xs">
-        {/* Node Creation Palette */}
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Add:
-          </span>
-
-          {/* ERD Table Node Button */}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => addErdTable()}
-            className="h-8 gap-1.5 rounded-lg border-emerald-500/40 bg-emerald-500/10 px-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-300 shadow-xs"
-          >
-            <Table2 className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-            + Table (ERD)
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => addNode("clientNode")}
-            className="h-8 gap-1.5 rounded-lg border-border bg-background px-2.5 text-xs font-semibold text-foreground hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400"
-          >
-            <AppWindow className="size-3.5 text-blue-500" />
-            Client
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => addNode("serverNode")}
-            className="h-8 gap-1.5 rounded-lg border-border bg-background px-2.5 text-xs font-semibold text-foreground hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400"
-          >
-            <Server className="size-3.5 text-emerald-500" />
-            Server/API
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => addNode("databaseNode")}
-            className="h-8 gap-1.5 rounded-lg border-border bg-background px-2.5 text-xs font-semibold text-foreground hover:bg-purple-500/10 hover:text-purple-600 dark:hover:text-purple-400"
-          >
-            <Database className="size-3.5 text-purple-500" />
-            Database
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => addNode("cloudNode")}
-            className="h-8 gap-1.5 rounded-lg border-border bg-background px-2.5 text-xs font-semibold text-foreground hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400"
-          >
-            <Cloud className="size-3.5 text-amber-500" />
-            Cloud/Gateway
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => addNode("decisionNode")}
-            className="h-8 gap-1.5 rounded-lg border-border bg-background px-2.5 text-xs font-semibold text-foreground hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400"
-          >
-            <GitFork className="size-3.5 text-rose-500" />
-            Decision
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => addNode("noteNode")}
-            className="h-8 gap-1.5 rounded-lg border-border bg-background px-2.5 text-xs font-semibold text-foreground hover:bg-muted hover:text-foreground"
-          >
-            <StickyNote className="size-3.5 text-muted-foreground" />
-            Note
-          </Button>
-        </div>
-
-        {/* Template & Reset Actions */}
-        <div className="flex items-center gap-2">
-          <div className="w-56">
-            <Select onValueChange={applyTemplate}>
-              <SelectTrigger className="h-8 rounded-lg border-border bg-background text-xs font-semibold">
-                <Sparkles className="mr-1.5 size-3.5 text-primary" />
-                <SelectValue placeholder="Load template..." />
-              </SelectTrigger>
-              <SelectContent className="border-border bg-popover">
-                <SelectItem value="blank" className="text-xs font-medium text-muted-foreground">
-                  Blank Canvas (Clean)
-                </SelectItem>
-                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
-                  Database ERD Schemas
-                </div>
-                {DIAGRAM_TEMPLATES.filter((t) => t.id.startsWith("erd-")).map((tpl) => (
-                  <SelectItem key={tpl.id} value={tpl.id} className="text-xs">
-                    {tpl.name}
-                  </SelectItem>
-                ))}
-                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
-                  Architecture & Flows
-                </div>
-                {DIAGRAM_TEMPLATES.filter((t) => !t.id.startsWith("erd-")).map((tpl) => (
-                  <SelectItem key={tpl.id} value={tpl.id} className="text-xs">
-                    {tpl.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      {/* ── Top Multi-Paradigm Category Tabs & Toolbar ── */}
+      <div className="flex flex-col gap-2 border-b border-border bg-card/95 px-4 py-2.5 backdrop-blur-xs">
+        {/* Category Tabs & Template Selector Row */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="mr-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              Mode:
+            </span>
+            {(
+              [
+                { id: "all", label: "All Paradigms" },
+                { id: "concept", label: "🧠 Conceptual & DDD" },
+                { id: "flowchart", label: "📊 Flowchart" },
+                { id: "erd", label: "🗄️ ERD Schema" },
+                { id: "architecture", label: "🏗️ Architecture" },
+                { id: "uml", label: "📐 UML Class" },
+              ] as const
+            ).map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setActiveCategory(cat.id)}
+                className={cn(
+                  "rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors",
+                  activeCategory === cat.id
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                {cat.label}
+              </button>
+            ))}
           </div>
 
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => fitView({ padding: 0.25, duration: 300 })}
-            className="h-8 gap-1 rounded-lg px-2 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
-            title="Fit diagram to viewport"
-          >
-            <Maximize2 className="size-3.5" />
-            Fit View
-          </Button>
+          {/* Template & Reset Actions */}
+          <div className="flex items-center gap-2">
+            <div className="w-56">
+              <Select onValueChange={applyTemplate}>
+                <SelectTrigger className="h-8 rounded-lg border-border bg-background text-xs font-semibold">
+                  <Sparkles className="mr-1.5 size-3.5 text-primary" />
+                  <SelectValue placeholder="Load template..." />
+                </SelectTrigger>
+                <SelectContent className="border-border bg-popover">
+                  <SelectItem value="blank" className="text-xs font-medium text-muted-foreground">
+                    Blank Canvas (Clean)
+                  </SelectItem>
+                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                    Conceptual & Domain Maps
+                  </div>
+                  {DIAGRAM_TEMPLATES.filter((t) => t.category === "concept").map((tpl) => (
+                    <SelectItem key={tpl.id} value={tpl.id} className="text-xs">
+                      {tpl.name}
+                    </SelectItem>
+                  ))}
+                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                    Flowcharts & Processes
+                  </div>
+                  {DIAGRAM_TEMPLATES.filter((t) => t.category === "flowchart").map((tpl) => (
+                    <SelectItem key={tpl.id} value={tpl.id} className="text-xs">
+                      {tpl.name}
+                    </SelectItem>
+                  ))}
+                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                    Database ERD Schemas
+                  </div>
+                  {DIAGRAM_TEMPLATES.filter((t) => t.category === "erd").map((tpl) => (
+                    <SelectItem key={tpl.id} value={tpl.id} className="text-xs">
+                      {tpl.name}
+                    </SelectItem>
+                  ))}
+                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                    UML Class Diagrams
+                  </div>
+                  {DIAGRAM_TEMPLATES.filter((t) => t.category === "uml").map((tpl) => (
+                    <SelectItem key={tpl.id} value={tpl.id} className="text-xs">
+                      {tpl.name}
+                    </SelectItem>
+                  ))}
+                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                    System Architecture
+                  </div>
+                  {DIAGRAM_TEMPLATES.filter((t) => t.category === "architecture").map((tpl) => (
+                    <SelectItem key={tpl.id} value={tpl.id} className="text-xs">
+                      {tpl.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={clearCanvas}
-            className="h-8 gap-1 rounded-lg px-2 text-xs font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-            title="Clear all nodes"
-          >
-            <RotateCcw className="size-3.5" />
-            Clear
-          </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => fitView({ padding: 0.25, duration: 300 })}
+              className="h-8 gap-1 rounded-lg px-2 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+              title="Fit diagram to viewport"
+            >
+              <Maximize2 className="size-3.5" />
+              Fit View
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={clearCanvas}
+              className="h-8 gap-1 rounded-lg px-2 text-xs font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              title="Clear all nodes"
+            >
+              <RotateCcw className="size-3.5" />
+              Clear
+            </Button>
+          </div>
+        </div>
+
+        {/* Dynamic Nodes Palette */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-border/50">
+          <span className="mr-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            Add Element:
+          </span>
+
+          {/* Conceptual & DDD Buttons */}
+          {(activeCategory === "all" || activeCategory === "concept") && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addNode("conceptNode")}
+                className="h-7 gap-1.5 rounded-lg border-indigo-500/30 bg-indigo-500/10 px-2.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-500/20 dark:text-indigo-300"
+              >
+                <Brain className="size-3.5 text-indigo-600 dark:text-indigo-400" />
+                + Concept
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addNode("groupNode")}
+                className="h-7 gap-1.5 rounded-lg border-border bg-background px-2.5 text-xs font-semibold text-foreground hover:bg-muted"
+              >
+                <Boxes className="size-3.5 text-primary" />
+                + Boundary Group
+              </Button>
+            </>
+          )}
+
+          {/* Flowchart Buttons */}
+          {(activeCategory === "all" || activeCategory === "flowchart") && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addNode("terminalNode")}
+                className="h-7 gap-1.5 rounded-lg border-emerald-500/30 bg-emerald-500/10 px-2.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-300"
+              >
+                <Play className="size-3 text-emerald-600 dark:text-emerald-400" />
+                + Start/End
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addNode("actionNode")}
+                className="h-7 gap-1.5 rounded-lg border-cyan-500/30 bg-cyan-500/10 px-2.5 text-xs font-semibold text-cyan-700 hover:bg-cyan-500/20 dark:text-cyan-300"
+              >
+                <Workflow className="size-3.5 text-cyan-600 dark:text-cyan-400" />
+                + Action Step
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addNode("eventNode")}
+                className="h-7 gap-1.5 rounded-lg border-amber-500/30 bg-amber-500/10 px-2.5 text-xs font-semibold text-amber-700 hover:bg-amber-500/20 dark:text-amber-300"
+              >
+                <Zap className="size-3.5 text-amber-600 dark:text-amber-400" />
+                + Event
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addNode("dataNode")}
+                className="h-7 gap-1.5 rounded-lg border-blue-500/30 bg-blue-500/10 px-2.5 text-xs font-semibold text-blue-700 hover:bg-blue-500/20 dark:text-blue-300"
+              >
+                <FileText className="size-3.5 text-blue-600 dark:text-blue-400" />
+                + Data / Doc
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addNode("decisionNode")}
+                className="h-7 gap-1.5 rounded-lg border-rose-500/30 bg-rose-500/10 px-2.5 text-xs font-semibold text-rose-700 hover:bg-rose-500/20 dark:text-rose-300"
+              >
+                <GitFork className="size-3.5 text-rose-500" />
+                + Decision
+              </Button>
+            </>
+          )}
+
+          {/* ERD Table Button */}
+          {(activeCategory === "all" || activeCategory === "erd") && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => addNode("tableNode")}
+              className="h-7 gap-1.5 rounded-lg border-emerald-500/40 bg-emerald-500/10 px-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-300"
+            >
+              <Table2 className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+              + Table (ERD)
+            </Button>
+          )}
+
+          {/* UML Class Button */}
+          {(activeCategory === "all" || activeCategory === "uml") && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => addNode("classNode")}
+              className="h-7 gap-1.5 rounded-lg border-indigo-500/30 bg-indigo-500/10 px-2.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-500/20 dark:text-indigo-300 font-mono"
+            >
+              <Layers className="size-3.5 text-indigo-600 dark:text-indigo-400" />
+              + UML Class
+            </Button>
+          )}
+
+          {/* Architecture Buttons */}
+          {(activeCategory === "all" || activeCategory === "architecture") && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addNode("clientNode")}
+                className="h-7 gap-1.5 rounded-lg border-border bg-background px-2 text-xs font-semibold text-foreground hover:bg-muted"
+              >
+                <AppWindow className="size-3.5 text-blue-500" />
+                Client
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addNode("serverNode")}
+                className="h-7 gap-1.5 rounded-lg border-border bg-background px-2 text-xs font-semibold text-foreground hover:bg-muted"
+              >
+                <Server className="size-3.5 text-emerald-500" />
+                Server
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addNode("databaseNode")}
+                className="h-7 gap-1.5 rounded-lg border-border bg-background px-2 text-xs font-semibold text-foreground hover:bg-muted"
+              >
+                <Database className="size-3.5 text-purple-500" />
+                Database
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addNode("cloudNode")}
+                className="h-7 gap-1.5 rounded-lg border-border bg-background px-2 text-xs font-semibold text-foreground hover:bg-muted"
+              >
+                <Cloud className="size-3.5 text-amber-500" />
+                Cloud
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addNode("noteNode")}
+                className="h-7 gap-1.5 rounded-lg border-border bg-background px-2 text-xs font-semibold text-foreground hover:bg-muted"
+              >
+                <StickyNote className="size-3.5 text-muted-foreground" />
+                Note
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -617,12 +768,13 @@ export function DiagramCanvas({
             pannable
             className="!border-border !bg-card/80 !shadow-md rounded-xl backdrop-blur-xs"
             nodeColor={(n) => {
+              if (n.type === "conceptNode" || n.type === "classNode") return "#6366f1";
               if (n.type === "tableNode") return "#10b981";
-              if (n.type === "databaseNode") return "#a855f7";
+              if (n.type === "actionNode") return "#06b6d4";
+              if (n.type === "eventNode") return "#f59e0b";
+              if (n.type === "terminalNode") return "#10b981";
               if (n.type === "serverNode") return "#3b82f6";
-              if (n.type === "cloudNode") return "#f59e0b";
-              if (n.type === "decisionNode") return "#f43f5e";
-              if (n.type === "clientNode") return "#06b6d4";
+              if (n.type === "databaseNode") return "#a855f7";
               return "#64748b";
             }}
           />
@@ -631,25 +783,40 @@ export function DiagramCanvas({
         {/* ── Empty State Watermark & Quick Actions ── */}
         {nodes.length === 0 && (
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-            <div className="pointer-events-auto flex max-w-lg flex-col items-center gap-3.5 rounded-3xl border border-border/80 bg-card/85 p-6 shadow-xl backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-200">
+            <div className="pointer-events-auto flex max-w-xl flex-col items-center gap-3.5 rounded-3xl border border-border/80 bg-card/90 p-6 shadow-xl backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-200">
               <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <Workflow className="size-6" />
               </div>
               <div className="space-y-1">
                 <h3 className="text-base font-bold text-foreground">
-                  Diagram & ERD Schema Builder
+                  Multi-Paradigm Diagram Builder
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Draw database schemas (ERD) with relational tables and columns, or construct system architecture diagrams:
+                  Draw Conceptual Domain Maps, Flowcharts, ERD Database Schemas, UML Class Models, and System Architectures:
                 </p>
               </div>
 
-              {/* Quick ERD Presets */}
-              <div className="w-full pt-1 space-y-2">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground text-left">
-                  ERD Database Templates:
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
+              {/* Quick Template Presets */}
+              <div className="w-full pt-2 space-y-2">
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => applyTemplate("concept-ddd")}
+                    className="h-8 rounded-xl border-indigo-500/30 bg-indigo-500/10 px-3 text-xs font-semibold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/20"
+                  >
+                    🧠 DDD Concept Map
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => applyTemplate("flow-checkout")}
+                    className="h-8 rounded-xl border-cyan-500/30 bg-cyan-500/10 px-3 text-xs font-semibold text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20"
+                  >
+                    📊 Checkout Flowchart
+                  </Button>
                   <Button
                     type="button"
                     variant="outline"
@@ -663,36 +830,29 @@ export function DiagramCanvas({
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => applyTemplate("erd-devsolve")}
-                    className="h-8 rounded-xl border-blue-500/30 bg-blue-500/10 px-3 text-xs font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-500/20"
+                    onClick={() => applyTemplate("uml-ecommerce")}
+                    className="h-8 rounded-xl border-indigo-500/30 bg-indigo-500/10 px-3 text-xs font-semibold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/20"
                   >
-                    💡 DevSolve Platform ERD
+                    📐 UML Class Model
                   </Button>
-                </div>
-
-                <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground text-left pt-1">
-                  Architecture Templates:
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {DIAGRAM_TEMPLATES.filter((t) => !t.id.startsWith("erd-")).map((tpl) => (
-                    <Button
-                      key={tpl.id}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => applyTemplate(tpl.id)}
-                      className="h-8 rounded-xl border-border bg-background px-3 text-xs font-semibold text-foreground hover:border-primary/50 hover:bg-muted"
-                    >
-                      {tpl.name}
-                    </Button>
-                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => applyTemplate("system-architecture")}
+                    className="h-8 rounded-xl border-border bg-background px-3 text-xs font-semibold text-foreground hover:bg-muted"
+                  >
+                    🏗️ System Architecture
+                  </Button>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* ── Floating ERD Table Node Inspector ── */}
+        {/* ── Floating Inspector Panels ── */}
+
+        {/* 1. ERD Table Inspector */}
         {selectedNode && selectedNode.type === "tableNode" && (
           <div className="absolute right-4 top-4 z-20 w-84 max-h-[calc(100%-2rem)] overflow-y-auto rounded-2xl border border-border bg-card/95 p-4 shadow-xl backdrop-blur-md animate-in fade-in-0 slide-in-from-right-4 duration-200 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-border">
@@ -714,7 +874,6 @@ export function DiagramCanvas({
               </Button>
             </div>
 
-            {/* Table Name & Comment */}
             <div className="space-y-3">
               <div className="space-y-1">
                 <label className="text-[11px] font-semibold text-muted-foreground uppercase font-mono">
@@ -740,7 +899,6 @@ export function DiagramCanvas({
                 />
               </div>
 
-              {/* Color Theme Selector */}
               <div className="space-y-1">
                 <label className="text-[11px] font-semibold text-muted-foreground uppercase">
                   Header Color Theme
@@ -775,7 +933,7 @@ export function DiagramCanvas({
                   type="button"
                   size="sm"
                   variant="outline"
-                  onClick={addColumnToSelectedNode}
+                  onClick={addColumn}
                   className="h-7 gap-1 rounded-lg border-border bg-background px-2 text-[11px] font-semibold hover:bg-muted"
                 >
                   <Plus className="size-3" />
@@ -783,8 +941,7 @@ export function DiagramCanvas({
                 </Button>
               </div>
 
-              {/* Column list items */}
-              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                 {(selectedNode.data.columns || []).map((col) => (
                   <div
                     key={col.id}
@@ -828,7 +985,6 @@ export function DiagramCanvas({
                       </Button>
                     </div>
 
-                    {/* Column flags (PK, FK, Nullable, Unique) */}
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
@@ -839,12 +995,10 @@ export function DiagramCanvas({
                             ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40"
                             : "bg-muted/60 text-muted-foreground hover:bg-muted",
                         )}
-                        title="Toggle Primary Key"
                       >
                         <Key className="size-2.5" />
                         PK
                       </button>
-
                       <button
                         type="button"
                         onClick={() => updateColumn(col.id, { isFk: !col.isFk })}
@@ -854,12 +1008,10 @@ export function DiagramCanvas({
                             ? "bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/40"
                             : "bg-muted/60 text-muted-foreground hover:bg-muted",
                         )}
-                        title="Toggle Foreign Key"
                       >
                         <Link2 className="size-2.5" />
                         FK
                       </button>
-
                       <button
                         type="button"
                         onClick={() => updateColumn(col.id, { isNullable: !col.isNullable })}
@@ -869,11 +1021,9 @@ export function DiagramCanvas({
                             ? "bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/40 font-bold"
                             : "bg-muted/60 text-muted-foreground hover:bg-muted",
                         )}
-                        title="Toggle Nullable"
                       >
                         NULL
                       </button>
-
                       <button
                         type="button"
                         onClick={() => updateColumn(col.id, { isUnique: !col.isUnique })}
@@ -883,7 +1033,6 @@ export function DiagramCanvas({
                             ? "bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/40 font-bold"
                             : "bg-muted/60 text-muted-foreground hover:bg-muted",
                         )}
-                        title="Toggle Unique constraint"
                       >
                         UQ
                       </button>
@@ -891,87 +1040,229 @@ export function DiagramCanvas({
                   </div>
                 ))}
               </div>
-
-              {/* Quick Field Presets */}
-              <div className="pt-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                  Quick Add Common Fields:
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  <button
-                    type="button"
-                    onClick={() => addPresetColumn({ name: "id", type: "UUID", isPk: true })}
-                    className="rounded-md bg-muted px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground hover:bg-primary/15 hover:text-primary"
-                  >
-                    + id (PK)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => addPresetColumn({ name: "user_id", type: "UUID", isFk: true })}
-                    className="rounded-md bg-muted px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground hover:bg-primary/15 hover:text-primary"
-                  >
-                    + user_id (FK)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => addPresetColumn({ name: "created_at", type: "TIMESTAMP" })}
-                    className="rounded-md bg-muted px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground hover:bg-primary/15 hover:text-primary"
-                  >
-                    + created_at
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => addPresetColumn({ name: "updated_at", type: "TIMESTAMP" })}
-                    className="rounded-md bg-muted px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground hover:bg-primary/15 hover:text-primary"
-                  >
-                    + updated_at
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => addPresetColumn({ name: "status", type: "VARCHAR(50)" })}
-                    className="rounded-md bg-muted px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground hover:bg-primary/15 hover:text-primary"
-                  >
-                    + status
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         )}
 
-        {/* ── Floating Architecture Node Inspector ── */}
-        {selectedNode && selectedNode.type !== "tableNode" && (
-          <div className="absolute right-4 top-4 z-20 w-72 rounded-2xl border border-border bg-card/95 p-4 shadow-xl backdrop-blur-md animate-in fade-in-0 slide-in-from-right-4 duration-200">
+        {/* 2. UML Class Inspector */}
+        {selectedNode && selectedNode.type === "classNode" && (
+          <div className="absolute right-4 top-4 z-20 w-84 max-h-[calc(100%-2rem)] overflow-y-auto rounded-2xl border border-border bg-card/95 p-4 shadow-xl backdrop-blur-md animate-in fade-in-0 slide-in-from-right-4 duration-200 space-y-4 font-mono">
             <div className="flex items-center justify-between pb-2 border-b border-border">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Edit Node Properties
-              </span>
+              <div className="flex items-center gap-2">
+                <Layers className="size-4 text-indigo-600 dark:text-indigo-400" />
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-sans">
+                  UML Class Properties
+                </span>
+              </div>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={deleteSelected}
                 className="size-7 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                title="Delete node"
+                title="Delete class"
               >
                 <Trash2 className="size-3.5" />
               </Button>
             </div>
 
-            <div className="mt-3 space-y-3">
+            <div className="space-y-3 font-sans">
               <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-muted-foreground uppercase">
-                  Label
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase font-mono">
+                  Class Name
                 </label>
                 <Input
                   value={selectedNode.data.label || ""}
                   onChange={(e) => updateSelectedNode("label", e.target.value)}
-                  className="h-8 rounded-lg border-border bg-background text-xs"
-                  placeholder="Node title"
+                  className="h-8 rounded-lg border-border bg-background font-mono text-xs font-bold"
+                  placeholder="e.g. OrderService"
                 />
               </div>
 
-              {selectedNode.type !== "decisionNode" && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateSelectedNode("isInterface", !selectedNode.data.isInterface)}
+                  className={cn(
+                    "rounded-lg px-2.5 py-1 text-xs font-semibold border transition-colors",
+                    selectedNode.data.isInterface
+                      ? "border-indigo-500 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300"
+                      : "border-border bg-background text-muted-foreground hover:bg-muted",
+                  )}
+                >
+                  {selectedNode.data.isInterface ? "«interface» active" : "Mark as Interface"}
+                </button>
+              </div>
+            </div>
+
+            {/* Attributes Section */}
+            <div className="space-y-2 pt-2 border-t border-border">
+              <div className="flex items-center justify-between font-sans">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
+                  Attributes ({(selectedNode.data.attributes || []).length})
+                </span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => addUmlMember("attributes")}
+                  className="h-7 gap-1 rounded-lg border-border bg-background px-2 text-[11px] font-semibold hover:bg-muted font-sans"
+                >
+                  <Plus className="size-3" />
+                  Add Field
+                </Button>
+              </div>
+
+              <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                {(selectedNode.data.attributes || []).map((attr) => (
+                  <div key={attr.id} className="flex items-center gap-1.5">
+                    <select
+                      value={attr.visibility || "+"}
+                      onChange={(e) =>
+                        updateUmlMember("attributes", attr.id, {
+                          visibility: e.target.value as "+" | "-" | "#" | "~",
+                        })
+                      }
+                      className="h-7 rounded border border-border bg-background px-1 text-xs font-mono font-bold"
+                    >
+                      {UML_VISIBILITY.map((v) => (
+                        <option key={v} value={v}>
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                    <Input
+                      value={attr.name}
+                      onChange={(e) =>
+                        updateUmlMember("attributes", attr.id, { name: e.target.value })
+                      }
+                      placeholder="fieldName"
+                      className="h-7 flex-1 font-mono text-xs"
+                    />
+                    <Input
+                      value={attr.type || ""}
+                      onChange={(e) =>
+                        updateUmlMember("attributes", attr.id, { type: e.target.value })
+                      }
+                      placeholder="Type"
+                      className="h-7 w-20 font-mono text-xs text-muted-foreground"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeUmlMember("attributes", attr.id)}
+                      className="size-7 text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="size-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Methods Section */}
+            <div className="space-y-2 pt-2 border-t border-border">
+              <div className="flex items-center justify-between font-sans">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
+                  Methods ({(selectedNode.data.methods || []).length})
+                </span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => addUmlMember("methods")}
+                  className="h-7 gap-1 rounded-lg border-border bg-background px-2 text-[11px] font-semibold hover:bg-muted font-sans"
+                >
+                  <Plus className="size-3" />
+                  Add Method
+                </Button>
+              </div>
+
+              <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                {(selectedNode.data.methods || []).map((method) => (
+                  <div key={method.id} className="flex items-center gap-1.5">
+                    <select
+                      value={method.visibility || "+"}
+                      onChange={(e) =>
+                        updateUmlMember("methods", method.id, {
+                          visibility: e.target.value as "+" | "-" | "#" | "~",
+                        })
+                      }
+                      className="h-7 rounded border border-border bg-background px-1 text-xs font-mono font-bold"
+                    >
+                      {UML_VISIBILITY.map((v) => (
+                        <option key={v} value={v}>
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                    <Input
+                      value={method.name}
+                      onChange={(e) =>
+                        updateUmlMember("methods", method.id, { name: e.target.value })
+                      }
+                      placeholder="methodName()"
+                      className="h-7 flex-1 font-mono text-xs"
+                    />
+                    <Input
+                      value={method.type || ""}
+                      onChange={(e) =>
+                        updateUmlMember("methods", method.id, { type: e.target.value })
+                      }
+                      placeholder="return"
+                      className="h-7 w-20 font-mono text-xs text-muted-foreground"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeUmlMember("methods", method.id)}
+                      className="size-7 text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="size-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 3. General Concept / Flowchart / Architecture Node Inspector */}
+        {selectedNode &&
+          selectedNode.type !== "tableNode" &&
+          selectedNode.type !== "classNode" && (
+            <div className="absolute right-4 top-4 z-20 w-76 max-h-[calc(100%-2rem)] overflow-y-auto rounded-2xl border border-border bg-card/95 p-4 shadow-xl backdrop-blur-md animate-in fade-in-0 slide-in-from-right-4 duration-200 space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-border">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Node Properties
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={deleteSelected}
+                  className="size-7 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  title="Delete node"
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase">
+                    Title / Label
+                  </label>
+                  <Input
+                    value={selectedNode.data.label || ""}
+                    onChange={(e) => updateSelectedNode("label", e.target.value)}
+                    className="h-8 rounded-lg border-border bg-background text-xs"
+                    placeholder="Title"
+                  />
+                </div>
+
                 <div className="space-y-1">
                   <label className="text-[11px] font-semibold text-muted-foreground uppercase">
                     Description / Subtext
@@ -980,29 +1271,94 @@ export function DiagramCanvas({
                     value={selectedNode.data.subtext || ""}
                     onChange={(e) => updateSelectedNode("subtext", e.target.value)}
                     className="h-8 rounded-lg border-border bg-background text-xs"
-                    placeholder="Details or tech stack"
+                    placeholder="Details or rules"
                   />
                 </div>
-              )}
 
-              <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-muted-foreground uppercase">
-                  Badge / Tag
-                </label>
-                <Input
-                  value={selectedNode.data.badge || ""}
-                  onChange={(e) => updateSelectedNode("badge", e.target.value)}
-                  className="h-8 rounded-lg border-border bg-background text-xs"
-                  placeholder="e.g. REST, Redis, Auth"
-                />
+                {/* Actor field for ActionNode */}
+                {selectedNode.type === "actionNode" && (
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-muted-foreground uppercase">
+                      Actor / Responsible Role
+                    </label>
+                    <Input
+                      value={selectedNode.data.actor || ""}
+                      onChange={(e) => updateSelectedNode("actor", e.target.value)}
+                      className="h-8 rounded-lg border-border bg-background text-xs"
+                      placeholder="e.g. Customer, Background Worker"
+                    />
+                  </div>
+                )}
+
+                {/* Trigger type for EventNode */}
+                {selectedNode.type === "eventNode" && (
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-muted-foreground uppercase">
+                      Trigger Type
+                    </label>
+                    <Input
+                      value={selectedNode.data.triggerType || ""}
+                      onChange={(e) => updateSelectedNode("triggerType", e.target.value)}
+                      className="h-8 rounded-lg border-border bg-background text-xs"
+                      placeholder="e.g. webhook, cron, user_click"
+                    />
+                  </div>
+                )}
+
+                {/* Boundary Group Style */}
+                {selectedNode.type === "groupNode" && (
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-muted-foreground uppercase">
+                      Border Style
+                    </label>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => updateSelectedNode("borderStyle", "dashed")}
+                        className={cn(
+                          "flex-1 rounded-lg py-1 text-xs font-semibold border transition-colors",
+                          selectedNode.data.borderStyle === "dashed"
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-background text-muted-foreground",
+                        )}
+                      >
+                        Dashed
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateSelectedNode("borderStyle", "solid")}
+                        className={cn(
+                          "flex-1 rounded-lg py-1 text-xs font-semibold border transition-colors",
+                          selectedNode.data.borderStyle === "solid"
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-background text-muted-foreground",
+                        )}
+                      >
+                        Solid
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Badge Tag */}
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase">
+                    Badge / Classification Tag
+                  </label>
+                  <Input
+                    value={selectedNode.data.badge || ""}
+                    onChange={(e) => updateSelectedNode("badge", e.target.value)}
+                    className="h-8 rounded-lg border-border bg-background text-xs"
+                    placeholder="e.g. AGGREGATE ROOT, VALUE OBJECT"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ── Floating Edge / Relationship Inspector ── */}
+        {/* 4. Floating Edge / Relationship Inspector */}
         {selectedEdge && (
-          <div className="absolute right-4 top-4 z-20 w-72 rounded-2xl border border-border bg-card/95 p-4 shadow-xl backdrop-blur-md animate-in fade-in-0 slide-in-from-right-4 duration-200 space-y-3">
+          <div className="absolute right-4 top-4 z-20 w-80 rounded-2xl border border-border bg-card/95 p-4 shadow-xl backdrop-blur-md animate-in fade-in-0 slide-in-from-right-4 duration-200 space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Relationship Properties
@@ -1027,23 +1383,37 @@ export function DiagramCanvas({
                 value={(selectedEdge.label as string) || ""}
                 onChange={(e) => updateSelectedEdge({ label: e.target.value })}
                 className="h-8 rounded-lg border-border bg-background text-xs"
-                placeholder="e.g. 1 : N (user orders)"
+                placeholder="e.g. is a, depends on, 1 : N"
               />
 
-              {/* Quick Cardinality Presets */}
-              <div className="flex flex-wrap gap-1 pt-1">
-                {["1 : N", "1 : 1", "N : M", "FK Reference", "has_many", "belongs_to"].map(
-                  (card) => (
+              {/* Categorized Cardinality & Relation Presets */}
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Quick Presets:
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {[
+                    "is a",
+                    "has a",
+                    "depends on",
+                    "triggers",
+                    "«implements»",
+                    "1 : N",
+                    "1 : 1",
+                    "N : M",
+                    "Yes",
+                    "No",
+                  ].map((card) => (
                     <button
                       key={card}
                       type="button"
                       onClick={() => updateSelectedEdge({ label: card })}
-                      className="rounded-md bg-muted px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground hover:bg-primary/15 hover:text-primary"
+                      className="rounded-md bg-muted px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground hover:bg-primary/15 hover:text-primary transition-colors"
                     >
                       {card}
                     </button>
-                  ),
-                )}
+                  ))}
+                </div>
               </div>
             </div>
 

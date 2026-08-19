@@ -89,6 +89,19 @@ export function ImageDropField({
     [],
   );
 
+  /* Automatically create & sync object URL when file prop changes (e.g. from DiagramBuilderModal) */
+  useEffect(() => {
+    if (file) {
+      const url = URL.createObjectURL(file);
+      showPreview(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else if (!value) {
+      showPreview(null);
+    }
+  }, [file, value, showPreview]);
+
   const accept = useCallback(
     (candidate: File) => {
       const reason = validateImageFile(candidate);
@@ -194,10 +207,25 @@ export function ImageDropField({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={shown}
-              alt=""
-              className="size-full object-cover"
+              alt={label}
+              className={cn(
+                "size-full",
+                allowDraw ? "object-contain bg-background/50 p-1.5" : "object-cover",
+              )}
               onError={() => setLocalError("That image could not be loaded")}
             />
+
+            {/* Visual indicator badge */}
+            <div className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-md bg-background/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-foreground backdrop-blur-xs border border-border shadow-xs">
+              {allowDraw ? (
+                <>
+                  <Network className="size-3 text-primary" />
+                  Diagram
+                </>
+              ) : (
+                label
+              )}
+            </div>
 
             {uploading && (
               <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-xs">
@@ -215,7 +243,7 @@ export function ImageDropField({
                   onClick={onOpenDraw}
                   aria-label="Edit in React Flow diagram builder"
                   title="Edit in React Flow"
-                  className="inline-flex size-8 items-center justify-center rounded-lg bg-background/90 text-foreground backdrop-blur-xs transition-colors hover:bg-primary hover:text-primary-foreground"
+                  className="inline-flex size-8 items-center justify-center rounded-lg bg-background/90 text-foreground backdrop-blur-xs transition-colors hover:bg-primary hover:text-primary-foreground border border-border shadow-xs"
                 >
                   <Network className="size-4" />
                 </button>
@@ -224,7 +252,7 @@ export function ImageDropField({
                 type="button"
                 onClick={clear}
                 aria-label={`Remove ${label.toLowerCase()}`}
-                className="inline-flex size-8 items-center justify-center rounded-lg bg-background/90 text-foreground backdrop-blur-xs transition-colors hover:bg-destructive hover:text-destructive-foreground"
+                className="inline-flex size-8 items-center justify-center rounded-lg bg-background/90 text-foreground backdrop-blur-xs transition-colors hover:bg-destructive hover:text-destructive-foreground border border-border shadow-xs"
               >
                 <Trash2 className="size-4" />
               </button>
