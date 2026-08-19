@@ -3,13 +3,8 @@
 import React, { useRef, useState } from "react";
 import { AnimatePresence, motion, useInView } from "motion/react";
 import SectionBackdrop from "@/components/landing/SectionBackdrop";
-import { SectionHeading } from "@/components/public-about/SectionHeading";
-import { MemberCard, GroupLabel } from "@/components/public-about/MemberCard";
 import { SystemArchitectureDiagram } from "@/components/public-about/SystemArchitectureDiagram";
-import {
-  SUPERVISORS,
-  STUDENT_DEVELOPERS,
-} from "@/lib/types/about/mock-data";
+import { TeamTabContent } from "@/components/public-about/TeamTabContent";
 
 export function ArchitectureAndTeamSection() {
   const [activeTab, setActiveTab] = useState<"architecture" | "team">("architecture");
@@ -90,51 +85,7 @@ export function ArchitectureAndTeamSection() {
               transition={{ duration: 0.35, ease: "easeOut" }}
               className="w-full"
             >
-              <SectionHeading
-                kicker="Our team"
-                title="Meet the people behind DevSolve"
-                inView={inView}
-              />
-
-              {/* Mentors */}
-              <div className="mt-14">
-                <GroupLabel label="Mentors" count={SUPERVISORS.length} />
-
-                <div className="mt-8 flex flex-wrap justify-center gap-8 sm:gap-10">
-                  {SUPERVISORS.map((mentor, i) => (
-                    <div
-                      key={mentor.name}
-                      className="w-full max-w-85 sm:max-w-90 lg:max-w-95"
-                    >
-                      <MemberCard
-                        member={mentor}
-                        inView={inView}
-                        delay={0.15 + i * 0.08}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Developers */}
-              <div className="mt-20">
-                <GroupLabel label="Developers" count={STUDENT_DEVELOPERS.length} />
-
-                <div className="mt-8 grid grid-cols-1 justify-items-center gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-3">
-                  {STUDENT_DEVELOPERS.map((member, i) => (
-                    <div
-                      key={member.name}
-                      className="w-full max-w-85 sm:max-w-90 lg:max-w-95"
-                    >
-                      <MemberCard
-                        member={member}
-                        inView={inView}
-                        delay={0.2 + i * 0.06}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <TeamTabContent />
             </motion.div>
           )}
         </AnimatePresence>

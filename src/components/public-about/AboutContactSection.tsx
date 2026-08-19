@@ -87,7 +87,6 @@ export function AboutContactSection() {
         <SectionHeading
           kicker="Contact"
           title="Get in touch"
-          lede="Questions about a program, the platform, or working with us? Send a message and the team replies within one business day."
           inView={inView}
         />
 
