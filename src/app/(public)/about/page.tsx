@@ -182,7 +182,7 @@ function AboutHero() {
             className="flex flex-col items-start justify-between gap-6 pt-1 lg:col-span-5"
           >
             <p className="max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-              DevSolve connects organizations with security researchers and developers to solve real technical problems, close vulnerabilities responsibly, and build software that holds up in production.
+              DevSolve connects organizations with security researchers and developers to resolve vulnerabilities and build resilient software.
             </p>
 
             <Link
