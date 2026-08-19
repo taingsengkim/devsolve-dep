@@ -74,10 +74,14 @@ export function DiagramBuilderModal({
       const exportBgColor = isDark ? "#0b0f17" : "#ffffff";
 
       // Hide controls/minimap temporarily or style properly if capturing container
+      // skipFonts: true prevents html-to-image from crawling Monaco Editor/external stylesheets
       const dataUrl = await toPng(targetEl, {
         backgroundColor: exportBgColor,
         quality: 0.95,
         pixelRatio: 2,
+        skipFonts: true,
+        fontEmbedCSS: "",
+        cacheBust: false,
         filter: (node) => {
           // exclude control buttons and minimap from the exported image
           const exclusionClasses = [
@@ -90,11 +94,18 @@ export function DiagramBuilderModal({
         },
       });
 
-      // Convert dataUrl to Blob -> File
-      const response = await fetch(dataUrl);
-      const blob = await response.blob();
+      // Direct synchronous dataURL -> File converter (avoids fetch blob parsing issues)
       const filename = `diagram-${Date.now()}.png`;
-      const file = new File([blob], filename, { type: "image/png" });
+      const arr = dataUrl.split(",");
+      const mimeMatch = arr[0].match(/:(.*?);/);
+      const mime = mimeMatch ? mimeMatch[1] : "image/png";
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      const file = new File([u8arr], filename, { type: mime });
 
       onSaveDiagram(file, dataUrl, currentNodes, currentEdges);
       toast.success("Diagram attached to step!");
