@@ -4,11 +4,18 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence } from "motion/react";
 import { toast } from "sonner";
-import { AlertCircle, MessageSquare, RotateCcw } from "lucide-react";
+import {
+  AlertCircle,
+  Loader2,
+  LogIn,
+  MessageSquare,
+  RotateCcw,
+} from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useKeycloakLogin } from "@/hooks/useKeycloakLogin";
 import {
   Select,
   SelectContent,
@@ -92,6 +99,7 @@ export function CommentsSection({
   /* Posting is attributed to a session, so a signed-out reader is offered the
      way in rather than a box that only fails once they have typed into it. */
   const { user, isPending: isSessionPending } = useSidebarAuth();
+  const { isLoggingIn, handleLogin } = useKeycloakLogin();
   const canPost = Boolean(user);
 
   const target = { commentableType, commentableId };
@@ -274,15 +282,30 @@ export function CommentsSection({
           <p className="text-base text-muted-foreground">
             Sign in to join the discussion.
           </p>
-          <Link
-            href="/login"
-            className={cn(
-              buttonVariants(),
-              "h-9 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700",
-            )}
+          <Button
+            type="button"
+            onClick={() =>
+              void handleLogin(
+                typeof window !== "undefined"
+                  ? `${window.location.pathname}${window.location.search}`
+                  : "/",
+              )
+            }
+            disabled={isLoggingIn}
+            className="h-9 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700 dark:hover:bg-blue-500"
           >
-            Sign in
-          </Link>
+            {isLoggingIn ? (
+              <>
+                <Loader2 className="size-3.5 animate-spin" />
+                Connecting...
+              </>
+            ) : (
+              <>
+                <LogIn className="size-3.5" />
+                Sign in
+              </>
+            )}
+          </Button>
         </div>
       )}
 
