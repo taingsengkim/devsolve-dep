@@ -2,20 +2,34 @@ import type { Metadata } from "next";
 import SectionBackdrop from "@/components/landing/SectionBackdrop";
 import LeaderboardClient from "@/components/Leaderboard/LeaderboardClient";
 import PointsLegend from "@/components/Leaderboard/PointsLegend";
+import { JsonLd, collectionSchema } from "@/lib/seo/jsonld";
 import { pageMetadata } from "@/lib/seo/metadata";
+
+const DESCRIPTION =
+  "Researchers ranked by reputation points earned from valid, critical and recognized reports.";
 
 /* The site name comes from the root layout's title template, so it is not
    repeated here — spelling it out produced `Leaderboard · DevSolve · DevSolve`. */
 export const metadata: Metadata = pageMetadata({
   title: "Leaderboard",
-  description:
-    "Researchers ranked by reputation points earned from valid, critical and recognized reports.",
+  description: DESCRIPTION,
   path: "/leaderboard",
 });
 
 export default function LeaderboardPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-blue-500/30 dark:selection:text-blue-50">
+      {/* CollectionPage schema: marks this as a ranked list of community
+          members so search engines can understand its purpose and link from
+          it to the individual profile pages linked within. */}
+      <JsonLd
+        data={collectionSchema({
+          name: "DevSolve Leaderboard",
+          description: DESCRIPTION,
+          path: "/leaderboard",
+        })}
+      />
+
       {/* Header band, not a fold — people come here for the ranking, so the
           podium should already be on screen. */}
       <section className="relative overflow-hidden border-b border-border">
