@@ -37,8 +37,6 @@ const STATIC_ROUTES: {
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
-
   /* One slow listing should not hold up the others, and any of them may come
      back empty when the backend is unreachable — the static routes below are
      always emitted, so the sitemap is never served empty. */
@@ -47,6 +45,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     listShowcases(),
     listPrograms(),
   ]);
+
+  const now = new Date();
 
   const problemEntries: MetadataRoute.Sitemap = problems
     .filter((problem) => problem.id && !problem.deletedAt)
@@ -80,10 +80,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
+<<<<<<< HEAD
   const singleLocale: MetadataRoute.Sitemap = [
+=======
+  /* Static pages do not change on every crawl — `lastModified` is omitted so
+     Google relies on its own change-detection rather than being told these
+     pages were just modified at every sitemap fetch. */
+  return [
+>>>>>>> ec3d74f3ddc9e3cf7f3d54dad8377aa2aa8548f4
     ...STATIC_ROUTES.map((route) => ({
       url: absoluteUrl(route.path),
-      lastModified: now,
       changeFrequency: route.changeFrequency,
       priority: route.priority,
     })),

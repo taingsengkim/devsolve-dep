@@ -18,6 +18,9 @@ import { Button } from "@/components/ui/button";
 import { MarkdownEditor } from "@/components/reports/MarkdownEditor";
 import { CodeSnippetField } from "./CodeSnippetField";
 import { ImageDropField } from "./ImageDropField";
+import { DiagramBuilderModal } from "@/components/showcases/diagram/DiagramBuilderModal";
+import type { AppNode } from "@/components/showcases/diagram/types";
+import type { Edge } from "@xyflow/react";
 import type { CreateShowcaseFormValues } from "@/lib/validations/showcase";
 import { cn } from "@/lib/utils";
 
@@ -67,6 +70,10 @@ export function BuildStepsField() {
   const [open, setOpen] = useState<string[]>(() =>
     fields.length ? [fields[0].key] : [],
   );
+  const [diagramModalStepIndex, setDiagramModalStepIndex] = useState<number | null>(null);
+  const [stepDiagrams, setStepDiagrams] = useState<
+    Record<string, { nodes: AppNode[]; edges: Edge[] }>
+  >({});
 
   const toggle = (key: string) =>
     setOpen((current) =>
@@ -327,6 +334,8 @@ export function BuildStepsField() {
                           label="Diagram"
                           hint="Optional · architecture or flow"
                           aspectClassName="aspect-video"
+                          allowDraw
+                          onOpenDraw={() => setDiagramModalStepIndex(index)}
                           value={step?.diagramUrl}
                           onChange={(url) =>
                             setValue(`steps.${index}.diagramUrl`, url)
@@ -358,6 +367,50 @@ export function BuildStepsField() {
         <Plus data-icon="inline-start" />
         Add step
       </Button>
+
+      <DiagramBuilderModal
+        open={diagramModalStepIndex !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setDiagramModalStepIndex(null);
+        }}
+        stepTitle={
+          diagramModalStepIndex !== null
+            ? steps[diagramModalStepIndex]?.title ||
+              `Step ${diagramModalStepIndex + 1}`
+            : undefined
+        }
+        initialNodes={
+          diagramModalStepIndex !== null && fields[diagramModalStepIndex]
+            ? stepDiagrams[fields[diagramModalStepIndex].key]?.nodes ?? []
+            : []
+        }
+        initialEdges={
+          diagramModalStepIndex !== null && fields[diagramModalStepIndex]
+            ? stepDiagrams[fields[diagramModalStepIndex].key]?.edges ?? []
+            : []
+        }
+        onSaveDiagram={(file, previewUrl, nodes, edges) => {
+          if (diagramModalStepIndex !== null) {
+            const currentKey = fields[diagramModalStepIndex]?.key;
+            if (currentKey) {
+              setStepDiagrams((prev) => ({
+                ...prev,
+                [currentKey]: { nodes, edges },
+              }));
+              setOpen((cur) =>
+                cur.includes(currentKey) ? cur : [...cur, currentKey],
+              );
+            }
+            setValue(`steps.${diagramModalStepIndex}.diagramFile`, file, {
+              shouldDirty: true,
+              shouldValidate: true,
+            });
+            setValue(`steps.${diagramModalStepIndex}.diagramUrl`, "", {
+              shouldDirty: true,
+            });
+          }
+        }}
+      />
     </div>
   );
 }

@@ -95,6 +95,22 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   // Stops iOS Safari from turning ids and version numbers into phone links.
   formatDetection: { telephone: false, address: false, email: false },
+  /**
+   * Search Console ownership verification.
+   *
+   * Set `GOOGLE_SITE_VERIFICATION` and/or `BING_SITE_VERIFICATION` in the
+   * production environment after adding the site in each webmaster portal.
+   * Leave both unset (or empty) in development — Next.js omits the tag
+   * entirely when the value is falsy, so no invalid tag reaches the page.
+   */
+  verification: {
+    ...(process.env.GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+      : {}),
+    ...(process.env.BING_SITE_VERIFICATION
+      ? { other: { "msvalidate.01": [process.env.BING_SITE_VERIFICATION] } }
+      : {}),
+  },
 };
 
 /**

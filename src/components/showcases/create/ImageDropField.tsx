@@ -7,6 +7,7 @@ import {
   ImagePlus,
   Link2,
   Loader2,
+  Network,
   Trash2,
   Upload,
   X,
@@ -32,9 +33,12 @@ interface ImageDropFieldProps {
   error?: string;
   /** Denser variant used inside a build step. */
   compact?: boolean;
+  /** Whether to allow opening the React Flow diagram visual builder */
+  allowDraw?: boolean;
+  onOpenDraw?: () => void;
 }
 
-type Mode = "upload" | "link";
+type Mode = "upload" | "link" | "draw";
 
 /**
  * Drag-and-drop image field, with pasting a URL as the alternative.
@@ -57,6 +61,8 @@ export function ImageDropField({
   hint,
   error,
   compact = false,
+  allowDraw = false,
+  onOpenDraw,
 }: ImageDropFieldProps) {
   const [mode, setMode] = useState<Mode>("upload");
   const [dragging, setDragging] = useState(false);
@@ -82,6 +88,19 @@ export function ImageDropField({
     },
     [],
   );
+
+  /* Automatically create & sync object URL when file prop changes (e.g. from DiagramBuilderModal) */
+  useEffect(() => {
+    if (file) {
+      const url = URL.createObjectURL(file);
+      showPreview(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else if (!value) {
+      showPreview(null);
+    }
+  }, [file, value, showPreview]);
 
   const accept = useCallback(
     (candidate: File) => {
@@ -131,6 +150,9 @@ export function ImageDropField({
      from — a reset upstream clears the field rather than leaving a dead blob. */
   const shown = value || (file ? preview : null);
   const message = error ?? localError;
+  const modeOptions: Mode[] = allowDraw
+    ? ["upload", "link", "draw"]
+    : ["upload", "link"];
 
   return (
     <div className="space-y-2">
@@ -146,11 +168,16 @@ export function ImageDropField({
 
         {!shown && (
           <div className="flex items-center gap-1 rounded-lg border border-border bg-muted p-0.5">
-            {(["upload", "link"] as const).map((option) => (
+            {modeOptions.map((option) => (
               <button
                 key={option}
                 type="button"
-                onClick={() => setMode(option)}
+                onClick={() => {
+                  setMode(option);
+                  if (option === "draw" && onOpenDraw) {
+                    onOpenDraw();
+                  }
+                }}
                 className={cn(
                   "rounded-md px-2.5 py-1 text-xs font-semibold capitalize transition-colors",
                   mode === option
@@ -180,10 +207,25 @@ export function ImageDropField({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={shown}
-              alt=""
-              className="size-full object-cover"
+              alt={label}
+              className={cn(
+                "size-full",
+                allowDraw ? "object-contain bg-background/50 p-1.5" : "object-cover",
+              )}
               onError={() => setLocalError("That image could not be loaded")}
             />
+
+            {/* Visual indicator badge */}
+            <div className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-md bg-background/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-foreground backdrop-blur-xs border border-border shadow-xs">
+              {allowDraw ? (
+                <>
+                  <Network className="size-3 text-primary" />
+                  Diagram
+                </>
+              ) : (
+                label
+              )}
+            </div>
 
             {uploading && (
               <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-xs">
@@ -194,14 +236,65 @@ export function ImageDropField({
               </div>
             )}
 
-            <button
-              type="button"
-              onClick={clear}
-              aria-label={`Remove ${label.toLowerCase()}`}
-              className="absolute right-2.5 top-2.5 inline-flex size-8 items-center justify-center rounded-lg bg-background/80 text-foreground opacity-0 backdrop-blur transition-opacity hover:bg-destructive hover:text-destructive-foreground focus-visible:opacity-100 group-hover:opacity-100"
+            <div className="absolute right-2.5 top-2.5 flex items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+              {allowDraw && onOpenDraw && (
+                <button
+                  type="button"
+                  onClick={onOpenDraw}
+                  aria-label="Edit in React Flow diagram builder"
+                  title="Edit in React Flow"
+                  className="inline-flex size-8 items-center justify-center rounded-lg bg-background/90 text-foreground backdrop-blur-xs transition-colors hover:bg-primary hover:text-primary-foreground border border-border shadow-xs"
+                >
+                  <Network className="size-4" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={clear}
+                aria-label={`Remove ${label.toLowerCase()}`}
+                className="inline-flex size-8 items-center justify-center rounded-lg bg-background/90 text-foreground backdrop-blur-xs transition-colors hover:bg-destructive hover:text-destructive-foreground border border-border shadow-xs"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            </div>
+          </motion.div>
+        ) : mode === "draw" ? (
+          <motion.div
+            key="draw"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div
+              className={cn(
+                "flex w-full flex-col items-center justify-center gap-2.5 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-4 text-center transition-colors hover:border-primary/70",
+                aspectClassName,
+                compact && "min-h-32",
+              )}
             >
-              <Trash2 className="size-4" />
-            </button>
+              <span className="flex size-11 items-center justify-center rounded-xl bg-background text-primary shadow-2xs">
+                <Network className="size-5" />
+              </span>
+
+              <div className="space-y-0.5">
+                <span className="block text-sm font-semibold text-foreground">
+                  React Flow Diagram Builder
+                </span>
+                <span className="block text-xs text-muted-foreground">
+                  Create architecture & logic diagrams visually
+                </span>
+              </div>
+
+              <Button
+                type="button"
+                size="sm"
+                onClick={onOpenDraw}
+                className="h-8 gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90"
+              >
+                <Network className="size-3.5" />
+                Open Diagram Builder
+              </Button>
+            </div>
           </motion.div>
         ) : mode === "link" ? (
           <motion.div

@@ -1,11 +1,23 @@
 import * as z from "zod";
+import { isCleanText, profanityMessage } from "@/lib/moderation/profanity";
+import { isReadableText, readabilityMessage } from "@/lib/moderation/readability";
 
 export const updateOrganizationSchema = z.object({
-  name: z.string().min(2, "Organization name must be at least 2 characters").max(100).optional(),
+  name: z
+    .string()
+    .min(2, "Organization name must be at least 2 characters")
+    .max(100)
+    .refine(isCleanText, profanityMessage("Organization name"))
+    .refine(isReadableText, readabilityMessage("Organization name"))
+    .optional(),
   domain: z.string().optional(),
   websiteUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
   logoUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
-  description: z.string().optional(),
+  description: z
+    .string()
+    .refine(isCleanText, profanityMessage("Description"))
+    .refine(isReadableText, readabilityMessage("Description"))
+    .optional(),
   industry: z
     .enum([
       "TECHNOLOGY",

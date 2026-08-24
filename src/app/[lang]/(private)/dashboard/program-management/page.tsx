@@ -267,7 +267,7 @@ function ProgramManagementPageContent() {
           {/* Create Program button for Company role */}
           {!isAdminScope && (
             <Link href="/dashboard/create-program">
-              <Button className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm h-10 px-4 gap-2 shadow-xs cursor-pointer">
+              <Button className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm h-10 px-4 gap-2  shadow-xs cursor-pointer">
                 <Plus className="w-4 h-4" />
                 Create Program
               </Button>

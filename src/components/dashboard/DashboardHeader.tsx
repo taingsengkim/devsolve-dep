@@ -40,7 +40,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         {onRefresh && (
           <Button
             variant="outline"
-            size="sm"
+            size="lg"
             onClick={onRefresh}
             disabled={isRefreshing}
             className="hidden sm:inline-flex items-center gap-2 text-sm font-medium border-slate-200 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-900 rounded-lg text-slate-700 dark:text-neutral-300 cursor-pointer"
@@ -56,7 +56,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         <Link
           href={isCompany ? "/dashboard/program-management" : "/dashboard/programs"}
           className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
+            buttonVariants({ variant: "outline", size: "lg" }),
             "rounded-lg border-slate-200 text-slate-700 dark:border-neutral-800 dark:text-neutral-300",
           )}
         >
@@ -71,7 +71,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         <Link
           href={isCompany ? "/dashboard/create-program" : "/dashboard/submit-report"}
           className={cn(
-            buttonVariants({ size: "sm" }),
+            buttonVariants({ size: "lg" }),
             "rounded-lg bg-blue-600 font-medium text-white shadow-xs hover:bg-blue-700",
           )}
         >

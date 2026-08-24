@@ -18,6 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useKeycloakLogin } from "@/hooks/useKeycloakLogin";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -105,12 +106,22 @@ export function CommentItem({
   const [reporting, setReporting] = useState(false);
   const [pending, setPending] = useState(false);
 
+  const { handleLogin } = useKeycloakLogin();
+
   const startEditing = () => {
     setDraft(comment.content);
     setMode("editing");
   };
 
   const startReplying = () => {
+    if (!isSignedIn) {
+      void handleLogin(
+        typeof window !== "undefined"
+          ? `${window.location.pathname}${window.location.search}`
+          : "/",
+      );
+      return;
+    }
     setDraft("");
     setMode("replying");
   };

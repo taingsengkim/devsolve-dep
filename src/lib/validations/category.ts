@@ -1,4 +1,6 @@
 import * as z from "zod";
+import { isCleanText, profanityMessage } from "@/lib/moderation/profanity";
+import { isReadableText, readabilityMessage } from "@/lib/moderation/readability";
 
 export const CATEGORY_SCOPES = ["PROBLEM", "SHOWCASE"] as const;
 
@@ -10,12 +12,16 @@ export const categoryCreateSchema = z.object({
     .string()
     .trim()
     .min(1, "Name is required")
-    .max(50, "Name must not exceed 50 characters"),
+    .max(50, "Name must not exceed 50 characters")
+    .refine(isCleanText, profanityMessage("Category name"))
+    .refine(isReadableText, readabilityMessage("Category name")),
   scope: z.enum(CATEGORY_SCOPES, { message: "Pick a scope" }),
   description: z
     .string()
     .trim()
     .max(500, "Description must not exceed 500 characters")
+    .refine(isCleanText, profanityMessage("Description"))
+    .refine(isReadableText, readabilityMessage("Description"))
     .optional(),
   iconUrl: z
     .string()
