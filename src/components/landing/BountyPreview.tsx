@@ -2,6 +2,7 @@
 
 import React, { useRef } from "react";
 import Link from "next/link";
+import { useT } from "@/lib/i18n/I18nProvider";
 import { motion, useInView } from "motion/react";
 import { ArrowUpRight, Bug, Clock3, Cpu, Globe, Shield, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -112,6 +113,7 @@ function RewardBar({ max, delay = 0 }: { max: number; delay?: number }) {
 
 /* ─── Live indicator ────────────────────────────────────────────────── */
 function LivePill() {
+  const t = useT();
   return (
     <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-neutral-400">
       <span className="relative flex h-1.5 w-1.5">
@@ -124,13 +126,14 @@ function LivePill() {
           style={{ backgroundColor: ACCENT }}
         />
       </span>
-      Accepting reports
+      {t("sections.bounty.accepting")}
     </span>
   );
 }
 
 /* ─── Section ───────────────────────────────────────────────────────── */
 export function BountyPreview() {
+  const t = useT();
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const ink = useInk();
@@ -139,7 +142,7 @@ export function BountyPreview() {
   return (
     <section
       ref={ref}
-      className="relative overflow-hidden bg-slate-50 py-20 sm:py-24 dark:bg-neutral-950"
+      className="relative overflow-hidden bg-white py-20 sm:py-24 dark:bg-neutral-950"
     >
       <SectionBackdrop seed={4} gridSize={88} />
 
@@ -157,14 +160,14 @@ export function BountyPreview() {
               <span
                 className="text-xs font-bold uppercase tracking-[0.22em] text-[#2563EB] dark:text-blue-400"
               >
-                Live programs
+                {t("sections.bounty.kicker")}
               </span>
             </div>
             <h2
               className="text-3xl font-bold tracking-[-0.04em] sm:text-4xl lg:text-5xl"
               style={{ color: ink }}
             >
-              Where the bounties are
+              {t("sections.bounty.title")}
               <span className="text-[#2563EB] dark:text-blue-400">.</span>
             </h2>
           </div>
@@ -174,7 +177,7 @@ export function BountyPreview() {
             className="group inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-white px-5 py-2.5 text-sm font-semibold shadow-[0_0_0_1px_rgba(30,41,59,0.12)] transition-colors hover:bg-slate-100 sm:self-auto dark:bg-neutral-900 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.12)] dark:hover:bg-neutral-800"
             style={{ color: ink }}
           >
-            All programs
+            {t("sections.bounty.allPrograms")}
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </motion.div>
@@ -206,7 +209,7 @@ export function BountyPreview() {
                 </div>
               </div>
               <span className="rounded-full bg-[#EFF6FF] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#2563EB] dark:bg-blue-500/15 dark:text-blue-300">
-                Featured
+                {t("sections.bounty.featured")}
               </span>
             </div>
 
@@ -225,7 +228,7 @@ export function BountyPreview() {
             {/* Max payout — the number this card leads with */}
             <div className="mt-7">
               <p className="text-sm font-medium text-slate-500 dark:text-neutral-400">
-                Maximum payout
+                {t("sections.bounty.maxPayout")}
               </p>
               <p
                 className="mt-1 text-5xl font-bold leading-none tracking-tighter sm:text-6xl"
@@ -245,7 +248,7 @@ export function BountyPreview() {
             <dl className="mt-7 grid grid-cols-3 gap-4 border-t border-slate-200 pt-6 dark:border-neutral-800">
               <div>
                 <dt className="text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-neutral-500">
-                  Reports
+                  {t("sections.bounty.reports")}
                 </dt>
                 <dd
                   className="mt-1.5 flex items-center gap-1.5 text-lg font-bold"
@@ -275,7 +278,7 @@ export function BountyPreview() {
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-neutral-500">
-                  Top tier
+                  {t("sections.bounty.topTier")}
                 </dt>
                 <dd className="mt-1.5">
                   <span
@@ -294,7 +297,7 @@ export function BountyPreview() {
                 className="group inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:brightness-110"
                 style={{ backgroundColor: PRIMARY }}
               >
-                View program
+                {t("sections.bounty.viewProgram")}
                 <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
             </div>
@@ -304,7 +307,7 @@ export function BountyPreview() {
           <div className="lg:col-span-7">
             <div className="flex items-baseline justify-between border-b border-slate-200 pb-3 dark:border-neutral-800">
               <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-neutral-500">
-                Also accepting reports
+                {t("sections.bounty.alsoAccepting")}
               </span>
               <span className="text-xs font-medium text-slate-400 dark:text-neutral-500">
                 Reward reach vs. {money(CEILING)}
@@ -396,9 +399,9 @@ export function BountyPreview() {
               <Bug className="h-5 w-5 text-white" aria-hidden />
             </span>
             <div>
-              <p className="text-base font-bold text-white">Running security in-house?</p>
+              <p className="text-base font-bold text-white">{t("sections.bounty.inHouse")}</p>
               <p className="mt-0.5 text-sm text-slate-400">
-                Publish a program, set your own tiers, and let the board do the triage queue.
+                {t("sections.bounty.inHouseBody")}
               </p>
             </div>
           </div>
@@ -408,7 +411,7 @@ export function BountyPreview() {
             className="group inline-flex shrink-0 items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:brightness-110"
             style={{ backgroundColor: PRIMARY }}
           >
-            Launch a program
+            {t("sections.bounty.launch")}
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </motion.div>

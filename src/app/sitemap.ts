@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { isoDateTime } from "@/lib/seo/dates";
 import { listProblems, listPrograms, listShowcases } from "@/lib/seo/content";
 import { absoluteUrl } from "@/lib/seo/site";
+import { LOCALES, LOCALE_TAGS, localise } from "@/lib/i18n/config";
 
 /**
  * The public map of the site, served at `/sitemap.xml`.
@@ -79,7 +80,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
-  return [
+  const singleLocale: MetadataRoute.Sitemap = [
     ...STATIC_ROUTES.map((route) => ({
       url: absoluteUrl(route.path),
       lastModified: now,
@@ -90,4 +91,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...showcaseEntries,
     ...programEntries,
   ];
+
+  /* Every URL is emitted once per locale, and each entry declares the others
+     through `alternates.languages`. Listing only one language would leave the
+     other undiscoverable; listing both without the alternates would look like
+     duplicate content. The paths above are still written locale-free, so a new
+     route is added in one place and picks up both languages automatically. */
+  return LOCALES.flatMap((locale) =>
+    singleLocale.map((entry) => {
+      const path = new URL(entry.url).pathname;
+      return {
+        ...entry,
+        url: absoluteUrl(localise(path, locale)),
+        alternates: {
+          languages: Object.fromEntries(
+            LOCALES.map((code) => [
+              LOCALE_TAGS[code],
+              absoluteUrl(localise(path, code)),
+            ]),
+          ),
+        },
+      };
+    }),
+  );
 }

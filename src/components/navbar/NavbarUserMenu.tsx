@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useT } from "@/lib/i18n/I18nProvider";
 import { motion } from "motion/react";
 import {
   ArrowRight,
@@ -73,6 +74,7 @@ export function NavbarUserMenu({
   isIdentityPending,
   onSignOut,
 }: NavbarUserMenuProps) {
+  const t = useT();
   if (isIdentityPending) {
     return (
       <div
@@ -95,10 +97,10 @@ export function NavbarUserMenu({
           {isLoggingIn ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              Connecting...
+              {t("nav.connecting")}
             </>
           ) : (
-            "Log in"
+            t("nav.login")
           )}
         </Button>
 
@@ -108,7 +110,7 @@ export function NavbarUserMenu({
             render={<Link href="/account-type" />}
             className="group h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-xs transition-all hover:bg-blue-700 xl:px-5"
           >
-            Get Started
+            {t("nav.getStarted")}
             <ArrowRight className="hidden size-4 transition-transform duration-200 group-hover:translate-x-1 xl:block" />
           </Button>
         </motion.div>

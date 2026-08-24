@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { useT } from "@/lib/i18n/I18nProvider";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
 import SectionBackdrop, { SURFACE } from "./SectionBackdrop";
@@ -32,14 +33,19 @@ const TONE = {
 /* ─── Data — 12 monthly points per metric ──────────────────────────── */
 type Stat = {
   label: string;
+  /** Catalogue keys — the literals above remain the fallback. */
+  labelKey: string;
   unit: string;
+  unitKey: string;
   series: number[];
   format: (n: number) => string;
 };
 
 const HERO: Stat = {
   label: "Bounties paid out",
+  labelKey: "stats.bountiesPaid",
   unit: "USD, cumulative",
+  unitKey: "stats.bountiesUnit",
   series: [2.1, 2.4, 2.6, 3.0, 3.2, 3.5, 3.9, 4.1, 4.4, 4.7, 4.9, 5.24],
   format: (n) => `$${n.toFixed(2)}M`,
 };
@@ -47,19 +53,25 @@ const HERO: Stat = {
 const STATS: Stat[] = [
   {
     label: "Verified researchers",
+    labelKey: "stats.researchers",
     unit: "active accounts",
+    unitKey: "stats.researchersUnit",
     series: [1180, 1290, 1400, 1520, 1660, 1790, 1900, 2020, 2140, 2240, 2330, 2412],
     format: (n) => Math.round(n).toLocaleString(),
   },
   {
     label: "Live programs",
+    labelKey: "stats.livePrograms",
     unit: "accepting reports",
+    unitKey: "stats.liveUnit",
     series: [72, 80, 86, 95, 101, 108, 114, 122, 131, 138, 145, 152],
     format: (n) => String(Math.round(n)),
   },
   {
     label: "Reports validated",
+    labelKey: "stats.reports",
     unit: "triaged and closed",
+    unitKey: "stats.reportsUnit",
     series: [14200, 16100, 18000, 19800, 21600, 23400, 25100, 27000, 28600, 30200, 31400, 32400],
     format: (n) => `${(n / 1000).toFixed(1)}K`,
   },
@@ -231,6 +243,7 @@ function Delta({ value }: { value: number }) {
 
 /* ─── Section ──────────────────────────────────────────────────────── */
 export function StatsSection() {
+  const t = useT();
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const tone = TONE;
@@ -241,7 +254,7 @@ export function StatsSection() {
   return (
     <section
       ref={ref}
-      className="relative overflow-hidden border-y border-slate-200 bg-white py-20 sm:py-24 dark:border-neutral-800 dark:bg-neutral-950"
+      className="relative overflow-hidden bg-white py-20 sm:py-24 dark:bg-neutral-950"
     >
       <SectionBackdrop seed={2} gridSize={88} />
 
@@ -263,21 +276,20 @@ export function StatsSection() {
                 className="text-xs font-bold uppercase tracking-[0.22em]"
                 style={{ color: tone.trend }}
               >
-                Platform activity
+                {t("stats.kicker")}
               </span>
             </div>
             <h2
               className="text-3xl font-bold tracking-[-0.04em] sm:text-4xl lg:text-5xl"
               style={{ color: tone.ink }}
             >
-              By the numbers
+              {t("stats.title")}
               <span style={{ color: tone.trend }}>.</span>
             </h2>
           </div>
 
           <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
-            Twelve months of activity across programs, reports and community
-            solutions. Every figure below is a monthly reading, not a lifetime total.
+            {t("stats.lede")}
           </p>
         </motion.div>
 
@@ -291,7 +303,7 @@ export function StatsSection() {
             className="flex flex-col justify-center border-b border-slate-200 py-10 lg:col-span-5 lg:border-b-0 lg:border-r lg:pr-12 dark:border-neutral-800"
           >
             <p className="text-base font-medium text-slate-500 dark:text-neutral-400">
-              {HERO.label}
+              {t(HERO.labelKey) || HERO.label}
             </p>
 
             <p
@@ -312,9 +324,9 @@ export function StatsSection() {
                 inView={inView}
               />
               <span className="text-xs font-medium uppercase leading-relaxed tracking-[0.16em] text-slate-400 dark:text-neutral-500">
-                Last 12
+                {t("common.last12")}
                 <br />
-                months
+                {t("common.months")}
               </span>
             </div>
 
@@ -343,10 +355,10 @@ export function StatsSection() {
                 >
                   <div className="min-w-0">
                     <p className="text-base font-medium text-slate-500 dark:text-neutral-400">
-                      {stat.label}
+                      {t(stat.labelKey) || stat.label}
                     </p>
                     <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400 dark:text-neutral-500">
-                      {stat.unit}
+                      {t(stat.unitKey) || stat.unit}
                     </p>
                     <div className="mt-3">
                       <Delta value={delta} />

@@ -1,11 +1,16 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useCallback, useId, useRef, useState } from "react";
 import Link from "next/link";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
+import {
+  AnimatePresence,
+  motion,
+  useAnimationFrame,
+  useInView,
+  useReducedMotion,
+} from "motion/react";
 import { ArrowUpRight } from "lucide-react";
+import { useT } from "@/lib/i18n/I18nProvider";
 import SectionBackdrop, {
   ACCENT,
   PRIMARY,
@@ -13,43 +18,11 @@ import SectionBackdrop, {
   useIsDark,
 } from "./SectionBackdrop";
 
-// Register plugins client side safely
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger, useGSAP);
-}
-
-/* GSAP animates the tabs and step markers by writing straight onto their
-   style attributes, which outranks any `dark:` class. So the two themes are
-   resolved here in JS instead and the timeline is rebuilt when the theme
-   flips. The dark act tab inverts — it fills light on a dark masthead. */
-const TONES = {
-  light: {
-    tabBg: "#FFFFFF",
-    tabText: "#94A3B8",
-    tabBorder: "#E2E8F0",
-    tabActiveBg: SECONDARY,
-    tabActiveText: "#FFFFFF",
-    muted: "#CBD5E1",
-  },
-  /* Neutral scale, matching --card / --muted / --foreground. */
-  dark: {
-    tabBg: "#171717",
-    tabText: "#737373",
-    tabBorder: "#262626",
-    tabActiveBg: "#E5E5E5",
-    tabActiveText: "#171717",
-    muted: "#525252",
-  },
-} as const;
-
 /* The Showcase act's accent is the near-black brand secondary, which vanishes
    against a dark surface. It flips to a light neutral there; the blue and
    green accents carry on unchanged, since both read on either surface. */
 const accentFor = (act: Act, dark: boolean) =>
   dark && act.accent === SECONDARY ? "#E5E5E5" : act.accent;
-
-/* Fixed row height keeps the scroll maths deterministic across breakpoints. */
-const STEP_H = 320;
 
 /* ─── Content ──────────────────────────────────────────────────────── */
 type Step = { n: string; title: string; role: string; body: string };
@@ -165,498 +138,586 @@ const ACTS: Act[] = [
   },
 ];
 
-/* ─── Arc geometry — dots and the path share one parametrisation ────── */
-const ARC = { cx: -180, cy: 400, r: 560, a0: -38, a1: 38, w: 400, h: 800 };
+/* ─── Radar geometry ────────────────────────────────────────────────────
+   The dial replaces the old scroll-scrubbed arc: nothing here is driven by
+   scroll position. One sweep rotates at a constant rate, and whichever step
+   it is passing over is the step the copy shows. */
+const DIAL = { cx: 200, cy: 200, r: 176 };
+const RINGS = [0.28, 0.52, 0.76, 1];
+const SWEEP_SPAN = 104; // degrees of trailing tail behind the leading edge
+const SWEEP_SLICES = 14;
+/** How long the sweep dwells on each step — the revolution scales with it. */
+const SECONDS_PER_STEP = 4.5;
+/** Markers start at twelve o'clock, so the first step reads as the start. */
+const START_DEG = -90;
 
-function arcPoint(f: number) {
-  const deg = ARC.a0 + (ARC.a1 - ARC.a0) * f;
+/* Rounded, because `Math.sin`/`Math.cos` are implementation-defined in their
+   last digit: Node and the browser disagree by an ULP, and React compares the
+   serialised attribute, so an unrounded coordinate is a hydration mismatch. */
+const round = (v: number) => Math.round(v * 1000) / 1000;
+
+function polar(deg: number, radius: number) {
   const rad = (deg * Math.PI) / 180;
   return {
-    x: ARC.cx + ARC.r * Math.cos(rad),
-    y: ARC.cy + ARC.r * Math.sin(rad),
+    x: round(DIAL.cx + radius * Math.cos(rad)),
+    y: round(DIAL.cy + radius * Math.sin(rad)),
   };
 }
 
-function formatPercent(value: number, total: number) {
-  return `${((value / total) * 100).toFixed(4)}%`;
+/** Markers march outward as the lifecycle advances, evenly spaced by angle. */
+function markerAt(index: number, total: number) {
+  const deg = START_DEG + (index * 360) / total;
+  const radius =
+    DIAL.r * (total <= 1 ? 0.6 : 0.44 + (index / (total - 1)) * 0.44);
+  return { deg, radius, ...polar(deg, radius) };
 }
 
-/** Inset so the first and last dot never sit at the very ends of the sweep. */
-function dotFraction(index: number, total: number) {
-  return total <= 1 ? 0.5 : 0.15 + (index / (total - 1)) * 0.7;
-}
+/* The tail is built from flat slices rather than a gradient: an SVG gradient
+   would have to be re-projected every frame as the wedge turns, while stacked
+   slices rotate with the group for free. */
+const SWEEP_PATHS = Array.from({ length: SWEEP_SLICES }, (_, k) => {
+  const a = polar(-(k * SWEEP_SPAN) / SWEEP_SLICES, DIAL.r);
+  const b = polar(-((k + 1) * SWEEP_SPAN) / SWEEP_SLICES, DIAL.r);
+  return {
+    d: `M ${DIAL.cx} ${DIAL.cy} L ${a.x.toFixed(2)} ${a.y.toFixed(2)} A ${DIAL.r} ${DIAL.r} 0 0 0 ${b.x.toFixed(2)} ${b.y.toFixed(2)} Z`,
+    opacity: 0.34 * (1 - k / SWEEP_SLICES) ** 1.7,
+  };
+});
 
-const ARC_PATH = (() => {
-  const a = arcPoint(0);
-  const b = arcPoint(1);
-  return `M ${a.x.toFixed(1)} ${a.y.toFixed(1)} A ${ARC.r} ${ARC.r} 0 0 1 ${b.x.toFixed(1)} ${b.y.toFixed(1)}`;
-})();
+const TICKS = Array.from({ length: 72 }, (_, i) => {
+  const deg = i * 5;
+  const major = i % 6 === 0;
+  const outer = polar(deg, DIAL.r);
+  const inner = polar(deg, DIAL.r - (major ? 13 : 6));
+  return { major, x1: inner.x, y1: inner.y, x2: outer.x, y2: outer.y };
+});
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
 
 /* ─── Component ────────────────────────────────────────────────────── */
 export function FeatureHighlights() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const pinRef = useRef<HTMLDivElement>(null);
-  /* Pinning normally makes ScrollTrigger build its own `.pin-spacer`, insert
-     it where the pinned element sat, and move that element inside it. React
-     is never told, so its tree still has the pinned div as a direct child of
-     the section — and the next time React removes or inserts around it,
-     `section.removeChild(pinDiv)` throws NotFoundError, because the div now
-     lives in the spacer. Handing ScrollTrigger a spacer we render ourselves,
-     already wrapping the pinned div, makes it adopt that node instead of
-     restructuring anything: `_swapPinIn` skips the move when the pin's
-     parent is already the spacer, and `_swapPinOut` skips the unwrap for a
-     spacer it did not create. The DOM then always matches what React
-     expects. */
-  const spacerRef = useRef<HTMLDivElement>(null);
-  /* GSAP tweens these colours numerically, so they cannot be `var()` tokens
-     the way the rest of the landing palette is — this section keeps a JS
-     branch. `useIsDark` is gated on mount, so the server render and the
-     first client render agree and hydration stays quiet; the timeline is
-     rebuilt on the flip either way. */
+  const t = useT();
+  const sectionRef = useRef<HTMLElement>(null);
+  const sweepRef = useRef<SVGGElement>(null);
+  const progressRef = useRef<HTMLSpanElement>(null);
+  /* Current sweep bearing, in degrees. Kept in a ref rather than state — it
+     changes every frame, and only the step it lands on is worth a render. */
+  const angleRef = useRef(START_DEG);
+  const stepRef = useRef(0);
+
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const reduce = useReducedMotion();
+  /* Off-screen the loop idles: no attribute writes, no wasted frames. */
+  const inView = useInView(sectionRef, { margin: "-10% 0px -10% 0px" });
   const isDark = useIsDark();
-  const tone = isDark ? TONES.dark : TONES.light;
 
-  const totalUnits = ACTS.reduce(
-    (sum, act) => sum + 0.6 + act.steps.length + 0.5,
-    0,
-  );
+  const [actIndex, setActIndex] = useState(0);
+  const [stepIndex, setStepIndex] = useState(0);
 
-  useGSAP(
-    () => {
-      if (!pinRef.current || !containerRef.current || !spacerRef.current)
-        return;
+  const act = ACTS[actIndex];
+  const steps = act.steps;
+  const step = steps[Math.min(stepIndex, steps.length - 1)];
+  const accent = accentFor(act, isDark);
+  const line = isDark ? "#FFFFFF" : SECONDARY;
+  const muted = isDark ? "#A3A3A3" : "#94A3B8";
 
-      /* Initial states */
-      ACTS.forEach((act, ai) => {
-        gsap.set(`.act-${ai}`, { opacity: ai === 0 ? 1 : 0 });
-        gsap.set(`.stack-${ai}`, { y: -STEP_H / 2 });
-        gsap.set(`.arcline-${ai}`, { strokeDashoffset: 1 });
-        gsap.set(`.tab-${ai}`, {
-          backgroundColor: tone.tabBg,
-          color: tone.tabText,
-          borderColor: tone.tabBorder,
-        });
-        act.steps.forEach((_, si) => {
-          gsap.set(`.step-${ai}-${si}`, { opacity: si === 0 ? 1 : 0.16 });
-          gsap.set(`.num-${ai}-${si}`, {
-            color: si === 0 ? accentFor(act, isDark) : tone.muted,
-          });
-          gsap.set(`.dot-${ai}-${si}`, {
-            scale: si === 0 ? 1 : 0.5,
-            backgroundColor: si === 0 ? accentFor(act, isDark) : tone.muted,
-          });
-        });
-      });
+  /* Writes a frame straight to the DOM. The sweep is one attribute and the
+     dwell bar one transform, so neither needs React inside the loop. */
+  const paint = useCallback((deg: number, total: number) => {
+    sweepRef.current?.setAttribute(
+      "transform",
+      `rotate(${deg.toFixed(2)} ${DIAL.cx} ${DIAL.cy})`,
+    );
+    if (progressRef.current) {
+      const span = 360 / total;
+      const within = ((((deg - START_DEG) % 360) + 360) % 360) % span;
+      progressRef.current.style.transform = `scaleX(${(within / span).toFixed(3)})`;
+    }
+  }, []);
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          pin: pinRef.current,
-          pinSpacer: spacerRef.current,
-          start: "top top",
-          end: `+=${Math.round(totalUnits * 62)}%`,
-          scrub: 0.9,
-          anticipatePin: 1,
-        },
-      });
+  useAnimationFrame((_, delta) => {
+    if (reduce || !inView) return;
+    const total = steps.length;
+    angleRef.current += (delta / 1000) * (360 / (total * SECONDS_PER_STEP));
+    if (angleRef.current > START_DEG + 360) angleRef.current -= 360;
 
-      tl.to(
-        ".gsap-progress-bar",
-        { scaleX: 1, ease: "none", duration: totalUnits },
-        0,
-      );
+    paint(angleRef.current, total);
 
-      let t = 0;
+    const norm = (((angleRef.current - START_DEG) % 360) + 360) % 360;
+    const next = Math.min(total - 1, Math.floor(norm / (360 / total)));
+    if (next !== stepRef.current) {
+      stepRef.current = next;
+      setStepIndex(next);
+    }
+  });
 
-      ACTS.forEach((act, ai) => {
-        const isLast = ai === ACTS.length - 1;
-        const n = act.steps.length;
-
-        /* ── act enters ── */
-        if (ai > 0) {
-          tl.to(
-            `.act-${ai}`,
-            { opacity: 1, duration: 0.4, ease: "power2.out" },
-            t,
-          );
-        }
-
-        tl.to(
-          `.tab-${ai}`,
-          {
-            backgroundColor: tone.tabActiveBg,
-            color: tone.tabActiveText,
-            borderColor: tone.tabActiveBg,
-            duration: 0.3,
-          },
-          t,
-        );
-
-        /* kinetic title — character stagger, same feel as before */
-        tl.fromTo(
-          `.act-title-${ai} .t-char`,
-          { y: 54, opacity: 0, filter: "blur(10px)" },
-          {
-            y: 0,
-            opacity: 1,
-            filter: "blur(0px)",
-            stagger: 0.028,
-            duration: 0.5,
-            ease: "back.out(1.3)",
-          },
-          t,
-        );
-
-        tl.fromTo(
-          `.act-meta-${ai}`,
-          { y: 18, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" },
-          t + 0.15,
-        );
-
-        /* ── steps advance one at a time ── */
-        act.steps.forEach((_, si) => {
-          const st = t + 0.6 + si;
-          const f = dotFraction(si, n);
-
-          tl.to(
-            `.stack-${ai}`,
-            {
-              y: -(si * STEP_H + STEP_H / 2),
-              duration: 0.7,
-              ease: "power2.inOut",
-            },
-            st,
-          );
-          tl.to(`.step-${ai}-${si}`, { opacity: 1, duration: 0.45 }, st);
-          tl.to(`.num-${ai}-${si}`, { color: accentFor(act, isDark), duration: 0.45 }, st);
-          tl.to(
-            `.dot-${ai}-${si}`,
-            {
-              scale: 1,
-              backgroundColor: accentFor(act, isDark),
-              duration: 0.45,
-              ease: "back.out(2)",
-            },
-            st,
-          );
-          tl.to(
-            `.arcline-${ai}`,
-            { strokeDashoffset: 1 - f, duration: 0.7, ease: "power2.inOut" },
-            st,
-          );
-          tl.to(
-            `.counter-${ai}`,
-            { innerText: si + 1, snap: { innerText: 1 }, duration: 0.4 },
-            st,
-          );
-
-          if (si > 0) {
-            tl.to(
-              `.step-${ai}-${si - 1}`,
-              { opacity: 0.16, duration: 0.45 },
-              st,
-            );
-            tl.to(
-              `.num-${ai}-${si - 1}`,
-              { color: tone.muted, duration: 0.45 },
-              st,
-            );
-            tl.to(
-              `.dot-${ai}-${si - 1}`,
-              { scale: 0.5, backgroundColor: tone.muted, duration: 0.45 },
-              st,
-            );
-          }
-        });
-
-        t += 0.6 + n + 0.5;
-
-        /* ── act leaves ── */
-        if (!isLast) {
-          tl.to(
-            `.act-${ai}`,
-            { opacity: 0, y: -36, duration: 0.4, ease: "power2.in" },
-            t,
-          );
-          tl.to(
-            `.tab-${ai}`,
-            {
-              backgroundColor: tone.tabBg,
-              color: tone.tabText,
-              borderColor: tone.tabBorder,
-              duration: 0.3,
-            },
-            t,
-          );
-          tl.fromTo(
-            `.act-${ai + 1}`,
-            { y: 36 },
-            { y: 0, duration: 0.4, ease: "power2.out" },
-            t + 0.1,
-          );
-          t += 0.4;
-        }
-      });
+  /* Clicking a step — in the rail or on the dial — parks the sweep on it. */
+  const jumpTo = useCallback(
+    (i: number) => {
+      angleRef.current = START_DEG + (i * 360) / steps.length + 0.01;
+      stepRef.current = i;
+      setStepIndex(i);
+      paint(angleRef.current, steps.length);
     },
-    /* The timeline bakes the tone's hex values into its tweens, so a theme
-       flip has to tear it down and rebuild rather than just re-run. */
-    { scope: containerRef, dependencies: [tone], revertOnUpdate: true },
+    [paint, steps.length],
   );
+
+  const selectAct = useCallback(
+    (i: number) => {
+      setActIndex(i);
+      stepRef.current = 0;
+      setStepIndex(0);
+      angleRef.current = START_DEG;
+      paint(START_DEG, ACTS[i].steps.length);
+    },
+    [paint],
+  );
+
+  const marker = markerAt(stepIndex, steps.length);
 
   return (
-    <section ref={containerRef} className="relative bg-white dark:bg-neutral-950">
-      {/* Scroll progress rail */}
-      <div className="pointer-events-none fixed left-0 right-0 top-0 z-50 h-0.5 bg-slate-200/70 dark:bg-neutral-800/70">
-        <div
-          className="gsap-progress-bar h-full origin-left"
-          style={{
-            transform: "scaleX(0)",
-            background: `linear-gradient(to right, ${PRIMARY}, ${ACCENT})`,
-          }}
-        />
-      </div>
+    <section
+      ref={sectionRef}
+      id="how-it-works"
+      className="relative overflow-hidden bg-white py-20 sm:py-28 dark:bg-neutral-950"
+    >
+      {/* Editorial grid paper, drifting aurora and rising motes */}
+      <SectionBackdrop seed={1} gridSize={88} />
 
-      {/* ScrollTrigger's pin spacer, rendered by React rather than injected
-          by GSAP. It sizes and pads this element exactly as it would its own;
-          the only difference is that React knows the node exists. */}
-      <div ref={spacerRef}>
-        <div
-          ref={pinRef}
-          className="relative flex h-dvh w-full flex-col overflow-hidden"
-        >
-          {/* Editorial grid paper, drifting aurora and rising motes */}
-          <SectionBackdrop seed={1} gridSize={88} />
-
-          {/* ── Masthead ── */}
-          <header className="relative z-20 mx-auto w-full max-w-7xl px-6 pt-8 sm:px-12">
-            <div className="flex items-start justify-between gap-6 border-b border-slate-200 pb-6 dark:border-neutral-800">
-              <div>
-                <p className="text-xl font-bold tracking-tight text-[#1E293B] sm:text-2xl dark:text-neutral-100">
-                  DevSolve
-                </p>
-                <p className="mt-1.5 text-sm font-medium tracking-[0.28em] text-slate-400 dark:text-neutral-500">
-                  [ PLATFORM ]
-                </p>
-              </div>
-
-              {/* Act tabs — the active one fills dark (and inverts in dark mode) */}
-              <nav className="grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200 dark:border-neutral-800 dark:bg-neutral-800">
-                {ACTS.map((act, ai) => (
-                  <div
-                    key={act.id}
-                    className={`tab-${ai} flex min-w-26 flex-col justify-center mt-8 px-3 py-2.5 text-center sm:min-w-37.5 sm:px-4`}
-                  >
-                    <span className="text-sm font-semibold tracking-tight">
-                      {act.tab}
-                    </span>
-                    <span className="mt-0.5 hidden text-[11px] font-medium opacity-70 sm:block">
-                      {act.tabSub}
-                    </span>
-                  </div>
-                ))}
-              </nav>
-            </div>
-          </header>
-
-          {/* ── Stage ── */}
-          <div className="relative z-10 mx-auto w-full max-w-7xl flex-1 px-6 sm:px-12">
-            {ACTS.map((act, ai) => (
-              <div
-                key={act.id}
-                className={`act-${ai} absolute inset-x-6 inset-y-0 sm:inset-x-12`}
-                style={{ maxWidth: "80rem" }}
-              >
-                {/* Sweeping arc with a dot per step */}
-                <div className="pointer-events-none absolute inset-y-0 left-[2%] hidden w-[36%] lg:block">
-                  <svg
-                    className="absolute inset-0 h-full w-full"
-                    viewBox={`0 0 ${ARC.w} ${ARC.h}`}
-                    preserveAspectRatio="none"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d={ARC_PATH}
-                      fill="none"
-                      stroke={isDark ? "#FFFFFF" : SECONDARY}
-                      strokeOpacity="0.14"
-                      strokeWidth="1"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                    <path
-                      className={`arcline-${ai}`}
-                      d={ARC_PATH}
-                      fill="none"
-                      stroke={accentFor(act, isDark)}
-                      strokeWidth="1.5"
-                      pathLength={1}
-                      strokeDasharray={1}
-                      strokeDashoffset={1}
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  </svg>
-
-                  {act.steps.map((step, si) => {
-                    const p = arcPoint(dotFraction(si, act.steps.length));
-                    return (
-                      <div
-                        key={step.n}
-                        /* No inline fill: GSAP writes the real one on mount,
-                           and the class keeps the pre-hydration paint right in
-                           both themes. */
-                        className={`dot-${ai}-${si} absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-300 dark:bg-neutral-600`}
-                        style={{
-                          left: `${((p.x / ARC.w) * 100).toFixed(4)}%`,
-                          top: `${((p.y / ARC.h) * 100).toFixed(4)}%`,
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-
-                <div className="grid h-full grid-cols-1 items-center gap-8 lg:grid-cols-[0.85fr_1.65fr] lg:gap-12">
-                  {/* LEFT — act title */}
-                  <div className="relative flex flex-col justify-center pt-4 lg:pt-0">
-                    <div className="mb-4 flex items-center gap-2.5">
-                      <span
-                        className="h-px w-8"
-                        style={{ backgroundColor: accentFor(act, isDark) }}
-                      />
-                      <span
-                        className="text-xs font-bold uppercase tracking-[0.22em]"
-                        style={{ color: accentFor(act, isDark) }}
-                      >
-                        {act.kicker}
-                      </span>
-                    </div>
-
-                    <h2
-                      className={`act-title-${ai} font-bold leading-[1.02] tracking-[-0.045em] text-[#1E293B] dark:text-neutral-100`}
-                      style={{
-                        fontSize: "clamp(34px, 4.2vw, 60px)",
-                      }}
-                    >
-                      {act.title.map((line, li) => (
-                        <span key={li} className="block">
-                          {Array.from(line).map((char, ci) => (
-                            <span
-                              key={ci}
-                              className="t-char inline-block"
-                              style={{ willChange: "transform, opacity, filter" }}
-                            >
-                              {char === " " ? " " : char}
-                            </span>
-                          ))}
-                          {li === act.title.length - 1 && (
-                            <span
-                              className="t-char inline-block"
-                              style={{
-                                color: accentFor(act, isDark),
-                                willChange: "transform, opacity",
-                              }}
-                            >
-                              .
-                            </span>
-                          )}
-                        </span>
-                      ))}
-                    </h2>
-
-                    <div className={`act-meta-${ai} mt-7 space-y-5`}>
-                      <div className="flex items-baseline gap-2 font-mono text-sm text-slate-400 dark:text-neutral-500">
-                        <span
-                          className={`counter-${ai} text-2xl font-bold tabular-nums text-[#1E293B] dark:text-neutral-100`}
-                        >
-                          1
-                        </span>
-                        <span className="text-lg">/</span>
-                        <span className="text-lg tabular-nums">
-                          {act.steps.length}
-                        </span>
-                        <span className="ml-1 text-xs uppercase tracking-[0.2em]">
-                          steps
-                        </span>
-                      </div>
-
-                      <Link
-                        href={act.href}
-                        className="group inline-flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-70"
-                        style={{ color: accentFor(act, isDark) }}
-                      >
-                        {act.hrefLabel}
-                        <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* RIGHT — numbered steps scrolling through a masked window */}
-                  <div
-                    className="relative h-95 overflow-hidden lg:h-115"
-                    style={{
-                      maskImage:
-                        "linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent)",
-                      WebkitMaskImage:
-                        "linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent)",
-                    }}
-                  >
-                    <div className={`stack-${ai} absolute inset-x-0 top-1/2`}>
-                      {act.steps.map((step, si) => (
-                        <div
-                          key={step.n}
-                          className={`step-${ai}-${si} grid grid-cols-[auto_1fr] items-start gap-5 overflow-hidden sm:gap-8`}
-                          style={{ height: STEP_H }}
-                        >
-                          <span
-                            /* Resting colour as a class; GSAP takes it over
-                               from mount onwards. */
-                            className={`num-${ai}-${si} block pt-1 text-right font-bold tabular-nums leading-none tracking-[-0.06em] text-slate-300 dark:text-neutral-600`}
-                            style={{
-                              fontSize: "clamp(52px, 7.5vw, 108px)",
-                              width: "clamp(80px, 11vw, 160px)",
-                            }}
-                          >
-                            {step.n}
-                          </span>
-
-                          <div className="pt-2">
-                            <div className="mb-2 flex items-baseline gap-3">
-                              <h3 className="text-2xl font-bold tracking-tight text-[#1E293B] sm:text-3xl dark:text-neutral-100">
-                                {step.title}
-                                <span style={{ color: accentFor(act, isDark) }}>.</span>
-                              </h3>
-                              <span className="rounded-full border border-slate-200 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:border-neutral-700 dark:text-neutral-500">
-                                {step.role}
-                              </span>
-                            </div>
-                            <p className="max-w-xl text-sm leading-[1.8] text-slate-500 sm:text-[15px] dark:text-neutral-400">
-                              {step.body}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 sm:px-12">
+        {/* ── Masthead ── */}
+        <header className="flex flex-col gap-6 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between dark:border-neutral-800">
+          <div>
+            <p className="text-xl font-bold tracking-tight text-[#1E293B] sm:text-2xl dark:text-neutral-100">
+              DevSolve
+            </p>
+            <p className="mt-1.5 text-sm font-medium tracking-[0.28em] text-slate-400 dark:text-neutral-500">
+              [ {t("common.platform")} ]
+            </p>
           </div>
 
-          {/* ── Footer hint ── */}
-          <footer className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 border-t border-slate-200 px-6 py-5 sm:px-12 dark:border-neutral-800">
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-neutral-500">
-              Scroll to advance
-            </span>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium tracking-[0.2em] text-slate-300 dark:text-neutral-600">
-                01 — {String(ACTS.length).padStart(2, "0")}
-              </span>
+          {/* Act tabs — the active one fills dark (and inverts in dark mode) */}
+          <nav
+            role="tablist"
+            aria-label="Platform pillars"
+            className="grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200 dark:border-neutral-800 dark:bg-neutral-800"
+          >
+            {ACTS.map((a, ai) => {
+              const on = ai === actIndex;
+              return (
+                <button
+                  key={a.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={on}
+                  onClick={() => selectAct(ai)}
+                  className={`flex min-w-26 flex-col justify-center px-3 py-2.5 text-center transition-colors duration-200 sm:min-w-37.5 sm:px-4 ${
+                    on
+                      ? "bg-[#1E293B] text-white dark:bg-neutral-200 dark:text-neutral-900"
+                      : "bg-white text-slate-400 hover:text-slate-600 dark:bg-neutral-900 dark:text-neutral-500 dark:hover:text-neutral-300"
+                  }`}
+                >
+                  <span className="text-sm font-semibold tracking-tight">
+                    {t(`lifecycle.acts.${a.id}.tab`) || a.tab}
+                  </span>
+                  <span className="mt-0.5 hidden text-[11px] font-medium opacity-70 sm:block">
+                    {t(`lifecycle.acts.${a.id}.tabSub`) || a.tabSub}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
+        </header>
+
+        {/* ── Stage ── */}
+        <div className="mt-12 grid grid-cols-1 items-center gap-12 lg:mt-16 lg:grid-cols-[1.02fr_0.98fr] lg:gap-16">
+          {/* LEFT — act title and the step the sweep is currently over */}
+          <div>
+            <div className="mb-4 flex items-center gap-2.5">
+              <span className="h-px w-8" style={{ backgroundColor: accent }} />
               <span
-                className="h-1.5 w-1.5 animate-pulse rounded-full"
-                style={{ backgroundColor: PRIMARY }}
-              />
+                className="text-xs font-bold uppercase tracking-[0.22em]"
+                style={{ color: accent }}
+              >
+                {t("lifecycle.kicker") || act.kicker}
+              </span>
             </div>
-          </footer>
+
+            <AnimatePresence mode="wait">
+              <motion.h2
+                key={act.id}
+                initial={reduce ? false : "hidden"}
+                animate="visible"
+                exit="out"
+                variants={{
+                  hidden: {},
+                  visible: { transition: { staggerChildren: 0.028 } },
+                  out: { opacity: 0, transition: { duration: 0.18 } },
+                }}
+                className="font-bold leading-[1.02] tracking-[-0.045em] text-[#1E293B] dark:text-neutral-100"
+                style={{ fontSize: "clamp(34px, 4.2vw, 60px)" }}
+              >
+                {[
+                  t(`lifecycle.acts.${act.id}.title1`) || act.title[0],
+                  t(`lifecycle.acts.${act.id}.title2`) || act.title[1],
+                ].map((lineText, li) => (
+                  <span key={li} className="block">
+                    {Array.from(lineText).map((char, ci) => (
+                      <motion.span
+                        key={ci}
+                        className="inline-block"
+                        variants={{
+                          hidden: { y: 48, opacity: 0, filter: "blur(10px)" },
+                          visible: {
+                            y: 0,
+                            opacity: 1,
+                            filter: "blur(0px)",
+                            transition: {
+                              duration: 0.5,
+                              ease: [0.2, 0.8, 0.3, 1],
+                            },
+                          },
+                        }}
+                      >
+                        {char === " " ? " " : char}
+                      </motion.span>
+                    ))}
+                    {li === act.title.length - 1 && (
+                      <motion.span
+                        className="inline-block"
+                        style={{ color: accent }}
+                        variants={{
+                          hidden: { y: 48, opacity: 0 },
+                          visible: { y: 0, opacity: 1 },
+                        }}
+                      >
+                        .
+                      </motion.span>
+                    )}
+                  </span>
+                ))}
+              </motion.h2>
+            </AnimatePresence>
+
+            {/* The step under the sweep — swapped in place, never scrolled */}
+            <div className="relative mt-8 min-h-70 sm:min-h-56">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${act.id}-${step.n}`}
+                  initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -12, filter: "blur(6px)" }}
+                  transition={{ duration: 0.32, ease: "easeOut" }}
+                  className="grid grid-cols-[auto_1fr] items-start gap-5 sm:gap-8"
+                >
+                  <span
+                    className="block pt-1 text-right font-bold tabular-nums leading-none tracking-[-0.06em] text-slate-300 dark:text-neutral-700"
+                    style={{
+                      fontSize: "clamp(52px, 6.5vw, 96px)",
+                      width: "clamp(76px, 9vw, 132px)",
+                    }}
+                  >
+                    {step.n}
+                  </span>
+
+                  <div className="pt-1">
+                    <div className="mb-2 flex flex-wrap items-baseline gap-3">
+                      <h3 className="text-2xl font-bold tracking-tight text-[#1E293B] sm:text-3xl dark:text-neutral-100">
+                        {t(`lifecycle.acts.${act.id}.steps.${step.n}.title`) || step.title}
+                        <span style={{ color: accent }}>.</span>
+                      </h3>
+                      <span className="rounded-lg border border-slate-200 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:border-neutral-700 dark:text-neutral-500">
+                        {t(`lifecycle.acts.${act.id}.steps.${step.n}.role`) || step.role}
+                      </span>
+                    </div>
+                    <p className="max-w-xl text-sm leading-[1.8] text-slate-500 sm:text-[15px] dark:text-neutral-400">
+                      {t(`lifecycle.acts.${act.id}.steps.${step.n}.body`) || step.body}
+                    </p>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Step rail — the bar under the active chip tracks the sweep */}
+            <div className="mt-8 flex flex-wrap gap-2">
+              {steps.map((s, si) => {
+                const on = si === stepIndex;
+                return (
+                  <button
+                    key={s.n}
+                    type="button"
+                    onClick={() => jumpTo(si)}
+                    aria-current={on ? "step" : undefined}
+                    className={`relative flex items-center gap-2 overflow-hidden rounded-lg border px-3 py-2 transition-colors duration-200 ${
+                      on
+                        ? "border-slate-300 bg-white dark:border-neutral-700 dark:bg-neutral-900"
+                        : "border-slate-200 bg-transparent hover:bg-white dark:border-neutral-800 dark:hover:bg-neutral-900"
+                    }`}
+                  >
+                    <span
+                      className="font-mono text-[11px] font-semibold tabular-nums"
+                      style={{ color: on ? accent : muted }}
+                    >
+                      {s.n}
+                    </span>
+                    <span
+                      className={`text-sm font-semibold tracking-tight ${
+                        on
+                          ? "text-[#1E293B] dark:text-neutral-100"
+                          : "text-slate-400 dark:text-neutral-500"
+                      }`}
+                    >
+                      {t(`lifecycle.acts.${act.id}.steps.${s.n}.title`) || s.title}
+                    </span>
+                    {on && (
+                      <span
+                        ref={progressRef}
+                        className="absolute inset-x-0 bottom-0 h-0.5 origin-left"
+                        style={{
+                          backgroundColor: accent,
+                          transform: "scaleX(0)",
+                        }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+              <div className="flex items-baseline gap-2 font-mono text-sm text-slate-400 dark:text-neutral-500">
+                <span className="text-2xl font-bold tabular-nums text-[#1E293B] dark:text-neutral-100">
+                  {pad2(stepIndex + 1)}
+                </span>
+                <span className="text-lg">/</span>
+                <span className="text-lg tabular-nums">
+                  {pad2(steps.length)}
+                </span>
+                <span className="ml-1 text-xs uppercase tracking-[0.2em]">
+                  {t("lifecycle.steps")}
+                </span>
+              </div>
+
+              <Link
+                href={act.href}
+                className="group inline-flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-70"
+                style={{ color: accent }}
+              >
+                {t(`lifecycle.acts.${act.id}.hrefLabel`) || act.hrefLabel}
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+            </div>
+          </div>
+
+          {/* RIGHT — the scanning dial */}
+          <div className="relative mx-auto w-full max-w-136">
+            <div className="pointer-events-none absolute inset-x-0 -top-1 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-neutral-600">
+              <span>[ {t("common.scanning")} ]</span>
+              <span>{pad2(steps.length)} {t("common.nodes")}</span>
+            </div>
+
+            <svg
+              viewBox="-24 -24 448 448"
+              className="mt-6 h-auto w-full"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <defs>
+                <radialGradient id={`${uid}-core`}>
+                  <stop offset="0%" stopColor={accent} stopOpacity="0.2" />
+                  <stop offset="100%" stopColor={accent} stopOpacity="0" />
+                </radialGradient>
+              </defs>
+
+              <circle
+                cx={DIAL.cx}
+                cy={DIAL.cy}
+                r={DIAL.r}
+                fill={`url(#${uid}-core)`}
+              />
+
+              {/* Rings and crosshair */}
+              {RINGS.map((f) => (
+                <circle
+                  key={f}
+                  cx={DIAL.cx}
+                  cy={DIAL.cy}
+                  r={DIAL.r * f}
+                  fill="none"
+                  stroke={line}
+                  strokeOpacity="0.13"
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                />
+              ))}
+              {[0, 45, 90, 135].map((deg) => {
+                const a = polar(deg, DIAL.r);
+                const b = polar(deg + 180, DIAL.r);
+                return (
+                  <line
+                    key={deg}
+                    x1={a.x}
+                    y1={a.y}
+                    x2={b.x}
+                    y2={b.y}
+                    stroke={line}
+                    strokeOpacity="0.09"
+                    strokeWidth="1"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                );
+              })}
+
+              {/* Rim ticks */}
+              {TICKS.map((t, i) => (
+                <line
+                  key={i}
+                  x1={t.x1}
+                  y1={t.y1}
+                  x2={t.x2}
+                  y2={t.y2}
+                  stroke={line}
+                  strokeOpacity={t.major ? 0.3 : 0.15}
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                />
+              ))}
+
+              {/* The sweep — one rotate attribute, rewritten each frame */}
+              <g
+                ref={sweepRef}
+                transform={`rotate(${START_DEG} ${DIAL.cx} ${DIAL.cy})`}
+              >
+                {SWEEP_PATHS.map((s, i) => (
+                  <path key={i} d={s.d} fill={accent} opacity={s.opacity} />
+                ))}
+                <line
+                  x1={DIAL.cx}
+                  y1={DIAL.cy}
+                  x2={DIAL.cx + DIAL.r}
+                  y2={DIAL.cy}
+                  stroke={accent}
+                  strokeWidth="1.5"
+                  strokeOpacity="0.9"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </g>
+
+              {/* Step markers */}
+              {steps.map((s, si) => {
+                const m = markerAt(si, steps.length);
+                const on = si === stepIndex;
+                const size = on ? 6 : 4;
+                const anchorRight = Math.cos((m.deg * Math.PI) / 180) >= -0.1;
+                const lx = m.x + (anchorRight ? 14 : -14);
+                return (
+                  <g
+                    key={s.n}
+                    className="cursor-pointer"
+                    onClick={() => jumpTo(si)}
+                  >
+                    <circle cx={m.x} cy={m.y} r="18" fill="transparent" />
+                    {on && (
+                      <circle
+                        cx={m.x}
+                        cy={m.y}
+                        r="13"
+                        fill="none"
+                        stroke={accent}
+                        strokeOpacity="0.45"
+                        strokeWidth="1"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    )}
+                    <rect
+                      x={m.x - size}
+                      y={m.y - size}
+                      width={size * 2}
+                      height={size * 2}
+                      transform={`rotate(45 ${m.x} ${m.y})`}
+                      fill={on ? accent : "none"}
+                      stroke={on ? accent : muted}
+                      strokeOpacity={on ? 1 : 0.7}
+                      strokeWidth="1.5"
+                      vectorEffect="non-scaling-stroke"
+                      className="transition-all duration-300"
+                    />
+                    <text
+                      x={lx}
+                      y={m.y - 2}
+                      textAnchor={anchorRight ? "start" : "end"}
+                      fill={on ? accent : muted}
+                      fontSize="11"
+                      fontWeight="700"
+                      letterSpacing="1"
+                      className="font-mono"
+                    >
+                      {s.n}
+                    </text>
+                    <text
+                      x={lx}
+                      y={m.y + 11}
+                      textAnchor={anchorRight ? "start" : "end"}
+                      fill={on ? accent : muted}
+                      fillOpacity={on ? 1 : 0.55}
+                      fontSize="10.5"
+                      fontWeight="600"
+                      letterSpacing="1.4"
+                      className="hidden uppercase sm:block"
+                    >
+                      {t(`lifecycle.acts.${act.id}.steps.${s.n}.title`) || s.title}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* Contact ping — remounts each time the sweep reaches a marker */}
+              {!reduce && (
+                <motion.circle
+                  key={`${act.id}-${stepIndex}`}
+                  cx={marker.x}
+                  cy={marker.y}
+                  fill="none"
+                  stroke={accent}
+                  strokeWidth="1.5"
+                  vectorEffect="non-scaling-stroke"
+                  initial={{ r: 6, opacity: 0.85 }}
+                  animate={{ r: 30, opacity: 0 }}
+                  transition={{ duration: 1.1, ease: "easeOut" }}
+                />
+              )}
+
+              <circle cx={DIAL.cx} cy={DIAL.cy} r="3" fill={accent} />
+            </svg>
+
+            <div className="pointer-events-none absolute inset-x-0 -bottom-1 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-neutral-600">
+              <span>{t(`lifecycle.acts.${act.id}.tabSub`) || act.tabSub}</span>
+              <span>
+                {t("common.step")} {pad2(stepIndex + 1)} / {pad2(steps.length)}
+              </span>
+            </div>
+          </div>
         </div>
+
+        {/* ── Footer readout ── */}
+        <footer className="mt-14 flex items-center justify-between gap-4 border-t border-slate-200 pt-5 dark:border-neutral-800">
+          <span className="flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-neutral-500">
+            <span className="relative flex h-1.5 w-1.5">
+              <span
+                className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+                style={{ backgroundColor: accent }}
+              />
+              <span
+                className="relative inline-flex h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: accent }}
+              />
+            </span>
+            {t("lifecycle.scroll")} · {t(`lifecycle.acts.${act.id}.tab`) || act.tab}
+          </span>
+          <span className="font-mono text-xs font-medium tracking-[0.2em] text-slate-300 dark:text-neutral-600">
+            {pad2(actIndex + 1)} — {pad2(ACTS.length)}
+          </span>
+        </footer>
       </div>
     </section>
   );

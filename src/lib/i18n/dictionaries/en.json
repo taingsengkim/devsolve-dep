@@ -1,0 +1,227 @@
+{
+  "nav": {
+    "home": "Home",
+    "programs": "Programs",
+    "community": "Community",
+    "hacktivity": "Hacktivity",
+    "problem": "Problem",
+    "showcase": "Showcase",
+    "leaderboard": "Leaderboard",
+    "about": "About",
+    "login": "Log in",
+    "getStarted": "Get Started",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "toggleTheme": "Toggle theme",
+    "language": "Language",
+    "connecting": "Connecting…",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode"
+  },
+  "hero": {
+    "kicker": "One platform",
+    "titleLine1": "Four disciplines,",
+    "titleLine2": "one platform",
+    "getStarted": "Get started free",
+    "platform": "Platform",
+    "live": "Live",
+    "pillars": {
+      "bounty": {
+        "label": "Bug Bounty",
+        "role": "Company",
+        "blurb": "Companies publish scope, severity tiers and reward bands up front, then triage against them in the open. No private rubric, no argument after the fact.",
+        "link": "Browse live programs"
+      },
+      "problems": {
+        "label": "Problems",
+        "role": "Author",
+        "blurb": "Post the problem as it actually is — the error, the stack, the versions, what you already ruled out. Tagged threads reach people who have shipped in it.",
+        "link": "Open the problems feed"
+      },
+      "solutions": {
+        "label": "Solutions",
+        "role": "Community",
+        "blurb": "Answers carry the code, the config and the reasoning. The author marks what worked, and the thread becomes something the next person can search for.",
+        "link": "See the community"
+      },
+      "showcases": {
+        "label": "Showcases",
+        "role": "Profile",
+        "blurb": "Every accepted report and marked solution lands on your profile with the severity, the programme and the date attached. One link, nothing to explain.",
+        "link": "See the showcases"
+      }
+    }
+  },
+  "footer": {
+    "tagline": "Bug bounty and vulnerability disclosure platform for developers, security engineers, and organizations. Built to find vulnerabilities before attackers do.",
+    "sponsors": "Sponsors and organizers",
+    "rights": "All rights reserved.",
+    "backToTop": "Back to top",
+    "home": "DevSolve home",
+    "sections": {
+      "platform": "Platform",
+      "explore": "Explore",
+      "account": "Account"
+    },
+    "links": {
+      "programs": "Programs",
+      "problems": "Problems",
+      "showcases": "Showcases",
+      "community": "Community",
+      "hacktivity": "Hacktivity",
+      "leaderboard": "Leaderboard",
+      "about": "About",
+      "signIn": "Sign in",
+      "createAccount": "Create an account"
+    }
+  },
+  "common": {
+    "loading": "Loading",
+    "retry": "Try again",
+    "search": "Search",
+    "viewAll": "View all",
+    "platform": "Platform",
+    "scanning": "Scanning",
+    "nodes": "nodes",
+    "step": "Step",
+    "last12": "Last 12",
+    "months": "months",
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium"
+  },
+  "stats": {
+    "kicker": "Platform activity",
+    "title": "By the numbers",
+    "lede": "Twelve months of activity across programs, reports and community solutions. Every figure below is a monthly reading, not a lifetime total.",
+    "bountiesPaid": "Bounties paid out",
+    "bountiesUnit": "USD, cumulative",
+    "researchers": "Verified researchers",
+    "researchersUnit": "active accounts",
+    "livePrograms": "Live programs",
+    "liveUnit": "accepting reports",
+    "reports": "Reports validated",
+    "reportsUnit": "triaged and closed"
+  },
+  "lifecycle": {
+    "kicker": "How it works",
+    "scroll": "Live scan",
+    "steps": "steps",
+    "acts": {
+      "bounty": {
+        "tab": "Bug Bounty",
+        "tabSub": "[ Program Lifecycle ]",
+        "title1": "The Bounty",
+        "title2": "Lifecycle",
+        "hrefLabel": "Browse live programs",
+        "steps": {
+          "01": {
+            "title": "Publish",
+            "role": "Company",
+            "body": "A company defines its scope, severity tiers and reward bands, then publishes the program. Assets in scope, rules of engagement and payout ranges are public from the first day, so nobody argues later about what counted."
+          },
+          "02": {
+            "title": "Browse",
+            "role": "Researcher",
+            "body": "Researchers filter live programs by asset type, stack, severity band and reward size. Each program page carries the full scope, its payout history and average triage time — you know what you are walking into before you start."
+          },
+          "03": {
+            "title": "Report",
+            "role": "Researcher",
+            "body": "Submit the finding with reproduction steps, impact analysis and a working proof of concept. The report is timestamped the moment it lands, which locks your claim to the vulnerability ahead of anyone else."
+          },
+          "04": {
+            "title": "Triage",
+            "role": "Company",
+            "body": "The security team reproduces the issue, confirms severity against the published tiers, and either accepts it, asks for more detail, or rejects it with a stated reason. Every state change is written to the report timeline."
+          },
+          "05": {
+            "title": "Reward",
+            "role": "Researcher",
+            "body": "On acceptance the bounty is released at the tier the finding landed in, and the report converts into reputation on your public profile. Coordinated disclosure opens once the fix has shipped."
+          }
+        }
+      },
+      "community": {
+        "tab": "Community",
+        "tabSub": "[ Problems & Solutions ]",
+        "title1": "Problems,",
+        "title2": "Answered",
+        "hrefLabel": "Open the problems feed",
+        "steps": {
+          "01": {
+            "title": "Ask",
+            "role": "Author",
+            "body": "Post the problem as it actually is: the error, the stack, the versions, and what you already ruled out. Tagged threads route to the people who have shipped in that stack before, instead of sitting unread."
+          },
+          "02": {
+            "title": "Solve",
+            "role": "Community",
+            "body": "Anyone can answer with a solution that works — the code, the config, and the reasoning behind it. The author marks what fixed it, and the thread becomes a validated answer the next person can search for."
+          }
+        }
+      },
+      "showcase": {
+        "tab": "Showcase",
+        "tabSub": "[ Proof of Work ]",
+        "title1": "Proof",
+        "title2": "of Work",
+        "hrefLabel": "See the leaderboard",
+        "steps": {
+          "01": {
+            "title": "Earn",
+            "role": "Reputation",
+            "body": "Every accepted report and every marked solution adds to your score, weighted by the severity of the finding and by how often the answer gets reused by other people."
+          },
+          "02": {
+            "title": "Display",
+            "role": "Profile",
+            "body": "Your public profile carries the whole record: severity breakdown, programs contributed to, threads solved, and the badges earned along the way. One link, nothing to explain."
+          },
+          "03": {
+            "title": "Rank",
+            "role": "Leaderboard",
+            "body": "The global leaderboard ranks on contribution rather than volume. Filter it by program, by stack or by time window to see who is actually doing the work right now."
+          }
+        }
+      }
+    }
+  },
+  "sections": {
+    "bounty": {
+      "kicker": "Live programs",
+      "title": "Where the bounties are",
+      "allPrograms": "All programs",
+      "launch": "Launch a program",
+      "accepting": "Accepting reports",
+      "alsoAccepting": "Also accepting reports",
+      "featured": "Featured",
+      "maxPayout": "Maximum payout",
+      "reports": "Reports",
+      "topTier": "Top tier",
+      "viewProgram": "View program",
+      "inHouse": "Running security in-house?",
+      "inHouseBody": "Publish a program, set your own tiers, and let the board do the triage queue."
+    },
+    "problems": {
+      "kicker": "Threads",
+      "title1": "Ask once. Answered for good",
+      "lede": "Every solved thread stays searchable, so the next person hitting the same wall finds the fix instead of re-asking the question.",
+      "body": "Post the problem with the error, the stack and what you already ruled out. Anyone can answer; the author marks what actually worked, and that answer becomes the thread's permanent record.",
+      "openFeed": "Open the problems feed",
+      "whereTheyLand": "Where they land",
+      "tagged": "Threads are tagged on post, so an answer stays findable from any angle someone might come at it.",
+      "recentlyPosted": "Recently posted",
+      "seeAll": "See all"
+    },
+    "showcase": {
+      "kicker": "Showcase",
+      "title": "Proof, not claims",
+      "lede": "Accepted reports and marked solutions compound into a public profile. One link that shows what you found, fixed and answered.",
+      "bySeverity": "Findings by severity",
+      "reputation": "Reputation",
+      "weighted": "Rankings are weighted by severity and by how often an answer gets reused, not by raw volume.",
+      "leaderboard": "See the full leaderboard"
+    }
+  }
+}

@@ -2,6 +2,7 @@
 
 import React, { useRef } from "react";
 import Link from "next/link";
+import { useT } from "@/lib/i18n/I18nProvider";
 import { motion, useInView } from "motion/react";
 import { ArrowUpRight, Award, Flame, ShieldCheck, Trophy, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -22,12 +23,12 @@ const TIER_RAMP = [
 ] as const;
 
 const TIER_LABELS = [
-  { key: "critical", label: "Critical" },
-  { key: "high", label: "High" },
-  { key: "medium", label: "Medium" },
+  { key: "critical", label: "Critical", tKey: "common.critical" },
+  { key: "high", label: "High", tKey: "common.high" },
+  { key: "medium", label: "Medium", tKey: "common.medium" },
 ] as const;
 
-const TIERS = TIER_LABELS.map((t, i) => ({ ...t, color: TIER_RAMP[i] }));
+const TIERS = TIER_LABELS.map((tier, i) => ({ ...tier, color: TIER_RAMP[i] }));
 
 type Researcher = {
   handle: string;
@@ -122,6 +123,7 @@ function SeverityBar({
 
 /* ─── Section ───────────────────────────────────────────────────────── */
 export function ShowcaseSection() {
+  const t = useT();
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const ink = useInk();
@@ -129,7 +131,7 @@ export function ShowcaseSection() {
   return (
     <section
       ref={ref}
-      className="relative overflow-hidden bg-slate-50 py-20 sm:py-24 dark:bg-neutral-950"
+      className="relative overflow-hidden bg-white py-20 sm:py-24 dark:bg-neutral-950"
     >
       <SectionBackdrop seed={5} gridSize={88} />
 
@@ -148,21 +150,20 @@ export function ShowcaseSection() {
                 className="text-xs font-bold uppercase tracking-[0.22em]"
                 style={{ color: ink }}
               >
-                Showcase
+                {t("sections.showcase.kicker")}
               </span>
             </div>
             <h2
               className="text-3xl font-bold tracking-[-0.04em] sm:text-4xl lg:text-5xl"
               style={{ color: ink }}
             >
-              Proof, not claims
+              {t("sections.showcase.title")}
               <span className="text-[#2563EB] dark:text-blue-400">.</span>
             </h2>
           </div>
 
           <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
-            Accepted reports and marked solutions compound into a public profile.
-            One link that shows what you found, fixed and answered.
+            {t("sections.showcase.lede")}
           </p>
         </motion.div>
 
@@ -174,19 +175,19 @@ export function ShowcaseSection() {
           className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2"
         >
           <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-neutral-500">
-            Findings by severity
+            {t("sections.showcase.bySeverity")}
           </span>
-          {TIERS.map((t) => (
+          {TIERS.map((tier) => (
             <span
-              key={t.key}
+              key={tier.key}
               className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-neutral-400"
             >
               <span
                 className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: t.color }}
+                style={{ backgroundColor: tier.color }}
                 aria-hidden
               />
-              {t.label}
+              {t(tier.tKey) || tier.label}
             </span>
           ))}
         </motion.div>
@@ -238,7 +239,7 @@ export function ShowcaseSection() {
               {/* reputation */}
               <div className="mt-6">
                 <p className="text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-neutral-500">
-                  Reputation
+                  {t("sections.showcase.reputation")}
                 </p>
                 <p
                   className="mt-1 text-3xl font-bold leading-none tracking-tight"
@@ -253,9 +254,9 @@ export function ShowcaseSection() {
                 <SeverityBar data={r} inView={inView} delay={0.35 + i * 0.12} />
                 <dl className="mt-3 flex items-center justify-between text-xs">
                   {[
-                    { label: "Critical", value: r.critical },
-                    { label: "High", value: r.high },
-                    { label: "Medium", value: r.medium },
+                    { label: t("common.critical"), value: r.critical },
+                    { label: t("common.high"), value: r.high },
+                    { label: t("common.medium"), value: r.medium },
                   ].map((s) => (
                     <div key={s.label} className="flex items-baseline gap-1.5">
                       <dt className="text-slate-400 dark:text-neutral-500">
@@ -308,14 +309,13 @@ export function ShowcaseSection() {
           className="mt-10 flex flex-col items-start justify-between gap-5 border-t border-slate-200 pt-8 sm:flex-row sm:items-center dark:border-neutral-800"
         >
           <p className="max-w-md text-sm text-slate-500 dark:text-neutral-400">
-            Rankings are weighted by severity and by how often an answer gets reused
-            — not by how much you post.
+            {t("sections.showcase.weighted")}
           </p>
           <Link
             href="/leaderboard"
             className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-[#1E293B] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:brightness-110 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
           >
-            See the full leaderboard
+            {t("sections.showcase.leaderboard")}
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </motion.div>

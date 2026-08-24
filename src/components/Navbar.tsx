@@ -23,6 +23,8 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import darkModeLogo from "@/app/devsolve_dark_mode-removebg-preview.png";
 import { ThemeToggle, useThemeToggle } from "@/components/motion/theme-toggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLocalePath, useT } from "@/lib/i18n/I18nProvider";
 import { Button } from "@/components/ui/button";
 import {
   NavbarUserMenu,
@@ -41,6 +43,8 @@ type NavItem = {
   href: string;
   description?: string;
   icon?: "problem" | "showcase" | "hacktivity";
+  /** Catalogue key — `name` remains the stable identity and fallback. */
+  tKey?: string;
 };
 
 type NavLink = {
@@ -53,37 +57,47 @@ type NavLink = {
    * already have.
    */
   guestOnly?: boolean;
+  /** Catalogue key — `name` remains the stable identity and fallback. */
+  tKey?: string;
 };
 
 const navLinks: NavLink[] = [
-  { name: "Home", href: "/" },
-  { name: "Programs", href: "/programs" },
+  { name: "Home",
+    tKey: "nav.home", href: "/" },
+  { name: "Programs",
+    tKey: "nav.programs", href: "/programs" },
   {
     name: "Community",
+    tKey: "nav.community",
     href: "/community",
     items: [
       {
         name: "Hacktivity",
+    tKey: "nav.hacktivity",
         href: "/hacktivity",
         description: "Real-time security activity feed and disclosures.",
         icon: "hacktivity",
       },
       {
         name: "Problem",
+    tKey: "nav.problem",
         href: "/problems",
         description: "Post bugs, blockers, and security questions.",
         icon: "problem",
       },
       {
         name: "Showcase",
+    tKey: "nav.showcase",
         href: "/showcases",
         description: "Share product wins, demos, and build highlights.",
         icon: "showcase",
       },
     ],
   },
-  { name: "Leaderboard", href: "/leaderboard" },
-  { name: "About", href: "/about", guestOnly: true },
+  { name: "Leaderboard",
+    tKey: "nav.leaderboard", href: "/leaderboard" },
+  { name: "About",
+    tKey: "nav.about", href: "/about", guestOnly: true },
 ];
 
 // Scrolling down only retracts the island once the reader is past this much of
@@ -213,6 +227,11 @@ const Navbar = () => {
     setMobileMenuOpen(false);
     setMobileCommunityOpen(false);
   };
+  const t = useT();
+  /* Every internal href goes through this: a bare path would still work, but
+     only by bouncing through the proxy redirect, which costs a round trip and
+     drops client-side navigation. */
+  const lp = useLocalePath();
   const { isDark, mounted, toggle } = useThemeToggle({
     variant: "rectangle",
     start: "bottom-up",
@@ -545,7 +564,7 @@ const Navbar = () => {
                 staying inside its column. */}
             <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 lg:gap-3 xl:gap-4">
               <Link
-                href="/"
+                href={lp("/")}
                 aria-label="Go to DevSolve homepage"
                 className="group flex shrink-0 items-center"
                 onClick={() => setMobileMenuOpen(false)}
@@ -591,7 +610,7 @@ const Navbar = () => {
                     if (link.items?.length) {
                       return (
                         <div
-                          key={link.name}
+                          key={t(link.tKey ?? "") || link.name}
                           className="relative"
                           onMouseEnter={openCommunityMenu}
                           onMouseLeave={() => closeCommunityMenu(140)}
@@ -616,7 +635,7 @@ const Navbar = () => {
                               }}
                               className="inline-flex h-9 items-center rounded-l-lg pl-3 pr-1 xl:pl-4 xl:pr-1.5"
                             >
-                              {link.name}
+                              {t(link.tKey ?? "") || link.name}
                             </Link>
                             <button
                               type="button"
@@ -657,7 +676,7 @@ const Navbar = () => {
                             {communityMenuOpen ? (
                               <motion.div
                                 role="menu"
-                                aria-label={link.name}
+                                aria-label={t(link.tKey ?? "") || link.name}
                                 initial={{ opacity: 0, y: -6, scale: 0.94 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{
@@ -704,7 +723,7 @@ const Navbar = () => {
                                       return (
                                         <Link
                                           key={item.href}
-                                          href={item.href}
+                                          href={lp(item.href)}
                                           role="menuitem"
                                           aria-current={
                                             isItemActive ? "page" : undefined
@@ -742,7 +761,7 @@ const Navbar = () => {
                                                   : "text-slate-900 dark:text-neutral-100",
                                               )}
                                             >
-                                              {item.name}
+                                              {t(item.tKey ?? "") || item.name}
                                               <ArrowRight className="size-3.5 -translate-x-1 opacity-0 transition-all duration-200 group-hover/item:translate-x-0 group-hover/item:opacity-100" />
                                             </span>
                                             <span className="mt-0.5 block text-sm leading-5 text-slate-500 dark:text-neutral-400">
@@ -770,7 +789,7 @@ const Navbar = () => {
                     return (
                       <Link
                         key={link.href}
-                        href={link.href}
+                        href={lp(link.href)}
                         aria-current={isActive ? "page" : undefined}
                         onClick={() => setMobileMenuOpen(false)}
                         className={cn(
@@ -780,7 +799,7 @@ const Navbar = () => {
                             : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-neutral-300 dark:hover:bg-neutral-900/80 dark:hover:text-white",
                         )}
                       >
-                        <span>{link.name}</span>
+                        <span>{t(link.tKey ?? "") || link.name}</span>
 
                         {isActive ? (
                           <motion.span
@@ -804,6 +823,10 @@ const Navbar = () => {
                   it is the one control the mobile panel also offers. */}
               <div className="flex shrink-0 items-center justify-end gap-1.5 xl:gap-2.5">
                 {sessionUser && <NotificationTrigger />}
+
+                {/* Beside the theme toggle: both are display preferences, and
+                    the mobile panel offers the pair together too. */}
+                <LanguageSwitcher className="hidden lg:inline-flex" />
 
                 <ThemeToggle
                   variant="rectangle"
@@ -929,7 +952,7 @@ const Navbar = () => {
                               aria-current={isActive ? "page" : undefined}
                               className="flex min-h-10 flex-1 items-center pl-4"
                             >
-                              {link.name}
+                              {t(link.tKey ?? "") || link.name}
                             </Link>
                             <button
                               type="button"
@@ -996,7 +1019,7 @@ const Navbar = () => {
                                         }
                                       >
                                         <Link
-                                          href={item.href}
+                                          href={lp(item.href)}
                                           onClick={() => {
                                             setMobileCommunityOpen(false);
                                             setMobileMenuOpen(false);
@@ -1025,7 +1048,7 @@ const Navbar = () => {
                                               />
                                             </span>
                                             <span className="truncate text-sm font-bold text-slate-900 dark:text-neutral-100">
-                                              {item.name}
+                                              {t(item.tKey ?? "") || item.name}
                                             </span>
                                           </div>
                                           <ArrowRight
@@ -1055,7 +1078,7 @@ const Navbar = () => {
                     return (
                       <Link
                         key={`${link.href}-mobile`}
-                        href={link.href}
+                        href={lp(link.href)}
                         onClick={() => setMobileMenuOpen(false)}
                         aria-current={isActive ? "page" : undefined}
                         className={cn(
@@ -1065,7 +1088,7 @@ const Navbar = () => {
                             : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-neutral-300 dark:hover:bg-neutral-900/80 dark:hover:text-white",
                         )}
                       >
-                        {link.name}
+                        {t(link.tKey ?? "") || link.name}
                       </Link>
                     );
                   })}
@@ -1145,7 +1168,7 @@ const Navbar = () => {
                           nativeButton={false}
                           render={
                             <Link
-                              href="/dashboard"
+                              href={lp("/dashboard")}
                               onClick={() => setMobileMenuOpen(false)}
                             />
                           }
@@ -1171,13 +1194,13 @@ const Navbar = () => {
                           nativeButton={false}
                           render={
                             <Link
-                              href="/account-type"
+                              href={lp("/account-type")}
                               onClick={() => setMobileMenuOpen(false)}
                             />
                           }
                           className="h-10 rounded-lg bg-primary text-sm font-semibold text-white hover:bg-[#1D4ED8] dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500"
                         >
-                          Get Started
+                          {t("nav.getStarted")}
                           <ArrowRight className="size-4" />
                         </Button>
 
@@ -1194,30 +1217,34 @@ const Navbar = () => {
                               Connecting...
                             </>
                           ) : (
-                            "Log in"
+                            t("nav.login")
                           )}
                         </Button>
                       </>
                     )}
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={toggle}
-                      className="h-10 rounded-lg border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-700/80 dark:bg-neutral-900/80 dark:text-neutral-100 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800 dark:hover:text-blue-200"
-                    >
-                      {mounted && isDark ? (
-                        <>
-                          <Sun className="size-4" />
-                          Light mode
-                        </>
-                      ) : (
-                        <>
-                          <Moon className="size-4" />
-                          Dark mode
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={toggle}
+                        className="h-10 flex-1 rounded-lg border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-neutral-700/80 dark:bg-neutral-900/80 dark:text-neutral-100 dark:hover:border-blue-500/40 dark:hover:bg-neutral-800 dark:hover:text-blue-200"
+                      >
+                        {mounted && isDark ? (
+                          <>
+                            <Sun className="size-4" />
+                            {t("nav.lightMode")}
+                          </>
+                        ) : (
+                          <>
+                            <Moon className="size-4" />
+                            {t("nav.darkMode")}
+                          </>
+                        )}
+                      </Button>
+
+                      <LanguageSwitcher className="h-10 shrink-0 rounded-lg" />
+                    </div>
                   </div>
                 </nav>
               </div>

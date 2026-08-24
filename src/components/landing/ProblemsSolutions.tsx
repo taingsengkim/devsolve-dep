@@ -2,6 +2,7 @@
 
 import React, { useRef } from "react";
 import Link from "next/link";
+import { useT } from "@/lib/i18n/I18nProvider";
 import { motion, useInView } from "motion/react";
 import {
   ArrowUpRight,
@@ -107,6 +108,7 @@ function StatePill({ solved }: { solved: boolean }) {
 
 /* ─── Section ───────────────────────────────────────────────────────── */
 export function ProblemsSolutions() {
+  const t = useT();
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const ink = useInk();
@@ -137,14 +139,13 @@ export function ProblemsSolutions() {
               className="text-3xl font-bold tracking-[-0.04em] sm:text-4xl lg:text-5xl"
               style={{ color: ink }}
             >
-              Ask once. Answered for good
+              {t("sections.problems.title1")}
               <span style={{ color: ACCENT }}>.</span>
             </h2>
           </div>
 
           <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
-            Every solved thread stays searchable, so the next person hitting the
-            same wall finds the fix instead of re-asking the question.
+            {t("sections.problems.lede")}
           </p>
         </motion.div>
 
@@ -190,7 +191,7 @@ export function ProblemsSolutions() {
               href="/problems"
               className="group mt-8 inline-flex items-center gap-2 rounded-full bg-[#1E293B] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:brightness-110 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
             >
-              Open the problems feed
+              {t("sections.problems.openFeed")}
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
 
@@ -198,10 +199,10 @@ export function ProblemsSolutions() {
             <div className="mt-10 border-t border-slate-200 pt-8 dark:border-neutral-800">
               <div className="flex items-baseline justify-between border-b border-slate-200 pb-3 dark:border-neutral-800">
                 <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-neutral-500">
-                  Where they land
+                  {t("sections.problems.whereTheyLand")}
                 </span>
                 <span className="text-xs font-medium text-slate-400 dark:text-neutral-500">
-                  Threads
+                  {t("sections.problems.kicker")}
                 </span>
               </div>
 
@@ -259,8 +260,7 @@ export function ProblemsSolutions() {
               </ul>
 
               <p className="mt-6 text-xs leading-relaxed text-slate-400 dark:text-neutral-500">
-                Threads are tagged on post, so an answer stays findable from any
-                of the stacks it touches.
+                {t("sections.problems.tagged")}
               </p>
             </div>
           </motion.div>
@@ -382,13 +382,13 @@ export function ProblemsSolutions() {
             <div className="mt-10">
               <div className="flex items-baseline justify-between border-b border-slate-200 pb-3 dark:border-neutral-800">
                 <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-neutral-500">
-                  Recently posted
+                  {t("sections.problems.recentlyPosted")}
                 </span>
                 <Link
                   href="/problems"
                   className="text-xs font-semibold text-slate-400 transition-colors hover:text-slate-700 dark:text-neutral-500 dark:hover:text-neutral-200"
                 >
-                  See all
+                  {t("sections.problems.seeAll")}
                 </Link>
               </div>
 

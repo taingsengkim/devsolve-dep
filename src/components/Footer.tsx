@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowUp } from "lucide-react";
+import { useLocalePath, useT } from "@/lib/i18n/I18nProvider";
 import darkModeLogo from "@/app/devsolve_dark_mode-removebg-preview.png";
 import mptcLight from "../../public/mptc-lightmode.png";
 import mptcDark from "../../public/mptc-darkmode.png";
@@ -30,26 +31,29 @@ import SectionBackdrop, {
 const footerNavSections = [
   {
     title: "PLATFORM",
+    tKey: "footer.sections.platform",
     links: [
-      { name: "Programs", href: "/programs" },
-      { name: "Problems", href: "/problems" },
-      { name: "Showcases", href: "/showcases" },
-      { name: "Community", href: "/community" },
+      { name: "Programs", tKey: "footer.links.programs", href: "/programs" },
+      { name: "Problems", tKey: "footer.links.problems", href: "/problems" },
+      { name: "Showcases", tKey: "footer.links.showcases", href: "/showcases" },
+      { name: "Community", tKey: "footer.links.community", href: "/community" },
     ],
   },
   {
     title: "EXPLORE",
+    tKey: "footer.sections.explore",
     links: [
-      { name: "Hacktivity", href: "/hacktivity" },
-      { name: "Leaderboard", href: "/leaderboard" },
-      { name: "About", href: "/about" },
+      { name: "Hacktivity", tKey: "footer.links.hacktivity", href: "/hacktivity" },
+      { name: "Leaderboard", tKey: "footer.links.leaderboard", href: "/leaderboard" },
+      { name: "About", tKey: "footer.links.about", href: "/about" },
     ],
   },
   {
     title: "ACCOUNT",
+    tKey: "footer.sections.account",
     links: [
-      { name: "Sign in", href: "/login" },
-      { name: "Create an account", href: "/account-type" },
+      { name: "Sign in", tKey: "footer.links.signIn", href: "/login" },
+      { name: "Create an account", tKey: "footer.links.createAccount", href: "/account-type" },
     ],
   },
 ];
@@ -78,6 +82,8 @@ const partners = [
 ];
 
 export default function Footer() {
+  const t = useT();
+  const lp = useLocalePath();
   /* The partner artwork is theme-dependent — each backer ships a separate
      light and dark file — and next-themes only knows the theme after
      hydration, so the server render has to commit to the light files or the
@@ -128,7 +134,7 @@ export default function Footer() {
                 contrast by flattening every colour to white, which throws away
                 the two blues and the bug. The dark file is the same lockup
                 with the wordmark redrawn in white, so the design survives. */}
-            <Link href="/" aria-label="DevSolve home" className="group block">
+            <Link href={lp("/")} aria-label={t("footer.home")} className="group block">
               <span className="relative block h-16 w-44 sm:h-20 sm:w-56">
                 <Image
                   key={isDarkTheme ? "dark-logo" : "light-logo"}
@@ -145,9 +151,7 @@ export default function Footer() {
             {/* The landing's lede treatment: a size up from small print, with
                 the same slightly tightened tracking its body copy carries. */}
             <p className="max-w-md text-base leading-relaxed tracking-[-0.01em] text-slate-600 dark:text-neutral-400">
-              Bug bounty and vulnerability disclosure platform for developers,
-              security engineers, and organizations. Built to find
-              vulnerabilities before attackers do.
+              {t("footer.tagline")}
             </p>
           </div>
 
@@ -163,7 +167,7 @@ export default function Footer() {
                     className="h-px w-6 shrink-0 bg-blue-600 dark:bg-blue-400"
                   />
                   <span className="text-xs font-bold uppercase tracking-[0.22em] text-blue-600 dark:text-blue-400">
-                    {section.title}
+                    {t(section.tKey) || section.title}
                   </span>
                 </h3>
                 <ul className="space-y-3">
@@ -172,10 +176,10 @@ export default function Footer() {
                       {/* Nudges toward the reader on hover, the way the
                           landing's list links do. */}
                       <Link
-                        href={link.href}
+                        href={lp(link.href)}
                         className="inline-block text-sm font-medium tracking-[-0.01em] text-slate-600 transition-all duration-200 hover:translate-x-0.5 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
                       >
-                        {link.name}
+                        {t(link.tKey) || link.name}
                       </Link>
                     </li>
                   ))}
@@ -202,7 +206,7 @@ export default function Footer() {
               className="h-px w-6 bg-blue-600 dark:bg-blue-400"
             />
             <span className="text-xs font-bold uppercase tracking-[0.22em] text-blue-600 dark:text-blue-400">
-              Sponsors and organizers
+              {t("footer.sponsors")}
             </span>
             <span
               aria-hidden="true"
@@ -241,15 +245,15 @@ export default function Footer() {
           {/* The blue full stop the landing puts after its headings. */}
           <p className="tracking-[-0.01em]">
             © {new Date().getFullYear()} DevSolve
-            <span className="text-blue-600 dark:text-blue-400">.</span> All
-            rights reserved.
+            <span className="text-blue-600 dark:text-blue-400">.</span>{" "}
+            {t("footer.rights")}
           </p>
 
           <motion.button
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.95 }}
             onClick={scrollToTop}
-            aria-label="Back to top"
+            aria-label={t("footer.backToTop")}
             className="flex size-10 cursor-pointer items-center justify-center rounded-full bg-blue-600 text-white shadow-[0_8px_20px_-6px_rgba(37,99,235,0.6)] transition-colors hover:bg-blue-700"
           >
             <ArrowUp className="size-4" />

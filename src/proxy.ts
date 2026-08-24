@@ -1,38 +1,116 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
+import {
+  DEFAULT_LOCALE,
+  LOCALES,
+  isLocale,
+  splitLocale,
+  type Locale,
+} from "@/lib/i18n/config";
+
+/** Remembers the visitor's choice so the switcher survives a fresh visit. */
+const LOCALE_COOKIE = "devsolve.locale";
+
+/**
+ * Picks a locale for a request that arrived without one.
+ *
+ * Order is deliberate: an explicit choice the visitor made in the switcher
+ * beats what their browser happens to advertise, and both beat the default.
+ * Parsed by hand rather than pulling in Negotiator — with two locales the
+ * whole grammar we care about is `km` appearing with a higher q-value.
+ */
+function detectLocale(request: NextRequest): Locale {
+  const chosen = request.cookies.get(LOCALE_COOKIE)?.value;
+  if (isLocale(chosen)) return chosen;
+
+  const header = request.headers.get("accept-language");
+  if (!header) return DEFAULT_LOCALE;
+
+  const ranked = header
+    .split(",")
+    .map((part) => {
+      const [tag, ...params] = part.trim().split(";");
+      const q = params.find((p) => p.trim().startsWith("q="));
+      return {
+        // `km-KH` and `km` both mean Khmer to us.
+        base: tag.trim().toLowerCase().split("-")[0],
+        q: q ? Number.parseFloat(q.split("=")[1]) || 0 : 1,
+      };
+    })
+    .filter((entry) => (LOCALES as readonly string[]).includes(entry.base))
+    .sort((a, b) => b.q - a.q);
+
+  const best = ranked[0]?.base;
+  return isLocale(best) ? best : DEFAULT_LOCALE;
+}
 
 export function proxy(request: NextRequest) {
-  const sessionCookie = getSessionCookie(request);
   const { pathname } = request.nextUrl;
 
-  if (pathname === "/") {
-    // Only redirect authenticated users away from / on a direct visit.
-    // If they navigate here from within the app (e.g. clicking a Home link),
-    // the Referer will start with the site origin — let them through.
+  /* Everything below is about pages. API routes, Next's own assets and any
+     path that looks like a file are none of this middleware's business. */
+  if (
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/originkit") ||
+    /\.[^/]+$/.test(pathname)
+  ) {
+    return NextResponse.next();
+  }
+
+  const { locale, rest, hadLocale } = splitLocale(pathname);
+
+  /* A request with no locale gets sent to one. Every page therefore lives at
+     exactly one canonical URL, which is what makes the Khmer version
+     indexable and shareable rather than a cookie-dependent view. */
+  if (!hadLocale) {
+    const picked = detectLocale(request);
+    const url = request.nextUrl.clone();
+    url.pathname = `/${picked}${pathname === "/" ? "" : pathname}`;
+    const redirect = NextResponse.redirect(url);
+    redirect.cookies.set(LOCALE_COOKIE, picked, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: "lax",
+    });
+    return redirect;
+  }
+
+  const sessionCookie = getSessionCookie(request);
+
+  if (rest === "/" || rest === "") {
+    // Only redirect authenticated users away from the home page on a direct
+    // visit. Arriving from inside the app (a Home link) leaves a Referer on
+    // this origin — let them through.
     const referer = request.headers.get("referer");
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
     const isInternalNav = referer?.startsWith(siteUrl) ?? false;
 
     if (sessionCookie && !isInternalNav) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
     }
   }
 
   // If NOT authenticated and visiting a private route
-  if (!sessionCookie && pathname.startsWith("/dashboard")) {
-    if (pathname.startsWith("/dashboard/profile/")) {
-      const rest = pathname.slice("/dashboard/profile/".length);
-      if (rest && !rest.startsWith("settings")) {
-        return NextResponse.redirect(new URL(`/profile/${rest}`, request.url));
+  if (!sessionCookie && rest.startsWith("/dashboard")) {
+    if (rest.startsWith("/dashboard/profile/")) {
+      const tail = rest.slice("/dashboard/profile/".length);
+      if (tail && !tail.startsWith("settings")) {
+        return NextResponse.redirect(
+          new URL(`/${locale}/profile/${tail}`, request.url),
+        );
       }
     }
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL(`/${locale}`, request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/", "/dashboard", "/dashboard/:path*"],
+  /* Every page path now needs to be seen, because any of them may arrive
+     without a locale. The negative lookahead keeps assets and API routes out
+     rather than matching them and returning early. */
+  matcher: ["/((?!api|_next/static|_next/image|originkit|.*\\..*).*)"],
 };

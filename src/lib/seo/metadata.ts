@@ -5,6 +5,14 @@ import {
   TWITTER_HANDLE,
   absoluteUrl,
 } from "./site";
+import {
+  DEFAULT_LOCALE as DEFAULT_UI_LOCALE,
+  LOCALES,
+  LOCALE_TAGS,
+  isLocale,
+  localise,
+  type Locale,
+} from "@/lib/i18n/config";
 
 /**
  * One builder for every page's `<head>`, so a route only has to say what it is
@@ -37,6 +45,12 @@ export interface PageSeoInput {
   tags?: string[];
   /** Keeps the page out of search results while still serving it to people. */
   noIndex?: boolean;
+  /**
+   * The locale this page is being rendered in. Every route receives it as a
+   * param, so passing it here is what makes the canonical point at the right
+   * language instead of every locale claiming to be the English one.
+   */
+  locale?: string;
 }
 
 /** Pages a crawler should never hold on to: private, transient, or duplicate. */
@@ -75,9 +89,15 @@ export function pageMetadata(input: PageSeoInput): Metadata {
     authors,
     tags,
     noIndex = false,
+    locale: localeInput,
   } = input;
 
-  const url = absoluteUrl(path);
+  /* Falls back rather than throwing: a route that has not been passed its
+     locale yet still produces valid metadata, just pointed at the default
+     language. That keeps the migration incremental instead of all-or-nothing. */
+  const locale: Locale = isLocale(localeInput) ? localeInput : DEFAULT_UI_LOCALE;
+
+  const url = absoluteUrl(localise(path, locale));
   /* The document title gets the site name from the root template; a social
      card has no template, so it is spelled out here. */
   const socialTitle = absoluteTitle ? title : `${title} · ${SITE_NAME}`;
@@ -108,7 +128,20 @@ export function pageMetadata(input: PageSeoInput): Metadata {
   return {
     title: absoluteTitle ? { absolute: title } : title,
     description,
-    alternates: { canonical: path },
+    /* Canonical points at *this* locale's URL, and `languages` declares the
+       others. Without the alternates, the two languages look like duplicate
+       pages competing for the same query; with them, each is served to the
+       audience that reads it. `x-default` sends an unmatched crawler to the
+       default language rather than letting it guess. */
+    alternates: {
+      canonical: localise(path, locale),
+      languages: {
+        ...Object.fromEntries(
+          LOCALES.map((code) => [LOCALE_TAGS[code], localise(path, code)]),
+        ),
+        "x-default": localise(path, DEFAULT_UI_LOCALE),
+      },
+    },
     openGraph,
     twitter: {
       card: "summary_large_image",

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL, absoluteUrl } from "@/lib/seo/site";
+import { LOCALES, localise } from "@/lib/i18n/config";
 
 /**
  * What crawlers may read. Served at `/robots.txt`.
@@ -14,6 +15,22 @@ import { SITE_URL, absoluteUrl } from "@/lib/seo/site";
  * links to can still appear as a bare result. The pages that must never be
  * listed also carry `robots: noindex` in their own metadata.
  */
+/** Paths kept out of the index: anything behind sign-in, transactional, or
+ *  a duplicate of a canonical page. */
+const PRIVATE_PREFIXES = [
+  "/dashboard/",
+  "/login",
+  "/register/",
+  "/account-type",
+  "/test-login",
+  "/community/create",
+  "/community/*/edit",
+  "/community/*/solutions/",
+  "/profile/me",
+  // The old public program page, kept only as a redirect notice.
+  "/program",
+];
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
@@ -21,18 +38,17 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         disallow: [
+          // Not localised: API routes live outside the [lang] segment.
           "/api/",
-          "/dashboard/",
-          "/login",
-          "/register/",
-          "/account-type",
-          "/test-login",
-          "/community/create",
-          "/community/*/edit",
-          "/community/*/solutions/",
-          "/profile/me",
-          // The old public program page, kept only as a redirect notice.
-          "/program",
+          /* Every page path now exists once per locale, so a bare rule like
+             "/dashboard/" would no longer match anything a crawler can reach.
+             Each is expanded across the locales, and the unprefixed form is
+             kept too — the proxy still answers those with a redirect, and a
+             stale link may point at one. */
+          ...PRIVATE_PREFIXES.flatMap((path) => [
+            path,
+            ...LOCALES.map((locale) => localise(path, locale)),
+          ]),
         ],
       },
     ],
